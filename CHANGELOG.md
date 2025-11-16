@@ -13,10 +13,46 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - BunqService implementation
 - GmailService implementation
 - HasMemorialReference trait
-- Laravel Service Provider met auto-discovery
 - Config file publicatie
 - PHPUnit test suite
 - CI/CD pipeline (GitHub Actions)
+
+---
+
+## [0.2.0] - 2025-11-16
+
+### Added - Invoice Sync Feature
+
+#### Services
+- **InvoiceSyncService** - Synchronisatie van facturen tussen Herdenkingsportaal en HavunAdmin
+  - `prepareInvoiceData()` - Prepare invoice data from monument and payment
+  - `sendToHavunAdmin()` - Send invoice to HavunAdmin API
+  - `getInvoiceStatus()` - Get invoice status from HavunAdmin
+  - `syncStatusFromHavunAdmin()` - Sync status back to Herdenkingsportaal
+
+- **InvoiceSyncResponse** - Response object voor sync operaties
+  - `isSuccessful()` - Check if sync succeeded
+  - `isFailed()` - Check if sync failed
+  - `getError()` - Get error message
+  - `toArray()` - Convert to array
+
+#### Provider
+- **HavunCoreServiceProvider** - Laravel Service Provider met auto-discovery
+  - Singleton registratie voor alle services
+  - Automatische config binding voor API credentials
+
+#### Documentation
+- Cross-project sync architectuur beschreven in `D:\GitHub\havun-mcp\SYNC-ARCHITECTURE.md`
+- Implementation guides voor HavunAdmin en Herdenkingsportaal via MCP messages
+
+### Changed
+- Service Provider nu volledig geïmplementeerd (was stub in 0.1.0)
+
+### Dependencies
+- Geen nieuwe dependencies (gebruikt bestaande Guzzle voor HTTP calls)
+
+### Breaking Changes
+- Geen (backward compatible met 0.1.0)
 
 ---
 

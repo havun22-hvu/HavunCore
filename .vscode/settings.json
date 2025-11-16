@@ -1,0 +1,34 @@
+{
+  // Auto-approve alle Claude Code tool calls
+  "autoApprove": {
+    "Bash": ["*"],           // Alle bash commando's
+    "WebFetch": ["*"],       // Alle web fetches
+    "Write": ["*"],          // Alle file writes
+    "Edit": ["*"],           // Alle file edits
+    "Read": ["*"],           // Alle file reads
+    "Glob": ["*"],           // Alle file searches
+    "Grep": ["*"],           // Alle content searches
+    "Task": ["*"],           // Alle agent tasks
+    "SlashCommand": ["*"],   // Alle slash commands
+    "NotebookEdit": ["*"],   // Alle notebook edits
+    "mcp__havun__listClients": ["*"],     // MCP: List clients
+    "mcp__havun__getMessages": ["*"],     // MCP: Get messages
+    "mcp__havun__storeMessage": ["*"],    // MCP: Store message
+    "mcp__havun__deleteMessage": ["*"]    // MCP: Delete message
+  },
+
+  // MCP Servers
+  "mcpServers": {
+    "havun": {
+      "command": "node",
+      "args": ["D:\\GitHub\\havun-mcp\\build\\index.js"]
+    },
+    "havuncore-memory": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-memory"],
+      "env": {
+        "MEMORY_FILE_PATH": "D:\\GitHub\\havun-mcp\\havuncore-memory.json"
+      }
+    }
+  }
+}
