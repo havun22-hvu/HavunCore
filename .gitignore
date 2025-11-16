@@ -6,3 +6,6 @@ composer.lock
 .DS_Store
 Thumbs.db
 *.log
+
+# Claude Code local settings
+.claude/
