@@ -34,6 +34,12 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - `reportWorkflowEvent()` - Share development events (features, bugfixes, etc.)
   - `storeProjectVault()` - Store project configuration for disaster recovery
 
+- **APIContractRegistry** - API contract synchronization between projects
+  - `registerEndpoint()` - Server registers API contract
+  - `validatePayload()` - Client validates before sending
+  - `detectBreakingChanges()` - Automatic breaking change detection
+  - `reportBreakingChanges()` - Notify consumers of API changes
+
 #### New Events & Listeners
 - **InvoiceSyncCompleted** event - Fired after every invoice sync (success/failure)
 - **HavunCoreDeployed** event - Fired when HavunCore is updated
@@ -45,6 +51,11 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - Purpose: Disaster recovery & project restoration
   - Usage: `php artisan havun:vault:store`
 
+#### New Traits
+- **ValidatesAPIContract** - Trait for validating API payloads in controllers/jobs
+  - `validateContract()` - Validate payload against registered contract
+  - `assertValidContract()` - Assert validity (throws exception if invalid)
+
 #### Documentation
 - **MCP-AUTOMATION.md** - Complete MCP automation guide
   - Setup instructions per project
@@ -52,6 +63,12 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   - Best practices
   - Vault configuration format
   - Message monitoring guide
+
+- **API-CONTRACT-SYNC.md** - API contract synchronization guide
+  - Prevent API mismatch between projects (HavunAdmin ↔ Herdenkingsportaal, HavunAdmin ↔ VPDUpdate)
+  - Server registers contract, client validates before sending
+  - Automatic breaking change detection and notification
+  - Complete examples for all scenarios
 
 ### Changed
 - **InvoiceSyncService** - Now automatically fires `InvoiceSyncCompleted` events
@@ -77,6 +94,12 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
    - Breaking changes automatically communicated
    - Deployment notifications sent to all projects
    - Workflow events (features, bugfixes) shared
+
+5. **API Contract Synchronization** 📋
+   - Prevent API mismatch between client and server
+   - Server registers expected contract, client validates before sending
+   - Automatic breaking change detection (new required fields, type changes, removed fields)
+   - Consumers notified automatically when API changes
 
 ### Migration Guide
 

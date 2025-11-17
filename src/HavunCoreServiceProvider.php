@@ -45,6 +45,14 @@ class HavunCoreServiceProvider extends ServiceProvider
                 projectName: config('app.name', 'HavunCore')
             );
         });
+
+        // Register APIContractRegistry
+        $this->app->singleton(\Havun\Core\Services\APIContractRegistry::class, function ($app) {
+            return new \Havun\Core\Services\APIContractRegistry(
+                mcp: $app->make(MCPService::class),
+                projectName: config('app.name', 'HavunCore')
+            );
+        });
     }
 
     /**
