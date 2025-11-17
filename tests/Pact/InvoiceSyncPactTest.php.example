@@ -1,0 +1,108 @@
+<?php
+
+namespace Havun\Core\Tests\Pact;
+
+use Havun\Core\Testing\PactContractBuilder;
+use PHPUnit\Framework\TestCase;
+
+/**
+ * Pact Contract Test - Consumer Side (Herdenkingsportaal)
+ *
+ * This test defines what Herdenkingsportaal EXPECTS from HavunAdmin API.
+ *
+ * To use this:
+ * 1. Rename to InvoiceSyncPactTest.php (remove .example)
+ * 2. Run: composer require --dev pact-foundation/pact-php
+ * 3. Run: vendor/bin/phpunit tests/Pact/InvoiceSyncPactTest.php
+ * 4. Generates: ./pacts/herdenkingsportaal-havunadmin.json
+ * 5. Share pact file with HavunAdmin team
+ * 6. HavunAdmin runs provider verification against this pact
+ *
+ * Benefits:
+ * - Consumer defines expectations
+ * - Provider must meet them
+ * - Breaking changes caught in CI
+ * - No integration environment needed for testing
+ */
+class InvoiceSyncPactTest extends TestCase
+{
+    /**
+     * Test: Herdenkingsportaal can sync an invoice to HavunAdmin
+     *
+     * This generates a pact file that says:
+     * "When I POST this data to /api/invoices/sync, I expect a 200 response with invoice_id"
+     */
+    public function test_can_sync_invoice_to_havunadmin(): void
+    {
+        // Build pact
+        $pact = PactContractBuilder::invoiceSyncExample();
+
+        // Save to file
+        $filepath = $pact->save('./pacts');
+
+        // Verify file was created
+        $this->assertFileExists($filepath);
+
+        echo "\n✅ Pact generated: {$filepath}\n";
+        echo "📤 Share this file with HavunAdmin team\n";
+        echo "🔍 HavunAdmin will verify they can meet this contract\n\n";
+
+        // Read and display
+        $content = json_decode(file_get_contents($filepath), true);
+        echo "Pact content:\n";
+        echo json_encode($content, JSON_PRETTY_PRINT) . "\n";
+    }
+
+    /**
+     * Test: Alternative scenario - invoice already exists
+     */
+    public function test_can_update_existing_invoice(): void
+    {
+        $pact = new PactContractBuilder('Herdenkingsportaal', 'HavunAdmin');
+
+        $pact->addInteraction(
+            description: 'A request to sync an invoice that already exists',
+            state: 'an invoice already exists for memorial 550e8400e29b',
+            request: [
+                'method' => 'POST',
+                'path' => '/api/invoices/sync',
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                    'Authorization' => 'Bearer test_token',
+                ],
+                'body' => [
+                    'memorial_reference' => '550e8400e29b',
+                    'customer' => [
+                        'name' => 'Jan Jansen',
+                        'email' => 'jan@example.com',
+                    ],
+                    'invoice' => [
+                        'number' => 'INV-2025-00001',
+                        'amount' => 19.95,
+                        'vat_amount' => 4.19,
+                        'total_amount' => 24.14,
+                    ],
+                    'payment' => [
+                        'mollie_payment_id' => 'tr_test123',
+                        'status' => 'paid',
+                    ],
+                ],
+            ],
+            response: [
+                'status' => 200,
+                'headers' => [
+                    'Content-Type' => 'application/json',
+                ],
+                'body' => [
+                    'success' => true,
+                    'invoice_id' => 501,  // Same ID - updated, not created
+                    'memorial_reference' => '550e8400e29b',
+                    'updated' => true,
+                ],
+            ]
+        );
+
+        $filepath = $pact->save('./pacts');
+        $this->assertFileExists($filepath);
+    }
+}

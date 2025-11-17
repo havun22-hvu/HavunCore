@@ -67,6 +67,7 @@ class HavunCoreServiceProvider extends ServiceProvider
         if ($this->app->runningInConsole()) {
             $this->commands([
                 \Havun\Core\Commands\StoreProjectVault::class,
+                \Havun\Core\Commands\GenerateOpenAPISpec::class,
             ]);
         }
 

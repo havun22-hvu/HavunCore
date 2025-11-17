@@ -1,0 +1,188 @@
+name: API Contract Validation
+
+# This workflow validates API contracts on every pull request
+# Used by: Google, Stripe, Twilio, Netflix, etc.
+
+on:
+  pull_request:
+    paths:
+      - 'config/api_contracts.php'
+      - 'storage/api/openapi.yaml'
+      - 'src/Services/APIContractRegistry.php'
+  push:
+    branches:
+      - master
+      - main
+
+jobs:
+  validate-contracts:
+    name: Validate API Contracts
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for comparison
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, json
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Generate OpenAPI spec
+        run: |
+          php artisan havun:openapi:generate --output=storage/api/openapi.yaml
+        continue-on-error: true
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install OpenAPI tools
+        run: |
+          npm install -g @stoplight/spectral-cli
+          npm install -g @openapitools/openapi-generator-cli
+
+      - name: Validate OpenAPI spec (Spectral)
+        id: validate
+        run: |
+          if [ -f storage/api/openapi.yaml ]; then
+            echo "✅ OpenAPI spec found, validating..."
+            spectral lint storage/api/openapi.yaml --format stylish
+          else
+            echo "⚠️  No OpenAPI spec found (storage/api/openapi.yaml)"
+            exit 0
+          fi
+        continue-on-error: true
+
+      - name: Check for breaking changes
+        id: breaking_changes
+        if: github.event_name == 'pull_request'
+        run: |
+          # Get base branch OpenAPI spec
+          git show origin/${{ github.base_ref }}:storage/api/openapi.yaml > openapi-base.yaml 2>/dev/null || echo "No base spec"
+
+          if [ -f openapi-base.yaml ] && [ -f storage/api/openapi.yaml ]; then
+            echo "🔍 Checking for breaking changes..."
+
+            # Install openapi-diff
+            npm install -g openapi-diff
+
+            # Compare specs
+            openapi-diff openapi-base.yaml storage/api/openapi.yaml \
+              --format markdown \
+              > breaking-changes.md || true
+
+            if [ -s breaking-changes.md ]; then
+              echo "has_changes=true" >> $GITHUB_OUTPUT
+              echo "🚨 Breaking changes detected!"
+              cat breaking-changes.md
+            else
+              echo "has_changes=false" >> $GITHUB_OUTPUT
+              echo "✅ No breaking changes detected"
+            fi
+          else
+            echo "has_changes=false" >> $GITHUB_OUTPUT
+            echo "ℹ️  Skipping breaking change check (no base spec to compare)"
+          fi
+
+      - name: Comment on PR with breaking changes
+        if: steps.breaking_changes.outputs.has_changes == 'true' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            let body = '## 🚨 API Breaking Changes Detected\n\n';
+
+            if (fs.existsSync('breaking-changes.md')) {
+              const changes = fs.readFileSync('breaking-changes.md', 'utf8');
+              body += changes;
+            }
+
+            body += '\n\n---\n';
+            body += '⚠️  **Action Required:** Review these breaking changes carefully.\n';
+            body += '- Notify API consumers (Herdenkingsportaal, HavunAdmin, etc.)\n';
+            body += '- Update API version if major breaking change\n';
+            body += '- Add migration guide in documentation\n';
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: body
+            });
+
+      - name: Upload OpenAPI spec as artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: openapi-spec
+          path: storage/api/openapi.yaml
+          retention-days: 30
+
+      - name: Summary
+        if: always()
+        run: |
+          echo "### API Contract Validation Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+
+          if [ -f storage/api/openapi.yaml ]; then
+            echo "✅ OpenAPI specification generated" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "**File:** \`storage/api/openapi.yaml\`" >> $GITHUB_STEP_SUMMARY
+            echo "**Size:** $(wc -c < storage/api/openapi.yaml) bytes" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "⚠️  No OpenAPI specification found" >> $GITHUB_STEP_SUMMARY
+          fi
+
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Validation:** ${{ steps.validate.outcome }}" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ steps.breaking_changes.outputs.has_changes }}" == "true" ]; then
+            echo "**Breaking Changes:** 🚨 **YES** - Review required!" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "**Breaking Changes:** ✅ None detected" >> $GITHUB_STEP_SUMMARY
+          fi
+
+  # Optional: Deploy OpenAPI spec to GitHub Pages for Swagger UI
+  deploy-docs:
+    name: Deploy API Documentation
+    runs-on: ubuntu-latest
+    needs: validate-contracts
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download OpenAPI spec
+        uses: actions/download-artifact@v4
+        with:
+          name: openapi-spec
+          path: docs/
+
+      - name: Setup Swagger UI
+        run: |
+          # Download Swagger UI
+          wget https://github.com/swagger-api/swagger-ui/archive/refs/tags/v5.10.0.tar.gz
+          tar -xzf v5.10.0.tar.gz
+
+          # Copy dist to docs
+          cp -r swagger-ui-5.10.0/dist/* docs/
+
+          # Update swagger-initializer.js to use our spec
+          sed -i 's|https://petstore.swagger.io/v2/swagger.json|./openapi.yaml|g' docs/swagger-initializer.js
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
+          publish_branch: gh-pages
