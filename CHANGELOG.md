@@ -19,6 +19,176 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.3.0] - 2025-11-17
+
+### Added - MCP Automation & Cross-Project Communication 🤖
+
+**Context:** Automated communication between Herdenkingsportaal, HavunAdmin and HavunCore using MCP (Model Context Protocol).
+
+#### New Services
+- **MCPService** - Central service for MCP communication
+  - `storeMessage()` - Send messages to other projects
+  - `notifyDeployment()` - Notify projects of new releases
+  - `reportInvoiceSync()` - Automatic sync monitoring
+  - `reportBreakingChange()` - Alert projects of breaking changes
+  - `reportWorkflowEvent()` - Share development events (features, bugfixes, etc.)
+  - `storeProjectVault()` - Store project configuration for disaster recovery
+
+#### New Events & Listeners
+- **InvoiceSyncCompleted** event - Fired after every invoice sync (success/failure)
+- **HavunCoreDeployed** event - Fired when HavunCore is updated
+- **ReportToMCP** listener - Automatically reports events to MCP
+
+#### New Commands
+- **havun:vault:store** - Store project configuration in HavunCore vault
+  - Captures: Database config, API endpoints, composer packages, Laravel version
+  - Purpose: Disaster recovery & project restoration
+  - Usage: `php artisan havun:vault:store`
+
+#### Documentation
+- **MCP-AUTOMATION.md** - Complete MCP automation guide
+  - Setup instructions per project
+  - Usage examples
+  - Best practices
+  - Vault configuration format
+  - Message monitoring guide
+
+### Changed
+- **InvoiceSyncService** - Now automatically fires `InvoiceSyncCompleted` events
+  - Success: Reports memorial reference, invoice ID, amount, customer
+  - Failure: Reports memorial reference, error message, invoice number
+- **HavunCoreServiceProvider** - Registers MCPService and event listeners
+
+### Features Overview
+
+1. **Automatic Status Updates** ✅
+   - Events are automatically shared between projects via MCP
+   - No manual message copying needed
+
+2. **Real-time Sync Monitoring** ✅
+   - Every invoice sync is automatically reported
+   - See success/failure in real-time across projects
+
+3. **Configuration Vault** 🔐
+   - HavunCore stores all critical project configuration
+   - Used for disaster recovery and project restoration
+
+4. **Development Workflow Automation** ✅
+   - Breaking changes automatically communicated
+   - Deployment notifications sent to all projects
+   - Workflow events (features, bugfixes) shared
+
+### Migration Guide
+
+**For Herdenkingsportaal & HavunAdmin:**
+```bash
+composer update havun/core
+php artisan config:clear
+php artisan cache:clear
+
+# Optional: Store configuration in vault
+php artisan havun:vault:store
+```
+
+**No breaking changes** - All automation is opt-in and backwards compatible.
+
+---
+
+## [0.2.2] - 2025-11-17
+
+### Added - API Specification & Problem Resolution
+
+**Context:** Both HavunAdmin and Herdenkingsportaal teams reported issues with invoice sync implementation.
+
+#### Documentation
+- **ANTWOORD-OP-BEIDE-TEAMS.md** - Complete problem analysis and solution guide
+  - Identified missing `Invoice::createFromHerdenkingsportaal()` method in HavunAdmin
+  - Recommended Herdenkingsportaal creates invoices table (Optie A)
+  - 3-step implementation plan with code examples
+  - API specification answers (required/optional fields, duplicate handling, response format)
+
+- **INVOICE-SYNC-API-SPEC.md** - Complete API specification document (v1.0)
+  - Field specifications (required vs optional)
+  - Request/response formats with examples
+  - Duplicate detection behavior (idempotent API design)
+  - HTTP status codes and error responses
+  - VAT validation rules
+  - Status sync GET endpoint usage
+  - Test scenarios and security considerations
+  - Performance guidelines and rate limiting
+
+#### Problem Resolution
+
+**HavunAdmin Issue:**
+- Invoice model has `memorial_reference` field ✅
+- Missing `createFromHerdenkingsportaal()` method ❌
+- Solution: Add method to Invoice.php (line 578)
+- ETA: 20 minutes
+
+**Herdenkingsportaal Issue:**
+- No invoices table (only payment_transactions) ❌
+- Unclear API contract ❌
+- Solution: Create invoices table + Invoice model
+- ETA: 1 hour
+
+**Root Cause:**
+- Documentation claimed code was "100% complete"
+- Reality: Critical implementation details missing in consuming apps
+- InvoiceSyncService assumed data structures that don't exist
+
+### Fixed
+
+**Issue #1: Missing HavunAdmin Method**
+- Severity: CRITICAL
+- Provided complete `createFromHerdenkingsportaal()` implementation
+- Includes: Idempotent logic, status mapping, customer snapshot, logging
+
+**Issue #2: Undefined Data Contract**
+- Severity: HIGH
+- Created comprehensive API spec document
+- Clarified: Required vs optional fields, duplicate handling, VAT validation
+
+**Issue #3: Missing Herdenkingsportaal Invoices Table**
+- Severity: CRITICAL
+- Provided migration for invoices table
+- Provided Invoice model with `createFromPayment()` method
+- Explained fiscal requirements (7-year retention, unique invoice numbers)
+
+### Recommendations
+
+**Optie A: Herdenkingsportaal krijgt invoices tabel** ✅ RECOMMENDED
+- Fiscaal verplicht (Belastingdienst 7 jaar bewaarplicht)
+- Klanten kunnen facturen downloaden
+- Scheiding betaling vs factuur is correct
+- Toekomstbestendig
+
+**Optie B: Direct payment_transactions gebruiken** ❌ NOT RECOMMENDED
+- Geen factuurnummering
+- Geen BTW administratie
+- Fiscaal niet correct
+
+**Optie C: Centrale API via HavunCore** ❌ TOO COMPLEX
+- Overhead voor simpel probleem
+- HavunCore is al de centrale service!
+
+### Status
+
+**Overall:** 🟡 **DOCUMENTATION COMPLETE - IMPLEMENTATION PENDING**
+
+Both teams have:
+- ✅ Complete problem analysis
+- ✅ Step-by-step implementation guide
+- ✅ Code examples ready to copy/paste
+- ✅ API specification document
+- ⏳ Implementation in progress
+
+**Expected Resolution:**
+- HavunAdmin: 20 minutes (add one method)
+- Herdenkingsportaal: 1 hour (migration + model + job update)
+- Total: ~1.5 hours to production ready
+
+---
+
 ## [0.2.1] - 2025-11-17
 
 ### Added - Herdenkingsportaal Implementation Files

@@ -4,6 +4,7 @@ namespace Havun\Core\Services;
 
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
+use Havun\Core\Events\InvoiceSyncCompleted;
 
 class InvoiceSyncService
 {
@@ -81,9 +82,13 @@ class InvoiceSyncService
 
     /**
      * Send invoice to HavunAdmin API
+     *
+     * Automatically fires InvoiceSyncCompleted event for MCP monitoring
      */
     public function sendToHavunAdmin(array $invoiceData): InvoiceSyncResponse
     {
+        $memorialReference = $invoiceData['memorial_reference'] ?? 'unknown';
+
         try {
             $response = $this->client->post('/api/invoices/sync', [
                 'json' => $invoiceData,
@@ -91,12 +96,26 @@ class InvoiceSyncService
 
             $data = json_decode($response->getBody(), true);
 
-            return new InvoiceSyncResponse(
+            $syncResponse = new InvoiceSyncResponse(
                 success: true,
                 invoiceId: $data['invoice_id'] ?? null,
                 memorialReference: $data['memorial_reference'] ?? null,
                 message: 'Invoice synced successfully'
             );
+
+            // Fire event for MCP monitoring
+            event(new InvoiceSyncCompleted(
+                memorialReference: $memorialReference,
+                success: true,
+                invoiceId: $syncResponse->invoiceId,
+                metadata: [
+                    'invoice_number' => $invoiceData['invoice']['number'] ?? null,
+                    'amount' => $invoiceData['invoice']['total_amount'] ?? null,
+                    'customer' => $invoiceData['customer']['name'] ?? null,
+                ]
+            ));
+
+            return $syncResponse;
 
         } catch (RequestException $e) {
             $error = $e->getMessage();
@@ -105,6 +124,16 @@ class InvoiceSyncService
                 $body = json_decode($e->getResponse()->getBody(), true);
                 $error = $body['error'] ?? $error;
             }
+
+            // Fire event for MCP monitoring (failure)
+            event(new InvoiceSyncCompleted(
+                memorialReference: $memorialReference,
+                success: false,
+                error: $error,
+                metadata: [
+                    'invoice_number' => $invoiceData['invoice']['number'] ?? null,
+                ]
+            ));
 
             return new InvoiceSyncResponse(
                 success: false,
