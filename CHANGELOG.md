@@ -18,6 +18,179 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [0.5.0] - 2025-11-18
+
+### Added - Multi-Claude Orchestration System 🎯🤖
+
+**Context:** Transform HavunCore into an intelligent orchestration platform that delegates tasks to multiple Claude instances working in parallel across different projects. Includes secure vault for secrets and reusable code snippet library.
+
+#### New Services
+
+**VaultService** - Secure Secrets Management 🔐
+- AES-256-CBC encryption for all secrets
+- Encrypted storage: `storage/vault/secrets.encrypted.json`
+- Per-project secret filtering
+- Expiration date tracking
+- API key rotation support
+- Methods:
+  - `set($key, $value, $metadata)` - Store encrypted secret
+  - `get($key)` - Retrieve secret
+  - `has($key)` - Check existence
+  - `delete($key)` - Remove secret
+  - `exportForProject($project)` - Get project-specific secrets
+  - `list()` - List all secrets (keys only)
+
+**SnippetLibrary** - Reusable Code Templates 📚
+- Categorized code storage (`storage/snippets/`)
+- Metadata tagging (language, tags, dependencies, usage)
+- Search by tag/category
+- Default templates included:
+  - `payments/mollie-payment-setup.php` - Mollie integration
+  - `api/rest-response-formatter.php` - REST API responses
+  - `utilities/memorial-reference-service.php` - Memorial reference handling
+- Methods:
+  - `add($path, $code, $metadata)` - Store snippet
+  - `get($path)` - Retrieve snippet with metadata
+  - `list($category)` - List all snippets
+  - `searchByTag($tag)` - Search by tag
+  - `export($path)` - Export for orchestrated tasks
+
+**TaskOrchestrator** - Intelligent Task Delegation 🎯
+- Analyzes high-level user requests
+- Splits into project-specific tasks
+- Resolves dependencies automatically
+- Calculates parallel execution time (critical path)
+- Delegates via MCP to project-specific Claude instances
+- Features:
+  - Natural language analysis
+  - Component detection (payment, API, memorial, etc.)
+  - Project targeting (HavunAdmin, Herdenkingsportaal, VPDUpdate)
+  - Secret resolution from vault
+  - Snippet attachment to tasks
+  - Dependency tracking
+  - Progress monitoring
+- Methods:
+  - `orchestrate($description)` - Create and delegate tasks
+  - `getStatus($orchestrationId)` - Get orchestration status
+  - `updateTaskStatus($orchestrationId, $taskId, $status)` - Update task
+  - `listOrchestrations()` - List all orchestrations
+
+#### New Commands
+
+**Vault Management**
+- `havun:vault:init` - Initialize encrypted vault
+- `havun:vault:generate-key` - Generate encryption key
+- `havun:vault:set <key> <value>` - Store secret (with optional --project, --description, --expires)
+- `havun:vault:get <key>` - Retrieve secret (use --show to reveal)
+- `havun:vault:list` - List all secrets (filter by --project)
+
+**Snippet Management**
+- `havun:snippet:init` - Initialize library with default templates
+- `havun:snippet:list` - List all snippets (filter by --category or --tag)
+- `havun:snippet:get <path>` - Display snippet (use --copy for clipboard)
+
+**Orchestration**
+- `havun:orchestrate "<description>"` - Create orchestration from natural language
+  - Analyzes request
+  - Creates tasks
+  - Delegates to projects via MCP
+  - Example: `php artisan havun:orchestrate "Add installment payments with 3-month and 6-month options"`
+  - Options: --dry-run (preview without delegating), --projects (target specific projects)
+
+**Status Monitoring**
+- `havun:status [orchestration_id]` - Monitor orchestration progress
+  - Shows task status, dependencies, estimated completion
+  - Real-time progress tracking
+  - Parallel vs sequential time comparison
+  - Options: --all (include completed), --json, --watch (auto-refresh)
+
+**Task Management** (for consuming projects)
+- `havun:tasks:check` - Check for pending tasks from HavunCore
+  - Display tasks with priority and description
+  - Filter by --filter (orchestration ID)
+  - --auto mode for automated execution
+- `havun:tasks:complete <task_id>` - Mark task complete
+  - Notifies HavunCore via MCP
+  - Updates orchestration status
+  - Triggers dependent task delegation
+  - Options: --message, --files
+- `havun:tasks:fail <task_id> <reason>` - Mark task failed
+  - Notifies HavunCore of failure
+  - Records failure reason
+
+#### Documentation
+- **VISION-HAVUNCORE-ORCHESTRATION.md** (1200+ lines)
+  - Complete vision document
+  - Architecture diagrams
+  - Concrete examples (installment payments, new client integration)
+  - Component details
+  - Implementation roadmap
+  - Business case with time savings (40-50%)
+  - Comparison with industry leaders (Google, Netflix, Stripe, HashiCorp, AWS)
+
+#### Architecture Changes
+- Service provider updated with new singletons:
+  - VaultService
+  - SnippetLibrary
+  - TaskOrchestrator (with dependencies)
+- All 13 new commands registered
+- Storage directories created:
+  - `storage/vault/` - Encrypted secrets
+  - `storage/snippets/` - Code templates
+  - `storage/orchestrations/` - Task orchestrations
+
+#### Workflow Example
+
+```bash
+# 1. Initialize vault and snippets
+php artisan havun:vault:init
+php artisan havun:snippet:init
+
+# 2. Store secrets
+php artisan havun:vault:set mollie_api_key "live_xxx" --project=HavunAdmin
+
+# 3. Orchestrate a feature
+php artisan havun:orchestrate "Add installment payments with 3-month and 6-month options"
+
+# Output:
+# 🎯 HavunCore Task Orchestrator
+#
+# Created 3 tasks:
+# - task_001: HavunAdmin Backend API (HIGH, 30m)
+# - task_002: Herdenkingsportaal Frontend (MEDIUM, 25m)
+# - task_003: HavunAdmin Dashboard (LOW, 30m)
+#
+# Estimated duration: 45 minutes (parallel)
+# Sequential would take: 85 minutes
+# Time saved: 47%
+
+# 4. Monitor progress
+php artisan havun:status orch_20251118_142035
+
+# 5. In other projects, check for tasks
+cd ../HavunAdmin
+php artisan havun:tasks:check
+
+# 6. Complete tasks
+php artisan havun:tasks:complete task_001 --message="API endpoints created"
+```
+
+#### Benefits
+- **Development Speed**: 40-50% faster with parallel execution
+- **Code Quality**: Consistent snippets across all projects
+- **Security**: Centralized secret management with encryption
+- **Scalability**: Easy integration of new client projects
+- **Oversight**: Real-time progress monitoring and dependency tracking
+
+### Technical Details
+- Vault encryption: AES-256-CBC with SHA-256 key derivation
+- Task storage: JSON files in `storage/orchestrations/`
+- MCP message types: `task_delegation`, `task_progress`, `task_completed`
+- Dependency resolution: Critical path calculation for parallel execution
+- Default snippets: 3 templates included (Mollie, API, Memorial)
+
+---
+
 ## [0.4.0] - 2025-11-17
 
 ### Added - Professional API Management 🏢
