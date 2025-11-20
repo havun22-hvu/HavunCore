@@ -10,6 +10,7 @@ use Havun\Core\Services\MCPService;
 use Havun\Core\Services\VaultService;
 use Havun\Core\Services\SnippetLibrary;
 use Havun\Core\Services\TaskOrchestrator;
+use Havun\Core\Services\PushNotifier;
 use Havun\Core\Listeners\ReportToMCP;
 use Illuminate\Support\Facades\Event;
 
@@ -75,6 +76,14 @@ class HavunCoreServiceProvider extends ServiceProvider
                 snippets: $app->make(SnippetLibrary::class)
             );
         });
+
+        // Register PushNotifier
+        $this->app->singleton(PushNotifier::class, function ($app) {
+            return new PushNotifier(
+                notificationsBasePath: 'D:\GitHub\havun-mcp\notifications',
+                projectName: config('app.name', 'HavunCore')
+            );
+        });
     }
 
     /**
@@ -112,6 +121,10 @@ class HavunCoreServiceProvider extends ServiceProvider
                 \Havun\Core\Commands\TasksCheck::class,
                 \Havun\Core\Commands\TasksComplete::class,
                 \Havun\Core\Commands\TasksFail::class,
+
+                // Notification commands
+                \Havun\Core\Commands\NotificationSend::class,
+                \Havun\Core\Commands\NotificationCheck::class,
             ]);
         }
 
