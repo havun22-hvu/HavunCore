@@ -39,11 +39,11 @@ class BackupLog extends Model
     ];
 
     /**
-     * Scope: Laatste backup per project
+     * Get latest backup for a project
      */
-    public function scopeLatestByProject($query, string $project)
+    public static function latestByProject(string $project): ?self
     {
-        return $query->where('project', $project)
+        return static::where('project', $project)
             ->orderBy('backup_date', 'desc')
             ->first();
     }
