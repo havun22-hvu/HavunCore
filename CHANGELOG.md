@@ -12,9 +12,134 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 ### Planned
 - BunqService implementation
 - GmailService implementation
-- HasMemorialReference trait
-- Config file publicatie
-- PHPUnit test suite
+- Restore functionality for backup system
+- Quarterly test restore automation
+- Web dashboard for backup monitoring
+
+---
+
+## [0.6.0] - 2025-11-21
+
+### Added - Compliance-Proof Backup System 💾🔒
+
+**Context:** Enterprise-grade backup solution with 7-year retention (Belastingdienst compliance), offsite storage (Hetzner Storage Box), SHA256 checksums, and multi-project orchestration.
+
+#### New Services
+
+**BackupOrchestrator** - Central Backup Coordinator
+- Multi-project backup orchestration (HavunAdmin, Herdenkingsportaal, HavunCore)
+- Automatic backup execution with progress tracking
+- Health monitoring and status reporting
+- Checksum verification (SHA256)
+- Local + offsite storage (Hetzner Storage Box via SFTP)
+- Automatic cleanup of old hot backups (retention policy)
+- Audit trail logging to database
+
+**LaravelAppBackupStrategy** - Laravel Application Backups
+- MySQL database dumps (plain SQL for compliance)
+- Files backup (invoices, uploads, monuments, profiles)
+- .env configuration backup
+- Backup manifest with metadata
+- ZIP compression with optional AES-256 encryption
+- Progress logging
+
+#### New Models
+
+**BackupLog** - Backup Audit Trail
+- Complete backup metadata (project, date, size, checksum)
+- Storage location tracking (local + offsite)
+- Status monitoring (success/failed/partial)
+- Compliance retention tracking (7 years for fiscal data)
+- Formatted helpers (file size, age, status labels)
+
+**RestoreLog** - Restore Audit Trail
+- Restore event logging
+- Restore type tracking (production/test/archive)
+- Error tracking for failed restores
+
+**BackupTestLog** - Quarterly Test Tracking
+- Quarterly restore test logging
+- Test result tracking (pass/fail)
+- Checked items validation
+
+#### New Commands
+
+**havun:backup:run** - Execute Backups
+- Run backup for all projects or specific project
+- Dry-run mode for testing
+- Force mode to override checks
+- Beautiful CLI output with progress indicators
+
+**havun:backup:health** - Health Check
+- Monitor backup status for all projects
+- Age verification (<25 hours)
+- Priority-based alerting (critical/high/medium/low)
+- Visual status indicators
+
+**havun:backup:list** - List Backups
+- Show recent backups with filters
+- Project-based filtering
+- Status overview (success/failed)
+- Size and duration metrics
+
+#### Configuration
+
+**havun-backup.php** - Backup Configuration
+- Multi-project configuration (HavunAdmin, Herdenkingsportaal, HavunCore)
+- Storage settings (local + Hetzner Storage Box)
+- Retention policies (hot backups + 7-year archive)
+- Encryption settings (AES-256)
+- Compliance flags (Belastingdienst, GDPR)
+- Notification configuration
+
+#### Database Migrations
+
+- `havun_backup_logs` - Backup audit trail
+- `havun_restore_logs` - Restore tracking
+- `havun_backup_test_logs` - Quarterly test logging
+
+#### Dependencies
+
+- `league/flysystem-sftp-v3: ^3.0` - SFTP driver for Hetzner Storage Box
+
+#### Documentation
+
+**Complete Backup Documentation Set (~205 pages):**
+- `COMPLIANCE-BACKUP-ARCHITECTURE.md` - Architecture & compliance eisen
+- `MULTI-PROJECT-BACKUP-SYSTEM.md` - Multi-project setup & orchestration
+- `BACKUP-IMPLEMENTATION-GUIDE.md` - Step-by-step implementation
+- `HETZNER-STORAGE-BOX-SETUP.md` - Hetzner Storage Box setup (30 min)
+- `BACKUP-QUICK-START.md` - Quick overview & troubleshooting
+- `BACKUP-SYSTEM-OVERZICHT.md` - Complete system overview
+- `SETUP-BACKUP-IN-PROJECT.md` - Project-specific setup guide
+
+#### Features
+
+✅ **7-Year Retention** - Belastingdienst compliance
+✅ **Offsite Storage** - Hetzner Storage Box (€19/month for 5TB)
+✅ **SHA256 Checksums** - Integrity verification
+✅ **AES-256 Encryption** - Optional encryption for sensitive data
+✅ **Multi-Project** - HavunAdmin, Herdenkingsportaal, HavunCore
+✅ **Automated** - Daily/weekly via cron
+✅ **Monitoring** - Health checks + email alerts
+✅ **Audit Trail** - Complete backup/restore logging
+✅ **Compliance-Ready** - GDPR + Belastingdienst compliant
+
+#### Cost
+
+- Hetzner Storage Box BX30 (5TB): €19.04/month
+- 7-year total: €1,599.36
+- Per project per year: ~€57
+
+#### Implementation Status
+
+- ✅ Core infrastructure (migrations, models, services)
+- ✅ Backup strategies (Laravel apps)
+- ✅ Artisan commands (run, health, list)
+- ✅ Configuration and documentation
+- ⏳ Testing in HavunAdmin (pending)
+- ⏳ Testing in Herdenkingsportaal (pending)
+- ⏳ Production deployment (pending)
 
 ---
 
