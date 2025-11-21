@@ -72,9 +72,45 @@ class LaravelAppBackupStrategy implements BackupStrategyInterface
             throw new \Exception("Database name not configured for project: {$config['name']}");
         }
 
-        $outputPath = $tempDir . '/database.sql';
-
         Log::info("Backing up database: {$database}");
+
+        // Get database connection type from .env
+        $envPath = $config['paths']['root'] . '/.env';
+        $dbConnection = $this->parseDatabaseConnection($envPath);
+
+        if ($dbConnection === 'sqlite') {
+            $this->backupSQLiteDatabase($config, $tempDir);
+        } else {
+            $this->backupMySQLDatabase($config, $tempDir, $database);
+        }
+    }
+
+    /**
+     * Backup SQLite database (just copy the file)
+     */
+    protected function backupSQLiteDatabase(array $config, string $tempDir): void
+    {
+        $rootPath = $config['paths']['root'];
+        $dbPath = $rootPath . '/database/database.sqlite';
+
+        if (!file_exists($dbPath)) {
+            throw new \Exception("SQLite database file not found: {$dbPath}");
+        }
+
+        $outputPath = $tempDir . '/database.sqlite';
+        File::copy($dbPath, $outputPath);
+
+        Log::info("SQLite database backup completed", [
+            'size' => filesize($outputPath),
+        ]);
+    }
+
+    /**
+     * Backup MySQL database using mysqldump
+     */
+    protected function backupMySQLDatabase(array $config, string $tempDir, string $database): void
+    {
+        $outputPath = $tempDir . '/database.sql';
 
         // Get database credentials from .env of the target project
         $envPath = $config['paths']['root'] . '/.env';
@@ -107,10 +143,29 @@ class LaravelAppBackupStrategy implements BackupStrategyInterface
             throw new \Exception("Database dump file is empty or missing: {$outputPath}");
         }
 
-        Log::info("Database backup completed", [
+        Log::info("MySQL database backup completed", [
             'database' => $database,
             'size' => filesize($outputPath),
         ]);
+    }
+
+    /**
+     * Parse database connection type from .env file
+     */
+    protected function parseDatabaseConnection(string $envPath): string
+    {
+        if (!file_exists($envPath)) {
+            throw new \Exception(".env file not found: {$envPath}");
+        }
+
+        $env = file_get_contents($envPath);
+
+        // Parse DB_CONNECTION
+        if (preg_match('/DB_CONNECTION=(.*)/', $env, $matches)) {
+            return strtolower(trim($matches[1]));
+        }
+
+        return 'mysql'; // Default
     }
 
     /**
