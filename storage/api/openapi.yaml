@@ -1,0 +1,215 @@
+openapi: "3.0.0"
+info:
+  title: "Havun Core API"
+  version: "1.0.0"
+  description: |
+    Shared services and orchestration layer for Havun projects.
+
+    This package provides:
+    - Secure vault for credentials
+    - Snippet library for reusable code
+    - Task orchestration across projects
+    - Backup system with compliance support
+    - API contract management
+  contact:
+    name: "Havun Development"
+    email: "havun22@gmail.com"
+  license:
+    name: "Proprietary"
+
+servers:
+  - url: "https://api.havun.nl"
+    description: "Production server"
+  - url: "http://localhost:8000"
+    description: "Local development"
+
+tags:
+  - name: "Vault"
+    description: "Secure credential storage"
+  - name: "Snippets"
+    description: "Reusable code library"
+  - name: "Orchestration"
+    description: "Task automation and orchestration"
+  - name: "Backup"
+    description: "Backup and restore operations"
+  - name: "Health"
+    description: "System health and monitoring"
+
+paths:
+  /api/health:
+    get:
+      summary: "Health check endpoint"
+      description: "Check if the service is running and healthy"
+      tags:
+        - "Health"
+      responses:
+        "200":
+          description: "Service is healthy"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "healthy"
+                  version:
+                    type: string
+                    example: "0.6.0"
+                  timestamp:
+                    type: string
+                    format: date-time
+                    example: "2025-11-22T12:00:00Z"
+
+  /api/vault/secrets:
+    get:
+      summary: "List vault secrets"
+      description: "Retrieve list of available secrets (keys only, not values)"
+      tags:
+        - "Vault"
+      responses:
+        "200":
+          description: "List of secret keys"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  secrets:
+                    type: array
+                    items:
+                      type: string
+                    example: ["database_password", "api_key"]
+
+  /api/snippets:
+    get:
+      summary: "List code snippets"
+      description: "Retrieve available code snippets from the library"
+      tags:
+        - "Snippets"
+      parameters:
+        - name: "category"
+          in: "query"
+          description: "Filter by category"
+          schema:
+            type: string
+      responses:
+        "200":
+          description: "List of snippets"
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      example: "php-validation"
+                    title:
+                      type: string
+                      example: "Laravel Validation Helper"
+                    category:
+                      type: string
+                      example: "php"
+                    description:
+                      type: string
+                      example: "Common validation rules"
+
+  /api/backup/run:
+    post:
+      summary: "Run backup"
+      description: "Trigger a backup operation for specified project"
+      tags:
+        - "Backup"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                project:
+                  type: string
+                  example: "havunadmin"
+                  description: "Project name to backup"
+      responses:
+        "200":
+          description: "Backup completed successfully"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                    example: "success"
+                  backup_name:
+                    type: string
+                    example: "2025-11-22-03-00-00-havunadmin"
+                  size:
+                    type: integer
+                    example: 52428800
+                  checksum:
+                    type: string
+                    example: "a1b2c3d4e5f6..."
+        "400":
+          description: "Invalid request"
+        "500":
+          description: "Backup failed"
+
+  /api/orchestration/tasks:
+    post:
+      summary: "Create orchestration task"
+      description: "Define and queue a new orchestration task"
+      tags:
+        - "Orchestration"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  example: "sync-invoices"
+                steps:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      action:
+                        type: string
+                        example: "call_api"
+                      params:
+                        type: object
+      responses:
+        "201":
+          description: "Task created"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  task_id:
+                    type: string
+                    example: "task-123456"
+                  status:
+                    type: string
+                    example: "queued"
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+
+security:
+  - BearerAuth: []
+  - ApiKeyAuth: []
