@@ -58,7 +58,8 @@
 Host: u510616.your-storagebox.de
 User: u510616
 Pass: G63^C@GB&PD2#jCl#1uj
-Port: 23 (SFTP - na SSH activatie)
+Port: 23 (SFTP)
+Root: /home (Storage Box root directory)
 ```
 
 **Hetzner Console Login:**
@@ -178,14 +179,27 @@ ls -lh /var/www/havunadmin/production/storage/backups/havunadmin/hot/
 ls -lh /var/www/production/storage/backups/herdenkingsportaal/hot/
 ```
 
-### Offsite Backups Bekijken (na SSH activatie)
+### Offsite Backups Bekijken
 
 ```bash
 sftp -P 23 u510616@u510616.your-storagebox.de
-sftp> ls havun-backups/havunadmin/hot/
-sftp> ls havun-backups/herdenkingsportaal/hot/
+# Password: G63^C@GB&PD2#jCl#1uj
+
+sftp> ls -la havunadmin/archive/2025/11/
+sftp> ls -la herdenkingsportaal/archive/2025/11/
 sftp> bye
+
+# Of met sshpass (geautomatiseerd):
+sshpass -p 'G63^C@GB&PD2#jCl#1uj' sftp -P 23 u510616@u510616.your-storagebox.de <<EOF
+cd havunadmin/archive/2025/11
+ls -la
+bye
+EOF
 ```
+
+**Backup Locaties op Storage Box:**
+- HavunAdmin: `/home/havunadmin/archive/2025/11/`
+- Herdenkingsportaal: `/home/herdenkingsportaal/archive/2025/11/`
 
 ### Logs Bekijken
 
