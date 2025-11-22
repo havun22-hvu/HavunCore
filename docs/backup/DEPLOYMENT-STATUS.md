@@ -2,7 +2,7 @@
 
 **Datum:** 22 november 2025
 **Versie:** HavunCore v0.6.0
-**Status:** ✅ **LOKALE BACKUPS ACTIEF** | ⏳ **OFFSITE WACHT OP SSH ACTIVATIE**
+**Status:** 🟢 **100% PRODUCTIE** | ✅ **LOKAAL + OFFSITE ACTIEF**
 
 ---
 
@@ -39,12 +39,13 @@
 0 * * * * cd /var/www/production && php artisan havun:backup:health >> /var/log/havun-backup-health.log 2>&1
 ```
 
-### ⏳ Wacht Op Activatie
+### ✅ Offsite Backups Actief
 
-**Hetzner Storage Box - Offsite Backups:**
+**Hetzner Storage Box:**
 - Storage Box: `u510616.your-storagebox.de`
-- Status: **SSH/SFTP geblokkeerd** (Connection refused op port 22 & 23)
-- Actie vereist: SSH activeren in **Hetzner Console**
+- Status: **✅ ACTIEF** - SSH/SFTP verbinding succesvol
+- Laatste test: 22-11-2025 22:07 - Beide projecten uploaden naar offsite
+- SSH host key toegevoegd aan known_hosts
 
 ---
 
@@ -117,47 +118,35 @@ HERDENKINGSPORTAAL_DATABASE=herdenkingsportaal_prod
 
 ---
 
-## 🎯 Om Offsite Backups Te Activeren
+## ✅ Deployment Verificatie
 
-### Stap 1: SSH Activeren in Hetzner Console
+**Laatste backup test:** 22 november 2025, 22:07
 
-1. Login: https://console.hetzner.com
-2. Email: `havun22@gmail.com`
-3. Wachtwoord: `G63^C@GB&PD2#jCl#1uj`
-4. Navigeer naar: **Storage** → **Storage Box u510616**
-5. Klik: **"Settings"** of **"Change settings"**
-6. Enable: **"SSH Support"** (checkbox aanvinken)
-7. **Save**
-
-⏱️ **Wachttijd:** Het kan een paar minuten duren voordat SSH actief is.
-
-### Stap 2: Test Verbinding
-
-```bash
-# Van je lokale machine of vanaf server
-sftp -P 23 u510616@u510616.your-storagebox.de
-
-# Als het werkt:
-sftp> ls
-sftp> bye
 ```
+╔════════════════════════════════════════╗
+║   HavunCore Backup Orchestrator       ║
+╚════════════════════════════════════════╝
 
-### Stap 3: Test Backup Upload
-
-```bash
-ssh root@188.245.159.115
-cd /var/www/production
-php artisan havun:backup:run
-```
-
-**Verwacht resultaat:**
-```
 ──────────────────────────────────────
 Project: havunadmin
 Status:   ✅ Success
+Size:     17.15 KB
+Duration: 1.28s
 Local:    ✅
-Offsite:  ✅  ← Dit moet nu ✅ zijn!
+Offsite:  ✅
+
+──────────────────────────────────────
+Project: herdenkingsportaal
+Status:   ✅ Success
+Size:     221.5 KB
+Duration: 0.96s
+Local:    ✅
+Offsite:  ✅
+
+✅ All backups completed successfully!
 ```
+
+**Conclusie:** Beide projecten backuppen succesvol naar lokaal + Hetzner Storage Box!
 
 ---
 
@@ -317,21 +306,39 @@ tail -f /var/log/havun-backup-health.log
 
 ---
 
-## 🎉 Volgende Stappen
+## 🎉 Productie Status
 
-1. **NU:** Activeer SSH in Hetzner Console (2 minuten)
-2. **TEST:** Run `php artisan havun:backup:run` om offsite upload te testen
-3. **MONITOR:** Check dagelijkse email rapporten op havun22@gmail.com
-4. **QUARTERLY:** Test restore procedure (belangrijk!)
+**Deployment compleet:** 22 november 2025, 22:07
 
-**Status na SSH activatie:**
-- ✅ Lokale backups (30 dagen)
-- ✅ Offsite backups (7 jaar)
-- ✅ Compliance gedekt
-- ✅ Disaster recovery geregeld
+✅ **Lokale backups** - 30 dagen retention
+✅ **Offsite backups** - 7 jaar archief (Hetzner Storage Box)
+✅ **Compliance** - GDPR + Belastingdienst 7 jaar bewaarplicht
+✅ **Disaster recovery** - Geregeld
+✅ **Monitoring** - Cron jobs + health checks actief
+✅ **Automatisering** - Dagelijks om 03:00 + elk uur health check
+
+### Aanbevolen Acties
+
+1. **DAGELIJKS:** Check email rapporten op havun22@gmail.com
+2. **WEKELIJKS:** Run `php artisan havun:backup:health` handmatig
+3. **MAANDELIJKS:** Verifieer offsite storage via SFTP
+4. **QUARTERLY:** **Test restore procedure** (BELANGRIJK!)
+
+### Restore Test (Quarterly)
+
+```bash
+# 1. Download een backup
+sftp -P 23 u510616@u510616.your-storagebox.de
+sftp> get havun-backups/havunadmin/hot/latest.zip
+
+# 2. Test restore op staging
+php artisan havun:backup:restore --test
+
+# 3. Verifieer data integriteit
+```
 
 ---
 
-**Laatste update:** 2025-11-22 22:40
+**Laatste update:** 2025-11-22 22:07
 **Deployed by:** Claude Code
-**Status:** Productie (Lokaal ✅ | Offsite ⏳)
+**Status:** 🟢 **100% PRODUCTIE** (Lokaal ✅ | Offsite ✅)
