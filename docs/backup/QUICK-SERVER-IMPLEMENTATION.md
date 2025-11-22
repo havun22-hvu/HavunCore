@@ -40,10 +40,11 @@ nano config/filesystems.php
     'port' => 23,
     'username' => env('HETZNER_STORAGE_USERNAME'),
     'password' => env('HETZNER_STORAGE_PASSWORD'),
-    'root' => '/havun-backups/havunadmin',
+    'root' => '', // Empty = Storage Box /home directory
     'timeout' => 60,
     'directoryPerm' => 0755,
     'visibility' => 'private',
+    'throw' => false,
 ],
 
 'backups-local' => [
@@ -93,14 +94,15 @@ exit
 ```bash
 php artisan tinker
 
-# In tinker:
+# Test SFTP verbinding:
 $disk = Storage::disk('hetzner-storage-box');
-$disk->makeDirectory('/havun-backups');
-$disk->makeDirectory('/havun-backups/havunadmin');
-$disk->makeDirectory('/havun-backups/havunadmin/hot');
-$disk->makeDirectory('/havun-backups/havunadmin/archive');
-$disk->makeDirectory('/havun-backups/havunadmin/archive/2025');
+$disk->put('test.txt', 'Test from ' . now());
+echo $disk->exists('test.txt') ? "✅ Upload successful!\n" : "❌ Failed\n";
+$disk->delete('test.txt');
 exit
+
+# Directories worden automatisch aangemaakt door BackupOrchestrator
+# bij eerste backup run: /home/{project}/archive/{year}/{month}/
 ```
 
 **First backup:**
@@ -121,8 +123,10 @@ composer require league/flysystem-sftp-v3 "^3.0"
 
 **In filesystems.php, use:**
 ```php
-'root' => '/havun-backups/herdenkingsportaal',
+'root' => '', // Empty = Storage Box /home directory
 ```
+
+**Note:** BackupOrchestrator will automatically upload to `/home/herdenkingsportaal/archive/{year}/{month}/`
 
 **In .env, use:**
 ```env

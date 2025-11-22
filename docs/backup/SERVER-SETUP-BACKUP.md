@@ -60,10 +60,11 @@ return [
             'port' => 23, // Hetzner uses port 23 for SFTP
             'username' => env('HETZNER_STORAGE_USERNAME'),
             'password' => env('HETZNER_STORAGE_PASSWORD'),
-            'root' => '/havun-backups/havunadmin',
+            'root' => '', // Empty = Storage Box /home directory
             'timeout' => 60,
             'directoryPerm' => 0755,
             'visibility' => 'private',
+            'throw' => false,
         ],
 
         'backups-local' => [
@@ -82,8 +83,10 @@ Zelfde configuratie, maar met andere root:
 ```php
 'hetzner-storage-box' => [
     // ... same config ...
-    'root' => '/havun-backups/herdenkingsportaal',
+    'root' => '', // Empty = Storage Box /home directory
 ],
+
+// Note: BackupOrchestrator uploads to /home/{project}/archive/{year}/{month}/
 ```
 
 ---
