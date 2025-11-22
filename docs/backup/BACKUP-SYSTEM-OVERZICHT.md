@@ -421,7 +421,8 @@ php artisan havun:backup:restore --project=havunadmin --date=2019-05-15
 ### Hetzner Support
 
 - 🌐 Website: https://www.hetzner.com
-- 📖 Docs: https://docs.hetzner.com/robot/storage-box/
+- 🖥️ Console: https://console.hetzner.com
+- 📖 Docs: https://docs.hetzner.com/storage/storage-box/
 - 💬 Support: https://accounts.hetzner.com/support
 
 ---

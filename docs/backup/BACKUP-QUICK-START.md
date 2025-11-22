@@ -25,9 +25,10 @@
 ### Stap 1: Hetzner Storage Box (30 min)
 
 ```bash
-# 1. Bestel: https://robot.hetzner.com/storage
+# 1. Bestel: https://console.hetzner.com (Storage → Order Storage Box)
 # 2. Kies: BX30 (5TB) - €19,04/maand
-# 3. Test connectie:
+# 3. Activeer SSH Support in Hetzner Console (Settings)
+# 4. Test connectie:
 sftp -P 23 uXXXXXX@uXXXXXX.your-storagebox.de
 
 # 4. Maak directories:

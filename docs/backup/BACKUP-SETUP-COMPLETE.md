@@ -197,7 +197,7 @@ Checksum: 2a6b62ec9e81bb92...
 
 **Action Required:**
 1. Order Hetzner Storage Box BX30 (5TB) - €19.04/month
-2. Visit: https://robot.hetzner.com/storage
+2. Visit: https://console.hetzner.com (Storage → Order Storage Box)
 3. Update credentials in both projects:
    ```env
    HETZNER_STORAGE_HOST=u123456.your-storagebox.de

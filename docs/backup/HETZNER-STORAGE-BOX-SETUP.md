@@ -38,15 +38,17 @@ Hetzner Storage Box is een **betaalbare offsite backup storage oplossing** met:
 
 ## 📝 Stap 1: Bestellen Storage Box
 
-### 1.1 Ga naar Hetzner Robot
+### 1.1 Ga naar Hetzner Console
 
 ```
-https://robot.hetzner.com/storage
+https://console.hetzner.com
 ```
+
+**⚠️ BELANGRIJK:** Storage Boxes worden beheerd via **Hetzner Console**, niet via Robot!
 
 ### 1.2 Login/Registreer
 
-- Als je al een Hetzner account hebt (voor servers), login
+- Als je al een Hetzner account hebt, login
 - Anders: Registreer nieuw account
 
 ### 1.3 Bestel Storage Box
@@ -293,8 +295,9 @@ ssh-keygen -t ed25519 -f ~/.ssh/hetzner_storage_box -C "havun-backups"
 # 2. Bekijk public key
 cat ~/.ssh/hetzner_storage_box.pub
 
-# 3. Upload public key naar Storage Box via Hetzner Robot:
-# https://robot.hetzner.com/storage
+# 3. Upload public key naar Storage Box via Hetzner Console:
+# https://console.hetzner.com
+# → Ga naar: Storage → Storage Box
 # → Click op je Storage Box
 # → Tab: "SSH Keys"
 # → Add SSH key
@@ -329,12 +332,13 @@ HETZNER_STORAGE_PRIVATE_KEY=/home/youruser/.ssh/hetzner_storage_box
 
 Restrict Storage Box access to specific IPs:
 
-**In Hetzner Robot:**
-1. Go to Storage Box settings
-2. Tab: "Firewall"
-3. Add allowed IP: `188.245.159.115` (HavunAdmin server)
-4. Add allowed IP: `your-herdenkingsportaal-server-ip`
-5. Enable firewall
+**In Hetzner Console:**
+1. Login: https://console.hetzner.com
+2. Navigate to: Storage → Storage Box
+3. Click on your Storage Box
+4. Go to: "Firewall" or "Settings"
+5. Add allowed IP: `188.245.159.115` (Production server)
+6. Enable firewall
 
 **⚠️ Let op:** Als je IP verandert, moet je firewall updaten!
 
@@ -345,7 +349,7 @@ Restrict Storage Box access to specific IPs:
 **Use case:** Geef accountant/team member read-only access
 
 **Setup:**
-1. Hetzner Robot → Storage Box → "Sub-accounts"
+1. Hetzner Console → Storage → Storage Box → "Sub-accounts"
 2. Create sub-account (bijv. `accountant`)
 3. Set permissions: **Read-only**
 4. Share credentials met team member
@@ -391,11 +395,11 @@ fi
 
 ---
 
-### 6.2 Hetzner Robot Notifications
+### 6.2 Hetzner Console Notifications
 
 Enable email alerts:
 
-1. Hetzner Robot → Settings → Notifications
+1. Hetzner Console → Settings → Notifications
 2. Enable: "Storage Box usage >90%"
 3. Email: havun22@gmail.com
 
@@ -437,7 +441,7 @@ sftp> chmod 755 havun-backups
 ### Probleem: "Disk quota exceeded"
 
 **Oplossing:**
-- Check storage usage in Hetzner Robot
+- Check storage usage in Hetzner Console
 - Cleanup old backups: `php artisan havun:backup:cleanup`
 - Upgrade to larger Storage Box (BX40, BX60)
 
@@ -477,9 +481,9 @@ sftp> chmod 755 havun-backups
 ## 📞 Support
 
 **Hetzner Support:**
-- Docs: https://docs.hetzner.com/robot/storage-box/
+- Docs: https://docs.hetzner.com/storage/storage-box/
+- Console: https://console.hetzner.com
 - Support: https://accounts.hetzner.com/support
-- FAQ: https://docs.hetzner.com/robot/storage-box/faq/
 
 **Havun Support:**
 - Email: havun22@gmail.com
