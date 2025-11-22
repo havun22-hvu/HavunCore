@@ -1,19 +1,26 @@
 # 🔧 HavunCore - Shared Services Package
 
-**Centraal package voor gedeelde functionaliteit tussen Havun projecten**
+**v0.6.0** - Centraal package voor gedeelde functionaliteit tussen Havun projecten
+
+📚 **[Complete Documentation Index →](INDEX.md)**
 
 ---
 
-## 📦 Wat zit erin?
+## 📦 Features
 
-### **Services:**
-- **MemorialReferenceService** - Memorial UUID logic (eerste 12 chars)
-- **MollieService** - Mollie payment integration
-- **BunqService** - Bunq banking (TODO)
-- **GmailService** - Gmail integration (TODO)
+### **Core Services:**
+- **Backup System** - Multi-project backup met 7-jaar retention & compliance
+- **Vault** - Secure credential storage met encryptie
+- **Task Orchestration** - Cross-project task automation
+- **API Contracts** - Contract management & validation
+- **Snippet Library** - Reusable code snippets
+- **Push Notifications** - Real-time notification system
 
-### **Traits:**
-- **HasMemorialReference** - Voor models met memorial_reference field (TODO)
+### **Integration Services:**
+- **Memorial Reference** - Memorial UUID logic (12 chars)
+- **Mollie** - Payment integration
+- **Bunq** - Banking integration
+- **Gmail** - Email integration
 
 ---
 
@@ -120,23 +127,33 @@ if ($mollie->isPaid($payment)) {
 ## 📁 Project Structuur
 
 ```
-D:\GitHub\HavunCore/
-├── src/
-│   ├── Services/
-│   │   ├── MollieService.php
-│   │   ├── BunqService.php (TODO)
-│   │   ├── GmailService.php (TODO)
-│   │   └── MemorialReferenceService.php
-│   ├── Traits/
-│   │   └── HasMemorialReference.php (TODO)
-│   ├── Config/
-│   │   └── havun.php
-│   └── HavunCoreServiceProvider.php
-│
-├── composer.json
-├── README.md
-└── .gitignore
+HavunCore/
+├── src/                    # Source code
+│   ├── Commands/          # 20+ Artisan commands
+│   ├── Services/          # Core services (Vault, Backup, etc.)
+│   ├── Models/            # Database models
+│   └── Events/            # Event system
+├── docs/                  # 📚 Complete documentation
+│   ├── backup/           # Backup system docs
+│   ├── api/              # API documentation
+│   ├── setup/            # Setup guides
+│   ├── guides/           # Quick references
+│   ├── status/           # Status reports
+│   ├── testing/          # Test documentation
+│   └── claude/           # Claude AI guides
+├── storage/              # Storage & data
+│   ├── vault/           # Encrypted credentials
+│   ├── api/             # OpenAPI specs
+│   └── backups/         # Backup storage
+├── config/              # Configuration
+├── .github/workflows/   # CI/CD pipelines
+├── INDEX.md            # 📚 Documentation index
+├── ARCHITECTURE.md     # System architecture
+├── VISION.md           # Project vision
+└── CHANGELOG.md        # Version history
 ```
+
+**📖 See [INDEX.md](INDEX.md) for complete documentation navigation**
 
 ---
 
@@ -174,14 +191,15 @@ php artisan cache:clear
 
 ---
 
-## 🎯 TODO
+## 📚 Documentation
 
-- [ ] BunqService implementeren
-- [ ] GmailService implementeren
-- [ ] HasMemorialReference trait
-- [ ] Unit tests toevoegen
-- [ ] Config file publiceren
-- [ ] Laravel Service Provider afmaken
+**Quick Links:**
+- 📖 [Complete Index](INDEX.md) - All documentation organized
+- 🏗️ [Architecture](ARCHITECTURE.md) - System design
+- 🎯 [Vision](VISION-HAVUNCORE-ORCHESTRATION.md) - Project goals
+- 💾 [Backup System](docs/backup/BACKUP-SYSTEM-OVERZICHT.md) - Backup overview
+- 🔌 [API Reference](docs/api/API-REFERENCE.md) - API docs
+- ⚙️ [Setup Guide](docs/setup/SETUP.md) - Installation
 
 ---
 
@@ -191,6 +209,6 @@ Proprietary - Alleen voor Havun projecten
 
 ---
 
-**Versie:** 0.1.0-dev
+**Versie:** 0.6.0
 **Auteur:** Henk van Velzen
-**Laatste update:** {{ date }}
+**Laatste update:** 2025-11-22
