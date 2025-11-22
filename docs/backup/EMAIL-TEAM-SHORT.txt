@@ -1,0 +1,38 @@
+Onderwerp: ✅ Automatische Backups Nu Actief
+
+Beste team,
+
+Vanaf vandaag worden alle HavunAdmin en Herdenkingsportaal gegevens automatisch geback-upt.
+
+WAT:
+✅ Volledige database (facturen, klanten, monumenten, betalingen)
+✅ Alle bestanden (PDFs, afbeeldingen, uploads)
+✅ Configuratie
+
+WANNEER:
+📅 Dagelijks om 03:00 uur
+📁 30 dagen lokaal + 7 jaar offsite (Hetzner Storage Box)
+
+BEVEILIGING:
+🔒 AES-256 encryptie
+🌍 EU datacenter (GDPR compliant)
+✅ Automatische monitoring
+
+COMPLIANCE:
+✅ Belastingdienst 7 jaar bewaarplicht - gedekt
+✅ GDPR - voldaan
+✅ Disaster recovery - geregeld
+
+KOSTEN:
+€3.87/maand (€46.44/jaar)
+
+ACTIE VEREIST:
+Geen! Alles is volledig geautomatiseerd.
+
+Bij vragen: havun22@gmail.com
+
+Met vriendelijke groet,
+HavunCore Backup System
+
+---
+Deployment: 22 november 2025 | Status: LIVE
