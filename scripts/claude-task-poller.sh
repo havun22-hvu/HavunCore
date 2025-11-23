@@ -21,7 +21,24 @@ set -e
 PROJECT_NAME="${1:-havuncore}"
 API_BASE_URL="${2:-https://havunadmin.havun.nl/api/claude/tasks}"
 POLL_INTERVAL=30  # seconds
-PROJECT_PATH="/var/www/development/${PROJECT_NAME^}"  # Capitalize first letter
+
+# Map project names to correct directory names
+case "$PROJECT_NAME" in
+    "havuncore")
+        PROJECT_DIR="HavunCore"
+        ;;
+    "havunadmin")
+        PROJECT_DIR="HavunAdmin"
+        ;;
+    "herdenkingsportaal")
+        PROJECT_DIR="Herdenkingsportaal"
+        ;;
+    *)
+        PROJECT_DIR="${PROJECT_NAME^}"  # Fallback: capitalize first letter
+        ;;
+esac
+
+PROJECT_PATH="/var/www/development/${PROJECT_DIR}"
 LOG_FILE="/var/log/claude-task-poller-${PROJECT_NAME}.log"
 
 # Colors for output
