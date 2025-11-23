@@ -1,0 +1,20 @@
+[Unit]
+Description=Claude Task Poller for %i
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/development
+ExecStart=/var/www/development/HavunCore/scripts/claude-task-poller.sh %i https://havunadmin.havun.nl/api/claude/tasks
+Restart=always
+RestartSec=10
+StandardOutput=append:/var/log/claude-task-poller-%i.log
+StandardError=append:/var/log/claude-task-poller-%i-error.log
+
+# Security settings
+PrivateTmp=yes
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=multi-user.target
