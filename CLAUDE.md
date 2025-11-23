@@ -5,6 +5,28 @@
 
 ---
 
+## 📢 Communication Rules (IMPORTANT!)
+
+**Keep responses SHORT & FOCUSED:**
+- ❌ Long answers (>50 lines) - user reads first half only
+- ✅ Short & powerful (max 20-30 lines)
+- ✅ Use bullet points
+- ✅ Direct to the point
+- ⚠️ If long answer needed:
+  1. Give summary first (5-10 lines)
+  2. Ask: "Need details on X, Y, or Z?"
+  3. Then provide details on request
+
+**Why:** User often sees questions in first half, chat continues, second half never read = wasted tokens
+
+**Workflow Preference:**
+- 🏠 **Solo projects:** Work locally (D:\GitHub\)
+- ⬆️ **Always push** to server after commits
+- 📱 **On the road:** Use HavunCore webapp → server
+- 🏖️ **Vacation:** USB stick (after git pull locally)
+
+---
+
 ## 🎯 Current Status
 
 **LATEST DEPLOYMENT - 23 November 2025**
