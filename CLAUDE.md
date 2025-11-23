@@ -1,19 +1,24 @@
 # 🤖 Claude Session Guide - HavunCore
 
-**Last Updated:** 2025-11-22 22:30
-**Status:** ✅ **PRODUCTION - Backup System v0.6.0 LIVE**
+**Last Updated:** 2025-11-23 02:00
+**Status:** ✅ **PRODUCTION - Backup System v0.6.0 + Task Queue v1.0 LIVE**
 
 ---
 
 ## 🎯 Current Status
 
-**DEPLOYMENT COMPLETE - 22 November 2025**
+**LATEST DEPLOYMENT - 23 November 2025**
 
 ✅ **HavunCore v0.6.0** deployed to production
 ✅ **Backup system** fully operational
 ✅ **Offsite backups** working (Hetzner Storage Box)
 ✅ **Cron jobs** configured (daily 03:00)
 ✅ **Compliance** achieved (7-year retention)
+✅ **🚀 NEW: Task Queue System** operational - remote code execution from mobile!
+
+**PREVIOUS DEPLOYMENT - 22 November 2025**
+
+✅ Backup system v0.6.0 deployed
 
 ---
 
@@ -56,6 +61,47 @@ Password: QUfTHO0hjdagrLgW10zIWLGjJelGBtrvG915IzFqIDE=
 ⚠️ CRITICAL: Without this password, backups CANNOT be restored!
 Store securely in password manager.
 ```
+
+### 🚀 Task Queue System (NEW!)
+
+**What is it:** Remote code execution from mobile/web via API + automated poller
+
+**API Endpoint:**
+```
+https://havunadmin.havun.nl/api/claude/tasks
+```
+
+**Create a task from mobile:**
+```bash
+curl -X POST "https://havunadmin.havun.nl/api/claude/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project": "havuncore",
+    "task": "Update README with version info",
+    "priority": "normal",
+    "created_by": "mobile"
+  }'
+```
+
+**Check tasks:**
+```bash
+# Pending tasks
+curl "https://havunadmin.havun.nl/api/claude/tasks/pending/havuncore"
+
+# All tasks
+curl "https://havunadmin.havun.nl/api/claude/tasks?project=havuncore"
+```
+
+**Server Poller:**
+- Service: `claude-task-poller@havuncore.service`
+- Status: `systemctl status claude-task-poller@havuncore`
+- Logs: `/var/log/claude-task-poller-havuncore.log`
+- Polls every 30 seconds
+- Auto-commits and pushes to GitHub
+
+**Full Documentation:** `docs/TASK-QUEUE-SYSTEM.md`
+
+**Use Case:** On vacation or in the car? Create tasks via mobile Claude app and the server executes them automatically!
 
 ---
 
