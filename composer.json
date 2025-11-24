@@ -1,8 +1,8 @@
 {
     "name": "havun/core",
-    "description": "Shared services for Havun projects - Mollie, Bunq, Gmail, Memorial Reference logic, Backup System",
-    "type": "library",
-    "version": "0.6.0",
+    "description": "HavunCore - Central orchestration platform and shared services for Havun projects",
+    "type": "project",
+    "version": "1.0.0",
     "license": "proprietary",
     "authors": [
         {
@@ -11,31 +11,61 @@
         }
     ],
     "require": {
-        "php": "^8.1",
-        "illuminate/support": "^10.0|^11.0|^12.0",
-        "guzzlehttp/guzzle": "^7.0",
+        "php": "^8.2",
+        "guzzlehttp/guzzle": "^7.8",
+        "laravel/framework": "^11.0",
+        "laravel/tinker": "^2.9",
         "league/flysystem-sftp-v3": "^3.0"
     },
     "require-dev": {
-        "phpunit/phpunit": "^10.0"
+        "fakerphp/faker": "^1.23",
+        "laravel/pint": "^1.13",
+        "mockery/mockery": "^1.6",
+        "nunomaduro/collision": "^8.0",
+        "phpunit/phpunit": "^11.0"
     },
     "autoload": {
         "psr-4": {
-            "Havun\\Core\\": "src/"
+            "Havun\Core\\": "src/",
+            "App\\": "app/",
+            "Database\Factories\\": "database/factories/",
+            "Database\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Havun\\Core\\Tests\\": "tests/"
+            "Tests\\": "tests/"
         }
+    },
+    "scripts": {
+        "post-autoload-dump": [
+            "Illuminate\Foundation\ComposerScripts::postAutoloadDump",
+            "@php artisan package:discover --ansi"
+        ],
+        "post-update-cmd": [
+            "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
+        ],
+        "post-root-package-install": [
+            "@php -r \"file_exists('.env') || copy('.env.example', '.env');\""
+        ],
+        "post-create-project-cmd": [
+            "@php artisan key:generate --ansi"
+        ]
     },
     "extra": {
         "laravel": {
-            "providers": [
-                "Havun\\Core\\HavunCoreServiceProvider"
-            ]
+            "dont-discover": []
         }
     },
-    "minimum-stability": "dev",
+    "config": {
+        "optimize-autoloader": true,
+        "preferred-install": "dist",
+        "sort-packages": true,
+        "allow-plugins": {
+            "pestphp/pest-plugin": true,
+            "php-http/discovery": true
+        }
+    },
+    "minimum-stability": "stable",
     "prefer-stable": true
 }
