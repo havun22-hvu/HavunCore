@@ -1,7 +1,39 @@
 # 🤖 Claude Session Guide - HavunCore
 
-**Last Updated:** 2025-11-23 02:00
+**Last Updated:** 2025-11-24
 **Status:** ✅ **PRODUCTION - Backup System v0.6.0 + Task Queue v1.0 LIVE**
+
+---
+
+## 🚨 SECURITY RULES - READ FIRST! (KRITIEK!)
+
+**⚠️ INCIDENT:** 23 nov 2025 - SSH key aangemaakt zonder overleg → Eigenaar schrok, Herdenkingsportaal kon niet meer pushen. Zie: `SECURITY-INCIDENT-SSH-KEY.md`
+
+### 🔴 ABSOLUUT VERBODEN zonder expliciete toestemming:
+
+1. **SSH keys** aanmaken/wijzigen/verwijderen
+2. **GitHub credentials** wijzigen
+3. **Server credentials** aanpassen (.env secrets, API keys, passwords)
+4. **Deployment configuratie** wijzigen (systemd services, cron jobs)
+5. **Firewall/security** regels aanpassen
+6. **Gebruikersrechten** wijzigen
+7. **Database migrations** runnen op productie
+8. **Composer/npm** packages installeren zonder check
+
+### ✅ BIJ TWIJFEL:
+
+**STOP → VRAAG EERST → WACHT OP TOESTEMMING**
+
+Vuistregel: *"Raakt het credentials, keys, of systeemtoegang? → VRAAG EERST"*
+
+### 📢 COMMUNICATIE VERPLICHT:
+
+**Bij elke systeemwijziging:**
+1. Vraag toestemming VOORAF
+2. Leg uit WAT en WAAROM
+3. Informeer andere projecten NA afloop (HavunAdmin, Herdenkingsportaal, VPDUpdate)
+
+**Dit mag NOOIT meer gebeuren!**
 
 ---
 
