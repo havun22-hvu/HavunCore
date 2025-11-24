@@ -188,15 +188,24 @@ php artisan config:clear
 
 **Use Case:** On vacation or in the car? Create tasks via mobile Claude app, server executes in staging, you test, then deploy to production!
 
-**⚠️ NEVER WORK DIRECTLY IN PRODUCTION FOR:**
+**🚫 TASK QUEUE ABSOLUTE RESTRICTIONS:**
+
+**NEVER via Task Queue (TOO CRITICAL):**
+- ❌ **HavunCore** - Core dependency, breaks ALL projects if broken!
+  - ONLY edit locally (D:\GitHub\HavunCore)
+  - Manual git push after testing
+  - Too risky for automation
+
+**NEVER work directly in production:**
 - ❌ Herdenkingsportaal (live customer site, payments!)
 - ❌ HavunAdmin (live business site, invoicing!)
 - ❌ Any client/host sites
 
-**✅ MAY work directly in production for:**
-- ✅ HavunCore (internal package, no live users)
-- ✅ Documentation updates (low risk)
-- ⚠️ ALWAYS test first in staging when possible!
+**✅ Task Queue may work in STAGING for:**
+- ✅ Herdenkingsportaal staging
+- ✅ HavunAdmin staging
+- ✅ Client sites staging
+- ⚠️ Test before deploying to production!
 
 ---
 
