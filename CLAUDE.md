@@ -85,9 +85,15 @@ Server: 188.245.159.115
 User: root
 Access: SSH key authentication
 
-Projects:
-- HavunAdmin: /var/www/havunadmin/production
-- Herdenkingsportaal: /var/www/production
+Projects Structure:
+- HavunAdmin Staging:        /var/www/havunadmin/staging
+- HavunAdmin Production:      /var/www/havunadmin/production
+- Herdenkingsportaal Staging: /var/www/staging
+- Herdenkingsportaal Production: /var/www/production
+
+⚠️ CRITICAL WORKFLOW RULE:
+Task Queue MUST work in STAGING only!
+Never work directly in production paths!
 ```
 
 ### Hetzner Storage Box
@@ -120,6 +126,15 @@ Store securely in password manager.
 
 **What is it:** Remote code execution from mobile/web via API + automated poller
 
+**⚠️ CRITICAL WORKFLOW - STAGING FIRST:**
+```
+1. Task Queue works in STAGING (/var/www/.../staging)
+2. Test changes in staging environment
+3. If OK: Push staging → GitHub
+4. Pull GitHub → Production
+5. Later: Pull GitHub → Local (thuis)
+```
+
 **API Endpoint:**
 ```
 https://havunadmin.havun.nl/api/claude/tasks
@@ -146,16 +161,42 @@ curl "https://havunadmin.havun.nl/api/claude/tasks/pending/havuncore"
 curl "https://havunadmin.havun.nl/api/claude/tasks?project=havuncore"
 ```
 
-**Server Poller:**
+**Server Poller Configuration:**
 - Service: `claude-task-poller@havuncore.service`
 - Status: `systemctl status claude-task-poller@havuncore`
 - Logs: `/var/log/claude-task-poller-havuncore.log`
 - Polls every 30 seconds
 - Auto-commits and pushes to GitHub
+- **MUST be configured to work in staging paths!**
+
+**Deploy to Production:**
+```bash
+# After testing in staging:
+ssh root@188.245.159.115
+
+# Production pull from GitHub
+cd /var/www/havunadmin/production
+git pull origin master
+php artisan config:clear
+
+cd /var/www/production
+git pull origin master
+php artisan config:clear
+```
 
 **Full Documentation:** `docs/TASK-QUEUE-SYSTEM.md`
 
-**Use Case:** On vacation or in the car? Create tasks via mobile Claude app and the server executes them automatically!
+**Use Case:** On vacation or in the car? Create tasks via mobile Claude app, server executes in staging, you test, then deploy to production!
+
+**⚠️ NEVER WORK DIRECTLY IN PRODUCTION FOR:**
+- ❌ Herdenkingsportaal (live customer site, payments!)
+- ❌ HavunAdmin (live business site, invoicing!)
+- ❌ Any client/host sites
+
+**✅ MAY work directly in production for:**
+- ✅ HavunCore (internal package, no live users)
+- ✅ Documentation updates (low risk)
+- ⚠️ ALWAYS test first in staging when possible!
 
 ---
 
@@ -166,6 +207,8 @@ curl "https://havunadmin.havun.nl/api/claude/tasks?project=havuncore"
 **Local Backups (30 days):**
 - HavunAdmin: `/var/www/havunadmin/production/storage/backups/havunadmin/hot/`
 - Herdenkingsportaal: `/var/www/production/storage/backups/herdenkingsportaal/hot/`
+
+**Note:** Backups run from production (data safety), Task Queue works in staging (code safety)!
 
 **Offsite Backups (7 years):**
 - HavunAdmin: `/home/havunadmin/archive/2025/11/` (on Storage Box)
