@@ -1,214 +1,291 @@
-# 🔧 HavunCore - Shared Services Package
+# 🚀 HavunCore - Central Orchestration Platform
 
-**v0.6.0** - Centraal package voor gedeelde functionaliteit tussen Havun projecten
+**v1.0.0** - Standalone Laravel 11 Application voor centrale coördinatie van alle Havun projecten
 
 📚 **[Complete Documentation Index →](INDEX.md)**
 
 ---
 
-## 📦 Features
+## 🎯 What is HavunCore?
 
-### **Core Services:**
-- **Backup System** - Multi-project backup met 7-jaar retention & compliance
-- **Vault** - Secure credential storage met encryptie
-- **Task Orchestration** - Cross-project task automation
-- **API Contracts** - Contract management & validation
-- **Snippet Library** - Reusable code snippets
-- **Push Notifications** - Real-time notification system
+**Central orchestration platform** die alle Havun projecten coördineert:
+- **Task Queue API** - Remote code execution voor HavunAdmin & Herdenkingsportaal
+- **Backup Orchestration** - Multi-project backups met 7-jaar compliance
+- **Shared Services** - Vault, API contracts, push notifications
+- **Integration Hub** - Mollie, Bunq, Gmail services
 
-### **Integration Services:**
-- **Memorial Reference** - Memorial UUID logic (12 chars)
-- **Mollie** - Payment integration
-- **Bunq** - Banking integration
-- **Gmail** - Email integration
+**Live:** https://havuncore.havun.nl
 
 ---
 
-## 🚀 Installatie
+## 🏗️ Architecture
 
-### **Lokale Development (Path Repository)**
+### **Standalone Laravel 11 App** (since 25-nov-2025)
+Previously a Composer package, now a full Laravel application with:
+- Own database: `havuncore`
+- Web interface: https://havuncore.havun.nl
+- SSL: Let's Encrypt
+- Server: `/var/www/development/HavunCore`
 
-**In je project (Herdenkingsportaal, HavunAdmin, IDSee):**
+### **Why the transformation?**
+HavunCore is the central orchestrator for all projects. It made no sense for HavunAdmin (accounting software) to host the Task Queue API. HavunCore now coordinates everything from a central position.
 
-```json
-// composer.json
-{
-  "repositories": [
-    {
-      "type": "path",
-      "url": "../HavunCore"
-    }
-  ],
-  "require": {
-    "havun/core": "@dev"
-  }
-}
-```
+---
+
+## 📦 Core Features
+
+### 🔄 Task Queue System
+**Remote code execution via API + automated pollers**
 
 ```bash
-composer install
+# Create task from mobile/web
+curl -X POST "https://havuncore.havun.nl/api/claude/tasks" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "project": "havunadmin",
+    "task": "Update dashboard metrics",
+    "priority": "normal"
+  }'
+
+# Check pending tasks
+curl "https://havuncore.havun.nl/api/claude/tasks/pending/havunadmin"
 ```
 
-### **Via GitHub (Later - als package stable is)**
+**Active Pollers:**
+- ✅ `havunadmin` - Checks every 30s
+- ✅ `herdenkingsportaal` - Checks every 30s
+
+**Use case:** On vacation or mobile? Create tasks via API, server executes automatically!
+
+---
+
+### 💾 Backup System
+**Enterprise-grade backup met 7-year retention**
+
+**Features:**
+- Multi-project orchestration (HavunAdmin, Herdenkingsportaal)
+- Local + offsite storage (Hetzner Storage Box)
+- AES-256 encryption
+- SHA256 checksums
+- Automated cleanup
+- Compliance logging
 
 ```bash
-composer require havun/core
+# Health check
+php artisan havun:backup:health
+
+# Manual backup
+php artisan havun:backup:run
+
+# List backups
+php artisan havun:backup:list
+```
+
+**Automated:** Daily backups at 03:00 UTC via cron
+
+---
+
+### 🔐 Vault Service
+**Secure credential storage**
+
+Store API keys, passwords, secrets encrypted in database:
+
+```php
+use Havun\Core\Services\VaultService;
+
+$vault = new VaultService();
+
+// Store secret
+$vault->store('mollie.api_key', 'test_abc123');
+
+// Retrieve secret
+$apiKey = $vault->get('mollie.api_key');
 ```
 
 ---
 
-## 💻 Gebruik
-
-### **Memorial Reference Service**
-
-```php
-use Havun\Core\Services\MemorialReferenceService;
-
-$service = new MemorialReferenceService();
-
-// Extract from text
-$reference = $service->extractMemorialReference('Betaling voor 550e8400e29b');
-// → "550e8400e29b"
-
-// Validate
-$valid = $service->isValidReference('550e8400e29b');
-// → true
-
-// From full UUID
-$reference = $service->fromUuid('550e8400-e29b-41d4-a716-446655440000');
-// → "550e8400e29b"
-
-// Format for display
-$formatted = $service->formatReference('550e8400e29b');
-// → "550e-8400-e29b"
-```
-
-### **Mollie Service**
+### 🔔 Push Notifications
+**Real-time notifications voor gebruikers**
 
 ```php
-use Havun\Core\Services\MollieService;
+use Havun\Core\Services\PushNotificationService;
 
-$mollie = new MollieService(env('MOLLIE_API_KEY'));
+$service = new PushNotificationService();
 
-// Create payment with memorial reference
-$payment = $mollie->createPayment(
-    amount: 19.95,
-    description: 'Monument Opa Jan',
-    memorialReference: '550e8400e29b',
-    redirectUrl: 'https://example.com/return',
-    webhookUrl: 'https://example.com/webhook'
+// Send notification
+$service->sendPushNotification(
+    user: $user,
+    title: 'Betaling ontvangen',
+    body: 'Monument actief voor €19,95',
+    data: ['memorial_id' => 123]
 );
-
-// Get payment
-$payment = $mollie->getPayment('tr_WDqYK6vllg');
-
-// Extract memorial reference
-$reference = $mollie->extractMemorialReference($payment);
-
-// List recent payments
-$payments = $mollie->listPayments(limit: 20);
-
-// Check if paid
-if ($mollie->isPaid($payment)) {
-    // Payment successful!
-}
 ```
 
 ---
 
-## 🔗 Projecten die HavunCore gebruiken
+## 🛠️ Deployment
 
-- **Herdenkingsportaal** - Memorial website (Laravel)
-- **HavunAdmin** - Bedrijfsadministratie (Laravel)
-- **IDSee** - Consultancy project (Laravel)
+### Production Server
+
+```
+Server: 188.245.159.115
+Path: /var/www/development/HavunCore
+Database: havuncore (user: havuncore)
+URL: https://havuncore.havun.nl
+```
+
+### Deploy Changes
+
+```bash
+# Local changes
+cd D:\GitHub\HavunCore
+git add .
+git commit -m "Description"
+git push
+
+# Server update
+ssh root@188.245.159.115
+cd /var/www/development/HavunCore
+git pull origin master
+php artisan config:clear
+php artisan migrate
+```
 
 ---
 
-## 📁 Project Structuur
+## 📊 Artisan Commands
+
+### Backup Commands
+```bash
+php artisan havun:backup:run           # Run backup
+php artisan havun:backup:health        # Health check
+php artisan havun:backup:list          # List all backups
+```
+
+### Task Queue Commands
+```bash
+php artisan havun:task:create          # Create task
+php artisan havun:task:list            # List tasks
+php artisan havun:task:status {id}     # Task status
+```
+
+### Vault Commands
+```bash
+php artisan havun:vault:set {key}      # Store secret
+php artisan havun:vault:get {key}      # Retrieve secret
+php artisan havun:vault:list           # List all keys
+```
+
+### Notification Commands
+```bash
+php artisan havun:push:send            # Send test notification
+php artisan havun:push:test            # Test configuration
+```
+
+---
+
+## 🔗 Connected Projects
+
+HavunCore orchestrates:
+- **HavunAdmin** - Accounting system (`/var/www/havunadmin/production`)
+- **Herdenkingsportaal** - Memorial portal (`/var/www/production`)
+- **VPDUpdate** - Update service (`/var/www/vpdupdate`)
+
+---
+
+## 📁 Project Structure
 
 ```
 HavunCore/
-├── src/                    # Source code
-│   ├── Commands/          # 20+ Artisan commands
-│   ├── Services/          # Core services (Vault, Backup, etc.)
-│   ├── Models/            # Database models
-│   └── Events/            # Event system
-├── docs/                  # 📚 Complete documentation
-│   ├── backup/           # Backup system docs
-│   ├── api/              # API documentation
-│   ├── setup/            # Setup guides
-│   ├── guides/           # Quick references
-│   ├── status/           # Status reports
-│   ├── testing/          # Test documentation
-│   └── claude/           # Claude AI guides
-├── storage/              # Storage & data
-│   ├── vault/           # Encrypted credentials
-│   ├── api/             # OpenAPI specs
-│   └── backups/         # Backup storage
-├── config/              # Configuration
-├── .github/workflows/   # CI/CD pipelines
-├── INDEX.md            # 📚 Documentation index
-├── ARCHITECTURE.md     # System architecture
-├── VISION.md           # Project vision
-└── CHANGELOG.md        # Version history
-```
-
-**📖 See [INDEX.md](INDEX.md) for complete documentation navigation**
-
----
-
-## 🔄 Development Workflow
-
-### **Wijzigingen maken in HavunCore:**
-
-```bash
-# 1. Edit code in HavunCore
-cd D:\GitHub\HavunCore
-# ... edit files ...
-
-# 2. Commit + push
-git add .
-git commit -m "Add Bunq service"
-git push
-
-# 3. Update in dependent projects
-cd D:\GitHub\Herdenkingsportaal
-composer update havun/core
-
-# HavunCore wijzigingen zijn nu beschikbaar!
-```
-
-### **Test wijzigingen lokaal:**
-
-```bash
-# In project (bijv. Herdenkingsportaal):
-composer update havun/core
-
-# Laravel cache clear
-php artisan config:clear
-php artisan cache:clear
+├── app/
+│   ├── Http/Controllers/Api/  # Task Queue API
+│   ├── Models/                # ClaudeTask, BackupLog, etc.
+│   └── Console/Commands/      # 20+ Artisan commands
+├── database/
+│   └── migrations/            # Database schema
+├── routes/
+│   ├── api.php               # API endpoints
+│   └── web.php               # Web routes
+├── scripts/
+│   ├── claude-task-poller.sh       # Poller script
+│   └── claude-task-poller.service  # Systemd service
+├── storage/
+│   ├── vault/                # Encrypted credentials
+│   ├── backups/              # Backup storage
+│   └── api/                  # OpenAPI specs
+├── docs/                     # Documentation
+│   ├── backup/              # Backup docs
+│   ├── api/                 # API reference
+│   └── setup/               # Setup guides
+├── config/
+│   ├── havun-backup.php     # Backup config
+│   └── filesystems.php      # Hetzner Storage Box
+├── bootstrap/app.php         # Laravel bootstrap
+├── artisan                   # CLI entry point
+├── CLAUDE.md                # Claude session guide
+├── ARCHITECTURE.md          # System design
+├── CHANGELOG.md             # Version history
+└── INDEX.md                 # Documentation index
 ```
 
 ---
 
 ## 📚 Documentation
 
-**Quick Links:**
-- 📖 [Complete Index](INDEX.md) - All documentation organized
-- 🏗️ [Architecture](ARCHITECTURE.md) - System design
-- 🎯 [Vision](VISION-HAVUNCORE-ORCHESTRATION.md) - Project goals
-- 💾 [Backup System](docs/backup/BACKUP-SYSTEM-OVERZICHT.md) - Backup overview
+**Essential Guides:**
+- 🤖 [CLAUDE.md](CLAUDE.md) - Claude Code session guide
+- 🏗️ [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
+- 📖 [INDEX.md](INDEX.md) - Complete documentation index
+- 💾 [Backup System](docs/backup/) - Backup documentation
 - 🔌 [API Reference](docs/api/API-REFERENCE.md) - API docs
-- ⚙️ [Setup Guide](docs/setup/SETUP.md) - Installation
 
 ---
 
-## 📖 Licentie
+## ⚙️ System Services
 
-Proprietary - Alleen voor Havun projecten
+### Poller Services
+```bash
+# Status
+systemctl status claude-task-poller@havunadmin
+systemctl status claude-task-poller@herdenkingsportaal
+
+# Logs
+tail -f /var/log/claude-task-poller-havunadmin.log
+journalctl -u claude-task-poller@havunadmin -f
+
+# Restart
+systemctl restart claude-task-poller@havunadmin
+```
+
+### Cron Jobs
+```
+0 3 * * * php artisan havun:backup:run    # Daily backups
+0 * * * * php artisan havun:backup:health # Hourly health check
+```
 
 ---
 
-**Versie:** 0.6.0
-**Auteur:** Henk van Velzen
-**Laatste update:** 2025-11-22
+## 🔒 Security
+
+**⚠️ HavunCore is CRITICAL - Breaking it breaks ALL projects!**
+
+**Editing Policy:**
+- ✅ ONLY edit locally (D:\GitHub\HavunCore)
+- ✅ Test thoroughly before pushing
+- ✅ Manual git push after testing
+- ❌ NEVER via Task Queue (too risky)
+
+See [CLAUDE.md](CLAUDE.md) for complete security rules.
+
+---
+
+## 📖 License
+
+Proprietary - Havun projects only
+
+---
+
+**Version:** 1.0.0
+**Last Updated:** 2025-11-25
+**Author:** Henk van Velzen
+**Production:** https://havuncore.havun.nl

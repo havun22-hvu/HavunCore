@@ -15,6 +15,60 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Restore functionality for backup system
 - Quarterly test restore automation
 - Web dashboard for backup monitoring
+- Task Queue web interface
+
+---
+
+## [1.0.0] - 2025-11-25
+
+### 🚀 MAJOR TRANSFORMATION - Composer Package → Standalone Laravel App
+
+**Breaking Change:** HavunCore is nu een standalone Laravel 11 application (was Composer package)
+
+#### Why the Change?
+HavunCore is the **central orchestration platform** that coordinates all Havun projects. It makes no sense for HavunAdmin (accounting software) to host the Task Queue API. HavunCore now has its own:
+- Database (`havuncore`)
+- Web interface (https://havuncore.havun.nl)
+- SSL certificate (Let's Encrypt)
+- Deployment path (`/var/www/development/HavunCore`)
+
+#### Added
+- **Standalone Laravel 11 App** - Full framework installation with own database
+- **Task Queue API** - Migrated from HavunAdmin to HavunCore (where it belongs!)
+- **Web Interface** - https://havuncore.havun.nl with SSL
+- **Database** - MySQL `havuncore` with dedicated user
+- **API Routes** - `/api/claude/tasks` endpoints
+- **Poller Scripts** - Updated to use HavunCore API (was HavunAdmin)
+- **Base Controller** - Added missing Laravel 11 Controller class
+- **Nginx Config** - Virtual host for havuncore.havun.nl
+- **Storage Structure** - Laravel framework directories (sessions, views, cache)
+
+#### Changed
+- **API Endpoint** - `havunadmin.havun.nl/api/claude/tasks` → `havuncore.havun.nl/api/claude/tasks`
+- **Project Paths** - Fixed poller script paths for all projects
+- **Architecture** - From shared package to central orchestrator
+- **Documentation** - Complete rewrite of README.md, CLAUDE.md, ARCHITECTURE.md
+- **Version** - Jumped to 1.0.0 to reflect major architecture change
+
+#### Migrations Applied
+- `2025_11_21_000001_create_backup_logs_table`
+- `2025_11_21_000002_create_restore_logs_table`
+- `2025_11_21_000003_create_backup_test_logs_table`
+- `2025_11_23_014021_create_claude_tasks_table`
+
+#### Deployment
+- Deployed: 2025-11-25 00:00 UTC
+- Server: 188.245.159.115
+- Path: `/var/www/development/HavunCore`
+- SSL: Let's Encrypt certificate installed
+- Pollers: All 3 services operational (havuncore disabled, havunadmin & herdenkingsportaal active)
+
+#### Testing
+- ✅ API health endpoint working
+- ✅ Task creation successful
+- ✅ Poller picked up task within 8 seconds
+- ✅ Task execution and result reporting working
+- ✅ All logs showing correct behavior
 
 ---
 
