@@ -1,6 +1,6 @@
 # 🤖 Claude Session Guide - HavunCore
 
-**Last Updated:** 2025-11-25
+**Last Updated:** 2025-11-26
 **Status:** ✅ **PRODUCTION - HavunCore v1.0.0 Standalone App + Task Queue LIVE**
 
 ---
@@ -61,7 +61,12 @@ Vuistregel: *"Raakt het credentials, keys, of systeemtoegang? → VRAAG EERST"*
 
 ## 🎯 Current Status
 
-**LATEST DEPLOYMENT - 25 November 2025**
+**LATEST DEPLOYMENT - 26 November 2025**
+
+✅ **Vault System** - Centraal secrets & config management
+✅ **Herdenkingsportaal migratie** - Nu in `/var/www/herdenkingsportaal/`
+
+**PREVIOUS - 25 November 2025**
 
 ✅ **HavunCore v1.0.0** - Standalone Laravel Application LIVE!
 ✅ **Task Queue API** migrated to HavunCore (was in HavunAdmin)
@@ -92,8 +97,8 @@ Projects Structure:
 - HavunCore:                  /var/www/development/HavunCore
 - HavunAdmin Staging:         /var/www/havunadmin/staging
 - HavunAdmin Production:      /var/www/havunadmin/production
-- Herdenkingsportaal Staging: /var/www/staging
-- Herdenkingsportaal Production: /var/www/production
+- Herdenkingsportaal Staging: /var/www/herdenkingsportaal/staging
+- Herdenkingsportaal Production: /var/www/herdenkingsportaal/production
 
 Databases:
 - havuncore (user: havuncore, pass: HavunCore2025)
@@ -136,6 +141,37 @@ Password: QUfTHO0hjdagrLgW10zIWLGjJelGBtrvG915IzFqIDE=
 ⚠️ CRITICAL: Without this password, backups CANNOT be restored!
 Store securely in password manager.
 ```
+
+### 🔐 Vault System
+
+**What is it:** Centraal secrets & config management voor alle projecten.
+
+**Features:**
+- Encrypted secrets storage (AES-256)
+- Per-project access control via API tokens
+- Config templates voor nieuwe projecten
+- Audit logging van alle toegang
+
+**API Endpoint:** `https://havuncore.havun.nl/api/vault/`
+
+**Quick Usage:**
+```bash
+# Get all secrets for a project
+curl -H "Authorization: Bearer hvn_xxxxx" \
+  "https://havuncore.havun.nl/api/vault/bootstrap"
+
+# Create a secret (admin)
+curl -X POST "https://havuncore.havun.nl/api/vault/admin/secrets" \
+  -H "Content-Type: application/json" \
+  -d '{"key": "mollie_key", "value": "live_xxx", "category": "payment"}'
+
+# Register a project (admin)
+curl -X POST "https://havuncore.havun.nl/api/vault/admin/projects" \
+  -H "Content-Type: application/json" \
+  -d '{"project": "nieuw-project", "secrets": ["mollie_key"]}'
+```
+
+**Full Documentation:** `docs/VAULT-SYSTEM.md`
 
 ### 🚀 Task Queue System
 
@@ -278,7 +314,7 @@ cd /var/www/havunadmin/production
 git pull origin master
 php artisan config:clear
 
-cd /var/www/production
+cd /var/www/herdenkingsportaal/production
 git pull origin master
 php artisan config:clear
 ```
@@ -321,7 +357,7 @@ HavunCore is the **central orchestration platform** that coordinates all project
 **Production vs Staging:**
 - ✅ **HavunCore:** Production only (/var/www/development/HavunCore)
 - ✅ **HavunAdmin:** Production (/var/www/havunadmin/production)
-- ✅ **Herdenkingsportaal:** Production (/var/www/production)
+- ✅ **Herdenkingsportaal:** Production (/var/www/herdenkingsportaal/production)
 - ✅ HavunAdmin staging
 - ✅ Client sites staging
 - ⚠️ Test before deploying to production!
@@ -334,7 +370,7 @@ HavunCore is the **central orchestration platform** that coordinates all project
 
 **Local Backups (30 days):**
 - HavunAdmin: `/var/www/havunadmin/production/storage/backups/havunadmin/hot/`
-- Herdenkingsportaal: `/var/www/production/storage/backups/herdenkingsportaal/hot/`
+- Herdenkingsportaal: `/var/www/herdenkingsportaal/production/storage/backups/herdenkingsportaal/hot/`
 
 **Note:** Backups run from production (data safety), Task Queue works in staging (code safety)!
 
@@ -345,8 +381,8 @@ HavunCore is the **central orchestration platform** that coordinates all project
 **Automation:**
 ```bash
 # Cron jobs (configured):
-0 3 * * * cd /var/www/production && php artisan havun:backup:run >> /var/log/havun-backup.log 2>&1
-0 * * * * cd /var/www/production && php artisan havun:backup:health >> /var/log/havun-backup-health.log 2>&1
+0 3 * * * cd /var/www/herdenkingsportaal/production && php artisan havun:backup:run >> /var/log/havun-backup.log 2>&1
+0 * * * * cd /var/www/herdenkingsportaal/production && php artisan havun:backup:health >> /var/log/havun-backup-health.log 2>&1
 ```
 
 ### Filesystem Configuration (CRITICAL!)
@@ -406,7 +442,7 @@ HavunCore is the **central orchestration platform** that coordinates all project
 ### Check Backup Health
 ```bash
 ssh root@188.245.159.115
-cd /var/www/production
+cd /var/www/herdenkingsportaal/production
 php artisan havun:backup:health
 ```
 
@@ -435,7 +471,7 @@ EOF
 ### Run Manual Backup
 ```bash
 ssh root@188.245.159.115
-cd /var/www/production
+cd /var/www/herdenkingsportaal/production
 php artisan havun:backup:run
 ```
 
@@ -469,9 +505,9 @@ php artisan havun:backup:run
 - `/var/www/havunadmin/production/config/havun-backup.php` - Backup config
 
 **Herdenkingsportaal:**
-- `/var/www/production/config/filesystems.php` - Hetzner disk config
-- `/var/www/production/.env` - Credentials
-- `/var/www/production/config/havun-backup.php` - Backup config
+- `/var/www/herdenkingsportaal/production/config/filesystems.php` - Hetzner disk config
+- `/var/www/herdenkingsportaal/production/.env` - Credentials
+- `/var/www/herdenkingsportaal/production/config/havun-backup.php` - Backup config
 
 ---
 
@@ -511,7 +547,7 @@ tail -f /var/log/havun-backup.log
 tail -f /var/log/havun-backup-health.log
 
 # Laravel logs
-tail -f /var/www/production/storage/logs/laravel.log | grep backup
+tail -f /var/www/herdenkingsportaal/production/storage/logs/laravel.log | grep backup
 ```
 
 ---
@@ -524,7 +560,7 @@ tail -f /var/www/production/storage/logs/laravel.log | grep backup
 1. SFTP connection: `sftp -P 23 u510616@u510616.your-storagebox.de`
 2. Filesystem config: `'root' => ''` (empty!)
 3. SSH host key: `ssh-keyscan -p 23 -H u510616.your-storagebox.de >> ~/.ssh/known_hosts`
-4. Laravel logs: `tail -f /var/www/production/storage/logs/laravel.log | grep -i offsite`
+4. Laravel logs: `tail -f /var/www/herdenkingsportaal/production/storage/logs/laravel.log | grep -i offsite`
 
 ### "Connection refused" on SFTP
 
@@ -542,7 +578,7 @@ ssh-keyscan -p 23 -H u510616.your-storagebox.de >> ~/.ssh/known_hosts
 
 **Verify filesystem root:**
 ```bash
-grep -A 3 'hetzner-storage-box' /var/www/production/config/filesystems.php
+grep -A 3 'hetzner-storage-box' /var/www/herdenkingsportaal/production/config/filesystems.php
 ```
 Should show: `'root' => '',`
 
@@ -683,7 +719,7 @@ Before telling user "everything works":
 - [ ] SFTP login works: `sftp -P 23 u510616@u510616.your-storagebox.de`
 - [ ] Files exist on Storage Box in `/home/{project}/archive/{year}/{month}/`
 - [ ] Cron jobs configured: `crontab -l | grep havun`
-- [ ] Laravel logs show no errors: `tail /var/www/production/storage/logs/laravel.log`
+- [ ] Laravel logs show no errors: `tail /var/www/herdenkingsportaal/production/storage/logs/laravel.log`
 
 ---
 
