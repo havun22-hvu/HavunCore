@@ -1,7 +1,7 @@
 # 🤖 Claude Session Guide - HavunCore
 
-**Last Updated:** 2025-11-24
-**Status:** ✅ **PRODUCTION - Backup System v0.6.0 + Task Queue v1.0 LIVE**
+**Last Updated:** 2025-11-25
+**Status:** ✅ **PRODUCTION - HavunCore v1.0.0 Standalone App + Task Queue LIVE**
 
 ---
 
@@ -61,18 +61,19 @@ Vuistregel: *"Raakt het credentials, keys, of systeemtoegang? → VRAAG EERST"*
 
 ## 🎯 Current Status
 
-**LATEST DEPLOYMENT - 23 November 2025**
+**LATEST DEPLOYMENT - 25 November 2025**
 
-✅ **HavunCore v0.6.0** deployed to production
-✅ **Backup system** fully operational
-✅ **Offsite backups** working (Hetzner Storage Box)
-✅ **Cron jobs** configured (daily 03:00)
-✅ **Compliance** achieved (7-year retention)
-✅ **🚀 NEW: Task Queue System** operational - remote code execution from mobile!
+✅ **HavunCore v1.0.0** - Standalone Laravel Application LIVE!
+✅ **Task Queue API** migrated to HavunCore (was in HavunAdmin)
+✅ **Own database** `havuncore` with dedicated MySQL user
+✅ **Web interface** https://havuncore.havun.nl
+✅ **SSL certificate** via Let's Encrypt
+✅ **Poller services** updated - all 3 projects operational
 
-**PREVIOUS DEPLOYMENT - 22 November 2025**
+**PREVIOUS DEPLOYMENT - 23 November 2025**
 
 ✅ Backup system v0.6.0 deployed
+✅ Task Queue System operational
 
 ---
 
@@ -86,14 +87,21 @@ User: root
 Access: SSH key authentication
 
 Projects Structure:
-- HavunAdmin Staging:        /var/www/havunadmin/staging
+- HavunCore:                  /var/www/development/HavunCore
+- HavunAdmin Staging:         /var/www/havunadmin/staging
 - HavunAdmin Production:      /var/www/havunadmin/production
 - Herdenkingsportaal Staging: /var/www/staging
 - Herdenkingsportaal Production: /var/www/production
 
-⚠️ CRITICAL WORKFLOW RULE:
-Task Queue MUST work in STAGING only!
-Never work directly in production paths!
+Databases:
+- havuncore (user: havuncore, pass: HavunCore2025)
+- havunadmin_production
+- herdenkingsportaal
+
+Web Interfaces:
+- https://havuncore.havun.nl (Task Queue API + Orchestration)
+- https://havunadmin.havun.nl (Accounting)
+- https://herdenkingsportaal.nl (Memorial Portal)
 ```
 
 ### Hetzner Storage Box
@@ -122,31 +130,37 @@ Password: QUfTHO0hjdagrLgW10zIWLGjJelGBtrvG915IzFqIDE=
 Store securely in password manager.
 ```
 
-### 🚀 Task Queue System (NEW!)
+### 🚀 Task Queue System
 
-**What is it:** Remote code execution from mobile/web via API + automated poller
+**What is it:** Central orchestration platform - remote code execution via API + automated pollers
 
-**⚠️ CRITICAL WORKFLOW - STAGING FIRST:**
+**🏗️ Architecture:**
+- **HavunCore** hosts the Task Queue API (migrated from HavunAdmin 25-nov-2025)
+- **3 Poller services** run on server, one per project (havuncore, havunadmin, herdenkingsportaal)
+- Pollers check API every 30 seconds for new tasks
+- Tasks are executed in project directories, changes auto-committed to GitHub
+
+**⚠️ HavunCore Editing Policy:**
 ```
-1. Task Queue works in STAGING (/var/www/.../staging)
-2. Test changes in staging environment
-3. If OK: Push staging → GitHub
-4. Pull GitHub → Production
-5. Later: Pull GitHub → Local (thuis)
+HavunCore is ONLY edited locally (D:\GitHub\HavunCore)
+- Too critical as core dependency for all projects
+- Breaking HavunCore = ALL projects break
+- Task Queue can be used for HavunAdmin & Herdenkingsportaal ONLY
+- After local changes: manual git push
 ```
 
 **API Endpoint:**
 ```
-https://havunadmin.havun.nl/api/claude/tasks
+https://havuncore.havun.nl/api/claude/tasks
 ```
 
 **Create a task from mobile:**
 ```bash
-curl -X POST "https://havunadmin.havun.nl/api/claude/tasks" \
+curl -X POST "https://havuncore.havun.nl/api/claude/tasks" \
   -H "Content-Type: application/json" \
   -d '{
-    "project": "havuncore",
-    "task": "Update README with version info",
+    "project": "havunadmin",
+    "task": "Update dashboard with new metrics",
     "priority": "normal",
     "created_by": "mobile"
   }'
@@ -155,21 +169,41 @@ curl -X POST "https://havunadmin.havun.nl/api/claude/tasks" \
 **Check tasks:**
 ```bash
 # Pending tasks
-curl "https://havunadmin.havun.nl/api/claude/tasks/pending/havuncore"
+curl "https://havuncore.havun.nl/api/claude/tasks/pending/havunadmin"
 
 # All tasks
-curl "https://havunadmin.havun.nl/api/claude/tasks?project=havuncore"
+curl "https://havuncore.havun.nl/api/claude/tasks?project=havunadmin"
+
+# Specific task
+curl "https://havuncore.havun.nl/api/claude/tasks/2"
 ```
 
-**Server Poller Configuration:**
-- Service: `claude-task-poller@havuncore.service`
-- Status: `systemctl status claude-task-poller@havuncore`
-- Logs: `/var/log/claude-task-poller-havuncore.log`
-- Polls every 30 seconds
-- Auto-commits and pushes to GitHub
-- **MUST be configured to work in staging paths!**
+**Server Poller Services:**
+- `claude-task-poller@havuncore.service` (disabled - HavunCore local-only)
+- `claude-task-poller@havunadmin.service` ✅ ACTIVE
+- `claude-task-poller@herdenkingsportaal.service` ✅ ACTIVE
 
-**Deploy to Production:**
+**Poller Commands:**
+```bash
+# Check status
+systemctl status claude-task-poller@havunadmin
+systemctl status claude-task-poller@herdenkingsportaal
+
+# View logs
+tail -f /var/log/claude-task-poller-havunadmin.log
+journalctl -u claude-task-poller@havunadmin -f
+
+# Restart service
+systemctl restart claude-task-poller@havunadmin
+```
+
+**Full Documentation:** `docs/TASK-QUEUE-SYSTEM.md`
+
+**Use Case:** On vacation or mobile? Create tasks via API and the server executes them automatically!
+
+---
+
+**Deploy Changes to Production:**
 ```bash
 # After testing in staging:
 ssh root@188.245.159.115
@@ -186,23 +220,43 @@ php artisan config:clear
 
 **Full Documentation:** `docs/TASK-QUEUE-SYSTEM.md`
 
-**Use Case:** On vacation or in the car? Create tasks via mobile Claude app, server executes in staging, you test, then deploy to production!
+---
 
-**🚫 TASK QUEUE ABSOLUTE RESTRICTIONS:**
+## 🏗️ HavunCore Architecture Evolution
 
-**NEVER via Task Queue (TOO CRITICAL):**
-- ❌ **HavunCore** - Core dependency, breaks ALL projects if broken!
+### 📦 Before (Until 24-nov-2025):
+- **Type:** Composer package
+- **Purpose:** Shared services library
+- **Task Queue:** Hosted in HavunAdmin
+- **Database:** None
+
+### 🚀 Now (Since 25-nov-2025):
+- **Type:** Standalone Laravel 11 Application
+- **Purpose:** Central orchestration platform
+- **Task Queue:** Hosted in HavunCore (migrated!)
+- **Database:** MySQL `havuncore` with own user
+- **Web Interface:** https://havuncore.havun.nl
+- **SSL:** Let's Encrypt certificate
+- **Deployment:** `/var/www/development/HavunCore`
+
+### 🎯 Why the Change:
+HavunCore is the **central orchestration platform** that coordinates all projects. It makes no sense for HavunAdmin (accounting software) to host the Task Queue API. HavunCore now has:
+- Central Task Queue API for all projects
+- Backup orchestration system
+- Shared services and utilities
+- Future: monitoring, logging, webhooks
+
+### 🚫 TASK QUEUE RESTRICTIONS:
+
+**NEVER edit via Task Queue:**
+- ❌ **HavunCore** - Too critical, breaks ALL projects!
   - ONLY edit locally (D:\GitHub\HavunCore)
-  - Manual git push after testing
-  - Too risky for automation
+  - Manual testing and git push
 
-**NEVER work directly in production:**
-- ❌ Herdenkingsportaal (live customer site, payments!)
-- ❌ HavunAdmin (live business site, invoicing!)
-- ❌ Any client/host sites
-
-**✅ Task Queue may work in STAGING for:**
-- ✅ Herdenkingsportaal staging
+**Production vs Staging:**
+- ✅ **HavunCore:** Production only (/var/www/development/HavunCore)
+- ✅ **HavunAdmin:** Production (/var/www/havunadmin/production)
+- ✅ **Herdenkingsportaal:** Production (/var/www/production)
 - ✅ HavunAdmin staging
 - ✅ Client sites staging
 - ⚠️ Test before deploying to production!
