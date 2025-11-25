@@ -10,7 +10,7 @@
 #   ./claude-task-poller.sh [project_name] [api_url]
 #
 # Example:
-#   ./claude-task-poller.sh havuncore https://havunadmin.havun.nl/api/claude/tasks
+#   ./claude-task-poller.sh havuncore https://havuncore.havun.nl/api/claude/tasks
 #
 # Setup as systemd service for 24/7 operation.
 #############################################################################
@@ -19,7 +19,7 @@ set -e
 
 # Configuration
 PROJECT_NAME="${1:-havuncore}"
-API_BASE_URL="${2:-https://havunadmin.havun.nl/api/claude/tasks}"
+API_BASE_URL="${2:-https://havuncore.havun.nl/api/claude/tasks}"
 POLL_INTERVAL=30  # seconds
 
 # Map project names to correct directory names
