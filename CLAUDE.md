@@ -69,6 +69,8 @@ Vuistregel: *"Raakt het credentials, keys, of systeemtoegang? → VRAAG EERST"*
 ✅ **Web interface** https://havuncore.havun.nl
 ✅ **SSL certificate** via Let's Encrypt
 ✅ **Poller services** updated - all 3 projects operational
+✅ **Webapp deployed** - Unified React frontend + Laravel API op één domein
+✅ **UI verbeterd** - Sticky header/footer, microfoon bij invoerveld
 
 **PREVIOUS DEPLOYMENT - 23 November 2025**
 
@@ -99,9 +101,14 @@ Databases:
 - herdenkingsportaal
 
 Web Interfaces:
-- https://havuncore.havun.nl (Task Queue API + Orchestration)
+- https://havuncore.havun.nl (Webapp + Task Queue API)
 - https://havunadmin.havun.nl (Accounting)
 - https://herdenkingsportaal.nl (Memorial Portal)
+
+HavunCore Webapp Paths:
+- Webapp frontend: /var/www/havuncore.havun.nl/public/
+- Laravel API: /var/www/development/HavunCore/
+- Nginx config: /etc/nginx/sites-available/havuncore.havun.nl
 ```
 
 ### Hetzner Storage Box
@@ -200,6 +207,64 @@ systemctl restart claude-task-poller@havunadmin
 **Full Documentation:** `docs/TASK-QUEUE-SYSTEM.md`
 
 **Use Case:** On vacation or mobile? Create tasks via API and the server executes them automatically!
+
+---
+
+### 🌐 HavunCore Webapp
+
+**URL:** https://havuncore.havun.nl
+
+**Login:**
+- Username: `henkvu@gmail.com`
+- Password: `T3@t@Do2AEPKJBlI2Ltg`
+
+**Architecture (Updated 25-nov-2025):**
+- React SPA frontend + **Node.js backend** (Express + Socket.io)
+- Claude API integration voor AI chat
+- PM2 process manager
+
+**Nginx Routes:**
+- `/` → React SPA (static files)
+- `/api/*` → Node.js backend (port 3001)
+- `/socket.io/` → WebSocket (port 3001)
+
+**Features:**
+- ✅ Chat met Claude AI (~3 sec response)
+- ✅ "test" commando = instant status check
+- ✅ Status tab - server/database health
+- ✅ Tasks tab - takenlijst
+- ✅ Vault tab - project configuraties
+- ✅ Mobile-friendly (sticky input, paste/eye icons)
+- 🔜 Voice commands (vanavond)
+
+**Server Paths:**
+```
+Frontend:  /var/www/havuncore.havun.nl/public/
+Backend:   /var/www/havuncore.havun.nl/backend/
+PM2:       havuncore-backend (port 3001)
+Nginx:     /etc/nginx/sites-available/havuncore.havun.nl
+```
+
+**Deploy Webapp Updates:**
+```bash
+# 1. Build locally
+cd D:\GitHub\havuncore-webapp\frontend
+npm run build
+
+# 2. Upload to server
+scp -r dist/* root@188.245.159.115:/var/www/havuncore.havun.nl/public/
+
+# 3. For backend changes:
+scp backend/src/*.js root@188.245.159.115:/var/www/havuncore.havun.nl/backend/src/
+ssh root@188.245.159.115 "pm2 restart havuncore-backend"
+```
+
+**PM2 Commands:**
+```bash
+pm2 status
+pm2 logs havuncore-backend
+pm2 restart havuncore-backend
+```
 
 ---
 

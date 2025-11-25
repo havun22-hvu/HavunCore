@@ -203,7 +203,7 @@ return [
     'notifications' => [
         'channels' => ['mail'], // mail, slack, discord
         'mail' => [
-            'to' => env('BACKUP_NOTIFICATION_EMAIL', 'havun22@gmail.com'),
+            'to' => env('BACKUP_NOTIFICATION_EMAIL', 'havun22@gmail.com')  ,
             'from' => env('MAIL_FROM_ADDRESS', 'noreply@havun.nl'),
         ],
         'slack' => [
