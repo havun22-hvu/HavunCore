@@ -22,23 +22,22 @@ PROJECT_NAME="${1:-havuncore}"
 API_BASE_URL="${2:-https://havuncore.havun.nl/api/claude/tasks}"
 POLL_INTERVAL=30  # seconds
 
-# Map project names to correct directory names
+# Map project names to correct paths
 case "$PROJECT_NAME" in
     "havuncore")
-        PROJECT_DIR="HavunCore"
+        PROJECT_PATH="/var/www/development/HavunCore"
         ;;
     "havunadmin")
-        PROJECT_DIR="HavunAdmin"
+        PROJECT_PATH="/var/www/havunadmin/production"
         ;;
     "herdenkingsportaal")
-        PROJECT_DIR="Herdenkingsportaal"
+        PROJECT_PATH="/var/www/production"
         ;;
     *)
-        PROJECT_DIR="${PROJECT_NAME^}"  # Fallback: capitalize first letter
+        # Fallback: try development directory
+        PROJECT_PATH="/var/www/development/${PROJECT_NAME}"
         ;;
 esac
-
-PROJECT_PATH="/var/www/development/${PROJECT_DIR}"
 LOG_FILE="/var/log/claude-task-poller-${PROJECT_NAME}.log"
 
 # Colors for output
