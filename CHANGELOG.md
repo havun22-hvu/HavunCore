@@ -16,6 +16,62 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 - Quarterly test restore automation
 - Web dashboard for backup monitoring
 - Task Queue web interface
+- Vault UI in webapp
+
+---
+
+## [1.1.0] - 2025-11-26
+
+### 🔐 Vault System - Centralized Secrets Management
+
+**Context:** Central secrets and configuration management for all Havun projects. Replaces scattered .env files with encrypted, access-controlled storage.
+
+#### Added
+
+**Database Tables:**
+- `vault_secrets` - Encrypted key-value store (AES-256)
+- `vault_configs` - JSON configuration templates
+- `vault_projects` - Project registration with API tokens
+- `vault_access_logs` - Audit trail for all access
+
+**Models:**
+- `VaultSecret` - With automatic encryption/decryption via Laravel Crypt
+- `VaultConfig` - JSON config storage with dot-notation access
+- `VaultProject` - Project management with token authentication
+- `VaultAccessLog` - Access logging
+
+**API Endpoints:**
+- `GET /api/vault/secrets` - Get all secrets (requires token)
+- `GET /api/vault/secrets/{key}` - Get specific secret
+- `GET /api/vault/configs` - Get all configs
+- `GET /api/vault/configs/{name}` - Get specific config
+- `GET /api/vault/bootstrap` - Get everything at once
+- Admin endpoints for CRUD operations on secrets/projects
+
+**Features:**
+- ✅ AES-256 encryption for all secrets
+- ✅ Per-project API tokens (`hvn_xxxxx`)
+- ✅ Access control (projects only see authorized secrets)
+- ✅ Audit logging of all access
+- ✅ Masked values in admin view (only last 4 chars visible)
+
+**Documentation:**
+- `docs/VAULT-SYSTEM.md` - Complete documentation
+
+#### Changed
+- `routes/api.php` - Added vault routes
+- `CLAUDE.md` - Added Vault section
+- Nginx config on server - Added `/api/vault` routing to Laravel
+
+### 📁 Herdenkingsportaal Directory Migration
+
+**Context:** Reorganized server structure for consistency.
+
+#### Changed
+- `/var/www/production` → `/var/www/herdenkingsportaal/production`
+- `/var/www/staging` → `/var/www/herdenkingsportaal/staging`
+- Updated: nginx configs, systemd service, crontab, poller script
+- Updated: All CLAUDE.md path references
 
 ---
 

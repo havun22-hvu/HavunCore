@@ -1,6 +1,6 @@
 # 🚀 HavunCore - Central Orchestration Platform
 
-**v1.0.0** - Standalone Laravel 11 Application voor centrale coördinatie van alle Havun projecten
+**v1.1.0** - Standalone Laravel 11 Application voor centrale coördinatie van alle Havun projecten
 
 📚 **[Complete Documentation Index →](INDEX.md)**
 
@@ -85,22 +85,30 @@ php artisan havun:backup:list
 
 ---
 
-### 🔐 Vault Service
-**Secure credential storage**
+### 🔐 Vault System
+**Centralized secrets & config management**
 
-Store API keys, passwords, secrets encrypted in database:
+Store API keys, passwords, configs with per-project access control:
 
-```php
-use Havun\Core\Services\VaultService;
+```bash
+# Create a secret (admin)
+curl -X POST "https://havuncore.havun.nl/api/vault/admin/secrets" \
+  -H "Content-Type: application/json" \
+  -d '{"key": "mollie_key", "value": "live_xxx", "category": "payment"}'
 
-$vault = new VaultService();
+# Register project with access
+curl -X POST "https://havuncore.havun.nl/api/vault/admin/projects" \
+  -d '{"project": "havunadmin", "secrets": ["mollie_key"]}'
+# → Returns: hvn_xxxxx token
 
-// Store secret
-$vault->store('mollie.api_key', 'test_abc123');
-
-// Retrieve secret
-$apiKey = $vault->get('mollie.api_key');
+# Fetch in project (with token)
+curl -H "Authorization: Bearer hvn_xxxxx" \
+  "https://havuncore.havun.nl/api/vault/bootstrap"
 ```
+
+**Features:** AES-256 encryption, audit logging, masked admin view
+
+**Docs:** `docs/VAULT-SYSTEM.md`
 
 ---
 
