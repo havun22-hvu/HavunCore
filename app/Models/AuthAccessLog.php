@@ -34,6 +34,8 @@ class AuthAccessLog extends Model
     public const ACTION_QR_APPROVE = 'qr_approve';
     public const ACTION_DEVICE_REVOKE = 'device_revoke';
     public const ACTION_PASSWORD_LOGIN = 'password_login';
+    public const ACTION_LOGIN_EMAIL_SENT = 'login_email_sent';
+    public const ACTION_LOGIN_EMAIL_APPROVED = 'login_email_approved';
 
     /**
      * Get the user this log belongs to

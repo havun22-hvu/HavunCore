@@ -12,6 +12,10 @@ class AuthQrSession extends Model
         'qr_code',
         'device_info',
         'ip_address',
+        'email',
+        'email_token',
+        'callback_url',
+        'email_sent_at',
         'status',
         'approved_by',
         'device_id',
@@ -21,6 +25,7 @@ class AuthQrSession extends Model
     protected $casts = [
         'device_info' => 'array',
         'expires_at' => 'datetime',
+        'email_sent_at' => 'datetime',
     ];
 
     /**
@@ -58,6 +63,44 @@ class AuthQrSession extends Model
     public static function generateQrCode(): string
     {
         return 'qr_' . Str::random(48);
+    }
+
+    /**
+     * Generate email token
+     */
+    public static function generateEmailToken(): string
+    {
+        return Str::random(64);
+    }
+
+    /**
+     * Find session by email token
+     */
+    public static function findByEmailToken(string $token): ?self
+    {
+        return static::where('email_token', $token)
+            ->where('status', self::STATUS_PENDING)
+            ->where('expires_at', '>', now())
+            ->first();
+    }
+
+    /**
+     * Set email for this session
+     */
+    public function setEmail(string $email, string $callbackUrl): string
+    {
+        $token = self::generateEmailToken();
+
+        $this->update([
+            'email' => $email,
+            'email_token' => $token,
+            'callback_url' => $callbackUrl,
+            'email_sent_at' => now(),
+            // Extend expiry to 15 minutes for email flow
+            'expires_at' => now()->addMinutes(15),
+        ]);
+
+        return $token;
     }
 
     /**

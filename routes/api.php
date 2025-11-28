@@ -71,6 +71,10 @@ Route::prefix('auth')->group(function () {
     Route::post('/qr/generate', [QrAuthController::class, 'generateQr'])->name('api.auth.qr.generate');
     Route::get('/qr/{code}/status', [QrAuthController::class, 'checkQrStatus'])->name('api.auth.qr.status');
     Route::post('/qr/{code}/approve', [QrAuthController::class, 'approveQr'])->name('api.auth.qr.approve');
+    Route::post('/qr/{code}/send-email', [QrAuthController::class, 'sendEmail'])->name('api.auth.qr.send-email');
+
+    // Email Login (approve via email link)
+    Route::post('/email/approve', [QrAuthController::class, 'approveEmail'])->name('api.auth.email.approve');
 
     // Password Login (fallback)
     Route::post('/login', [QrAuthController::class, 'login'])->name('api.auth.login');

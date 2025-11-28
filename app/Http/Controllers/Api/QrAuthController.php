@@ -178,6 +178,54 @@ class QrAuthController extends Controller
     }
 
     /**
+     * POST /api/auth/qr/{code}/send-email
+     * Send login email for QR session
+     */
+    public function sendEmail(Request $request, string $code): JsonResponse
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'callback_url' => 'required|url',
+            'site_name' => 'nullable|string|max:100',
+        ]);
+
+        $result = $this->qrAuthService->sendLoginEmail(
+            $code,
+            $request->input('email'),
+            $request->input('callback_url'),
+            $request->input('site_name')
+        );
+
+        if (!$result['success']) {
+            return response()->json($result, 400);
+        }
+
+        return response()->json($result);
+    }
+
+    /**
+     * POST /api/auth/email/approve
+     * Approve login via email token
+     */
+    public function approveEmail(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|string|size:64',
+        ]);
+
+        $result = $this->qrAuthService->approveViaEmailToken(
+            $request->input('token'),
+            $request->ip()
+        );
+
+        if (!$result['success']) {
+            return response()->json($result, 400);
+        }
+
+        return response()->json($result);
+    }
+
+    /**
      * POST /api/auth/register
      * Register a new user (admin only or first user)
      */
