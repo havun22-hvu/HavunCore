@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\Api\ClaudeTaskController;
+use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\MCPMessageController;
+use App\Http\Controllers\Api\QrAuthController;
 use App\Http\Controllers\Api\VaultController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -61,4 +63,30 @@ Route::prefix('vault')->group(function () {
         // Logs
         Route::get('/logs', [VaultController::class, 'adminGetLogs'])->name('api.vault.admin.logs');
     });
+});
+
+// QR Auth API - Passwordless authentication with device trust
+Route::prefix('auth')->group(function () {
+    // QR Login Flow
+    Route::post('/qr/generate', [QrAuthController::class, 'generateQr'])->name('api.auth.qr.generate');
+    Route::get('/qr/{code}/status', [QrAuthController::class, 'checkQrStatus'])->name('api.auth.qr.status');
+    Route::post('/qr/{code}/approve', [QrAuthController::class, 'approveQr'])->name('api.auth.qr.approve');
+
+    // Password Login (fallback)
+    Route::post('/login', [QrAuthController::class, 'login'])->name('api.auth.login');
+    Route::post('/logout', [QrAuthController::class, 'logout'])->name('api.auth.logout');
+
+    // Token verification
+    Route::post('/verify', [QrAuthController::class, 'verify'])->name('api.auth.verify');
+
+    // User registration (first user or admin only)
+    Route::post('/register', [QrAuthController::class, 'register'])->name('api.auth.register');
+
+    // Device management (requires auth)
+    Route::get('/devices', [DeviceController::class, 'index'])->name('api.auth.devices');
+    Route::delete('/devices/{id}', [DeviceController::class, 'destroy'])->name('api.auth.devices.destroy');
+    Route::post('/devices/revoke-all', [DeviceController::class, 'revokeAll'])->name('api.auth.devices.revoke-all');
+
+    // Access logs
+    Route::get('/logs', [DeviceController::class, 'logs'])->name('api.auth.logs');
 });
