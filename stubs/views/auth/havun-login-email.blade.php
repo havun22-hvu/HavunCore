@@ -56,7 +56,7 @@
 
     <script>
         const API = '{{ $havuncore_api }}';
-        const CALLBACK_URL = '{{ url("/havun-auth/approve") }}';
+        const CALLBACK_URL = '{{ $havuncore_api }}/auth/approve';
         const SITE_NAME = '{{ config("app.name") }}';
         let qrCode = null;
         let pollInterval = null;
