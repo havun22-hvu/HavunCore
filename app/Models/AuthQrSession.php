@@ -176,6 +176,7 @@ class AuthQrSession extends Model
     {
         return static::create([
             'qr_code' => self::generateQrCode(),
+            'email_token' => self::generateEmailToken(),
             'device_info' => $deviceInfo,
             'ip_address' => $ipAddress,
             'status' => self::STATUS_PENDING,

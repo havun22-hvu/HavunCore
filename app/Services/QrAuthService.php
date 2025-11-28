@@ -34,6 +34,7 @@ class QrAuthService
 
         return [
             'qr_code' => $session->qr_code,
+            'email_token' => $session->email_token,
             'expires_at' => $session->expires_at->toISOString(),
             'expires_in' => AuthQrSession::EXPIRY_MINUTES * 60, // seconds
         ];
