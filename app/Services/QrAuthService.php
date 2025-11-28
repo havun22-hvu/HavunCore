@@ -251,11 +251,13 @@ class QrAuthService
         $deviceInfo = $session->device_info ?? [];
         $deviceName = $this->formatDeviceName($deviceInfo);
 
-        // Send email
+        // Send email with branded FROM name
         $siteName = $siteName ?? 'Havun';
+        $fromAddress = config('mail.from.address');
 
-        Mail::send([], [], function ($message) use ($email, $user, $approveUrl, $deviceName, $siteName) {
-            $message->to($email, $user->name)
+        Mail::send([], [], function ($message) use ($email, $user, $approveUrl, $deviceName, $siteName, $fromAddress) {
+            $message->from($fromAddress, $siteName)
+                ->to($email, $user->name)
                 ->subject("Inloggen op {$siteName}")
                 ->html($this->buildLoginEmailHtml($user->name, $approveUrl, $deviceName, $siteName));
         });

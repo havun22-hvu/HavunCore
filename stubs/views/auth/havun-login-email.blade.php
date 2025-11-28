@@ -77,15 +77,27 @@
             btn.textContent = 'Bezig...';
 
             try {
+                // Detect browser and OS
+                const ua = navigator.userAgent;
+                let browser = 'Browser';
+                if (ua.includes('Edg/')) browser = 'Edge';
+                else if (ua.includes('Chrome')) browser = 'Chrome';
+                else if (ua.includes('Firefox')) browser = 'Firefox';
+                else if (ua.includes('Safari')) browser = 'Safari';
+
+                let os = 'Unknown';
+                if (ua.includes('Windows NT 10')) os = 'Windows 10/11';
+                else if (ua.includes('Windows')) os = 'Windows';
+                else if (ua.includes('Mac OS X')) os = 'macOS';
+                else if (ua.includes('Linux')) os = 'Linux';
+                else if (ua.includes('Android')) os = 'Android';
+                else if (ua.includes('iPhone') || ua.includes('iPad')) os = 'iOS';
+
                 // First generate a QR session
                 const genResponse = await fetch(API + '/api/auth/qr/generate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        browser: navigator.userAgent.includes('Chrome') ? 'Chrome' :
-                                 navigator.userAgent.includes('Firefox') ? 'Firefox' : 'Browser',
-                        os: navigator.platform
-                    })
+                    body: JSON.stringify({ browser, os })
                 });
 
                 const genData = await genResponse.json();
