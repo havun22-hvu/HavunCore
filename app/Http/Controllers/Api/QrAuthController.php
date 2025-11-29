@@ -226,6 +226,30 @@ class QrAuthController extends Controller
     }
 
     /**
+     * POST /api/auth/qr/approve-from-app
+     * Approve QR session from client app (email from trusted session)
+     */
+    public function approveFromApp(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|string|size:64',
+            'email' => 'required|email',
+        ]);
+
+        $result = $this->qrAuthService->approveViaQrScan(
+            $request->input('token'),
+            $request->input('email'),
+            $request->ip()
+        );
+
+        if (!$result['success']) {
+            return response()->json($result, 400);
+        }
+
+        return response()->json($result);
+    }
+
+    /**
      * POST /api/auth/qr/approve-authenticated
      * Approve QR session using device token from mobile app
      */
