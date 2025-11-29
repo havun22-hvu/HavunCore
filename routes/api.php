@@ -76,6 +76,9 @@ Route::prefix('auth')->group(function () {
     // Email Login (approve via email link)
     Route::post('/email/approve', [QrAuthController::class, 'approveEmail'])->name('api.auth.email.approve');
 
+    // Authenticated QR approve (from mobile app with device token)
+    Route::post('/qr/approve-authenticated', [QrAuthController::class, 'approveAuthenticated'])->name('api.auth.qr.approve-authenticated');
+
     // Password Login (fallback)
     Route::post('/login', [QrAuthController::class, 'login'])->name('api.auth.login');
     Route::post('/logout', [QrAuthController::class, 'logout'])->name('api.auth.logout');

@@ -226,6 +226,58 @@ class QrAuthController extends Controller
     }
 
     /**
+     * POST /api/auth/qr/approve-authenticated
+     * Approve QR session using device token from mobile app
+     */
+    public function approveAuthenticated(Request $request): JsonResponse
+    {
+        $request->validate([
+            'token' => 'required|string|size:64',
+            'device_token' => 'required|string',
+        ]);
+
+        $deviceToken = $request->input('device_token');
+
+        // Verify the device token
+        $verification = $this->deviceTrustService->verifyToken($deviceToken, $request->ip());
+
+        if (!$verification['valid']) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Ongeldige of verlopen sessie op dit apparaat',
+            ], 401);
+        }
+
+        $user = AuthUser::find($verification['user']['id']);
+
+        if (!$user) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gebruiker niet gevonden',
+            ], 404);
+        }
+
+        // Approve the QR session using the email token
+        $result = $this->qrAuthService->approveViaEmailToken(
+            $request->input('token'),
+            $request->ip()
+        );
+
+        if (!$result['success']) {
+            return response()->json($result, 400);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Login goedgekeurd',
+            'device_name' => $result['device_name'] ?? 'Onbekend apparaat',
+            'user' => [
+                'name' => $user->name,
+            ],
+        ]);
+    }
+
+    /**
      * POST /api/auth/register
      * Register a new user (admin only or first user)
      */
