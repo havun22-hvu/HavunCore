@@ -12,7 +12,16 @@ Route::get('/health', function () {
     return response()->json([
         'status' => 'ok',
         'app' => 'HavunCore',
-        'version' => '1.0.0',
+        'version' => config('app.version', '1.0.0'),
+    ]);
+});
+
+Route::get('/version', function () {
+    return response()->json([
+        'app' => 'HavunCore',
+        'version' => config('app.version', '1.0.0'),
+        'environment' => app()->environment(),
+        'timestamp' => now()->toIso8601String(),
     ]);
 });
 
