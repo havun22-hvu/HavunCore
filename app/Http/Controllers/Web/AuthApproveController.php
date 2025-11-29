@@ -40,7 +40,6 @@ class AuthApproveController extends Controller
     {
         $token = $request->input('token');
         $email = $request->input('email');
-        $password = $request->input('password');
 
         if (!$token || strlen($token) !== 64) {
             return $this->renderPage([
@@ -49,15 +48,15 @@ class AuthApproveController extends Controller
             ]);
         }
 
-        if (!$email || !$password) {
+        if (!$email) {
             return $this->renderPage([
                 'token' => $token,
-                'error' => 'Vul email en wachtwoord in',
+                'error' => 'Vul je email adres in',
                 'success' => false,
             ]);
         }
 
-        $result = $this->qrAuthService->approveViaCredentials($token, $email, $password, $request->ip());
+        $result = $this->qrAuthService->approveViaQrScan($token, $email, $request->ip());
 
         if ($result['success']) {
             return $this->renderPage([
@@ -159,7 +158,7 @@ HTML;
         return <<<HTML
 <div class="text-center mb-6">
     <h2 class="text-2xl font-bold text-gray-900">Login Goedkeuren</h2>
-    <p class="text-gray-600 mt-2">Log in om je desktop te activeren</p>
+    <p class="text-gray-600 mt-2">Bevestig je email om in te loggen</p>
 </div>
 
 {$errorHtml}
@@ -169,12 +168,7 @@ HTML;
     <input type="hidden" name="token" value="{$token}">
 
     <div class="mb-4">
-        <input type="email" name="email" placeholder="Email" required
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
-    </div>
-
-    <div class="mb-4">
-        <input type="password" name="password" placeholder="Wachtwoord" required
+        <input type="email" name="email" placeholder="jouw@email.nl" required
             class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
     </div>
 

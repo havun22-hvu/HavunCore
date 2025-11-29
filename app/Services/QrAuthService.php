@@ -355,9 +355,9 @@ class QrAuthService
     }
 
     /**
-     * Approve QR session via credentials (for QR code login)
+     * Approve QR session via QR scan (email only, no password)
      */
-    public function approveViaCredentials(string $token, string $email, string $password, ?string $ipAddress = null): array
+    public function approveViaQrScan(string $token, string $email, ?string $ipAddress = null): array
     {
         $session = AuthQrSession::findByEmailToken($token);
 
@@ -368,13 +368,13 @@ class QrAuthService
             ];
         }
 
-        // Verify credentials
+        // Find user by email
         $user = AuthUser::findByEmail($email);
 
-        if (!$user || !$user->verifyPassword($password)) {
+        if (!$user) {
             return [
                 'success' => false,
-                'message' => 'Onjuiste email of wachtwoord',
+                'message' => 'Email niet gevonden',
             ];
         }
 
