@@ -39,6 +39,8 @@ class AuthApproveController extends Controller
     public function process(Request $request)
     {
         $token = $request->input('token');
+        $email = $request->input('email');
+        $password = $request->input('password');
 
         if (!$token || strlen($token) !== 64) {
             return $this->renderPage([
@@ -47,7 +49,15 @@ class AuthApproveController extends Controller
             ]);
         }
 
-        $result = $this->qrAuthService->approveViaEmailToken($token, $request->ip());
+        if (!$email || !$password) {
+            return $this->renderPage([
+                'token' => $token,
+                'error' => 'Vul email en wachtwoord in',
+                'success' => false,
+            ]);
+        }
+
+        $result = $this->qrAuthService->approveViaCredentials($token, $email, $password, $request->ip());
 
         if ($result['success']) {
             return $this->renderPage([
@@ -58,6 +68,7 @@ class AuthApproveController extends Controller
         }
 
         return $this->renderPage([
+            'token' => $token,
             'error' => $result['message'] ?? 'Kon login niet goedkeuren',
             'success' => false,
         ]);
@@ -76,10 +87,10 @@ class AuthApproveController extends Controller
 
         if ($success) {
             $content = $this->successHtml($userName, $deviceName);
-        } elseif ($error) {
+        } elseif ($error && !$token) {
             $content = $this->errorHtml($error);
         } else {
-            $content = $this->formHtml($token);
+            $content = $this->formHtml($token, $error);
         }
 
         return response($this->wrapHtml($content));
@@ -141,18 +152,31 @@ HTML;
 HTML;
     }
 
-    private function formHtml(string $token): string
+    private function formHtml(string $token, ?string $error = null): string
     {
         $csrfToken = csrf_token();
+        $errorHtml = $error ? "<p class=\"text-red-600 text-sm mb-4\">{$error}</p>" : '';
         return <<<HTML
 <div class="text-center mb-6">
     <h2 class="text-2xl font-bold text-gray-900">Login Goedkeuren</h2>
-    <p class="text-gray-600 mt-2">Wil je inloggen?</p>
+    <p class="text-gray-600 mt-2">Log in om je desktop te activeren</p>
 </div>
+
+{$errorHtml}
 
 <form method="POST" action="/approve">
     <input type="hidden" name="_token" value="{$csrfToken}">
     <input type="hidden" name="token" value="{$token}">
+
+    <div class="mb-4">
+        <input type="email" name="email" placeholder="Email" required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+    </div>
+
+    <div class="mb-4">
+        <input type="password" name="password" placeholder="Wachtwoord" required
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+    </div>
 
     <button type="submit" class="w-full py-4 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium text-lg mb-4">
         Ja, log mij in

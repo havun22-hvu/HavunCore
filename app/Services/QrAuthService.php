@@ -355,6 +355,80 @@ class QrAuthService
     }
 
     /**
+     * Approve QR session via credentials (for QR code login)
+     */
+    public function approveViaCredentials(string $token, string $email, string $password, ?string $ipAddress = null): array
+    {
+        $session = AuthQrSession::findByEmailToken($token);
+
+        if (!$session) {
+            return [
+                'success' => false,
+                'message' => 'Ongeldige of verlopen sessie',
+            ];
+        }
+
+        // Verify credentials
+        $user = AuthUser::findByEmail($email);
+
+        if (!$user || !$user->verifyPassword($password)) {
+            return [
+                'success' => false,
+                'message' => 'Onjuiste email of wachtwoord',
+            ];
+        }
+
+        // Create device for the desktop
+        $deviceName = $this->formatDeviceName($session->device_info ?? []);
+        $deviceHash = AuthDevice::createHash($session->device_info ?? ['qr_code' => $session->qr_code]);
+
+        // Check if device already exists
+        $existingDevice = AuthDevice::findByHash($user->id, $deviceHash);
+
+        if ($existingDevice) {
+            $existingDevice->update([
+                'is_active' => true,
+                'expires_at' => now()->addDays(AuthDevice::TRUST_DAYS),
+                'last_used_at' => now(),
+                'ip_address' => $session->ip_address,
+            ]);
+            $device = $existingDevice;
+        } else {
+            $device = AuthDevice::createForUser(
+                $user,
+                $deviceName,
+                $deviceHash,
+                $session->ip_address
+            );
+        }
+
+        // Approve the session
+        $session->approve($user, $device);
+
+        // Log the action
+        AuthAccessLog::log(
+            AuthAccessLog::ACTION_QR_APPROVE,
+            $user->id,
+            $deviceName,
+            $ipAddress,
+            null,
+            ['qr_session_id' => $session->id]
+        );
+
+        // Update user last login
+        $user->touchLogin();
+
+        return [
+            'success' => true,
+            'message' => 'Login approved',
+            'device_name' => $deviceName,
+            'user' => [
+                'name' => $user->name,
+            ],
+        ];
+    }
+
+    /**
      * Build HTML for login email
      */
     protected function buildLoginEmailHtml(
