@@ -13,7 +13,7 @@ class AuthApproveController extends Controller
     ) {}
 
     /**
-     * Show approve page (from email link)
+     * Show approve page (from QR scan or email link)
      */
     public function show(Request $request)
     {
@@ -26,8 +26,19 @@ class AuthApproveController extends Controller
             ]);
         }
 
+        // Get session to show device info
+        $session = \App\Models\AuthQrSession::findByEmailToken($token);
+        $deviceName = null;
+
+        if ($session && $session->device_info) {
+            $browser = $session->device_info['browser'] ?? 'Browser';
+            $os = $session->device_info['os'] ?? 'Onbekend';
+            $deviceName = "{$browser} op {$os}";
+        }
+
         return $this->renderPage([
             'token' => $token,
+            'device_name' => $deviceName,
             'success' => false,
             'error' => null,
         ]);
@@ -89,7 +100,7 @@ class AuthApproveController extends Controller
         } elseif ($error && !$token) {
             $content = $this->errorHtml($error);
         } else {
-            $content = $this->formHtml($token, $error);
+            $content = $this->formHtml($token, $deviceName, $error);
         }
 
         return response($this->wrapHtml($content));
@@ -151,16 +162,21 @@ HTML;
 HTML;
     }
 
-    private function formHtml(string $token, ?string $error = null): string
+    private function formHtml(string $token, ?string $deviceName = null, ?string $error = null): string
     {
         $csrfToken = csrf_token();
         $errorHtml = $error ? "<p class=\"text-red-600 text-sm mb-4\">{$error}</p>" : '';
+        $deviceHtml = $deviceName
+            ? "<div class=\"bg-gray-100 rounded-lg p-3 mb-4\"><p class=\"text-sm text-gray-600\">Inloggen op:</p><p class=\"font-medium text-gray-900\">{$deviceName}</p></div>"
+            : '';
+
         return <<<HTML
 <div class="text-center mb-6">
     <h2 class="text-2xl font-bold text-gray-900">Login Goedkeuren</h2>
     <p class="text-gray-600 mt-2">Bevestig je email om in te loggen</p>
 </div>
 
+{$deviceHtml}
 {$errorHtml}
 
 <form method="POST" action="/approve">
