@@ -150,7 +150,7 @@ HTML;
     <p class="text-gray-600 mt-2">Wil je inloggen?</p>
 </div>
 
-<form method="POST" action="/auth/approve">
+<form method="POST" action="/approve">
     <input type="hidden" name="_token" value="{$csrfToken}">
     <input type="hidden" name="token" value="{$token}">
 

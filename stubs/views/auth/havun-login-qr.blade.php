@@ -99,7 +99,7 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode/build/qrcode.min.js"></script>
     <script>
         const API = '{{ config("havun-auth.api_url", "https://havuncore.havun.nl") }}';
-        const APPROVE_URL = 'https://havuncore.havun.nl/auth/approve';
+        const APPROVE_URL = 'https://havuncore.havun.nl/approve';
         let sessionCode = null;
         let emailToken = null;
         let pollInterval = null;

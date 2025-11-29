@@ -11,6 +11,6 @@ Route::get('/', function () {
     ]);
 });
 
-// Central approve page for email login
-Route::get('/auth/approve', [AuthApproveController::class, 'show'])->name('auth.approve');
-Route::post('/auth/approve', [AuthApproveController::class, 'process'])->name('auth.approve.process');
+// Central approve page for QR/email login
+Route::get('/approve', [AuthApproveController::class, 'show'])->name('auth.approve');
+Route::post('/approve', [AuthApproveController::class, 'process'])->name('auth.approve.process');
