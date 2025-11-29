@@ -7,8 +7,9 @@ composer.lock
 Thumbs.db
 *.log
 
-# Claude Code local settings
-.claude/
+# Claude Code local settings (but keep commands)
+.claude/*
+!.claude/commands/
 
 # Laravel specific
 /.phpunit.cache
