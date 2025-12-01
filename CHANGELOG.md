@@ -20,6 +20,38 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.0] - 2025-12-02
+
+### 📁 Project Documentation System
+
+**Context:** Centrale documentatie voor alle Havun projecten met credentials, server info en quick reference.
+
+#### Added
+
+**Project Docs (`docs/projects/`):**
+- `INDEX.md` - Overzicht alle projecten
+- `QUICK-REFERENCE.md` - Alle credentials & commands op 1 plek
+- `HAVUNCORE.md` - Centraal platform documentatie
+- `HAVUNADMIN.md` - Boekhouding project
+- `HERDENKINGSPORTAAL.md` - Memorial platform
+- `VPDUPDATE.md` - Sync tool
+- `BERTVANDERHEIDE.md` - Nieuw klant project (uitvaart website)
+
+**BertvanderHeide Server Setup:**
+- Directories aangemaakt (`/var/www/bertvanderheide/staging` + `production`)
+- MySQL database + user (`bertvanderheide_staging`)
+- Nginx vhost voor `bertvanderheide.havun.nl`
+- SSL certificaat (Let's Encrypt, geldig tot 2026-03-01)
+- Git bare repo met post-receive hook voor auto-deploy
+- Laravel .env geconfigureerd
+- Migrations gedraaid
+- Filament admin user aangemaakt
+
+#### Changed
+- `INDEX.md` bijgewerkt met link naar projecten folder
+
+---
+
 ## [1.1.0] - 2025-11-26
 
 ### 🔐 Vault System - Centralized Secrets Management

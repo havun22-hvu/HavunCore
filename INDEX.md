@@ -43,6 +43,16 @@ Installation, configuration, and integration guides.
 - [Other Projects Setup (EN)](docs/setup/SETUP-OTHER-PROJECTS.md) - English guide
 - [Setup Instructies (NL)](docs/setup/SETUP-INSTRUCTIES-VOOR-ANDERE-PROJECTEN.md) - Dutch guide
 
+### 🏢 [Projecten](docs/projects/)
+Overzicht van alle Havun projecten met credentials en server info.
+
+- [Index](docs/projects/INDEX.md) - Alle projecten overzicht
+- [Quick Reference](docs/projects/QUICK-REFERENCE.md) - Credentials & commands
+- [HavunCore](docs/projects/HAVUNCORE.md) - Centraal platform
+- [HavunAdmin](docs/projects/HAVUNADMIN.md) - Boekhouding
+- [Herdenkingsportaal](docs/projects/HERDENKINGSPORTAAL.md) - Memorial platform
+- [BertvanderHeide](docs/projects/BERTVANDERHEIDE.md) - Klant project
+
 ### 📖 [Guides & Quickstarts](docs/guides/)
 Quick reference guides and step-by-step tutorials.
 
