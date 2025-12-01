@@ -354,9 +354,18 @@ class WebAuthnController extends Controller
             'user_agent' => $ua,
         ];
 
+        // Generate device hash from fingerprint data
+        $deviceHash = hash('sha256', implode('|', [
+            $request->ip(),
+            $ua,
+            $user->id,
+            $credential->credential_id,
+        ]));
+
         $device = AuthDevice::create([
             'user_id' => $user->id,
             'token' => Str::random(64),
+            'device_hash' => $deviceHash,
             'device_name' => $credential->name,
             'browser' => $deviceInfo['browser'],
             'os' => $deviceInfo['os'],
