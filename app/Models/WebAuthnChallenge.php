@@ -8,6 +8,8 @@ use Illuminate\Support\Str;
 
 class WebAuthnChallenge extends Model
 {
+    protected $table = 'webauthn_challenges';
+
     protected $fillable = [
         'user_id',
         'challenge',
