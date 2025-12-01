@@ -328,8 +328,10 @@ class WebAuthnController extends Controller
         $authenticatorData = $this->base64urlDecode($credentialData['response']['authenticatorData']);
 
         // Check counter to prevent replay attacks
+        // Note: Some authenticators (especially mobile) may not increment counter reliably
+        // Only fail if counter goes backwards (not if it stays the same)
         $newCounter = $this->extractCounter($authenticatorData);
-        if ($newCounter !== null && $newCounter <= $credential->counter) {
+        if ($newCounter !== null && $credential->counter > 0 && $newCounter < $credential->counter) {
             return response()->json([
                 'success' => false,
                 'error' => 'Beveiligingsfout: counter mismatch',
