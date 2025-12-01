@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\MCPMessageController;
 use App\Http\Controllers\Api\QrAuthController;
 use App\Http\Controllers\Api\VaultController;
+use App\Http\Controllers\Api\WebAuthnController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -108,4 +109,20 @@ Route::prefix('auth')->group(function () {
 
     // Access logs
     Route::get('/logs', [DeviceController::class, 'logs'])->name('api.auth.logs');
+
+    // WebAuthn / Passkey endpoints
+    Route::prefix('webauthn')->group(function () {
+        // Registration (requires auth)
+        Route::get('/register-options', [WebAuthnController::class, 'registerOptions'])->name('api.auth.webauthn.register-options');
+        Route::post('/register', [WebAuthnController::class, 'register'])->name('api.auth.webauthn.register');
+
+        // Login (no auth required)
+        Route::get('/login-options', [WebAuthnController::class, 'loginOptions'])->name('api.auth.webauthn.login-options');
+        Route::post('/login', [WebAuthnController::class, 'login'])->name('api.auth.webauthn.login');
+        Route::get('/available', [WebAuthnController::class, 'available'])->name('api.auth.webauthn.available');
+
+        // Credential management (requires auth)
+        Route::get('/credentials', [WebAuthnController::class, 'credentials'])->name('api.auth.webauthn.credentials');
+        Route::delete('/credentials/{id}', [WebAuthnController::class, 'deleteCredential'])->name('api.auth.webauthn.credentials.delete');
+    });
 });

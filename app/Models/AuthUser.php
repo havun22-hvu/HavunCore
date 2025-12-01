@@ -60,6 +60,14 @@ class AuthUser extends Model
     }
 
     /**
+     * Get WebAuthn credentials for this user
+     */
+    public function webauthnCredentials(): HasMany
+    {
+        return $this->hasMany(WebAuthnCredential::class, 'user_id');
+    }
+
+    /**
      * Verify password
      */
     public function verifyPassword(string $password): bool
