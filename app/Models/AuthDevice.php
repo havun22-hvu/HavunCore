@@ -17,6 +17,9 @@ class AuthDevice extends Model
         'last_used_at',
         'ip_address',
         'is_active',
+        'browser',
+        'os',
+        'user_agent',
     ];
 
     protected $casts = [

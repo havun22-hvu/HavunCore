@@ -1,7 +1,8 @@
 # 🤖 Claude Session Guide - HavunCore
 
-**Last Updated:** 2025-11-26
+**Last Updated:** 2025-12-02
 **Status:** ✅ **PRODUCTION - HavunCore v1.0.0 Standalone App + Task Queue LIVE**
+**Role:** 🎛️ **Centrale beheerder van alle Havun projecten, server, backups & USB reis-backup**
 
 ---
 
@@ -55,7 +56,52 @@ Vuistregel: *"Raakt het credentials, keys, of systeemtoegang? → VRAAG EERST"*
 - 🏠 **Solo projects:** Work locally (D:\GitHub\)
 - ⬆️ **Always push** to server after commits
 - 📱 **On the road:** Use HavunCore webapp → server
-- 🏖️ **Vacation:** USB stick (after git pull locally)
+- 🏖️ **Vacation:** USB stick H: drive (after git pull locally)
+
+---
+
+## 💾 USB Reis-Backup (H: Drive)
+
+**Doel:** Portable development environment voor op reis/vakantie
+
+**Drive:** `H:\` (USB stick, alleen aangesloten tijdens reis)
+
+**Structuur:**
+```
+H:\
+├── GitHub\              # Mirror van D:\GitHub projecten
+│   ├── HavunCore\
+│   ├── HavunAdmin\
+│   ├── Herdenkingsportaal\
+│   └── ...
+└── tools\
+    └── npm-global\      # npm global packages (portable)
+```
+
+**Voor vertrek (sync naar USB):**
+```powershell
+# Pull latest van alle projecten
+cd D:\GitHub\HavunCore && git pull
+cd D:\GitHub\HavunAdmin && git pull
+cd D:\GitHub\Herdenkingsportaal && git pull
+
+# Kopieer naar USB
+robocopy D:\GitHub H:\GitHub /MIR /XD node_modules vendor .git
+```
+
+**Na terugkomst (sync terug):**
+```powershell
+# Push eventuele wijzigingen van USB naar GitHub
+cd H:\GitHub\HavunCore && git push
+# etc.
+```
+
+**⚠️ NPM Configuratie:**
+- Thuis: `npm config set prefix "C:\Users\henkv\AppData\Roaming\npm"`
+- Op reis: `npm config set prefix "H:\tools\npm-global"`
+- **Let op:** Als H: niet aangesloten is, geeft npm errors!
+
+**HavunCore beheert:** Documentatie en scripts voor USB backup sync
 
 ---
 
