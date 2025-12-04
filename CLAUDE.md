@@ -1,6 +1,6 @@
 # 🤖 Claude Session Guide - HavunCore
 
-**Last Updated:** 2025-12-02
+**Last Updated:** 2025-12-05
 **Status:** ✅ **PRODUCTION - HavunCore v1.0.0 Standalone App + Task Queue LIVE**
 **Role:** 🎛️ **Centrale beheerder van alle Havun projecten, server, backups & USB reis-backup**
 
@@ -311,13 +311,15 @@ systemctl restart claude-task-poller@havunadmin
 - `/socket.io/` → WebSocket (port 3001)
 
 **Features:**
-- ✅ Chat met Claude AI (~3 sec response)
+- ✅ Chat met Claude AI + **Tools** (kan bestanden lezen, tasks aanmaken)
 - ✅ "test" commando = instant status check
 - ✅ Status tab - server/database health
 - ✅ Tasks tab - takenlijst
 - ✅ Vault tab - project configuraties
 - ✅ Mobile-friendly (sticky input, paste/eye icons)
-- 🔜 Voice commands (vanavond)
+- ✅ Chat history blijft bewaard (localStorage)
+- ✅ Auto update check bij start + elke 5 min
+- ✅ Voice input (spraakherkenning)
 
 **Server Paths:**
 ```
@@ -347,6 +349,36 @@ pm2 status
 pm2 logs havuncore-backend
 pm2 restart havuncore-backend
 ```
+
+---
+
+### 🔐 Auth Architectuur (Updated 05-dec-2025)
+
+**Principe: Elke app beheert zijn eigen authenticatie!**
+
+| App | Auth Systeem | Package/Implementatie |
+|-----|--------------|----------------------|
+| **Herdenkingsportaal** | Eigen Laravel auth + WebAuthn | `laragear/webauthn` |
+| **HavunAdmin** | Eigen Laravel auth | Standaard Laravel |
+| **HavunCore Webapp** | Device tokens via HavunCore API | Custom implementation |
+| **VPDUpdate** | QR login (planned) | Via HavunCore API |
+
+**Waarom decentraal:**
+- ✅ Geen CORS issues (auth op zelfde domein)
+- ✅ Elke app is onafhankelijk
+- ✅ Makkelijker te debuggen per app
+- ✅ Geen single point of failure
+
+**HavunCore Auth API** (`/api/auth/*`):
+- Alleen voor HavunCore webapp zelf
+- Device token systeem
+- Niet bedoeld als centrale auth voor andere apps
+
+**Herdenkingsportaal Auth:**
+- Gebruikt `laragear/webauthn` package
+- Eigen database tabellen voor credentials
+- QR login + biometrische login
+- Volledig onafhankelijk van HavunCore
 
 ---
 
