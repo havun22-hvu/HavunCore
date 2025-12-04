@@ -359,7 +359,7 @@ pm2 restart havuncore-backend
 | App | Auth Systeem | Package/Implementatie |
 |-----|--------------|----------------------|
 | **Herdenkingsportaal** | Eigen Laravel auth + WebAuthn | `laragear/webauthn` |
-| **HavunAdmin** | Eigen Laravel auth | Standaard Laravel |
+| **HavunAdmin** | Eigen Laravel auth + WebAuthn | `laragear/webauthn` |
 | **HavunCore Webapp** | Device tokens via HavunCore API | Custom implementation |
 | **VPDUpdate** | QR login (planned) | Via HavunCore API |
 
