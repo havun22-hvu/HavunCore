@@ -1,42 +1,57 @@
 # Knowledge Base Index
 
-> Centrale kennisbank voor alle Havun projecten.
-> HavunCore is de hub, andere projecten verwijzen hierheen.
+> HavunCore bevat ALLEEN gedeelde resources.
+> Project-specifieke info staat in het project zelf.
+
+## Lees eerst
+
+- **[[PKM-SYSTEEM]]** - Hoe werkt ons kennissysteem
 
 ## Structuur
 
 ```
 docs/kb/
-├── INDEX.md          ← Je bent hier
-├── projects/         ← Info per project
-│   ├── havuncore.md
-│   ├── havunadmin.md
-│   ├── herdenkingsportaal.md
-│   └── vpdupdate.md
-├── runbooks/         ← Hoe doe ik X?
+├── INDEX.md              ← Je bent hier
+├── PKM-SYSTEEM.md        ← Hoe werkt het kennissysteem
+├── credentials.md        ← Alle wachtwoorden en keys
+├── projects-index.md     ← Overzicht alle projecten (kort)
+│
+├── contracts/            ← Gedeelde definities tussen projecten
+│   └── memorial-reference.md
+│
+├── templates/            ← Setup templates
+│   └── new-laravel-site.md
+│
+├── runbooks/             ← Algemene procedures
 │   ├── deploy.md
 │   ├── backup.md
-│   ├── troubleshoot.md
-│   └── new-project.md
-├── reference/        ← API's, specs
+│   └── troubleshoot.md
+│
+├── reference/            ← API's en server
 │   ├── api-taskqueue.md
 │   ├── api-vault.md
 │   └── server.md
-└── decisions/        ← Waarom beslissingen (ADRs)
+│
+└── decisions/            ← Architectuur beslissingen
     ├── 001-havuncore-standalone.md
     └── 002-decentrale-auth.md
 ```
 
 ## Quick Links
 
-### Projects
-- [[projects/havuncore]] - Centrale orchestratie platform
-- [[projects/havunadmin]] - Boekhouding & facturatie
-- [[projects/herdenkingsportaal]] - Memorial portal
-- [[projects/vpdupdate]] - Sync tool
+### Essentials
+- [[credentials]] - Wachtwoorden, API keys, SSH
+- [[projects-index]] - Overzicht alle projecten
+- [[PKM-SYSTEEM]] - Hoe werkt dit systeem
 
-### Runbooks
-- [[runbooks/deploy]] - Deployen naar production
+### Contracts (gedeelde definities)
+- [[contracts/memorial-reference]] - Memorial Reference format
+
+### Templates
+- [[templates/new-laravel-site]] - Nieuwe site opzetten
+
+### Runbooks (hoe doe ik X?)
+- [[runbooks/deploy]] - Deployen naar server
 - [[runbooks/backup]] - Backup systeem
 - [[runbooks/troubleshoot]] - Problemen oplossen
 
@@ -44,3 +59,16 @@ docs/kb/
 - [[reference/api-taskqueue]] - Task Queue API
 - [[reference/api-vault]] - Vault API
 - [[reference/server]] - Server configuratie
+
+### Decisions (waarom zo?)
+- [[decisions/001-havuncore-standalone]] - HavunCore als standalone app
+- [[decisions/002-decentrale-auth]] - Elke app eigen auth
+
+## Project-specifieke info
+
+Voor info over een specifiek project, lees de docs IN dat project:
+
+```
+{project}/CLAUDE.md
+{project}/.claude/context.md
+```
