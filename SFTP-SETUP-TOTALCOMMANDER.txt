@@ -1,0 +1,70 @@
+SFTP Setup voor Total Commander
+================================
+
+DOEL: Bestanden op de server bekijken/bewerken via Total Commander
+
+
+SERVER 1: Hetzner VPS (Productie)
+---------------------------------
+Host:     188.245.159.115
+Port:     22
+User:     root
+Auth:     SSH key (zelfde als voor SSH)
+
+Paden op server:
+- HavunCore:          /var/www/development/HavunCore
+- HavunCore Webapp:   /var/www/havuncore.havun.nl/public
+- HavunAdmin Prod:    /var/www/havunadmin/production
+- HavunAdmin Staging: /var/www/havunadmin/staging
+- Herdenkingsportaal: /var/www/herdenkingsportaal/production
+
+
+SERVER 2: Hetzner Storage Box (Backups)
+---------------------------------------
+Host:     u510616.your-storagebox.de
+Port:     23 (let op: NIET 22!)
+User:     u510616
+Password: G63^C@GB&PD2#jCl#1uj
+
+
+TOTAL COMMANDER SFTP INSTALLATIE:
+---------------------------------
+
+1. Download SFTP plugin:
+   https://www.ghisler.com/plugins.htm
+   Zoek naar "SFTP" onder "File System Plugins"
+
+2. Installeer plugin:
+   - Download SFTP.zip
+   - In TC: Configuration → Options → Plugins → WFX plugins
+   - Add → selecteer sftp.wfx uit zip
+   - Of: dubbelklik op zip in TC, hij vraagt automatisch om te installeren
+
+3. Verbinding maken:
+   - Ga naar: Network Neighborhood (of typ \\SFTP in adresbalk)
+   - "Quick Connection" of "New Connection"
+
+4. VPS connectie instellen:
+   - Session name: Havun Server
+   - Host: 188.245.159.115
+   - Port: 22
+   - Username: root
+   - Authentication: Public key
+   - Private key file: C:\Users\henkvu\.ssh\id_ed25519
+
+   LET OP: Selecteer de PRIVATE key (ZONDER .pub extensie!)
+
+5. Storage Box connectie instellen:
+   - Session name: Havun Backups
+   - Host: u510616.your-storagebox.de
+   - Port: 23
+   - Username: u510616
+   - Authentication: Password
+   - Password: G63^C@GB&PD2#jCl#1uj
+
+
+TIPS:
+-----
+- SSH key staat meestal in: C:\Users\[username]\.ssh\id_rsa
+- Bij problemen: check of poort 22 open is in firewall
+- Storage Box gebruikt poort 23, niet 22!

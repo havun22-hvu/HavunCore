@@ -13,7 +13,7 @@
     "require": {
         "php": "^8.2",
         "guzzlehttp/guzzle": "^7.8",
-        "laravel/framework": "^11.0",
+        "laravel/framework": "^11.0|^12.0",
         "laravel/tinker": "^2.9",
         "league/flysystem-sftp-v3": "^3.0"
     },
@@ -26,10 +26,10 @@
     },
     "autoload": {
         "psr-4": {
-            "Havun\Core\\": "src/",
+            "Havun\\Core\\": "src/",
             "App\\": "app/",
-            "Database\Factories\\": "database/factories/",
-            "Database\Seeders\\": "database/seeders/"
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
@@ -39,7 +39,7 @@
     },
     "scripts": {
         "post-autoload-dump": [
-            "Illuminate\Foundation\ComposerScripts::postAutoloadDump",
+            "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi"
         ],
         "post-update-cmd": [
