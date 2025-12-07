@@ -49,4 +49,5 @@ SESSION_SECURE_COOKIE=true
 - Minder debug-sessies om 2 uur 's nachts
 
 ## Zie ook
+- `docs/kb/runbooks/token-based-login.md` - Token exchange pattern voor AJAX login
 - `docs/kb/runbooks/fix-qr-login-csrf.md`
