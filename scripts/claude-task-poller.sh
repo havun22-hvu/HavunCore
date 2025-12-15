@@ -31,7 +31,7 @@ case "$PROJECT_NAME" in
         PROJECT_PATH="/var/www/havunadmin/production"
         ;;
     "herdenkingsportaal")
-        PROJECT_PATH="/var/www/production"
+        PROJECT_PATH="/var/www/herdenkingsportaal/production"
         ;;
     *)
         # Fallback: try development directory

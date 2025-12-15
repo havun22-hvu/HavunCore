@@ -131,7 +131,10 @@ class AuthDevice extends Model
         AuthUser $user,
         string $deviceName,
         string $deviceHash,
-        ?string $ipAddress = null
+        ?string $ipAddress = null,
+        ?string $browser = null,
+        ?string $os = null,
+        ?string $userAgent = null
     ): self {
         return static::create([
             'user_id' => $user->id,
@@ -142,6 +145,9 @@ class AuthDevice extends Model
             'last_used_at' => now(),
             'ip_address' => $ipAddress,
             'is_active' => true,
+            'browser' => $browser,
+            'os' => $os,
+            'user_agent' => $userAgent,
         ]);
     }
 }
