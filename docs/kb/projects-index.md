@@ -16,6 +16,8 @@
 - **HavunCore** - Centrale orchestrator, Task Queue API, Webapp
 - **Havun** - Bedrijfswebsite met portfolio
 - **Judotoernooi** - Judo toernooi management systeem
+  - `judotournament.org` = publieke introsite
+  - Open Wegsrijzen Cees Veen = password protected (voor Cees Veen)
 - **HavunAdmin** - Boekhouding en facturatie
 - **Herdenkingsportaal** - Memorial portal voor gedenkpagina's (LIVE met klantdata!)
 - **VPDUpdate** - Sync tool voor VPD data (in development)
