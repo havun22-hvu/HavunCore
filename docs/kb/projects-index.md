@@ -8,7 +8,7 @@
 | **HavunAdmin** | Laravel | havunadmin.havun.nl | D:\GitHub\HavunAdmin | /var/www/havunadmin/production |
 | **Herdenkingsportaal** | Laravel | herdenkingsportaal.nl | D:\GitHub\Herdenkingsportaal | /var/www/herdenkingsportaal/production |
 | **Havun** | Next.js | havun.nl | D:\GitHub\Havun | /var/www/havun.nl |
-| **Judotoernooi** | Laravel | judotoernooi.havun.nl | - | /var/www/judotoernooi |
+| **Judotoernooi** | Laravel | judotournament.org | - | /var/www/judotoernooi |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (nog niet deployed) |
 
 ## Korte beschrijving
