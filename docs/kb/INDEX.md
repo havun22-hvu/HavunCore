@@ -25,7 +25,8 @@ docs/kb/
 ├── runbooks/             ← Algemene procedures
 │   ├── deploy.md
 │   ├── backup.md
-│   └── troubleshoot.md
+│   ├── troubleshoot.md
+│   └── ssl-monitoring.md
 │
 ├── reference/            ← API's en server
 │   ├── api-taskqueue.md
@@ -56,6 +57,7 @@ docs/kb/
 - [[runbooks/deploy]] - Deployen naar server
 - [[runbooks/backup]] - Backup systeem
 - [[runbooks/troubleshoot]] - Problemen oplossen
+- [[runbooks/ssl-monitoring]] - SSL certificaat monitoring
 
 ### Reference
 - [[reference/api-taskqueue]] - Task Queue API
