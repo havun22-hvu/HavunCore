@@ -22,6 +22,26 @@
 - Na wijzigingen: git push naar server
 - Test lokaal eerst, dan deploy
 
+### Scope: wat hoort hier WEL en NIET
+
+**HavunCore lokaal (CLI) = alleen globale zaken:**
+- Server configuratie, deployments
+- SSL certificaten
+- GitHub repositories
+- Betalingen (Mollie/iDEAL)
+- Knowledge base bijwerken
+- Cross-project overzicht
+
+**NIET in HavunCore lokaal:**
+- Project-specifieke UI/code wijzigingen
+- Gedetailleerde feature implementaties voor andere projecten
+- Bij zulke vragen → WAARSCHUW: *"Dit is een vraag voor [project], niet HavunCore. Wil je daar naartoe switchen?"*
+
+**HavunCore Webapp (havuncore.havun.nl) = WEL gedetailleerd:**
+- Daar kunnen gedetailleerde vragen over andere projecten gesteld worden
+- Bedoeld voor debugging/troubleshooting via Task Queue
+- Orchestration van taken naar andere projecten
+
 ## Quick Reference
 
 | Project | Local | Server |
