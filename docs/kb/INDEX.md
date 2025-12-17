@@ -34,7 +34,9 @@ docs/kb/
 │
 └── decisions/            ← Architectuur beslissingen
     ├── 001-havuncore-standalone.md
-    └── 002-decentrale-auth.md
+    ├── 002-decentrale-auth.md
+    ├── 003-security-incident-ssh-key.md
+    └── 004-vision-orchestration.md
 ```
 
 ## Quick Links
@@ -63,6 +65,8 @@ docs/kb/
 ### Decisions (waarom zo?)
 - [[decisions/001-havuncore-standalone]] - HavunCore als standalone app
 - [[decisions/002-decentrale-auth]] - Elke app eigen auth
+- [[decisions/003-security-incident-ssh-key]] - SSH key incident (lessons learned)
+- [[decisions/004-vision-orchestration]] - Multi-Claude Orchestration visie
 
 ## Project-specifieke info
 
