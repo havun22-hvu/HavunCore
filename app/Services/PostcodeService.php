@@ -72,8 +72,14 @@ class PostcodeService
         try {
             $query = "postcode:{$postcode} AND huisnummer:{$huisnummer}";
 
-            $response = Http::timeout(5)
-                ->get(self::PDOK_URL, [
+            $http = Http::timeout(5);
+
+            // Skip SSL verification on local/staging (Windows CA bundle issue)
+            if (app()->environment('local', 'staging')) {
+                $http = $http->withoutVerifying();
+            }
+
+            $response = $http->get(self::PDOK_URL, [
                     'q' => $query,
                     'fq' => 'type:adres',
                     'rows' => 1,
