@@ -31,6 +31,8 @@ docs/kb/
 ├── reference/            ← API's en server
 │   ├── api-taskqueue.md
 │   ├── api-vault.md
+│   ├── backup-system.md
+│   ├── unified-login-system.md
 │   └── server.md
 │
 └── decisions/            ← Architectuur beslissingen
@@ -62,6 +64,8 @@ docs/kb/
 ### Reference
 - [[reference/api-taskqueue]] - Task Queue API
 - [[reference/api-vault]] - Vault API
+- [[reference/backup-system]] - Backup architectuur & Hetzner
+- [[reference/unified-login-system]] - Passkeys & QR login
 - [[reference/server]] - Server configuratie
 
 ### Decisions (waarom zo?)
