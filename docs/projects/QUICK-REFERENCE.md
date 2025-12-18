@@ -17,7 +17,7 @@ ssh root@188.245.159.115
 | Project | Database | User | Password |
 |---------|----------|------|----------|
 | HavunCore | havuncore | havuncore | HavunCore2025 |
-| BertvanderHeide | bertvanderheide_staging | bertvanderheide | nVQSmqcuTW3VZMi7AwrN |
+| HavunVet | havunvet_staging | havunvet | aAOon9yeBuNTjJdKt3Q |
 
 ## Admin Logins
 
