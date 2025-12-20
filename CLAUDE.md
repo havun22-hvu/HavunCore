@@ -49,6 +49,7 @@
 | HavunCore | D:\GitHub\HavunCore | /var/www/development/HavunCore |
 | HavunAdmin | D:\GitHub\HavunAdmin | /var/www/havunadmin/production |
 | Herdenkingsportaal | D:\GitHub\Herdenkingsportaal | /var/www/herdenkingsportaal/production |
+| Infosyst | D:\GitHub\infosyst | (nog niet deployed) |
 
 **Server:** 188.245.159.115 (root, SSH key)
 

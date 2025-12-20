@@ -10,6 +10,7 @@
 | **Havun** | Next.js | havun.nl | D:\GitHub\Havun | /var/www/havun.nl |
 | **Judotoernooi** | Laravel | judotournament.org | - | /var/www/judotoernooi |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (nog niet deployed) |
+| **Infosyst** | Laravel 12 | TBD | D:\GitHub\infosyst | (nog niet deployed) |
 
 ## Korte beschrijving
 
@@ -21,6 +22,7 @@
 - **HavunAdmin** - Boekhouding en facturatie
 - **Herdenkingsportaal** - Memorial portal voor gedenkpagina's (LIVE met klantdata!)
 - **VPDUpdate** - Sync tool voor VPD data (in development)
+- **Infosyst** - Kennisbank/documentatie systeem (in development)
 
 ## Voor project-specifieke info
 
