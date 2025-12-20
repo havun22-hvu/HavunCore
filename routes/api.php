@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AIProxyController;
 use App\Http\Controllers\Api\ClaudeTaskController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\MCPMessageController;
@@ -125,4 +126,11 @@ Route::prefix('auth')->group(function () {
         Route::get('/credentials', [WebAuthnController::class, 'credentials'])->name('api.auth.webauthn.credentials');
         Route::delete('/credentials/{id}', [WebAuthnController::class, 'deleteCredential'])->name('api.auth.webauthn.credentials.delete');
     });
+});
+
+// AI Proxy API - Central Claude API proxy for all projects
+Route::prefix('ai')->group(function () {
+    Route::post('/chat', [AIProxyController::class, 'chat'])->name('api.ai.chat');
+    Route::get('/usage', [AIProxyController::class, 'usage'])->name('api.ai.usage');
+    Route::get('/health', [AIProxyController::class, 'health'])->name('api.ai.health');
 });
