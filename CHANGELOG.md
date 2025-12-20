@@ -20,6 +20,28 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.1] - 2025-12-20
+
+### 🆕 Infosyst Project Setup
+
+**Context:** Nieuw project voor kennisbank + AI training data generator met eigen LLM hosting.
+
+#### Added
+
+**Infosyst Project:**
+- Laravel 12.43.1 fresh install in `D:\GitHub\infosyst`
+- Private GitHub repo: `havun22-hvu/infosyst`
+- CLAUDE.md met project instructies
+- Database migrations voor kennisbank structuur (categories, articles, sources, references, training_data)
+- AI integratie docs (Ollama, LoRA fine-tuning)
+
+**HavunCore Docs:**
+- Infosyst toegevoegd aan `CLAUDE.md` Quick Reference
+- Infosyst toegevoegd aan `docs/kb/projects-index.md`
+- Beschrijving: Kennisbank + AI training data generator + Ollama hosting (lokaal via Tailscale)
+
+---
+
 ## [1.2.0] - 2025-12-02
 
 ### 📁 Project Documentation System
