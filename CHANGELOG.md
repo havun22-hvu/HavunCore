@@ -20,6 +20,47 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.2] - 2025-12-21
+
+### 🤖 AI Proxy API
+
+**Context:** Centrale Claude API proxy voor alle Havun projecten. Infosyst en andere apps kunnen via HavunCore AI-calls doen zonder eigen API key beheer.
+
+#### Added
+
+**AI Proxy Endpoint:**
+- `POST /api/ai/chat` - Centrale Claude API calls per tenant
+- `GET /api/ai/usage` - Usage statistieken per tenant/periode
+- `GET /api/ai/health` - Health check voor AI service
+
+**Backend:**
+- `AIProxyController` - Request handling, validatie
+- `AIProxyService` - Claude API calls, rate limiting, usage logging
+- `AIUsageLog` model - Token usage tracking per tenant
+- Migration `ai_usage_logs` tabel
+
+**Tenants:**
+- infosyst (maatschappelijk/politiek)
+- herdenkingsportaal (memorial support)
+- havunadmin (facturatie)
+- havuncore (technisch)
+
+**Features:**
+- Rate limiting (60 req/min per tenant)
+- Usage logging voor kosten inzicht
+- Custom system prompts per tenant
+- Context array support
+
+**Documentatie:**
+- `docs/kb/reference/ai-proxy.md` - API referentie
+- Infosyst `CLAUDE.md` + `docs/havuncore.md` geüpdatet
+
+**Server:**
+- Nginx config aangepast voor `/api/ai/*` routes
+- API key geconfigureerd in `.env`
+
+---
+
 ## [1.2.1] - 2025-12-20
 
 ### 🆕 Infosyst Project Setup
