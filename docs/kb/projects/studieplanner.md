@@ -183,4 +183,4 @@ MAIL_FROM_NAME="StudiePlanner"
 
 ## Contact
 
-Eigenaar: Henk van Velzen
+Eigenaar: Henk van Unen

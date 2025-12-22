@@ -1,6 +1,6 @@
 # 📖 Stap-voor-Stap Gebruiksaanwijzing HavunCore Orchestration
 
-**Voor:** Henk van Velzen
+**Voor:** Henk van Unen
 **Versie:** 1.0
 **Datum:** 18 november 2025
 

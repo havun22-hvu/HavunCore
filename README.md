@@ -295,5 +295,5 @@ Proprietary - Havun projects only
 
 **Version:** 1.0.0
 **Last Updated:** 2025-11-25
-**Author:** Henk van Velzen
+**Author:** Henk van Unen
 **Production:** https://havuncore.havun.nl

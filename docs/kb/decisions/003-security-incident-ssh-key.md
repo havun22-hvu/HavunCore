@@ -199,4 +199,4 @@ git push
 **Handtekening incident:**
 - Datum: 24 november 2025
 - Opgelost door: Claude Code (onder supervisie eigenaar)
-- Geverifieerd door: Henk van Velzen (eigenaar)
+- Geverifieerd door: Henk van Unen (eigenaar)

@@ -1189,4 +1189,4 @@ We gebruiken [Keep a Changelog](https://keepachangelog.com/) format:
 ---
 
 **Laatste update:** 2025-11-15
-**Maintainer:** Henk van Velzen <havun22@example.com>
+**Maintainer:** Henk van Unen

@@ -1,7 +1,7 @@
 # 📧 Notificatie HavunAdmin Team - Offsite Backup Systeem
 
 **Aan:** HavunAdmin Team
-**Van:** Henk van Velzen / IT
+**Van:** Henk van Unen / IT
 **Datum:** 22 november 2025
 **Onderwerp:** ✅ Offsite Backup Systeem Nu Actief
 
@@ -222,7 +222,7 @@ Vanaf nu zijn alle HavunAdmin gegevens:
 
 ---
 
-**Opgesteld door:** Henk van Velzen
+**Opgesteld door:** Henk van Unen
 **Datum:** 22 november 2025
 **Versie:** 1.0
 **Status:** ✅ Productie
