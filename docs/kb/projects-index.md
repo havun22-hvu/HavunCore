@@ -11,6 +11,7 @@
 | **Judotoernooi** | Laravel | judotournament.org | - | /var/www/judotoernooi |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (nog niet deployed) |
 | **Infosyst** | Laravel 12 + Ollama | lokaal (Tailscale) | D:\GitHub\infosyst | lokaal hosting |
+| **Studieplanner** | Laravel | studieplanner.havun.nl | D:\GitHub\Studieplanner | /var/www/studieplanner/production |
 
 ## Korte beschrijving
 
@@ -23,6 +24,7 @@
 - **Herdenkingsportaal** - Memorial portal voor gedenkpagina's (LIVE met klantdata!)
 - **VPDUpdate** - Sync tool voor VPD data (in development)
 - **Infosyst** - Kennisbank + AI training data generator + eigen LLM hosting (Ollama)
+- **Studieplanner** - Planning tool voor leerlingen/mentoren met vakken, huiswerk, notificaties
 
 ## Voor project-specifieke info
 

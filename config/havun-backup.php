@@ -138,6 +138,48 @@ return [
             ],
         ],
 
+        'studieplanner' => [
+            'enabled' => env('BACKUP_STUDIEPLANNER_ENABLED', true),
+            'type' => 'laravel-app',
+            'priority' => 'medium',
+            'schedule' => '0 5 * * *', // Daily at 05:00
+
+            'paths' => [
+                'root' => env('STUDIEPLANNER_PATH', '/var/www/studieplanner/production'),
+                'database' => env('STUDIEPLANNER_DATABASE', 'studieplanner'),
+            ],
+
+            'include' => [
+                'database' => true,
+                'files' => [
+                    'storage/app/public',
+                ],
+                'config' => true,
+            ],
+
+            'retention' => [
+                'hot_retention_days' => 30,
+                'archive_retention_years' => 1, // Geen fiscale/GDPR vereisten
+                'auto_cleanup_archive' => true,
+            ],
+
+            'compliance' => [
+                'required' => false,
+                'data_classification' => 'internal',
+            ],
+
+            'encryption' => [
+                'enabled' => true,
+                'password' => env('BACKUP_ENCRYPTION_PASSWORD'),
+            ],
+
+            'notifications' => [
+                'email' => [env('BACKUP_NOTIFICATION_EMAIL', 'havun22@gmail.com')],
+                'on_success' => 'weekly-digest',
+                'on_failure' => 'immediate',
+            ],
+        ],
+
         'havuncore' => [
             'enabled' => env('BACKUP_HAVUNCORE_ENABLED', false), // Disabled by default
             'type' => 'laravel-package',
