@@ -50,6 +50,7 @@
 | HavunAdmin | D:\GitHub\HavunAdmin | /var/www/havunadmin/production |
 | Herdenkingsportaal | D:\GitHub\Herdenkingsportaal | /var/www/herdenkingsportaal/production |
 | Infosyst | D:\GitHub\infosyst | (nog niet deployed) |
+| Studieplanner | D:\GitHub\HavunStudieplanner | /var/www/studieplanner/production |
 
 **Server:** 188.245.159.115 (root, SSH key)
 
