@@ -1,8 +1,23 @@
 # HavunCore - Claude Instructions
 
-> **Role:** Centrale hub voor alle Havun projecten
+> **Role:** Centrale kennisbank & orchestrator voor ALLE Havun projecten
 > **Type:** Standalone Laravel 11 app + Task Queue API
 > **URL:** https://havuncore.havun.nl
+
+## 🧠 WAT IS HAVUNCORE?
+
+**HavunCore is de "alles weter" - de centrale bibliotheek die:**
+- Patterns, methoden en oplossingen bevat voor alle projecten
+- Credentials, API keys en configuraties beheert (Vault)
+- Herbruikbare code en templates biedt
+- Advies geeft over implementaties in elk project
+- De kennisbron is waar alle apps op terugvallen
+
+**Als iemand vraagt "hoe doe ik X in project Y?":**
+1. ✅ Geef advies, patterns, voorbeeldcode vanuit HavunCore's kennis
+2. ✅ Zoek in de knowledge base naar bestaande oplossingen
+3. ✅ Maak een implementatieplan
+4. ❌ Alleen het UITVOEREN van code in andere projecten → switch naar dat project
 
 ## Rules (ALWAYS follow)
 
@@ -21,26 +36,6 @@
 - HavunCore ALLEEN lokaal bewerken (te kritiek voor Task Queue)
 - Na wijzigingen: git push naar server
 - Test lokaal eerst, dan deploy
-
-### Scope: wat hoort hier WEL en NIET
-
-**HavunCore lokaal (CLI) = alleen globale zaken:**
-- Server configuratie, deployments
-- SSL certificaten
-- GitHub repositories
-- Betalingen (Mollie/iDEAL)
-- Knowledge base bijwerken
-- Cross-project overzicht
-
-**NIET in HavunCore lokaal:**
-- Project-specifieke UI/code wijzigingen
-- Gedetailleerde feature implementaties voor andere projecten
-- Bij zulke vragen → WAARSCHUW: *"Dit is een vraag voor [project], niet HavunCore. Wil je daar naartoe switchen?"*
-
-**HavunCore Webapp (havuncore.havun.nl) = WEL gedetailleerd:**
-- Daar kunnen gedetailleerde vragen over andere projecten gesteld worden
-- Bedoeld voor debugging/troubleshooting via Task Queue
-- Orchestration van taken naar andere projecten
 
 ## Quick Reference
 
@@ -65,6 +60,7 @@ Zoek info in deze folders:
 | Hoe doe ik X? | `docs/kb/runbooks/` |
 | API specs, referenties | `docs/kb/reference/` |
 | Waarom beslissingen | `docs/kb/decisions/` |
+| Herbruikbare patterns | `docs/kb/patterns/` |
 
 ## MCP Tools
 

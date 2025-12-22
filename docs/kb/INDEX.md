@@ -16,6 +16,12 @@ docs/kb/
 ├── credentials.md        ← Alle wachtwoorden en keys
 ├── projects-index.md     ← Overzicht alle projecten (kort)
 │
+├── projects/             ← Per-project details
+│   └── studieplanner.md
+│
+├── patterns/             ← Herbruikbare code patterns
+│   └── email-verification.md
+│
 ├── contracts/            ← Gedeelde definities tussen projecten
 │   └── memorial-reference.md
 │
@@ -39,7 +45,8 @@ docs/kb/
     ├── 001-havuncore-standalone.md
     ├── 002-decentrale-auth.md
     ├── 003-security-incident-ssh-key.md
-    └── 004-vision-orchestration.md
+    ├── 004-vision-orchestration.md
+    └── 005-studieplanner-architecture.md
 ```
 
 ## Quick Links
@@ -68,11 +75,18 @@ docs/kb/
 - [[reference/unified-login-system]] - Passkeys & QR login
 - [[reference/server]] - Server configuratie
 
+### Patterns (herbruikbare code)
+- [[patterns/email-verification]] - Email verificatie met 6-cijferige code
+
+### Projects (per-project details)
+- [[projects/studieplanner]] - Studieplanner app info
+
 ### Decisions (waarom zo?)
 - [[decisions/001-havuncore-standalone]] - HavunCore als standalone app
 - [[decisions/002-decentrale-auth]] - Elke app eigen auth
 - [[decisions/003-security-incident-ssh-key]] - SSH key incident (lessons learned)
 - [[decisions/004-vision-orchestration]] - Multi-Claude Orchestration visie
+- [[decisions/005-studieplanner-architecture]] - Studieplanner architecture
 
 ## Project-specifieke info
 
