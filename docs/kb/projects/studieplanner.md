@@ -134,6 +134,53 @@ php artisan migrate
 php artisan config:clear
 ```
 
+## Implementatie Roadmap
+
+### Fase 1: Backend Auth ✅ KLAAR (22 dec 2025)
+- [x] Laravel 11 + Sanctum project aangemaakt
+- [x] User model met pincode + verificatie velden
+- [x] AuthController met register/login/reset endpoints
+- [x] Email templates (plain text)
+
+### Fase 2: Email Service (TODO - eind week)
+- [ ] SendGrid configureren (zelfde account als Herdenkingsportaal)
+- [ ] Domain authenticeren: `studieplanner.havun.nl`
+- [ ] `.env` configureren met SendGrid API key
+- [ ] Test email versturen
+
+**SendGrid config voor `.env`:**
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.sendgrid.net
+MAIL_PORT=587
+MAIL_USERNAME=apikey
+MAIL_PASSWORD=SG.xxxxx  # Uit HavunCore Vault of Herdenkingsportaal
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=noreply@studieplanner.havun.nl
+MAIL_FROM_NAME="StudiePlanner"
+```
+
+### Fase 3: Backend Deploy (TODO)
+- [ ] Server folder aanmaken: `/var/www/studieplanner-api`
+- [ ] Git clone + composer install
+- [ ] Database aanmaken: `studieplanner`
+- [ ] `.env` configureren op server
+- [ ] Nginx config voor API subdomain
+- [ ] SSL certificaat
+
+### Fase 4: Frontend Koppeling (TODO)
+- [ ] API base URL configureren in React app
+- [ ] Auth flows implementeren (register, login, reset)
+- [ ] Token opslaan in localStorage
+- [ ] Protected routes
+
+### Fase 5: Mentor Features (TODO)
+- [ ] Sessie endpoints (start/stop)
+- [ ] Mentor notificaties (polling)
+- [ ] Chat endpoints
+
+---
+
 ## Contact
 
 Eigenaar: Henk van Velzen
