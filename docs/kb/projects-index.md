@@ -25,6 +25,10 @@
 - **VPDUpdate** - Sync tool voor VPD data (in development)
 - **Infosyst** - Kennisbank + AI training data generator + eigen LLM hosting (Ollama)
 - **Studieplanner** - Planning tool voor leerlingen/mentoren met vakken, huiswerk, notificaties
+  - PWA met eigen Laravel backend
+  - Mentor-leerling koppeling via API
+  - Polling voor notificaties (geen Firebase)
+  - Zie: [[decisions/005-studieplanner-architecture]]
 
 ## Voor project-specifieke info
 
