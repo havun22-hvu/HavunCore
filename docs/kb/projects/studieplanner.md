@@ -1,6 +1,7 @@
 # Project: Studieplanner
 
 **URL:** https://studieplanner.havun.nl
+**API:** https://studieplanner.havun.nl/api/ (geen apart subdomain)
 **Type:** React PWA (frontend) + Laravel API (backend)
 
 ## Repositories
