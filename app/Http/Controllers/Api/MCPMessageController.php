@@ -16,7 +16,7 @@ class MCPMessageController extends Controller
      */
     public function index(): JsonResponse
     {
-        $projects = ['HavunCore', 'HavunAdmin', 'Herdenkingsportaal'];
+        $projects = ['HavunCore', 'HavunAdmin', 'Herdenkingsportaal', 'Studieplanner'];
         $messages = [];
 
         foreach ($projects as $project) {
