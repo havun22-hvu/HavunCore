@@ -103,6 +103,24 @@ Gebruikt zelfde SMTP als andere Havun projecten:
 - Host: Zie `.env` of HavunCore Vault
 - Van: noreply@studieplanner.havun.nl
 
+## Credentials Locaties
+
+> **Let op:** Credentials NOOIT in code of publieke docs!
+
+| Wat | Waar te vinden |
+|-----|----------------|
+| DB wachtwoord | Kopieer van server: `/var/www/herdenkingsportaal/production/.env` (DB_PASSWORD) |
+| SendGrid API key | Kopieer van server: `/var/www/herdenkingsportaal/production/.env` (MAIL_PASSWORD) |
+| APP_KEY | Genereer nieuw: `php artisan key:generate` |
+
+**Server .env setup:**
+```bash
+# Op server, kopieer credentials van bestaand project:
+ssh root@188.245.159.115
+cat /var/www/herdenkingsportaal/production/.env | grep -E "^(DB_PASSWORD|MAIL_)"
+# Gebruik deze waarden in /var/www/studieplanner-api/.env
+```
+
 ## Deployment
 
 ### Frontend (React)
