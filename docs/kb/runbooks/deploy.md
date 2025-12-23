@@ -76,6 +76,72 @@ scp backend/src/*.js root@188.245.159.115:/var/www/havuncore.havun.nl/backend/sr
 ssh root@188.245.159.115 "pm2 restart havuncore-backend"
 ```
 
+## Studieplanner
+
+### Frontend (React)
+```bash
+# 1. Lokaal builden en pushen
+cd D:\GitHub\Studieplanner
+npm run build
+git add .
+git commit -m "Description"
+git push
+
+# 2. Server deploy
+ssh root@188.245.159.115
+cd /var/www/studieplanner/production
+git pull origin master
+npm ci && npm run build
+```
+
+### Backend (Laravel API)
+```bash
+# 1. Lokaal pushen
+cd D:\GitHub\Studieplanner-api
+git add .
+git commit -m "Description"
+git push
+
+# 2. Server deploy
+ssh root@188.245.159.115
+cd /var/www/studieplanner-api
+git pull origin master
+composer install --no-dev
+php artisan migrate
+php artisan config:clear
+php artisan cache:clear
+```
+
+### Eerste keer server setup (backend)
+```bash
+ssh root@188.245.159.115
+
+# 1. Database aanmaken
+mysql -u root -p
+CREATE DATABASE studieplanner;
+GRANT ALL ON studieplanner.* TO 'havun'@'localhost';
+FLUSH PRIVILEGES;
+exit;
+
+# 2. Git clone
+mkdir -p /var/www/studieplanner-api
+cd /var/www/studieplanner-api
+git clone git@github.com:USERNAME/Studieplanner-api.git .
+
+# 3. Laravel setup
+composer install --no-dev
+cp .env.example .env
+nano .env  # Configureer DB, MAIL, APP_URL
+php artisan key:generate
+php artisan migrate
+
+# 4. Permissions
+chown -R www-data:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
+```
+
+---
+
 ## Checklist na deploy
 
 - [ ] Config cache gecleared
