@@ -49,7 +49,7 @@ php artisan havun:backup:list
 
 ```bash
 sftp -P 23 u510616@u510616.your-storagebox.de
-# Password: G63^C@GB&PD2#jCl#1uj
+# Password: zie context.md
 
 cd havunadmin/archive/2025/12
 ls -la
