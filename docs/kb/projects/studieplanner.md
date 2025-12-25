@@ -167,17 +167,7 @@ php artisan config:clear
 - [ ] `.env` configureren met SendGrid API key
 - [ ] Test email versturen
 
-**SendGrid config voor `.env`:**
-```env
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.sendgrid.net
-MAIL_PORT=587
-MAIL_USERNAME=apikey
-MAIL_PASSWORD=SG.xxxxx  # Uit HavunCore Vault of Herdenkingsportaal
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS=noreply@studieplanner.havun.nl
-MAIL_FROM_NAME="StudiePlanner"
-```
+**SendGrid config:** Kopieer MAIL_* settings van Herdenkingsportaal `.env` op server.
 
 ### Fase 3: Backend Deploy (TODO)
 - [ ] Server folder aanmaken: `/var/www/studieplanner-api`

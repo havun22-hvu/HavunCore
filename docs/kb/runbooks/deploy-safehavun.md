@@ -63,14 +63,7 @@ DB_DATABASE=safehavun
 DB_USERNAME=safehavun
 DB_PASSWORD=JOUW_WACHTWOORD
 
-# Mail (kopieer van ander project)
-MAIL_MAILER=smtp
-MAIL_HOST=smtp.sendgrid.net
-MAIL_PORT=587
-MAIL_USERNAME=apikey
-MAIL_PASSWORD=SG.xxxxx
-MAIL_FROM_ADDRESS=noreply@safehavun.havun.nl
-MAIL_FROM_NAME="SafeHavun"
+# Mail: kopieer MAIL_* settings van Herdenkingsportaal .env op server
 ```
 
 ```bash
