@@ -46,6 +46,7 @@
 | Herdenkingsportaal | D:\GitHub\Herdenkingsportaal | /var/www/herdenkingsportaal/production |
 | Infosyst | D:\GitHub\infosyst | (nog niet deployed) |
 | Studieplanner | D:\GitHub\Studieplanner | /var/www/studieplanner/production |
+| SafeHavun | D:\GitHub\SafeHavun | /var/www/safehavun/production |
 
 **Server:** 188.245.159.115 (root, SSH key)
 
