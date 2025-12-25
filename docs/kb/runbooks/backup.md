@@ -19,7 +19,7 @@ Automatisch via cron om 03:00:
 ## Health check
 
 ```bash
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 cd /var/www/herdenkingsportaal/production
 php artisan havun:backup:health
 ```

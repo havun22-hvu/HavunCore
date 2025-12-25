@@ -5,7 +5,7 @@
 ## 1. Server directories
 
 ```bash
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 
 # Maak directories
 mkdir -p /var/www/{project}/staging

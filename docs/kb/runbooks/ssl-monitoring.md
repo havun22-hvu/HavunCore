@@ -12,7 +12,7 @@
 ## Handmatig uitvoeren
 
 ```bash
-ssh root@188.245.159.115 "/usr/local/bin/check-ssl-certs"
+ssh root@SERVER_IP (zie context.md) "/usr/local/bin/check-ssl-certs"
 ```
 
 ## Output voorbeeld
@@ -28,7 +28,7 @@ ssh root@188.245.159.115 "/usr/local/bin/check-ssl-certs"
 Certificaat handmatig vernieuwen:
 
 ```bash
-ssh root@188.245.159.115 "certbot certonly --nginx -d <domein> --force-renewal"
+ssh root@SERVER_IP (zie context.md) "certbot certonly --nginx -d <domein> --force-renewal"
 ```
 
 ## Alle certificaten

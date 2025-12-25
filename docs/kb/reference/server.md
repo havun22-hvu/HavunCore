@@ -6,7 +6,7 @@
 
 | | |
 |---|---|
-| **IP** | 188.245.159.115 |
+| **IP** | SERVER_IP (zie context.md) |
 | **User** | root |
 | **Auth** | SSH key |
 | **OS** | Ubuntu |
@@ -15,7 +15,7 @@
 ## SSH Toegang
 
 ```bash
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 ```
 
 ## Directory Structuur

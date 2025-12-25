@@ -117,7 +117,7 @@ Gebruikt zelfde SMTP als andere Havun projecten:
 **Server .env setup:**
 ```bash
 # Op server, kopieer credentials van bestaand project:
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 cat /var/www/herdenkingsportaal/production/.env | grep -E "^(DB_PASSWORD|MAIL_)"
 # Gebruik deze waarden in /var/www/studieplanner-api/.env
 ```
@@ -132,7 +132,7 @@ npm run build
 git add . && git commit -m "message" && git push
 
 # Server
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 cd /var/www/studieplanner/production
 git pull origin master
 npm ci && npm run build
@@ -145,7 +145,7 @@ cd D:\GitHub\Studieplanner-api
 git add . && git commit -m "message" && git push
 
 # Server
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 cd /var/www/studieplanner-api
 git pull origin master
 composer install --no-dev

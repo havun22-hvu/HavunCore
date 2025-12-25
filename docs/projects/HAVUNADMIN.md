@@ -18,7 +18,7 @@
 ## Server
 
 ```
-Server:     188.245.159.115
+Server:     SERVER_IP (zie context.md)
 User:       root
 SSH:        Key authentication
 ```

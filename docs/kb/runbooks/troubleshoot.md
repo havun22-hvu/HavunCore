@@ -6,7 +6,7 @@
 
 ```bash
 # Test SSH
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 
 # Als dat faalt, check Hetzner console:
 # https://console.hetzner.com

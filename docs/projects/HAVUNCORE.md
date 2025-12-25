@@ -15,13 +15,9 @@
 
 ---
 
-## Server
+## Server & Credentials
 
-```
-Server:     188.245.159.115
-User:       root
-SSH:        Key authentication
-```
+> Zie `.claude/context.md` voor server info, database credentials en login gegevens.
 
 ### Paden
 
@@ -29,16 +25,6 @@ SSH:        Key authentication
 Laravel:    /var/www/development/HavunCore
 Webapp:     /var/www/havuncore.havun.nl/public/
 Backend:    /var/www/havuncore.havun.nl/backend/
-```
-
----
-
-## Database
-
-```
-Database:   havuncore
-User:       havuncore
-Password:   HavunCore2025
 ```
 
 ---
@@ -53,10 +39,11 @@ Lokaal:     D:\GitHub\HavunCore (ALLEEN lokaal bewerken!)
 
 ---
 
-## Task Queue API
+## APIs
 
 ```
-Endpoint:   https://havuncore.havun.nl/api/claude/tasks
+Task Queue: https://havuncore.havun.nl/api/claude/tasks
+Vault:      https://havuncore.havun.nl/api/vault/
 ```
 
 ### Poller Services
@@ -68,26 +55,12 @@ herdenkingsportaal: ACTIVE
 
 ---
 
-## Vault API
-
-```
-Endpoint:   https://havuncore.havun.nl/api/vault/
-```
-
----
-
 ## Webapp
 
 ```
 Frontend:   React SPA
 Backend:    Node.js + Express + Socket.io
 PM2:        havuncore-backend (port 3001)
-```
-
-### Login
-```
-Email:      henkvu@gmail.com
-Password:   T3@t@Do2AEPKJBlI2Ltg
 ```
 
 ---
@@ -117,9 +90,9 @@ Password:   T3@t@Do2AEPKJBlI2Ltg
 
 - **HavunAdmin:** Consumer van Task Queue + Vault
 - **Herdenkingsportaal:** Consumer van Task Queue + Vault
-- **VPDUpdate:** Consumer van shared services
-- **BertvanderHeide:** Nieuw project, optionele integratie
+- **SafeHavun:** Consumer van Vault
+- **Studieplanner:** Consumer van Vault
 
 ---
 
-*Laatst bijgewerkt: 2025-12-02*
+*Laatst bijgewerkt: 2025-12-25*

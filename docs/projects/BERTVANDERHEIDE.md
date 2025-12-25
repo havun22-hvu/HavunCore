@@ -57,7 +57,7 @@
 ### Staging Omgeving
 ```
 URL:      https://bertvanderheide.havun.nl
-Server:   188.245.159.115
+Server:   SERVER_IP (zie context.md)
 Path:     /var/www/bertvanderheide/staging
 Database: bertvanderheide_staging
 PHP:      8.2+
@@ -75,7 +75,7 @@ SSL:      Let's Encrypt
 ### Git Repo op Server
 ```
 Bare repo: /var/www/bertvanderheide/repo.git
-Remote:    git remote add staging root@188.245.159.115:/var/www/bertvanderheide/repo.git
+Remote:    git remote add staging root@SERVER_IP (zie context.md):/var/www/bertvanderheide/repo.git
 Push:      git push staging main
 ```
 
@@ -143,7 +143,7 @@ Dit project kan:
 
 **Gekozen: Hetzner VPS (bestaand)**
 ```
-Server: 188.245.159.115
+Server: SERVER_IP (zie context.md)
 User: root
 SSH: Key authentication
 ```

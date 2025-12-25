@@ -12,7 +12,7 @@
 
 - **Key:** `id_ed25519_github` / `id_ed25519_github.pub`
 - **Label op GitHub:** `havun-server-deployment`
-- **Locatie:** `/root/.ssh/` op productieserver (188.245.159.115)
+- **Locatie:** `/root/.ssh/` op productieserver (SERVER_IP (zie context.md))
 - **Reden:** Task Queue System implementatie
 - **Probleem:** Geen communicatie naar eigenaar
 

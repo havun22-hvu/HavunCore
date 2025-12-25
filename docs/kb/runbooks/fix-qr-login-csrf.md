@@ -13,12 +13,12 @@ De QR login routes (`/auth/qr/*`) waren niet uitgezonderd van Laravel's CSRF mid
 
 ### 1. Check logs voor QR activiteit
 ```bash
-ssh root@188.245.159.115 "grep -i 'qr' /var/www/herdenkingsportaal/staging/storage/logs/laravel.log | tail -20"
+ssh root@SERVER_IP (zie context.md) "grep -i 'qr' /var/www/herdenkingsportaal/staging/storage/logs/laravel.log | tail -20"
 ```
 
 ### 2. Test approve endpoint direct
 ```bash
-ssh root@188.245.159.115 "curl -s -X POST 'https://staging.herdenkingsportaal.nl/auth/qr/approve/testtoken' -H 'Accept: application/json'"
+ssh root@SERVER_IP (zie context.md) "curl -s -X POST 'https://staging.herdenkingsportaal.nl/auth/qr/approve/testtoken' -H 'Accept: application/json'"
 ```
 
 **Fout:** HTML redirect response
@@ -66,10 +66,10 @@ $exceptions->render(function (AuthenticationException $e, \Illuminate\Http\Reque
 
 ```bash
 # Deploy
-ssh root@188.245.159.115 "cd /var/www/herdenkingsportaal/staging && git pull origin main && php artisan config:clear && php artisan cache:clear"
+ssh root@SERVER_IP (zie context.md) "cd /var/www/herdenkingsportaal/staging && git pull origin main && php artisan config:clear && php artisan cache:clear"
 
 # Test
-ssh root@188.245.159.115 "curl -s -X POST 'https://staging.herdenkingsportaal.nl/auth/qr/approve/test' -H 'Accept: application/json'"
+ssh root@SERVER_IP (zie context.md) "curl -s -X POST 'https://staging.herdenkingsportaal.nl/auth/qr/approve/test' -H 'Accept: application/json'"
 # Verwacht: {"success":false,"message":"Token verlopen"}
 ```
 

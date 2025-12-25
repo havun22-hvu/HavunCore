@@ -27,7 +27,7 @@ Centrale documentatie voor alle Havun projecten.
 
 ## Server Overzicht
 
-Alle projecten draaien op: **188.245.159.115**
+Alle projecten draaien op: **SERVER_IP (zie context.md)**
 
 ```
 /var/www/
@@ -60,7 +60,7 @@ herdenkingsportaal: systemctl status claude-task-poller@herdenkingsportaal
 
 ### Backup Health
 ```
-ssh root@188.245.159.115 "cd /var/www/herdenkingsportaal/production && php artisan havun:backup:health"
+ssh root@SERVER_IP (zie context.md) "cd /var/www/herdenkingsportaal/production && php artisan havun:backup:health"
 ```
 
 ### SSL Certificaten

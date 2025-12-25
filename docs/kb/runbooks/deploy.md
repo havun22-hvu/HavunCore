@@ -17,7 +17,7 @@ git commit -m "Description"
 git push
 
 # 3. Op server pullen
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 cd /var/www/development/HavunCore
 git pull origin master
 php artisan config:clear
@@ -37,7 +37,7 @@ git commit -m "Description"
 git push
 
 # 3. Deploy naar staging
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 cd /var/www/havunadmin/staging
 git pull origin master
 php artisan migrate
@@ -69,11 +69,11 @@ cd D:\GitHub\havuncore-webapp\frontend
 npm run build
 
 # 2. Upload frontend
-scp -r dist/* root@188.245.159.115:/var/www/havuncore.havun.nl/public/
+scp -r dist/* root@SERVER_IP (zie context.md):/var/www/havuncore.havun.nl/public/
 
 # 3. Backend (indien gewijzigd)
-scp backend/src/*.js root@188.245.159.115:/var/www/havuncore.havun.nl/backend/src/
-ssh root@188.245.159.115 "pm2 restart havuncore-backend"
+scp backend/src/*.js root@SERVER_IP (zie context.md):/var/www/havuncore.havun.nl/backend/src/
+ssh root@SERVER_IP (zie context.md) "pm2 restart havuncore-backend"
 ```
 
 ## Studieplanner
@@ -88,7 +88,7 @@ git commit -m "Description"
 git push
 
 # 2. Server deploy
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 cd /var/www/studieplanner/production
 git pull origin master
 npm ci && npm run build
@@ -103,7 +103,7 @@ git commit -m "Description"
 git push
 
 # 2. Server deploy
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 cd /var/www/studieplanner-api
 git pull origin master
 composer install --no-dev
@@ -114,7 +114,7 @@ php artisan cache:clear
 
 ### Eerste keer server setup (backend)
 ```bash
-ssh root@188.245.159.115
+ssh root@SERVER_IP (zie context.md)
 
 # 1. Database aanmaken
 mysql -u root -p

@@ -150,7 +150,7 @@ HavunCore/docs/kb/:
 ```
 HavunCore/docs/kb/credentials.md:
   "Mollie API key: live_xxx"
-  "Server SSH: root@188.245.159.115"
+  "Server SSH: root@SERVER_IP (zie context.md)"
 ```
 
 ### 3. Contracts = gedeelde definities
