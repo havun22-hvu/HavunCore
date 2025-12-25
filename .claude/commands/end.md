@@ -28,7 +28,7 @@ Voer de volgende stappen uit om de sessie netjes af te ronden:
   ```powershell
   powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
   ```
-- Dit synct: HavunCore, HavunAdmin, Herdenkingsportaal, havuncore-webapp, havun-mcp, BertvanderHeide, VPDUpdate
+- Dit synct: HavunCore, HavunAdmin, Herdenkingsportaal, havuncore-webapp, havun-mcp, BertvanderHeide, VPDUpdate, SafeHavun, Studieplanner
 - Tools (VS Code, Node.js, Claude Code) staan al op de USB
 
 ## 6. Bevestig aan gebruiker
