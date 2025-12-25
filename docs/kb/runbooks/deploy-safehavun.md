@@ -1,5 +1,8 @@
 # Runbook: SafeHavun Deployment
 
+> **BELANGRIJK:** Altijd deployen via GitHub (git push → git pull).
+> **NOOIT** rsync, scp of directe file transfers gebruiken!
+
 ## Pre-requisites
 
 - SSH toegang tot server (188.245.159.115)
@@ -138,7 +141,16 @@ safehavun.havun.nl  A  188.245.159.115
 
 ## Updates Deployen
 
+**Workflow:** Lokaal → GitHub → Server (nooit direct!)
+
 ```bash
+# 1. LOKAAL: commit en push
+git add .
+git commit -m "beschrijving"
+git push origin master
+
+# 2. SERVER: pull van GitHub
+ssh root@188.245.159.115
 cd /var/www/safehavun/production
 git pull origin master
 composer install --no-dev --optimize-autoloader
