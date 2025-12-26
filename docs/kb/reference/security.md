@@ -1,0 +1,60 @@
+# Security Overzicht
+
+> Centrale security status voor alle Havun projecten
+
+## GitHub Repositories
+
+| Repository | Status | Visibility |
+|------------|--------|------------|
+| HavunCore | ✅ Veilig | Private |
+| HavunAdmin | ✅ Veilig | Private |
+| Herdenkingsportaal | ✅ Veilig | Private |
+| SafeHavun | ✅ Veilig | Private |
+| Studieplanner | ✅ Veilig | Private |
+| infosyst | ✅ Veilig | Private |
+
+## Credentials Opslag
+
+| Locatie | Wat | Beveiliging |
+|---------|-----|-------------|
+| `.claude/context.md` | Server credentials, API keys | Gitignored, nooit op GitHub |
+| `.env` files | Database, SMTP, API keys | Gitignored, nooit op GitHub |
+| USB `credentials.vault` | Backup van bovenstaande | 7-Zip AES-256 encrypted |
+
+## GitGuardian Status
+
+- **Laatste scan:** 2025-12-25
+- **Open incidents:** 25 (historisch, private repos)
+- **Actie:** Accepteren - repos zijn private
+- **Risico:** Laag zolang repos private blijven
+
+## Security Maatregelen
+
+### Credentials nooit in git
+- ✅ `.gitignore` bevat `.env`, `.claude/context.md`
+- ✅ Docs verwijzen naar context.md, bevatten geen echte wachtwoorden
+- ✅ Cleanup uitgevoerd op 2025-12-25 (commits 88efb58, d8e0133)
+
+### USB Beveiliging
+- ✅ `credentials.vault` - encrypted met 7-Zip AES-256
+- ✅ `START.bat` - unlockt vault bij sessie start
+- ✅ `STOP.bat` - lockt vault en verwijdert plaintext credentials
+- ✅ `.claude/context.md` files in vault opgenomen
+
+### Login Systeem (SafeHavun standaard)
+- ✅ PIN code (PC + smartphone)
+- ✅ Biometrie/Passkeys (smartphone)
+- ✅ QR code login (PC toont, smartphone scant)
+- ✅ Device fingerprinting
+- ✅ Rate limiting (5 pogingen/minuut)
+
+## Aandachtspunten
+
+1. **Repos NOOIT public maken** - git history bevat oude credentials
+2. **GitHub 2FA** - zorg dat dit aan staat
+3. **SSH keys** - alleen via key auth, geen wachtwoorden
+
+## Related
+
+- [context.md](/.claude/context.md) - Actuele credentials
+- [backup.md](/docs/kb/runbooks/backup.md) - Backup procedures
