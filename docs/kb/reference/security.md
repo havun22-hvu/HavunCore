@@ -54,6 +54,38 @@
 2. **GitHub 2FA** - zorg dat dit aan staat
 3. **SSH keys** - alleen via key auth, geen wachtwoorden
 
+## Wekelijkse Security Audit
+
+> Elke week uitvoeren (vraag: "doe security audit")
+
+### Checklist
+
+1. **GitGuardian controleren**
+   - https://dashboard.gitguardian.com
+   - Nieuwe incidents? → Beoordelen en oplossen
+   - Status: open incidents noteren
+
+2. **GitHub repos controleren**
+   - Alle repos nog private?
+   - Onbekende collaborators?
+   - Recent pushed secrets?
+
+3. **Credentials check**
+   - `.env` files in .gitignore?
+   - `.claude/context.md` in .gitignore?
+   - Geen hardcoded credentials in code?
+
+4. **Dependency vulnerabilities**
+   - `composer audit` per project
+   - `npm audit` per project
+   - GitHub Dependabot alerts
+
+### Audit Log
+
+| Datum | Door | Resultaat | Acties |
+|-------|------|-----------|--------|
+| 2025-12-26 | Claude | ✅ OK | 25 historische incidents geaccepteerd, infosyst workflows verwijderd |
+
 ## Related
 
 - [context.md](/.claude/context.md) - Actuele credentials
