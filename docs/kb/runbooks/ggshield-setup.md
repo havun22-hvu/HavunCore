@@ -63,6 +63,11 @@ python -m ggshield secret scan path bestand.txt
 ## Repos met hook
 
 - [x] HavunCore (27-12-2024)
+- [x] HavunAdmin (27-12-2024)
+- [x] Herdenkingsportaal (27-12-2024)
+- [x] Infosyst (27-12-2024)
+- [x] Studieplanner (27-12-2024)
+- [x] SafeHavun (27-12-2024)
 
 ## Links
 
