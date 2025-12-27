@@ -20,6 +20,35 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.3] - 2025-12-27
+
+### 🔒 Security Audit & GitGuardian Integration
+
+**Context:** Grote security cleanup na GitGuardian alerts. Alle credentials verwijderd uit git-tracked bestanden. GitGuardian API geïntegreerd voor automatische monitoring.
+
+#### Added
+- `docs/kb/reference/security.md` - Centrale security documentatie
+- Wekelijkse security audit checklist
+- GitGuardian API integratie (token in context.md)
+
+#### Fixed
+- **Herdenkingsportaal:** CREDENTIALS.md, .env.staging/.prod/.dev verwijderd uit git
+- **Herdenkingsportaal:** MySQL password, Mollie keys, IBAN uit docs verwijderd
+- **HavunAdmin:** Mollie keys en IBAN uit docs verwijderd
+- **havuncore-webapp:** Claude API key uit docs verwijderd
+- **infosyst:** GitHub Actions workflows verwijderd (test failures)
+
+#### Changed
+- USB vault scripts (START.bat/STOP.bat) uitgebreid met infosyst .env
+- Security audit procedure: nu met GitGuardian API check
+
+#### Security
+- GitGuardian: 25 historische incidents → 0 open risico's
+- Alle .env files correct gitignored
+- Credentials alleen in gitignored bestanden (.claude/context.md, .env)
+
+---
+
 ## [1.2.2] - 2025-12-21
 
 ### 🤖 AI Proxy API

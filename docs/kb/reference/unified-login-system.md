@@ -1,16 +1,21 @@
 # Unified Login System
 
-> **Status:** Geimplementeerd in Herdenkingsportaal
-> **Versie:** 1.0
-> **Laatste update:** 7 december 2025
+> **Status:** Geimplementeerd in Herdenkingsportaal, SafeHavun
+> **Versie:** 2.0
+> **Laatste update:** 26 december 2025
 
 ## Overzicht
 
-Een vereenvoudigd login systeem voor alle Havun apps met:
-- PIN code (5 cijfers) per device
-- Biometrische login (passkey/WebAuthn)
-- QR code login (desktop via smartphone)
+Standaard login systeem voor alle Havun apps met:
+- PIN code (5 cijfers) per device - PC & mobiel
+- Biometrische login (passkey/WebAuthn) - alleen mobiel
+- QR code login (PC toont QR, mobiel scant) - alleen PC
 - Wachtwoord als fallback
+
+| Platform | PIN | Biometrie | QR |
+|----------|-----|-----------|-----|
+| PC webapp | ✅ | ❌ | ✅ (toont QR) |
+| Smartphone PWA | ✅ | ✅ | ✅ (scant QR) |
 
 ## Architectuur
 
@@ -21,104 +26,145 @@ Een vereenvoudigd login systeem voor alle Havun apps met:
 │                                                         │
 │  1. Device check (fingerprint)                          │
 │     ↓                                                   │
-│  2a. Bekend device → Toon numpad + biometrisch         │
+│  2a. Bekend device → Toon numpad                        │
+│      - Desktop: + QR knop                               │
+│      - Mobiel: + biometrie knop                         │
 │  2b. Onbekend device → Toon wachtwoord form            │
 │     ↓                                                   │
-│  3. Na wachtwoord login → PIN setup pagina              │
+│  3. Na wachtwoord login → PIN/biometrie setup           │
 │     ↓                                                   │
 │  4. Volgende keer → Direct numpad                       │
 │                                                         │
 └─────────────────────────────────────────────────────────┘
 ```
 
-## Database
+## Installatie
 
-### Tabel: auth_devices
+### 1. Composer package
 
-```sql
-CREATE TABLE auth_devices (
-    id BIGINT PRIMARY KEY AUTO_INCREMENT,
-    user_id BIGINT NOT NULL,
-    token VARCHAR(64) UNIQUE NOT NULL,
-    pin_hash VARCHAR(255) NULL,           -- PIN gehashed met device id
-    has_biometric BOOLEAN DEFAULT FALSE,
-    device_fingerprint VARCHAR(64) NULL,
-    device_name VARCHAR(255) NULL,
-    browser VARCHAR(50) NULL,
-    os VARCHAR(50) NULL,
-    ip_address VARCHAR(45) NULL,
-    is_active BOOLEAN DEFAULT TRUE,
-    last_used_at TIMESTAMP NULL,
-    expires_at TIMESTAMP NOT NULL,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP,
-
-    INDEX (device_fingerprint),
-    INDEX (token, is_active, expires_at),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
+```bash
+composer require laragear/webauthn
+php artisan vendor:publish --provider="Laragear\WebAuthn\WebAuthnServiceProvider"
 ```
 
-### Migratie
+### 2. Database migrations
 
+**auth_devices:**
 ```php
-Schema::table('auth_devices', function (Blueprint $table) {
-    $table->string('pin_hash')->nullable()->after('token');
-    $table->boolean('has_biometric')->default(false)->after('pin_hash');
-    $table->string('device_fingerprint', 64)->nullable()->after('has_biometric');
+Schema::create('auth_devices', function (Blueprint $table) {
+    $table->id();
+    $table->foreignId('user_id')->constrained()->onDelete('cascade');
+    $table->string('token', 64)->unique();
+    $table->string('pin_hash')->nullable();
+    $table->boolean('has_biometric')->default(false);
+    $table->string('device_fingerprint', 64)->nullable();
+    $table->string('device_name')->nullable();
+    $table->string('browser')->nullable();
+    $table->string('os')->nullable();
+    $table->string('ip_address', 45)->nullable();
+    $table->boolean('is_active')->default(true);
+    $table->timestamp('last_used_at')->nullable();
+    $table->timestamp('expires_at');
+    $table->timestamps();
+
+    $table->index(['token', 'is_active', 'expires_at']);
     $table->index('device_fingerprint');
 });
 ```
 
-## Model: AuthDevice
-
-Key methods:
-
+**qr_login_tokens:**
 ```php
-// PIN instellen (gehashed met device id als salt)
-$device->setPin('12345');
+Schema::create('qr_login_tokens', function (Blueprint $table) {
+    $table->id();
+    $table->string('token', 64)->unique();
+    $table->foreignId('user_id')->nullable()->constrained()->nullOnDelete();
+    $table->enum('status', ['pending', 'approved', 'expired', 'used'])->default('pending');
+    $table->json('device_info')->nullable();
+    $table->timestamp('expires_at');
+    $table->timestamp('approved_at')->nullable();
+    $table->foreignId('approved_by_user_id')->nullable()->constrained('users')->nullOnDelete();
+    $table->timestamps();
 
-// PIN verifiëren
-$device->verifyPin('12345'); // returns bool
-
-// Check of PIN is ingesteld
-$device->hasPin(); // returns bool
-
-// Find device by fingerprint
-AuthDevice::findActiveByFingerprint($fingerprint);
-
-// Find or create device
-AuthDevice::findOrCreateForUser($user, $fingerprint, $deviceInfo);
+    $table->index(['token', 'status']);
+});
 ```
 
-## API Endpoints
+### 3. Models
 
-### Geen auth vereist
+**AuthDevice.php** - Kopieer van SafeHavun:
+- `D:\GitHub\SafeHavun\app\Models\AuthDevice.php`
 
-| Method | Route | Functie |
-|--------|-------|---------|
-| POST | `/auth/pin/check-device` | Check of device PIN heeft |
-| POST | `/auth/pin/login` | Login met PIN |
+**QrLoginToken.php** - Kopieer van SafeHavun:
+- `D:\GitHub\SafeHavun\app\Models\QrLoginToken.php`
 
-### Auth vereist
+**User.php** - Voeg WebAuthn trait toe:
+```php
+use Laragear\WebAuthn\Contracts\WebAuthnAuthenticatable;
+use Laragear\WebAuthn\WebAuthnAuthentication;
 
-| Method | Route | Functie |
-|--------|-------|---------|
-| GET | `/auth/setup-pin` | PIN setup pagina |
-| POST | `/auth/pin/setup` | PIN instellen |
-| POST | `/auth/pin/biometric` | Biometrisch markeren |
-| POST | `/auth/pin/remove` | Device verwijderen |
+class User extends Authenticatable implements WebAuthnAuthenticatable
+{
+    use WebAuthnAuthentication;
+
+    public function authDevices(): HasMany
+    {
+        return $this->hasMany(AuthDevice::class);
+    }
+}
+```
+
+### 4. Controllers
+
+Kopieer van SafeHavun:
+- `app/Http/Controllers/Auth/PinAuthController.php`
+- `app/Http/Controllers/Auth/QrAuthController.php`
+- `app/Http/Controllers/Auth/LoginController.php`
+
+WebAuthn controllers worden door package gepublished.
+
+### 5. Routes
+
+```php
+// Auth Routes (public)
+Route::get('/login', [LoginController::class, 'showLogin'])->name('login');
+Route::post('/login', [LoginController::class, 'login']);
+Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+// PIN Auth (public)
+Route::post('/auth/pin/check-device', [PinAuthController::class, 'checkDevice']);
+Route::post('/auth/pin/login', [PinAuthController::class, 'loginWithPin']);
+
+// QR Auth (public)
+Route::get('/auth/qr/generate', [QrAuthController::class, 'generate']);
+Route::get('/auth/qr/{token}/status', [QrAuthController::class, 'status']);
+
+// WebAuthn (public)
+Route::post('/auth/passkey/login/options', [WebAuthnLoginController::class, 'options']);
+Route::post('/auth/passkey/login', [WebAuthnLoginController::class, 'login']);
+
+// Auth required
+Route::middleware(['auth'])->group(function () {
+    Route::get('/auth/setup-pin', [LoginController::class, 'setupPin'])->name('auth.setup-pin');
+    Route::post('/auth/pin/setup', [PinAuthController::class, 'setupPin']);
+    Route::post('/auth/pin/biometric', [PinAuthController::class, 'enableBiometric']);
+    Route::get('/auth/qr/scan', [QrAuthController::class, 'scan']);
+    Route::post('/auth/qr/approve', [QrAuthController::class, 'approve']);
+    Route::post('/auth/passkey/register/options', [WebAuthnRegisterController::class, 'options']);
+    Route::post('/auth/passkey/register', [WebAuthnRegisterController::class, 'register']);
+});
+```
+
+### 6. Views
+
+Kopieer van SafeHavun en pas styling aan:
+- `resources/views/auth/login.blade.php`
+- `resources/views/auth/setup-pin.blade.php`
+- `resources/views/auth/qr-scan.blade.php`
+- `resources/views/layouts/guest.blade.php`
 
 ## Device Fingerprint
 
-Client-side gegenereerd via SHA-256 hash van:
-- User agent
-- Language
-- Screen resolution
-- Color depth
-- Timezone offset
-- Hardware concurrency
-- Platform
+Client-side gegenereerd via SHA-256:
 
 ```javascript
 async function generateFingerprint() {
@@ -131,12 +177,8 @@ async function generateFingerprint() {
         navigator.hardwareConcurrency || 'unknown',
         navigator.platform
     ].join('|');
-
-    const encoder = new TextEncoder();
-    const dataBuffer = encoder.encode(data);
-    const hashBuffer = await crypto.subtle.digest('SHA-256', dataBuffer);
-    const hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    const hashBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(data));
+    return Array.from(new Uint8Array(hashBuffer)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 ```
 
@@ -145,7 +187,6 @@ async function generateFingerprint() {
 - 5 cijfers = 100.000 combinaties
 - Gehashed met bcrypt + device ID als salt
 - Rate limited: max 5 pogingen per minuut
-- Na 5 fouten: 60 seconden wachten
 
 ```php
 // Hash opslaan
@@ -155,64 +196,38 @@ $hash = Hash::make($pin . $device->id);
 Hash::check($inputPin . $device->id, $storedHash);
 ```
 
-## Implementatie per Project
+## QR Login Flow
 
-### Bestanden kopiëren
+1. PC genereert QR token via `/auth/qr/generate`
+2. PC pollt `/auth/qr/{token}/status` elke 2 sec
+3. Mobiel scant QR → opent `/auth/qr/scan?token=xxx`
+4. Mobiel (ingelogd) bevestigt via `/auth/qr/approve`
+5. PC ontvangt `approved` status → redirect naar dashboard
 
-1. **Migration:** `database/migrations/2025_12_07_120000_add_pin_to_auth_devices_table.php`
-2. **Model uitbreiden:** `app/Models/AuthDevice.php` - voeg PIN methods toe
-3. **Controller:** `app/Http/Controllers/Auth/PinAuthController.php`
-4. **Views:**
-   - `resources/views/auth/login.blade.php` - nieuwe login UI
-   - `resources/views/auth/setup-pin.blade.php` - PIN setup flow
+## Referentie Implementaties
 
-### Routes toevoegen
-
-```php
-use App\Http\Controllers\Auth\PinAuthController;
-
-// PIN Login Routes
-Route::post('/auth/pin/check-device', [PinAuthController::class, 'checkDevice']);
-Route::post('/auth/pin/login', [PinAuthController::class, 'loginWithPin']);
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/auth/setup-pin', fn() => view('auth.setup-pin'))->name('auth.setup-pin');
-    Route::post('/auth/pin/setup', [PinAuthController::class, 'setupPin']);
-    Route::post('/auth/pin/biometric', [PinAuthController::class, 'enableBiometric']);
-    Route::post('/auth/pin/remove', [PinAuthController::class, 'removeDevice']);
-});
-```
-
-### Login controller aanpassen
-
-```php
-// In AuthenticatedSessionController::store()
-if ($request->has('setup_pin') && $request->input('setup_pin') === '1') {
-    return redirect()->route('auth.setup-pin');
-}
-```
+| Project | Locatie |
+|---------|---------|
+| SafeHavun | `D:\GitHub\SafeHavun` |
+| Herdenkingsportaal | `D:\GitHub\Herdenkingsportaal` |
 
 ## Troubleshooting
 
 ### PIN login werkt niet
+1. Check device fingerprint stabiliteit
+2. Check rate limiting (5 pogingen/min)
+3. Check auth_devices tabel
 
-1. Check of device fingerprint stabiel is (niet bij elke request anders)
-2. Check rate limiting - max 5 pogingen per minuut
-3. Check of auth_devices tabel de nieuwe kolommen heeft
+### Biometrie werkt niet
+1. Moet HTTPS zijn
+2. Check webauthn_credentials tabel
+3. Alleen mobiel ondersteund
 
-### Biometrisch werkt niet
-
-1. Moet HTTPS zijn (localhost uitgezonderd)
-2. Check of passkey correct geregistreerd is in webauthn_credentials
-3. Safari heeft specifieke WebAuthn quirks
-
-### Device niet herkend na browser update
-
-- Device fingerprint kan veranderen bij browser/OS updates
-- User moet opnieuw PIN instellen via wachtwoord login
+### QR verlopen
+- Default 5 minuten geldig
+- Vernieuw knop in modal
 
 ## Gerelateerde docs
 
 - [Passkey Mobile Fix](../runbooks/passkey-mobile-fix.md)
 - [QR Login CSRF Fix](../runbooks/fix-qr-login-csrf.md)
-- [Token Based Login](../runbooks/token-based-login.md)
