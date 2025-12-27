@@ -38,6 +38,7 @@ docs/kb/
 │   ├── api-taskqueue.md
 │   ├── api-vault.md
 │   ├── backup-system.md
+│   ├── external-services.md
 │   ├── unified-login-system.md
 │   └── server.md
 │
@@ -72,6 +73,7 @@ docs/kb/
 - [[reference/api-taskqueue]] - Task Queue API
 - [[reference/api-vault]] - Vault API
 - [[reference/backup-system]] - Backup architectuur & Hetzner
+- [[reference/external-services]] - Mollie, Anthropic, GitGuardian dashboards
 - [[reference/unified-login-system]] - Passkeys & QR login
 - [[reference/server]] - Server configuratie
 
