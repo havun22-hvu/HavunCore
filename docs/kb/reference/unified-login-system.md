@@ -7,10 +7,13 @@
 ## Overzicht
 
 Standaard login systeem voor alle Havun apps met:
+- **Registratie** - account aanmaken met email/wachtwoord
 - PIN code (5 cijfers) per device - PC & mobiel
 - Biometrische login (passkey/WebAuthn) - alleen mobiel
 - QR code login (PC toont QR, mobiel scant) - alleen PC
 - Wachtwoord als fallback
+
+**BELANGRIJK:** Login zonder registratie werkt niet! Altijd registratie functie meenemen.
 
 | Platform | PIN | Biometrie | QR |
 |----------|-----|-----------|-----|
@@ -24,14 +27,17 @@ Standaard login systeem voor alle Havun apps met:
 │                    LOGIN FLOW                           │
 ├─────────────────────────────────────────────────────────┤
 │                                                         │
+│  0. Nieuw? → Registreer (email/wachtwoord)             │
+│     ↓                                                   │
 │  1. Device check (fingerprint)                          │
 │     ↓                                                   │
 │  2a. Bekend device → Toon numpad                        │
 │      - Desktop: + QR knop                               │
 │      - Mobiel: + biometrie knop                         │
 │  2b. Onbekend device → Toon wachtwoord form            │
+│      + link naar registratie                            │
 │     ↓                                                   │
-│  3. Na wachtwoord login → PIN/biometrie setup           │
+│  3. Na wachtwoord/registratie login → PIN setup         │
 │     ↓                                                   │
 │  4. Volgende keer → Direct numpad                       │
 │                                                         │
