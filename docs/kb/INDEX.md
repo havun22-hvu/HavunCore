@@ -79,6 +79,7 @@ docs/kb/
 
 ### Patterns (herbruikbare code)
 - [[patterns/email-verification]] - Email verificatie met 6-cijferige code
+- [[patterns/pdf-to-image-conversion]] - PDF pagina's naar JPEG afbeeldingen (Imagick)
 
 ### Projects (per-project details)
 - [[projects/studieplanner]] - Studieplanner app info
