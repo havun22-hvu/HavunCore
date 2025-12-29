@@ -18,26 +18,53 @@
 
 ### 1. Session Cookie Issues (BELANGRIJKSTE!)
 
-**Probleem:** Gebruiker wordt na login direct teruggestuurd naar login pagina.
+**Probleem:** Gebruiker blijft hangen op login pagina na succesvolle login.
+
+**Symptomen:**
+- PIN login succesvol (server zegt OK) maar user blijft op login page
+- Passkey/biometrie werkt maar redirect faalt
+- QR login approved maar desktop blijft hangen
 
 **Oorzaak:** `session()->regenerate()` breekt cookies na OAuth/token login.
 
-**Oplossing:**
+**Oplossing (ALLE login methods):**
 ```php
-// FOUT - breekt cookies
+// FOUT - breekt session cookies
 Auth::login($user, true);
 session()->regenerate();
+return redirect('/dashboard');
 
 // GOED - werkt correct
 Auth::guard('web')->login($user, true);
-session()->save();
+session()->save();  // KRITIEK: save VOOR redirect
+return redirect()->intended('/dashboard');
 ```
 
-**Aandachtspunten:**
-- Gebruik ALTIJD `Auth::guard('web')->login()` expliciet
-- NOOIT `session()->regenerate()` na OAuth of token login
-- ALTIJD `session()->save()` voor redirect
-- Check met `Auth::guard('web')->check()` of login gelukt is
+**Checklist voor elke login method:**
+- [ ] `Auth::guard('web')->login()` (niet `Auth::login()`)
+- [ ] `session()->save()` NA login, VOOR redirect
+- [ ] GEEN `session()->regenerate()`
+- [ ] `redirect()->intended()` voor correcte doorverwijzing
+- [ ] Check `Auth::guard('web')->check()` voordat je redirect
+
+**Token-login pattern (voor PIN/passkey/QR):**
+```php
+// Controller: tokenLogin($token)
+public function tokenLogin(string $token)
+{
+    $device = AuthDevice::where('token', $token)
+        ->where('is_active', true)
+        ->firstOrFail();
+
+    Auth::guard('web')->login($device->user, true);
+
+    $device->update(['last_used_at' => now()]);
+
+    session()->save();  // KRITIEK!
+
+    return redirect()->intended(route('dashboard'));
+}
+```
 
 ### 2. CSRF Token Exceptions
 
@@ -131,25 +158,75 @@ $exceptions->render(function (AuthenticationException $e, Request $request) {
 ## Numpad Layout
 
 ```
-[1] [2] [3]
-[4] [5] [6]
-[7] [8] [9]
-[X] [0] [⌫]
+┌─────────────────────────────┐
+│    [1]    [2]    [3]        │
+│    [4]    [5]    [6]        │
+│    [7]    [8]    [9]        │
+│    [X]    [0]    [⌫]        │
+│                             │
+│    "Ander account" link     │
+└─────────────────────────────┘
 ```
 
-**Linker knop (X):**
-- Desktop: QR code knop (blauw)
-- Mobile: Biometric knop (paars)
+### Onderste rij specs (KRITIEK!)
 
-**JavaScript detectie:**
+| Positie | Desktop | Smartphone PWA |
+|---------|---------|----------------|
+| **Links** | QR knop (blauw) | Biometrie knop (paars) |
+| **Midden** | 0 | 0 |
+| **Rechts** | Backspace ⌫ | Backspace ⌫ |
+
+**Visuele eisen:**
+- Alle 3 knoppen EVEN BREED (w-16 / 4rem)
+- 0 ALTIJD in het midden
+- Backspace met ⌫ icoon (niet tekst)
+- Links/QR/Biometrie: NOOIT beide tegelijk zichtbaar
+- Grid: `grid-cols-3 gap-3`
+
+### Platform detectie (EXACT zo implementeren)
+
 ```javascript
+// CORRECT - alleen userAgent check
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 if (isMobile) {
+    // Smartphone PWA: toon biometrie, VERBERG qr
     document.getElementById('biometric-btn').classList.remove('hidden');
+    document.getElementById('qr-btn').classList.add('hidden');
 } else {
+    // Desktop: toon QR, VERBERG biometrie
     document.getElementById('qr-btn').classList.remove('hidden');
+    document.getElementById('biometric-btn').classList.add('hidden');
 }
+```
+
+### HTML structuur onderste rij (EXACT)
+
+```html
+{{-- Onderste rij: [Biom/QR] [0] [Backspace] --}}
+<button type="button" id="qr-btn" onclick="toggleQrModal()"
+    class="numpad-btn bg-blue-100 hidden">
+    <svg><!-- QR icon --></svg>
+</button>
+<button type="button" id="biometric-btn" onclick="startBiometric()"
+    class="numpad-btn bg-purple-100 hidden">
+    <svg><!-- Fingerprint icon --></svg>
+</button>
+
+<button type="button" onclick="addPin('0')" class="numpad-btn">0</button>
+
+<button type="button" onclick="removePin()" class="numpad-btn">
+    <svg><!-- Backspace ⌫ icon --></svg>
+</button>
+```
+
+**FOUT patroon (NIET DOEN):**
+```html
+{{-- FOUT: wrapper div maakt layout kapot --}}
+<div class="relative">
+    <button id="qr-btn" class="absolute ...">
+    <button id="biometric-btn" class="absolute ...">
+</div>
 ```
 
 ## Keyboard Support (Desktop)
