@@ -85,6 +85,7 @@ docs/kb/
 - [[patterns/mollie-payments]] - iDEAL, creditcard betalingen via Mollie
 - [[patterns/crypto-payments]] - XRP, ADA, SOL cryptocurrency betalingen
 - [[patterns/arweave-upload]] - Permanente blockchain opslag
+- [[patterns/website-builder]] - Drag-and-drop pagina builder
 
 ### Projects (per-project details)
 - [[projects/studieplanner]] - Studieplanner app info
