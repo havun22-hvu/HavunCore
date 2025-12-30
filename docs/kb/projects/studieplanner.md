@@ -27,8 +27,7 @@ Zie: `docs/kb/decisions/005-studieplanner-architecture.md`
 |-----------|-------|
 | Backend | Laravel (eigen app) |
 | Frontend | React PWA |
-| Notificaties | Database + polling (MVP) |
-| Chat | Polling (5 sec) |
+| Real-time | Pusher Channels (WebSockets) |
 | Auth | Pincode-based (geen wachtwoord) |
 
 ## Auth Systeem
@@ -96,6 +95,26 @@ GET  /api/session/active          - Mentor pollt voor updates
 ```
 POST /api/chat/send               - Verstuur bericht
 GET  /api/chat/messages           - Ophalen berichten
+```
+
+## Pusher (Real-time)
+
+**App:** Studieplanner
+**Credentials:** Zie `.claude/context.md`
+**Pattern:** Zie `docs/kb/patterns/pusher-realtime.md`
+
+**Gebruik:**
+- Mentor krijgt instant notificatie als leerling sessie start/stopt
+- Chat berichten real-time
+- Online status (presence channels)
+
+**Packages:**
+```bash
+# Backend
+composer require pusher/pusher-php-server
+
+# Frontend
+npm install pusher-js laravel-echo
 ```
 
 ## Email Configuratie
