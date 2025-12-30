@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HavunCore Bibliotheek</title>
+    <style>
+        :root {
+            --bg: #1a1a2e;
+            --card: #16213e;
+            --accent: #0f3460;
+            --highlight: #e94560;
+            --text: #eaeaea;
+            --text-muted: #a0a0a0;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 2px solid var(--accent);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, var(--highlight), #ff6b6b);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .subtitle {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            background: var(--card);
+            padding: 1rem 2rem;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: var(--highlight);
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .section {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            border-left: 4px solid var(--highlight);
+        }
+
+        .section h2 {
+            color: var(--highlight);
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .section h2 .icon {
+            font-size: 1.5rem;
+        }
+
+        .item {
+            background: var(--accent);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .item:last-child {
+            margin-bottom: 0;
+        }
+
+        .item-title {
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .item-desc {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .item-tags {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: var(--bg);
+            color: var(--text-muted);
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+
+        .tag.laravel { border-left: 2px solid #ff2d20; }
+        .tag.react { border-left: 2px solid #61dafb; }
+        .tag.api { border-left: 2px solid #10b981; }
+        .tag.security { border-left: 2px solid #f59e0b; }
+
+        footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--accent);
+            color: var(--text-muted);
+        }
+
+        .update-date {
+            color: var(--highlight);
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            body {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>HavunCore Bibliotheek</h1>
+            <p class="subtitle">Centrale kennisbank voor alle Havun projecten</p>
+
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Patterns</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">10</div>
+                    <div class="stat-label">Runbooks</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">9</div>
+                    <div class="stat-label">Reference Docs</div>
+                </div>
+                <div class="stat">
+                    <div class="stat-number">6</div>
+                    <div class="stat-label">Projecten</div>
+                </div>
+            </div>
+        </header>
+
+        <div class="grid">
+            <!-- Patterns -->
+            <div class="section">
+                <h2><span class="icon">&#128736;</span> Herbruikbare Patterns</h2>
+
+                <div class="item">
+                    <div class="item-title">Email Verificatie</div>
+                    <div class="item-desc">6-cijferige verificatiecode systeem voor email bevestiging en password reset. Inclusief rate limiting en expiratie.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel</span>
+                        <span class="tag">Database</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">PDF naar Image Conversie</div>
+                    <div class="item-desc">PDF pagina's converteren naar JPEG afbeeldingen met ImageMagick. Configureerbare DPI en kwaliteit.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel</span>
+                        <span class="tag">Imagick</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Pusher Real-time WebSockets</div>
+                    <div class="item-desc">Real-time communicatie via WebSockets. Voor chat, notificaties, live sync en online status.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel</span>
+                        <span class="tag react">React</span>
+                        <span class="tag">Pusher</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- APIs -->
+            <div class="section">
+                <h2><span class="icon">&#128268;</span> APIs & Services</h2>
+
+                <div class="item">
+                    <div class="item-title">Task Queue API</div>
+                    <div class="item-desc">Centrale taak orchestratie voor Claude instances. Cross-project communicatie en status updates.</div>
+                    <div class="item-tags">
+                        <span class="tag api">REST API</span>
+                        <span class="tag">havuncore.havun.nl</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Vault API</div>
+                    <div class="item-desc">Secrets management. API keys en credentials centraal beheren met encryptie at rest.</div>
+                    <div class="item-tags">
+                        <span class="tag api">REST API</span>
+                        <span class="tag security">Security</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">AI Proxy Service</div>
+                    <div class="item-desc">Proxy voor Claude/Anthropic API calls met logging en rate limiting.</div>
+                    <div class="item-tags">
+                        <span class="tag api">REST API</span>
+                        <span class="tag">Anthropic</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Postcode Service</div>
+                    <div class="item-desc">Nederlandse postcode lookup met adres validatie.</div>
+                    <div class="item-tags">
+                        <span class="tag api">REST API</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Auth & Security -->
+            <div class="section">
+                <h2><span class="icon">&#128274;</span> Authenticatie & Security</h2>
+
+                <div class="item">
+                    <div class="item-title">Unified Login System</div>
+                    <div class="item-desc">Centrale login met Passkeys (biometrie), QR code login en PIN code. WebAuthn compatible.</div>
+                    <div class="item-tags">
+                        <span class="tag security">WebAuthn</span>
+                        <span class="tag">Passkeys</span>
+                        <span class="tag">QR</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">GGShield Secret Scanning</div>
+                    <div class="item-desc">Pre-commit hook die voorkomt dat secrets in git komen. Automatische scanning bij elke commit.</div>
+                    <div class="item-tags">
+                        <span class="tag security">Security</span>
+                        <span class="tag">GitGuardian</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Token Based Login</div>
+                    <div class="item-desc">Sanctum token authenticatie voor API endpoints.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel Sanctum</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Runbooks -->
+            <div class="section">
+                <h2><span class="icon">&#128214;</span> Runbooks (How-To)</h2>
+
+                <div class="item">
+                    <div class="item-title">Deploy</div>
+                    <div class="item-desc">Standaard deployment: git pull, composer, migrations, cache clear, queue restart.</div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Backup & Restore</div>
+                    <div class="item-desc">Dagelijkse backups naar Hetzner Storage Box. GPG encryptie, restore procedures.</div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Troubleshoot</div>
+                    <div class="item-desc">500 errors, permissions, queue failures, database problemen debuggen.</div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">SSL Monitoring</div>
+                    <div class="item-desc">Let's Encrypt certificaten, auto-renewal, handmatige vernieuwing.</div>
+                </div>
+            </div>
+
+            <!-- Infrastructure -->
+            <div class="section">
+                <h2><span class="icon">&#9881;</span> Infrastructuur</h2>
+
+                <div class="item">
+                    <div class="item-title">Server</div>
+                    <div class="item-desc">Hetzner VPS (188.245.159.115). Nginx, PHP-FPM, MySQL, Redis.</div>
+                    <div class="item-tags">
+                        <span class="tag">Ubuntu</span>
+                        <span class="tag">Nginx</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Backup System</div>
+                    <div class="item-desc">Hetzner Storage Box. Dagelijkse backups 05:00, 1 jaar retention, GPG encryptie.</div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">External Services</div>
+                    <div class="item-desc">Mollie (betalingen), Anthropic (AI), GitGuardian, SendGrid (email), Pusher.</div>
+                </div>
+            </div>
+
+            <!-- Projects -->
+            <div class="section">
+                <h2><span class="icon">&#128193;</span> Projecten</h2>
+
+                <div class="item">
+                    <div class="item-title">HavunCore</div>
+                    <div class="item-desc">Centrale kennisbank & orchestrator. Task Queue, Vault, deze bibliotheek.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel 11</span>
+                        <span class="tag react">React</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">HavunAdmin</div>
+                    <div class="item-desc">Admin dashboard voor facturatie en klantbeheer.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Herdenkingsportaal</div>
+                    <div class="item-desc">Online herdenkingspagina's met Mollie betalingen.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel</span>
+                        <span class="tag">Mollie</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Studieplanner</div>
+                    <div class="item-desc">Mentor-leerling studiesessie tracking. React PWA met Pusher real-time.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel</span>
+                        <span class="tag react">React PWA</span>
+                        <span class="tag">Pusher</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">SafeHavun</div>
+                    <div class="item-desc">Wachtwoord manager applicatie.</div>
+                    <div class="item-tags">
+                        <span class="tag laravel">Laravel</span>
+                        <span class="tag security">Encrypted</span>
+                    </div>
+                </div>
+
+                <div class="item">
+                    <div class="item-title">Infosyst</div>
+                    <div class="item-desc">Informatiesysteem (in ontwikkeling).</div>
+                    <div class="item-tags">
+                        <span class="tag">In development</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Laatst bijgewerkt: <span class="update-date">30 december 2025</span></p>
+            <p style="margin-top: 0.5rem; font-size: 0.9rem;">
+                Locatie: D:\GitHub\HavunCore\docs\kb\
+            </p>
+        </footer>
+    </div>
+</body>
+</html>
