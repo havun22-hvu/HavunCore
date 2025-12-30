@@ -82,6 +82,9 @@ docs/kb/
 - [[patterns/email-verification]] - Email verificatie met 6-cijferige code
 - [[patterns/pdf-to-image-conversion]] - PDF pagina's naar JPEG afbeeldingen (Imagick)
 - [[patterns/pusher-realtime]] - Real-time WebSockets met Pusher
+- [[patterns/mollie-payments]] - iDEAL, creditcard betalingen via Mollie
+- [[patterns/crypto-payments]] - XRP, ADA, SOL cryptocurrency betalingen
+- [[patterns/arweave-upload]] - Permanente blockchain opslag
 
 ### Projects (per-project details)
 - [[projects/studieplanner]] - Studieplanner app info
