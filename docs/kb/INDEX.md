@@ -5,6 +5,7 @@
 
 ## Lees eerst
 
+- **[[OVERZICHT]]** - Compleet overzicht met uitleg van alle systemen
 - **[[PKM-SYSTEEM]]** - Hoe werkt ons kennissysteem
 
 ## Structuur
@@ -80,6 +81,7 @@ docs/kb/
 ### Patterns (herbruikbare code)
 - [[patterns/email-verification]] - Email verificatie met 6-cijferige code
 - [[patterns/pdf-to-image-conversion]] - PDF pagina's naar JPEG afbeeldingen (Imagick)
+- [[patterns/pusher-realtime]] - Real-time WebSockets met Pusher
 
 ### Projects (per-project details)
 - [[projects/studieplanner]] - Studieplanner app info
