@@ -20,6 +20,37 @@ en dit project volgt [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ---
 
+## [1.2.4] - 2025-12-30
+
+### 📚 Knowledge Base Uitbreiding - Patterns & HTML Overzicht
+
+**Context:** Grote uitbreiding van de HavunCore bibliotheek met nieuwe patterns en een lokale HTML overzichtspagina.
+
+#### Added - Patterns (7 totaal)
+- `patterns/pusher-realtime.md` - Real-time WebSockets met Pusher
+- `patterns/mollie-payments.md` - iDEAL, creditcard betalingen via Mollie API
+- `patterns/crypto-payments.md` - XRP, ADA, SOL cryptocurrency betalingen (CoinGecko)
+- `patterns/arweave-upload.md` - Permanente blockchain opslag (200+ jaar)
+- `patterns/website-builder.md` - Drag-and-drop pagina builder (WordPress alternatief)
+
+#### Added - Documentation
+- `docs/kb/OVERZICHT.md` - Compleet overzicht van alle systemen
+- `docs/kb/index.html` - Lokale HTML dashboard met alle patterns, APIs, projecten
+- Pusher credentials toegevoegd aan `.claude/context.md`
+
+#### Changed
+- `docs/kb/INDEX.md` - Links naar nieuwe patterns
+- `docs/kb/projects/studieplanner.md` - Pusher real-time sectie toegevoegd
+- HTML overzicht: 7 patterns, 10 runbooks, 9 reference docs, 8 projecten
+
+#### Studieplanner Integration
+- Pusher packages geïnstalleerd (backend + frontend)
+- Broadcasting config aangemaakt
+- Echo service voor React frontend
+- Deployed naar server met Pusher credentials
+
+---
+
 ## [1.2.3] - 2025-12-27
 
 ### 🔒 Security Audit & GitGuardian Integration

@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ClaudeTaskController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\MCPMessageController;
 use App\Http\Controllers\Api\QrAuthController;
+use App\Http\Controllers\Api\StudySessionController;
 use App\Http\Controllers\Api\VaultController;
 use App\Http\Controllers\Api\WebAuthnController;
 use Illuminate\Http\Request;
@@ -133,4 +134,15 @@ Route::prefix('ai')->group(function () {
     Route::post('/chat', [AIProxyController::class, 'chat'])->name('api.ai.chat');
     Route::get('/usage', [AIProxyController::class, 'usage'])->name('api.ai.usage');
     Route::get('/health', [AIProxyController::class, 'health'])->name('api.ai.health');
+});
+
+// Studieplanner WebSocket Broadcasting API
+Route::prefix('studieplanner')->group(function () {
+    // Receive session events from Studieplanner-api and broadcast to mentors
+    Route::post('/session/broadcast', [StudySessionController::class, 'broadcast'])
+        ->name('api.studieplanner.session.broadcast');
+
+    // Get Reverb connection credentials for frontend
+    Route::get('/reverb/credentials', [StudySessionController::class, 'credentials'])
+        ->name('api.studieplanner.reverb.credentials');
 });

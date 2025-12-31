@@ -18,4 +18,18 @@ return [
         'rate_limit' => env('CLAUDE_RATE_LIMIT', 60),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Studieplanner Integration
+    |--------------------------------------------------------------------------
+    |
+    | API key for Studieplanner-api to authenticate when pushing session
+    | events for WebSocket broadcasting to mentors.
+    |
+    */
+
+    'studieplanner' => [
+        'api_key' => env('STUDIEPLANNER_API_KEY'),
+    ],
+
 ];
