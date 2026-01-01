@@ -1,6 +1,6 @@
 # MD File Audit - Runbook
 
-> **Frequentie:** 2-wekelijks + op verzoek
+> **Frequentie:** 2x per week + op verzoek
 > **Uitvoerder:** HavunCore (centrale audit voor alle projecten)
 > **Doel:** Consistente, goed georganiseerde documentatie
 
@@ -161,4 +161,4 @@ Infosyst, Studieplanner, SafeHavun, Havun, VPDUpdate
 
 ---
 
-*Volgende audit: 2026-01-15*
+*Volgende audit: 2026-01-04 (zaterdag)*
