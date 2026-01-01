@@ -65,6 +65,8 @@ docs/kb/
 - [[templates/new-laravel-site]] - Nieuwe site opzetten
 
 ### Runbooks (hoe doe ik X?)
+- [[runbooks/claude-werkwijze]] - LEES-DENK-DOE-DOCUMENTEER (kritiek!)
+- [[runbooks/md-file-audit]] - 2-wekelijkse documentatie audit
 - [[runbooks/deploy]] - Deployen naar server
 - [[runbooks/backup]] - Backup systeem
 - [[runbooks/troubleshoot]] - Problemen oplossen

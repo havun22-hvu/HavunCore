@@ -10,7 +10,7 @@
 | **Havun** | Next.js | havun.nl | D:\GitHub\Havun | /var/www/havun.nl |
 | **Judotoernooi** | Laravel | judotournament.org | - | /var/www/judotoernooi |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (nog niet deployed) |
-| **Infosyst** | Laravel 12 + Ollama | lokaal (Tailscale) | D:\GitHub\infosyst | lokaal hosting |
+| **Infosyst** | Laravel + Ollama | infosyst.havun.nl | D:\GitHub\infosyst | /var/www/infosyst/production |
 | **Studieplanner** | Laravel | studieplanner.havun.nl | D:\GitHub\Studieplanner | /var/www/studieplanner/production |
 
 ## Korte beschrijving
@@ -23,7 +23,7 @@
 - **HavunAdmin** - Boekhouding en facturatie
 - **Herdenkingsportaal** - Memorial portal voor gedenkpagina's (LIVE met klantdata!)
 - **VPDUpdate** - Sync tool voor VPD data (in development)
-- **Infosyst** - Kennisbank + AI training data generator + eigen LLM hosting (Ollama)
+- **Infosyst** - Wikipedia-achtige kennisbank + eigen AI chat (Ollama op PC via tunnel)
 - **Studieplanner** - Planning tool voor leerlingen/mentoren met vakken, huiswerk, notificaties
   - PWA met eigen Laravel backend
   - Mentor-leerling koppeling via API

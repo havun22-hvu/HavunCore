@@ -21,6 +21,22 @@
 
 ## Rules (ALWAYS follow)
 
+### LEES-DENK-DOE-DOCUMENTEER (Kritiek!)
+
+> **Volledige uitleg:** `docs/kb/runbooks/claude-werkwijze.md`
+
+**Bij ELKE taak:**
+1. **LEES** - Hiërarchisch: CLAUDE.md → relevante code/docs voor de taak (zie `docs/kb/PKM-SYSTEEM.md`)
+2. **DENK** - Analyseer, begrijp, stel vragen bij twijfel
+3. **DOE** - Pas dan uitvoeren, rustig, geen haast
+4. **DOCUMENTEER** - Sla nieuwe kennis op in de juiste plek (project vs HavunCore)
+
+**Kernregels:**
+- Kwaliteit boven snelheid - liever 1x goed dan 3x fout
+- Bij twijfel: VRAAG en WACHT op antwoord
+- Nooit aannemen, altijd verifiëren
+- Als gebruiker iets herhaalt: direct opslaan in docs
+
 ### Forbidden without permission
 - SSH keys, credentials, .env files wijzigen
 - Database migrations op production
@@ -44,7 +60,7 @@
 | HavunCore | D:\GitHub\HavunCore | /var/www/development/HavunCore |
 | HavunAdmin | D:\GitHub\HavunAdmin | /var/www/havunadmin/production |
 | Herdenkingsportaal | D:\GitHub\Herdenkingsportaal | /var/www/herdenkingsportaal/production |
-| Infosyst | D:\GitHub\infosyst | (nog niet deployed) |
+| Infosyst | D:\GitHub\infosyst | /var/www/infosyst/production |
 | Studieplanner | D:\GitHub\Studieplanner | /var/www/studieplanner/production |
 | SafeHavun | D:\GitHub\SafeHavun | /var/www/safehavun/production |
 
