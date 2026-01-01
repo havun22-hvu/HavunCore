@@ -69,6 +69,16 @@ verification_codes: id, email, code, purpose, expires_at, used_at
 | Backup | Daily 05:00, 1 jaar retention |
 | Vault | Beschikbaar voor credentials |
 | Task Queue | Optioneel |
+| Scheduler | ✅ Actief (cron) |
+
+## Server Cron Jobs
+
+```bash
+# Laravel scheduler (elke minuut)
+* * * * * cd /var/www/studieplanner/production && php artisan schedule:run >> /dev/null 2>&1
+```
+
+**Toegevoegd:** 1 januari 2026
 
 ## API Endpoints (Studieplanner-api)
 
