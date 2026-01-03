@@ -1,40 +1,122 @@
 # End Session Command
 
-Voer de volgende stappen uit om de sessie netjes af te ronden:
+> **VERPLICHT** bij elke sessie-afsluiting - laat het project netjes achter!
 
-## 1. Update MD bestanden
-- Update CLAUDE.md met relevante wijzigingen uit deze sessie
-- Update CHANGELOG.md als er functionele wijzigingen zijn
-- Check of andere docs bijgewerkt moeten worden
+## 1. Review Smallwork.md (EERST!)
 
-## 2. Git commit & push
-- `git add .`
-- Maak een duidelijke commit message met samenvatting van de wijzigingen
-- `git push origin master`
+Lees `.claude/smallwork.md` en check elke entry:
 
-## 3. Deploy naar server
-- SSH naar 188.245.159.115
-- Pull in /var/www/development/HavunCore
-- Clear caches indien nodig (php artisan config:clear, cache:clear)
+```
+Voor elke fix in smallwork.md:
+  ├── Moet dit naar permanente docs?
+  │     ├── Feature/functionaliteit → SPEC.md of FEATURES.md
+  │     ├── Styling → STYLING.md
+  │     ├── Business rule → relevante doc
+  │     └── Technisch/eenmalig → blijft in smallwork
+  │
+  └── Verplaats indien nodig en vink af
+```
 
-## 4. Branch cleanup
-- Check op open branches: `git branch -a`
-- Verwijder gemergte lokale branches: `git branch --merged | grep -v master | xargs git branch -d`
-- Check open pull requests: `gh pr list`
-- Sluit/merge open PRs indien gereed
+## 2. MD Bestanden Netjes Achterlaten (KRITIEK!)
 
-## 5. USB Stick bijwerken
-- Sync alle projecten naar USB (H: drive):
-  ```powershell
-  powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
-  ```
-- Dit synct: HavunCore, HavunAdmin, Herdenkingsportaal, havuncore-webapp, havun-mcp, BertvanderHeide, VPDUpdate, SafeHavun, Studieplanner
-- Tools (VS Code, Node.js, Claude Code) staan al op de USB
+### Controleer en update:
 
-## 6. Bevestig aan gebruiker
-- Geef korte samenvatting van wat er gedaan is
-- Vermeld eventuele openstaande items
-- Bevestig dat USB stick is bijgewerkt
+```
+{project}/CLAUDE.md           ← Zijn er nieuwe regels/restricties?
+{project}/.claude/context.md  ← Is er nieuwe project kennis?
+{project}/.claude/smallwork.md ← Is alles afgehandeld?
+```
 
-## 7. Sluit Claude af
-- Zeg: "Sessie afgerond. USB bijgewerkt. Druk Ctrl+D of typ 'exit' om Claude te sluiten."
+### Vraag jezelf:
+- [ ] Wat hebben we besproken dat NIET gedocumenteerd is?
+- [ ] Zijn er beslissingen genomen die vastgelegd moeten worden?
+- [ ] Heeft de gebruiker iets uitgelegd dat opgeslagen moet worden?
+- [ ] Zijn er nieuwe patterns/oplossingen die herbruikbaar zijn?
+
+### Waar opslaan?
+
+| Nieuwe kennis | Locatie |
+|---------------|---------|
+| Project-specifiek | `{project}/.claude/context.md` |
+| Herbruikbaar pattern | `HavunCore/docs/kb/patterns/` |
+| How-to procedure | `HavunCore/docs/kb/runbooks/` |
+| Architectuur beslissing | `HavunCore/docs/kb/decisions/` |
+
+## 2. Maak een Handover voor Volgende Sessie
+
+Voeg toe aan het einde van `{project}/.claude/context.md` of maak `{project}/.claude/handover.md`:
+
+```markdown
+## Laatste Sessie: [DATUM]
+
+### Wat is gedaan:
+- [Taak 1]
+- [Taak 2]
+
+### Openstaande items:
+- [ ] [Nog te doen 1]
+- [ ] [Nog te doen 2]
+
+### Belangrijke context voor volgende keer:
+- [Relevante info die de volgende Claude moet weten]
+- [Beslissingen die genomen zijn en waarom]
+
+### Bekende issues/bugs:
+- [Issue 1]
+```
+
+## 3. Git Commit & Push
+
+```bash
+git add .
+git commit -m "docs: Session handover [datum] + [korte beschrijving]"
+git push origin master
+```
+
+## 4. Deploy naar Server (indien van toepassing)
+
+```bash
+ssh root@188.245.159.115
+cd [project path]
+git pull
+php artisan config:clear && php artisan cache:clear
+```
+
+## 5. Branch Cleanup
+
+```bash
+git branch --merged | grep -v master | xargs git branch -d
+```
+
+## 6. USB Stick Bijwerken (HavunCore only)
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
+```
+
+## 7. Bevestig aan Gebruiker
+
+```
+📋 Sessie Samenvatting:
+  - [Wat gedaan]
+  - [Wat gedaan]
+
+📝 Gedocumenteerd:
+  - [Welke MD files bijgewerkt]
+
+⏳ Openstaand:
+  - [Nog te doen]
+
+✅ Handover gemaakt voor volgende sessie
+✅ Git gepusht
+✅ [Server gedeployed / USB bijgewerkt]
+
+Sessie afgerond. Typ 'exit' of Ctrl+D om te sluiten.
+```
+
+## NIET DOEN BIJ AFSLUITEN
+
+❌ Afsluiten zonder MD files te checken
+❌ Kennis "in je hoofd houden" - de volgende Claude weet het niet!
+❌ Geen handover maken bij openstaande items
+❌ Pushen zonder duidelijke commit message
