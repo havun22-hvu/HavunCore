@@ -45,6 +45,6 @@ Opties:
 
 ## Related
 
-- [[projects/herdenkingsportaal]] - WebAuthn implementatie
-- [[projects/havunadmin]] - WebAuthn implementatie
-- [[001-havuncore-standalone]]
+- Herdenkingsportaal - WebAuthn implementatie
+- HavunAdmin - WebAuthn implementatie
+- [001-havuncore-standalone.md](001-havuncore-standalone.md)

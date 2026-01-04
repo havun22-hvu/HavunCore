@@ -98,9 +98,9 @@ Auto-renewal via systemd timer.
 
 ## Backups
 
-Zie [[runbooks/backup]].
+Zie [backup.md](../runbooks/backup.md).
 
 ## Related
 
 - [.claude/context.md](/.claude/context.md) - Credentials
-- [[runbooks/troubleshoot]] - Problemen oplossen
+- [troubleshoot.md](../runbooks/troubleshoot.md) - Problemen oplossen

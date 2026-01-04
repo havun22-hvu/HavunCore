@@ -1072,11 +1072,9 @@ Logging: PASS (all levels tested)
 
 #### Documentation
 - [README.md](README.md) - Project overview en quick start
-- [SETUP.md](SETUP.md) - Complete installatiegids
-- [API-REFERENCE.md](API-REFERENCE.md) - Volledige API documentatie
-- [INTEGRATION-GUIDE.md](INTEGRATION-GUIDE.md) - Praktische integratie voorbeelden
 - [ARCHITECTURE.md](ARCHITECTURE.md) - Architectuur en design decisions
 - [CHANGELOG.md](CHANGELOG.md) - Dit bestand
+- [docs/kb/INDEX.md](docs/kb/INDEX.md) - Knowledge Base
 
 #### Package Configuration
 - `composer.json` - Package definitie met PSR-4 autoloading

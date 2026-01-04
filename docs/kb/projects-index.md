@@ -28,7 +28,7 @@
   - PWA met eigen Laravel backend
   - Mentor-leerling koppeling via API
   - Polling voor notificaties (geen Firebase)
-  - Zie: [[decisions/005-studieplanner-architecture]]
+  - Zie: [005-studieplanner-architecture.md](decisions/005-studieplanner-architecture.md)
 
 ## Voor project-specifieke info
 

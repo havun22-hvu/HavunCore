@@ -37,5 +37,5 @@ HavunCore wordt een **standalone Laravel 11 applicatie** met:
 
 ## Related
 
-- [[projects/havuncore]]
-- [[002-decentrale-auth]]
+- HavunCore project
+- [002-decentrale-auth.md](002-decentrale-auth.md)

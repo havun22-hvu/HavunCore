@@ -35,7 +35,7 @@ Als er openstaande issues zijn, toon ze aan de gebruiker:
 ⚠️ Documentatie issues gevonden:
 
 🔴 [HIGH] Inconsistent: Prijs verschilt tussen SPEC.md en PRICING.md
-   → Welke is correct? €19,95 of €24,95?
+   → Welke is correct?
 
 🟡 [MED] Duplicate: Mollie setup staat in 2 bestanden
    → Consolideer naar één locatie?

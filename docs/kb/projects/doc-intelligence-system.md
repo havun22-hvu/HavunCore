@@ -124,7 +124,7 @@ CREATE TABLE doc_relations (
 
 | Type | Beschrijving | Voorbeeld |
 |------|--------------|-----------|
-| `inconsistent` | Zelfde info, verschillende waarden | Prijs €19,95 vs €24,95 |
+| `inconsistent` | Zelfde info, verschillende waarden | Prijs X vs Prijs Y |
 | `duplicate` | Zelfde info op meerdere plekken | Mollie setup in 2 bestanden |
 | `outdated` | Lang niet bijgewerkt | STYLING.md > 90 dagen oud |
 | `missing` | Functionaliteit zonder docs | Guest checkout niet gedocumenteerd |
@@ -150,11 +150,11 @@ Bij elke sessie start:
 ┌─────────────────────────────────────────────────────────────┐
 │ 1️⃣  INCONSISTENT: Pakket prijzen                            │
 │                                                              │
-│     SPEC.md regel 23:      "Standaard: €19,95"              │
-│     HANDOVER.md regel 45:  "Standaard: €24,95"              │
+│     SPEC.md regel 23:      "Standaard: [prijs A]"           │
+│     HANDOVER.md regel 45:  "Standaard: [prijs B]"           │
 │                                                              │
 │     Welke is correct?                                        │
-│     [A] €19,95  [B] €24,95  [C] Later oplossen              │
+│     [A] Prijs A  [B] Prijs B  [C] Later oplossen            │
 └─────────────────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────────────────┐
@@ -322,10 +322,10 @@ Volgende audit: 18 januari 2026
 
 ## 📚 Gerelateerde Documentatie
 
-- [[docs-first-workflow]] - De DOCS-FIRST regel
-- [[claude-werkwijze]] - LEES-DENK-DOE-DOCUMENTEER
-- [[PKM-SYSTEEM]] - Kennisstructuur
-- [[md-file-audit]] - Huidige audit procedure
+- [docs-first-workflow.md](../runbooks/docs-first-workflow.md) - De DOCS-FIRST regel
+- [claude-werkwijze.md](../runbooks/claude-werkwijze.md) - LEES-DENK-DOE-DOCUMENTEER
+- [PKM-SYSTEEM.md](../PKM-SYSTEEM.md) - Kennisstructuur
+- [md-file-audit.md](../runbooks/md-file-audit.md) - Huidige audit procedure
 
 ---
 

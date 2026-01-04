@@ -161,6 +161,6 @@ php artisan tinker
 
 ## Related
 
-- [[runbooks/backup]] - Dagelijkse operaties
-- [[../projects/]] - Project-specifieke info
+- [backup.md](../runbooks/backup.md) - Dagelijkse operaties
+- Project-specifieke info in elk project
 - [context.md](/.claude/context.md) - Credentials

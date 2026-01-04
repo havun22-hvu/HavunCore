@@ -75,5 +75,5 @@ tail -f /var/www/herdenkingsportaal/production/storage/logs/laravel.log | grep b
 
 ## Related
 
-- [[reference/server]] - Server details
+- [server.md](../reference/server.md) - Server details
 - [.claude/context.md](/.claude/context.md) - Hetzner credentials

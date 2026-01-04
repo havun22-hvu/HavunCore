@@ -62,5 +62,5 @@ Content-Type: application/json
 
 ## Related
 
-- [[projects/havuncore]] - Host van Vault
+- HavunCore - Host van Vault
 - [.claude/context.md](/.claude/context.md) - Credentials

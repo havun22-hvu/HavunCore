@@ -91,5 +91,5 @@ systemctl restart claude-task-poller@havunadmin
 
 ## Related
 
-- [[projects/havuncore]] - Host van Task Queue
-- [[runbooks/troubleshoot]] - Problemen oplossen
+- HavunCore - Host van Task Queue
+- [troubleshoot.md](../runbooks/troubleshoot.md) - Problemen oplossen
