@@ -20,7 +20,30 @@ Lees deze bestanden in volgorde en bevestig aan de gebruiker:
 6. D:\GitHub\HavunCore\docs\kb\PKM-SYSTEEM.md                ← Waar staat wat
 ```
 
-## Stap 3: Bevestig aan gebruiker
+## Stap 3: Check Doc Intelligence issues (indien beschikbaar)
+
+Als het Doc Intelligence systeem actief is, run in HavunCore:
+
+```bash
+cd D:\GitHub\HavunCore
+php artisan docs:issues --project=[huidig project]
+```
+
+Als er openstaande issues zijn, toon ze aan de gebruiker:
+
+```
+⚠️ Documentatie issues gevonden:
+
+🔴 [HIGH] Inconsistent: Prijs verschilt tussen SPEC.md en PRICING.md
+   → Welke is correct? €19,95 of €24,95?
+
+🟡 [MED] Duplicate: Mollie setup staat in 2 bestanden
+   → Consolideer naar één locatie?
+
+Wil je deze eerst oplossen of later?
+```
+
+## Stap 4: Bevestig aan gebruiker
 
 Na het lezen, geef een KORTE bevestiging:
 
@@ -35,11 +58,12 @@ Na het lezen, geef een KORTE bevestiging:
 📋 Dit project: [korte beschrijving]
 ⚠️ Verboden: [belangrijkste restricties]
 📄 DOCS-FIRST: Ik schrijf alleen code zoals het in de docs staat.
+📊 Doc issues: [X open issues / geen issues]
 
 Klaar om te beginnen. Wat wil je doen?
 ```
 
-## Stap 4: ONTHOUD deze principes
+## Stap 5: ONTHOUD deze principes
 
 ### ⛔ DOCS-FIRST WORKFLOW (HOOFDREGEL!)
 

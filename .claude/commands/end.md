@@ -42,7 +42,7 @@ Voor elke fix in smallwork.md:
 | How-to procedure | `HavunCore/docs/kb/runbooks/` |
 | Architectuur beslissing | `HavunCore/docs/kb/decisions/` |
 
-## 2. Maak een Handover voor Volgende Sessie
+## 3. Maak een Handover voor Volgende Sessie
 
 Voeg toe aan het einde van `{project}/.claude/context.md` of maak `{project}/.claude/handover.md`:
 
@@ -65,7 +65,22 @@ Voeg toe aan het einde van `{project}/.claude/context.md` of maak `{project}/.cl
 - [Issue 1]
 ```
 
-## 3. Git Commit & Push
+## 4. Update Doc Intelligence Index (indien beschikbaar)
+
+Als het Doc Intelligence systeem actief is, indexeer de wijzigingen:
+
+```bash
+cd D:\GitHub\HavunCore
+php artisan docs:index [project]
+php artisan docs:detect [project]
+```
+
+Dit zorgt ervoor dat:
+- Gewijzigde MD files opnieuw geïndexeerd worden
+- Nieuwe inconsistenties gedetecteerd worden
+- De volgende sessie up-to-date info heeft
+
+## 5. Git Commit & Push
 
 ```bash
 git add .
@@ -73,7 +88,7 @@ git commit -m "docs: Session handover [datum] + [korte beschrijving]"
 git push origin master
 ```
 
-## 4. Deploy naar Server (indien van toepassing)
+## 6. Deploy naar Server (indien van toepassing)
 
 ```bash
 ssh root@188.245.159.115
@@ -82,19 +97,19 @@ git pull
 php artisan config:clear && php artisan cache:clear
 ```
 
-## 5. Branch Cleanup
+## 7. Branch Cleanup
 
 ```bash
 git branch --merged | grep -v master | xargs git branch -d
 ```
 
-## 6. USB Stick Bijwerken (HavunCore only)
+## 8. USB Stick Bijwerken (HavunCore only)
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
 ```
 
-## 7. Bevestig aan Gebruiker
+## 9. Bevestig aan Gebruiker
 
 ```
 📋 Sessie Samenvatting:
