@@ -29,11 +29,12 @@ class DocIndexer
         'bootstrap/cache',
     ];
 
-    protected string $claudeApiKey;
+    protected ?string $claudeApiKey = null;
 
     public function __construct()
     {
-        $this->claudeApiKey = config('services.claude.api_key', env('CLAUDE_API_KEY', ''));
+        // Optional: For future Claude API embedding support
+        $this->claudeApiKey = config('services.claude.api_key') ?? env('CLAUDE_API_KEY');
     }
 
     /**

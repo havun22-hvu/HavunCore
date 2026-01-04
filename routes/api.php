@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AIProxyController;
 use App\Http\Controllers\Api\ClaudeTaskController;
 use App\Http\Controllers\Api\DeviceController;
+use App\Http\Controllers\Api\DocIntelligenceController;
 use App\Http\Controllers\Api\MCPMessageController;
 use App\Http\Controllers\Api\QrAuthController;
 use App\Http\Controllers\Api\StudySessionController;
@@ -145,4 +146,12 @@ Route::prefix('studieplanner')->group(function () {
     // Get Reverb connection credentials for frontend
     Route::get('/reverb/credentials', [StudySessionController::class, 'credentials'])
         ->name('api.studieplanner.reverb.credentials');
+});
+
+// Doc Intelligence API - Search and manage documentation across all projects
+Route::prefix('docs')->group(function () {
+    Route::get('/search', [DocIntelligenceController::class, 'search'])->name('api.docs.search');
+    Route::get('/issues', [DocIntelligenceController::class, 'issues'])->name('api.docs.issues');
+    Route::get('/stats', [DocIntelligenceController::class, 'stats'])->name('api.docs.stats');
+    Route::get('/read', [DocIntelligenceController::class, 'read'])->name('api.docs.read');
 });
