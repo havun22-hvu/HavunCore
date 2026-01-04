@@ -32,3 +32,4 @@ yarn-error.log
 /.fleet
 /.idea
 /.vscode
+database/doc_intelligence.sqlite

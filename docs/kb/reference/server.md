@@ -44,7 +44,7 @@ ssh root@SERVER_IP (zie context.md)
 | PM2 | `pm2 status` |
 | Task Poller | `systemctl status claude-task-poller@havunadmin` |
 
-## Ports
+## Server Ports
 
 | Port | Service |
 |------|---------|
@@ -53,6 +53,34 @@ ssh root@SERVER_IP (zie context.md)
 | 443 | HTTPS |
 | 3001 | HavunCore Node.js backend |
 | 3306 | MySQL (localhost only) |
+
+## Local Development Ports
+
+Standaard poorten per project. Voorkomt conflicten bij meerdere projecten tegelijk.
+
+### Laravel Projects (php artisan serve)
+
+| Project | Poort | Command |
+|---------|-------|---------|
+| HavunCore | 8000 | `php artisan serve` |
+| HavunAdmin | 8001 | `php artisan serve --port=8001` |
+| Herdenkingsportaal | 8002 | `php artisan serve --port=8002` |
+| Studieplanner-api | 8003 | `php artisan serve --port=8003` |
+| SafeHavun | 8004 | `php artisan serve --port=8004` |
+| Infosyst | 8005 | `php artisan serve --port=8005` |
+| IDSee | 8006 | `php artisan serve --port=8006` |
+| JudoToernooi | 8007 | `php artisan serve --port=8007` |
+| HavunVet | 8008 | `php artisan serve --port=8008` |
+
+### Node.js / Frontend Projects
+
+| Project | Poort | Command |
+|---------|-------|---------|
+| havun-mcp | 3000 | MCP server |
+| Havun (website) | 3001 | `npm run dev` (Next.js) |
+| VPDUpdate | 3002 | `node server.js` |
+| Studieplanner | 5173 | `npm run dev` (Vite/React) |
+| havuncore-webapp | 5174 | `npm run dev` (Vite/React) |
 
 ## Nginx Configs
 
