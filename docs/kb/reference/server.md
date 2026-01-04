@@ -30,8 +30,14 @@ ssh root@SERVER_IP (zie context.md)
 ├── havunadmin/
 │   ├── staging/
 │   └── production/
-└── herdenkingsportaal/
-    ├── staging/
+├── herdenkingsportaal/
+│   ├── staging/
+│   └── production/
+├── infosyst/
+│   └── production/
+├── judotoernooi/
+│   └── laravel/                # Production only (geen staging)
+└── studieplanner/
     └── production/
 ```
 
