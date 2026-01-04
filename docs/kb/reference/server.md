@@ -36,7 +36,9 @@ ssh root@SERVER_IP (zie context.md)
 ├── infosyst/
 │   └── production/
 ├── judotoernooi/
-│   └── laravel/                # Production only (geen staging)
+│   └── laravel/                # Production (judotournament.org)
+├── staging.judotoernooi/
+│   └── laravel/                # Staging (geen publiek domein)
 └── studieplanner/
     └── production/
 ```
