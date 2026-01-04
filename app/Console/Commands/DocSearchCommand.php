@@ -36,9 +36,10 @@ class DocSearchCommand extends Command
         foreach ($results as $i => $result) {
             $rank = $i + 1;
             $similarity = round($result['similarity'] * 100, 1);
+            $modified = $result['file_modified_at'] ?? 'unknown';
 
             $this->line("{$rank}. [{$result['project']}] {$result['file_path']}");
-            $this->line("   Relevance: {$similarity}%");
+            $this->line("   Relevance: {$similarity}% | Modified: {$modified}");
             $this->line("   Preview: " . substr($result['snippet'], 0, 100) . '...');
             $this->line('');
         }

@@ -13,12 +13,16 @@ class DocIndexer
         'havuncore' => 'D:/GitHub/HavunCore',
         'havunadmin' => 'D:/GitHub/HavunAdmin',
         'herdenkingsportaal' => 'D:/GitHub/Herdenkingsportaal',
-        'judotoernooi' => 'D:/GitHub/Judotoernooi',
-        'infosyst' => 'D:/GitHub/infosyst',
+        'judotoernooi' => 'D:/GitHub/JudoToernooi',
+        'infosyst' => 'D:/GitHub/Infosyst',
         'studieplanner' => 'D:/GitHub/Studieplanner',
+        'studieplanner-api' => 'D:/GitHub/Studieplanner-api',
         'safehavun' => 'D:/GitHub/SafeHavun',
         'havun' => 'D:/GitHub/Havun',
         'vpdupdate' => 'D:/GitHub/VPDUpdate',
+        'idsee' => 'D:/GitHub/IDSee',
+        'havunvet' => 'D:/GitHub/HavunVet',
+        'havuncore-webapp' => 'D:/GitHub/havuncore-webapp',
     ];
 
     protected array $excludePaths = [
@@ -252,6 +256,8 @@ class DocIndexer
                 'file_path' => $doc->file_path,
                 'similarity' => $similarity,
                 'snippet' => substr($doc->content, 0, 200) . '...',
+                'file_modified_at' => $doc->file_modified_at?->format('Y-m-d H:i'),
+                'indexed_at' => $doc->updated_at?->format('Y-m-d H:i'),
             ];
         }
 
