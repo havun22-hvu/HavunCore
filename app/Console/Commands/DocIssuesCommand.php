@@ -13,7 +13,8 @@ class DocIssuesCommand extends Command
                             {--severity= : Filter by severity (low, medium, high)}
                             {--type= : Filter by type (duplicate, outdated, broken_link, inconsistent)}
                             {--resolve= : Resolve issue by ID}
-                            {--ignore= : Ignore issue by ID}';
+                            {--ignore= : Ignore issue by ID}
+                            {--summary : Show summary per project instead of all issues}';
 
     protected $description = 'List and manage documentation issues';
 
@@ -26,6 +27,11 @@ class DocIssuesCommand extends Command
 
         if ($ignoreId = $this->option('ignore')) {
             return $this->ignoreIssue($ignoreId);
+        }
+
+        // Summary mode
+        if ($this->option('summary')) {
+            return $this->showSummary($detector);
         }
 
         // List issues
@@ -92,6 +98,68 @@ class DocIssuesCommand extends Command
         $this->line('Commands:');
         $this->line('  php artisan docs:issues --resolve=ID   Resolve an issue');
         $this->line('  php artisan docs:issues --ignore=ID    Ignore an issue');
+
+        return Command::SUCCESS;
+    }
+
+    protected function showSummary(IssueDetector $detector): int
+    {
+        $summary = $detector->getIssueSummary();
+
+        if (empty($summary)) {
+            $this->info('No open issues found!');
+            return Command::SUCCESS;
+        }
+
+        // Calculate totals
+        $totalHigh = 0;
+        $totalMedium = 0;
+        $totalLow = 0;
+        $totalAll = 0;
+
+        foreach ($summary as $project => $data) {
+            $totalHigh += $data['high'];
+            $totalMedium += $data['medium'];
+            $totalLow += $data['low'];
+            $totalAll += $data['total'];
+        }
+
+        $this->line('');
+        $this->info('📊 MD File Audit - ' . now()->format('Y-m-d'));
+        $this->line('═══════════════════════════════════════');
+        $this->line('');
+        $this->line('SAMENVATTING');
+        $this->line('────────────');
+        $this->line("🔴 HIGH:   {$totalHigh} issues");
+        $this->line("🟡 MEDIUM: {$totalMedium} issues");
+        $this->line("🟢 LOW:    {$totalLow} issues");
+        $this->line("   TOTAAL: {$totalAll} issues");
+        $this->line('');
+        $this->line('PER PROJECT');
+        $this->line('───────────');
+
+        foreach ($summary as $project => $data) {
+            $icon = $data['high'] > 0 ? '🔴' : ($data['medium'] > 0 ? '🟡' : '🟢');
+            $this->line("{$icon} {$project}: {$data['total']} issues");
+
+            // Show breakdown by type
+            foreach ($data['by_type'] as $type => $count) {
+                $typeLabel = match($type) {
+                    'inconsistent' => 'Inconsistenties',
+                    'duplicate' => 'Duplicaten',
+                    'outdated' => 'Verouderd',
+                    'broken_link' => 'Broken links',
+                    'missing' => 'Ontbrekend',
+                    default => $type,
+                };
+                $this->line("   - {$typeLabel}: {$count}");
+            }
+        }
+
+        $this->line('');
+        $this->line('───────────');
+        $this->line('Gebruik `php artisan docs:issues [project]` voor details');
+        $this->line('Gebruik `php artisan docs:issues --severity=high` voor alleen HIGH issues');
 
         return Command::SUCCESS;
     }

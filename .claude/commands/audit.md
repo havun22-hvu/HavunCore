@@ -1,73 +1,80 @@
 # MD File Audit Command
 
-Voer een audit uit op alle MD bestanden in alle Havun projecten.
+> **Doel:** Automatische audit van alle MD bestanden in alle Havun projecten
 
-## Procedure
+## Wat dit commando doet
 
-Volg de stappen in `docs/kb/runbooks/md-file-audit.md`:
+1. Indexeert alle MD files van alle projecten in de database
+2. Detecteert issues: duplicaten, broken links, verouderde docs, inconsistenties
+3. Toont een samenvatting per project
 
-### 1. Scan alle projecten
+## Uitvoering
 
-```
-D:\GitHub\HavunCore
-D:\GitHub\HavunAdmin
-D:\GitHub\Herdenkingsportaal
-D:\GitHub\Judotoernooi
-D:\GitHub\infosyst
-D:\GitHub\Studieplanner
-D:\GitHub\SafeHavun
-D:\GitHub\Havun
-D:\GitHub\VPDUpdate
+### Stap 1: Run de audit
+
+```bash
+cd D:\GitHub\HavunCore
+php artisan docs:detect --index
 ```
 
-### 2. Per project checken
+### Stap 2: Toon resultaten aan gebruiker
 
-- [ ] CLAUDE.md bestaat en is max 60-80 regels?
-- [ ] CLAUDE.md bevat LEES-DENK-DOE-DOCUMENTEER sectie?
-- [ ] .claude/context.md bestaat en is actueel?
-- [ ] Geen dubbele info (ook in HavunCore)?
-- [ ] Verwijzingen kloppen?
-- [ ] Logische structuur?
+```bash
+php artisan docs:issues --summary
+```
 
-### 3. Standaard format controleren
+Als `--summary` niet bestaat, gebruik:
 
-**CLAUDE.md moet bevatten:**
-- Type/Framework header
-- LEES-DENK-DOE-DOCUMENTEER sectie
-- Forbidden without permission
-- Quick Reference tabel
-- Knowledge Base verwijzing
+```bash
+php artisan docs:issues 2>&1 | head -100
+```
 
-**context.md moet bevatten:**
-- Features/functionaliteit
-- Database info (indien relevant)
-- Veelvoorkomende taken
+### Stap 3: Rapporteer aan gebruiker
 
-### 4. Fixes doorvoeren
+Geef een overzicht in dit format:
+
+```
+📊 MD File Audit - [datum]
+═══════════════════════════════════════
+
+Gescand: X projecten, Y MD bestanden
+
+SAMENVATTING
+────────────
+🔴 HIGH:   X issues
+🟡 MEDIUM: X issues
+🟢 LOW:    X issues
+
+TOP ISSUES (alleen HIGH + MEDIUM tonen)
+───────────────────────────────────────
+[Per project: issue type + korte beschrijving]
+
+AANBEVOLEN ACTIES
+─────────────────
+1. [Eerste prioriteit]
+2. [Tweede prioriteit]
+...
+```
+
+### Stap 4: Bij fixes
 
 | Type | Actie |
 |------|-------|
-| Typos, formatting | Direct fixen |
-| Verouderde info | Direct updaten |
-| Structuur aanpassen | Direct fixen |
-| Inhoudelijke twijfel | Overleggen |
-| Technische keuzes | Zelf oplossen |
-| Grote wijzigingen | Eerst bespreken |
+| Broken links | Direct fixen |
+| Duplicaten | Overleggen welke te behouden |
+| Verouderde docs | Controleren of nog relevant |
+| Inconsistenties | Overleggen welke waarde correct is |
 
-### 5. Commit per project
+### Stap 5: Na fixes
 
-- Commit message: `docs: MD file audit [datum]`
-- Push naar remote
+```bash
+# Herindexeer om opgeloste issues te verwijderen
+php artisan docs:detect --index
+```
 
-### 6. Update audit log
+## Handmatige checks (optioneel)
 
-In `docs/kb/runbooks/md-file-audit.md`:
-- Voeg datum toe aan Audit Log tabel
-- Noteer gevonden issues en status
-- Update volgende audit datum
-
-### 7. Rapporteer aan gebruiker
-
-- Lijst van gecontroleerde projecten
-- Gevonden en opgeloste issues
-- Openstaande vragen (indien van toepassing)
+Zie `docs/kb/runbooks/md-file-audit.md` voor:
+- CLAUDE.md format standaard
+- context.md format standaard
+- Checklist per project
