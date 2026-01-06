@@ -124,7 +124,7 @@ $service = new PushNotificationService();
 $service->sendPushNotification(
     user: $user,
     title: 'Betaling ontvangen',
-    body: 'Monument actief voor €19,95',
+    body: 'Standaard monument actief',
     data: ['memorial_id' => 123]
 );
 ```
