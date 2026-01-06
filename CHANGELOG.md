@@ -403,12 +403,12 @@ HavunCore is the **central orchestration platform** that coordinates all Havun p
 - Documents security measures (AES-256 encryption, SFTP, SSH keys)
 - Details compliance coverage (Belastingdienst 7-year retention, GDPR)
 - Includes monitoring setup (daily reports, failure alerts)
-- Cost breakdown (€3.87/month for 5TB Storage Box)
+- Cost breakdown included
 
 #### Features
 
 ✅ **7-Year Retention** - Belastingdienst compliance
-✅ **Offsite Storage** - Hetzner Storage Box (€19/month for 5TB)
+✅ **Offsite Storage** - Hetzner Storage Box
 ✅ **SHA256 Checksums** - Integrity verification
 ✅ **AES-256 Encryption** - Optional encryption for sensitive data
 ✅ **Multi-Project** - HavunAdmin, Herdenkingsportaal, HavunCore
@@ -416,12 +416,6 @@ HavunCore is the **central orchestration platform** that coordinates all Havun p
 ✅ **Monitoring** - Health checks + email alerts
 ✅ **Audit Trail** - Complete backup/restore logging
 ✅ **Compliance-Ready** - GDPR + Belastingdienst compliant
-
-#### Cost
-
-- Hetzner Storage Box BX30 (5TB): €19.04/month
-- 7-year total: €1,599.36
-- Per project per year: ~€57
 
 #### Implementation Status
 

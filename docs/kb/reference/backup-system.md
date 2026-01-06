@@ -21,7 +21,7 @@ Local (30 dagen)     →     Offsite (7 jaar)
 
 ## Hetzner Storage Box
 
-**Account:** BX30 (5 TB) - €19,04/maand
+**Account:** BX11 (1TB) - zie Hetzner facturen voor actuele prijzen
 
 ```
 Host: u510616.your-storagebox.de
@@ -152,12 +152,7 @@ php artisan tinker
 
 ## Kosten
 
-| Item | Kosten |
-|------|--------|
-| Hetzner BX30 (5TB) | €19,04/maand |
-| Per jaar | €228,48 |
-| 7 jaar compliance | €1.599,36 |
-| Per project/jaar | ~€57 |
+Zie Hetzner Console/facturen voor actuele prijzen.
 
 ## Related
 
