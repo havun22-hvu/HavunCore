@@ -2,8 +2,6 @@
 
 Centrale documentatie voor alle Havun projecten.
 
-**[→ Quick Reference (credentials & commands)](QUICK-REFERENCE.md)**
-
 ---
 
 ## Interne Projecten

@@ -245,7 +245,7 @@ HavunCore/
 - 🏗️ [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
 - 📖 [INDEX.md](INDEX.md) - Complete documentation index
 - 💾 [Backup System](docs/backup/) - Backup documentation
-- 🔌 [API Reference](docs/api/API-REFERENCE.md) - API docs
+- 🔌 [API Reference](docs/kb/reference/) - API docs (Task Queue, Vault)
 
 ---
 

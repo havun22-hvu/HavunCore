@@ -175,10 +175,18 @@ class IssueDetector
                 if (str_starts_with($link, '#')) continue; // Anchor links
 
                 // Check if file exists
-                $basePath = $this->getProjectPath($doc->project);
-                $docDir = dirname($basePath . '/' . $doc->file_path);
+                // Handle both absolute paths (D:/GitHub/...) and relative paths
+                $isAbsolute = preg_match('/^[A-Za-z]:/', $doc->file_path) || str_starts_with($doc->file_path, '/');
 
-                // Try relative path
+                if ($isAbsolute) {
+                    $docDir = dirname($doc->file_path);
+                    $basePath = $this->getProjectPath($doc->project);
+                } else {
+                    $basePath = $this->getProjectPath($doc->project);
+                    $docDir = dirname($basePath . '/' . $doc->file_path);
+                }
+
+                // Try relative path from document directory
                 $targetPath = realpath($docDir . '/' . $link);
                 if (!$targetPath) {
                     // Try from project root
