@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "type": "prompt",
+            "prompt": "DOCS-FIRST workflow: 1) Lees relevante MD files, 2) Update MD files EERST - dit is belangrijker dan code, 3) Geef korte samenvatting van taak uit docs, 4) Dan pas coderen. NIETS VRAGEN - gewoon doen. VERBODEN: omzeilen via Bash/sed/Python."
+          }
+        ]
+      }
+    ]
+  }
+}
