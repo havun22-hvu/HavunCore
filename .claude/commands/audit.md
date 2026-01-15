@@ -1,80 +1,36 @@
 # MD File Audit Command
 
-> **Doel:** Automatische audit van alle MD bestanden in alle Havun projecten
+> Scan dit project op code kwaliteit issues.
 
-## Wat dit commando doet
+## Uit te voeren
 
-1. Indexeert alle MD files van alle projecten in de database
-2. Detecteert issues: duplicaten, broken links, verouderde docs, inconsistenties
-3. Toont een samenvatting per project
-
-## Uitvoering
-
-### Stap 1: Run de audit
-
+### 1. TODO/FIXME/HACK scan
 ```bash
-cd D:\GitHub\HavunCore
-php artisan docs:detect --index
+grep -rn "TODO\|FIXME\|HACK" --include="*.php" --include="*.js" --include="*.vue" --include="*.ts" . 2>/dev/null | head -30
 ```
 
-### Stap 2: Toon resultaten aan gebruiker
-
+### 2. Outdated dependencies
 ```bash
-php artisan docs:issues --summary
+# Als composer.json bestaat
+composer show --outdated 2>/dev/null | head -20
+
+# Als package.json bestaat  
+npm outdated 2>/dev/null | head -20
 ```
 
-Als `--summary` niet bestaat, gebruik:
+### 3. Rapporteer bevindingen
 
-```bash
-php artisan docs:issues 2>&1 | head -100
+Geef een korte samenvatting:
+- Aantal TODO/FIXME/HACK gevonden
+- Aantal outdated packages
+- Aanbevelingen
+
+### 4. Update context.md
+
+Voeg toe aan `.claude/context.md`:
+```markdown
+### Laatste Audit: [DATUM]
+- TODOs: [aantal]
+- Outdated deps: [aantal]
+- Actie nodig: [ja/nee]
 ```
-
-### Stap 3: Rapporteer aan gebruiker
-
-Geef een overzicht in dit format:
-
-```
-📊 MD File Audit - [datum]
-═══════════════════════════════════════
-
-Gescand: X projecten, Y MD bestanden
-
-SAMENVATTING
-────────────
-🔴 HIGH:   X issues
-🟡 MEDIUM: X issues
-🟢 LOW:    X issues
-
-TOP ISSUES (alleen HIGH + MEDIUM tonen)
-───────────────────────────────────────
-[Per project: issue type + korte beschrijving]
-
-AANBEVOLEN ACTIES
-─────────────────
-1. [Eerste prioriteit]
-2. [Tweede prioriteit]
-...
-```
-
-### Stap 4: Bij fixes
-
-| Type | Actie |
-|------|-------|
-| Broken links | Direct fixen |
-| Duplicaten | Overleggen welke te behouden |
-| Verouderde docs | Controleren of nog relevant |
-| Inconsistenties | Overleggen welke waarde correct is |
-
-### Stap 5: Na fixes
-
-```bash
-# Herindexeer om opgeloste issues te verwijderen
-php artisan docs:detect --index
-```
-
-## Handmatige checks (optioneel)
-
-Zie `docs/kb/runbooks/md-file-audit.md` voor:
-- CLAUDE.md format standaard
-- context.md format standaard
-- Checklist per project
