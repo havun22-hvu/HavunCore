@@ -66,6 +66,7 @@ docs/kb/
 - [claude-werkwijze.md](runbooks/claude-werkwijze.md) - LEES-DENK-DOE-DOCUMENTEER (kritiek!)
 - [docs-first-workflow.md](runbooks/docs-first-workflow.md) - DOCS-FIRST workflow
 - [md-file-audit.md](runbooks/md-file-audit.md) - 2-wekelijkse documentatie audit
+- [chrome-testing.md](runbooks/chrome-testing.md) - Browser testing met Claude for Chrome
 - [deploy.md](runbooks/deploy.md) - Deployen naar server
 - [backup.md](runbooks/backup.md) - Backup systeem
 - [troubleshoot.md](runbooks/troubleshoot.md) - Problemen oplossen
