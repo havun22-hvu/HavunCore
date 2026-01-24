@@ -28,9 +28,28 @@ Server Local (7 dagen)    →    Offsite (permanent)
 - HavunAdmin: `/var/www/havunadmin/production/storage/invoices`
 - Herdenkingsportaal: `/var/www/herdenkingsportaal/production/storage/app/public`
 
-## Dagelijkse backup
+## Hot Backup (elke 5 minuten)
 
-Automatisch via cron om 03:00:
+**Kritieke production databases** worden elke 5 minuten gebackupt:
+- havunadmin_production
+- herdenkingsportaal_production
+- judo_toernooi
+
+```bash
+*/5 * * * * /usr/local/bin/havun-hotbackup.sh
+```
+
+**Locatie:** `/var/backups/havun/hot/`
+**Retentie:** Laatste 2 uur (automatisch opgeschoond)
+
+```bash
+# Check hot backups
+ssh root@188.245.159.115 "ls -lh /var/backups/havun/hot/"
+```
+
+## Dagelijkse backup (volledig)
+
+Automatisch via cron om 03:00 - ALLE databases + storage:
 ```bash
 0 3 * * * /usr/local/bin/havun-backup.sh
 ```
