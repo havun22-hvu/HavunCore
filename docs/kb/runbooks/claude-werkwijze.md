@@ -134,6 +134,41 @@ Als de gebruiker iets moet herhalen:
 | "Dat wist ik niet" | "Laat me dat opzoeken" |
 | Vergeten wat eerder besproken | Documenteren en teruglezen |
 
+## UI/UX Standaarden
+
+**Altijd automatisch toepassen, niet wachten tot gebruiker vraagt:**
+
+### Scroll positie behouden
+Bij ELKE async operatie die de UI update:
+- Bewaar `window.scrollY` vóór de operatie
+- Herstel met `window.scrollTo(0, scrollPos)` na voltooiing
+
+```javascript
+async function doAsyncOperation() {
+    const scrollPos = window.scrollY;
+    // ... fetch/ajax call ...
+    // Na success:
+    window.scrollTo(0, scrollPos);
+}
+```
+
+**Geldt voor:**
+- AJAX/fetch calls
+- Modal open/close
+- Dropdown/select wijzigingen
+- DOM manipulaties
+- Preset opslaan/laden/verwijderen
+
+### Focus behouden
+- Na form submit zonder page reload: focus terug op relevant element
+- Na modal sluiten: focus terug naar trigger element
+
+### Loading states
+- Toon loading indicator bij operaties > 200ms
+- Disable knoppen tijdens operatie (voorkom dubbel klikken)
+
+---
+
 ## Checklist voor Claude
 
 Voordat je code schrijft, vraag jezelf:
@@ -144,5 +179,6 @@ Voordat je code schrijft, vraag jezelf:
 - [ ] Weet ik waar dit in past in de architectuur?
 - [ ] Zijn er bestaande patterns die ik kan volgen?
 - [ ] Moet ik eerst vragen stellen?
+- [ ] Behoud ik scroll/focus bij async operaties? (standaard!)
 
 **Als je ook maar 1 vakje niet kunt aanvinken: STOP en lees/vraag eerst.**
