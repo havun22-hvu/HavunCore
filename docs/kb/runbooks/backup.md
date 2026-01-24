@@ -128,6 +128,33 @@ sftp -P 23 u510616@u510616.your-storagebox.de
 df -h
 ```
 
+## Lokale Backup (Windows Dev Machine)
+
+Script: `D:\GitHub\HavunCore\tools\local-backup.ps1`
+
+```powershell
+# Handmatig uitvoeren (start Laragon eerst voor database backups)
+powershell -ExecutionPolicy Bypass -File "D:\GitHub\HavunCore\tools\local-backup.ps1"
+
+# Met aangepaste backup locatie
+.\local-backup.ps1 -BackupPath "E:\Backups"
+```
+
+**Wat wordt gebackupt:**
+- Databases (als Laragon draait): havunadmin, herdenkingsportaal, infosyst, safehavun, studieplanner, judotoernooi
+- Storage folders: HavunAdmin facturen, Herdenkingsportaal uploads
+- .env files van alle projecten
+
+**Locatie:** `D:\Backups\Havun\YYYY-MM-DD\`
+
+**Scheduled Task (optioneel):**
+```powershell
+# Als admin uitvoeren:
+$action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-ExecutionPolicy Bypass -File D:\GitHub\HavunCore\tools\local-backup.ps1"
+$trigger = New-ScheduledTaskTrigger -Daily -At "12:00"
+Register-ScheduledTask -TaskName "HavunLocalBackup" -Action $action -Trigger $trigger -Description "Daily Havun backup"
+```
+
 ## Related
 
 - [backup-system.md](../reference/backup-system.md) - Volledige referentie
