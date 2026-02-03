@@ -9,7 +9,9 @@ use Illuminate\Support\Facades\Log;
 
 class DocIndexer
 {
-    protected array $projectPaths = [
+    protected array $projectPaths = [];
+
+    protected array $localPaths = [
         'havuncore' => 'D:/GitHub/HavunCore',
         'havunadmin' => 'D:/GitHub/HavunAdmin',
         'herdenkingsportaal' => 'D:/GitHub/Herdenkingsportaal',
@@ -23,6 +25,19 @@ class DocIndexer
         'idsee' => 'D:/GitHub/IDSee',
         'havunvet' => 'D:/GitHub/HavunVet',
         'havuncore-webapp' => 'D:/GitHub/havuncore-webapp',
+    ];
+
+    protected array $serverPaths = [
+        'havuncore' => '/var/www/development/HavunCore',
+        'havunadmin' => '/var/www/havunadmin/production',
+        'herdenkingsportaal' => '/var/www/herdenkingsportaal/production',
+        'judotoernooi' => '/var/www/judotoernooi/laravel',
+        'infosyst' => '/var/www/infosyst/production',
+        'studieplanner' => '/var/www/studieplanner/production',
+        'studieplanner-api' => '/var/www/studieplanner-api',
+        'safehavun' => '/var/www/safehavun/production',
+        'havun' => '/var/www/havun.nl',
+        'havunvet' => '/var/www/havunvet/staging',
     ];
 
     protected array $excludePaths = [
@@ -39,6 +54,11 @@ class DocIndexer
     {
         // Optional: For future Claude API embedding support
         $this->claudeApiKey = config('services.claude.api_key') ?? env('CLAUDE_API_KEY');
+
+        // Use server paths on Linux, local paths on Windows
+        $this->projectPaths = PHP_OS_FAMILY === 'Windows'
+            ? $this->localPaths
+            : $this->serverPaths;
     }
 
     /**
