@@ -37,6 +37,9 @@ ssh root@SERVER_IP (zie context.md)
 │   └── production/
 ├── judotoernooi/
 │   └── laravel/                # Production (judotournament.org)
+├── havunclub/
+│   ├── staging/                # staging.havunclub.havun.nl
+│   └── production/             # havunclub.havun.nl
 ├── staging.judotoernooi/
 │   └── laravel/                # Staging (geen publiek domein)
 └── studieplanner/
@@ -79,6 +82,7 @@ Standaard poorten per project. Voorkomt conflicten bij meerdere projecten tegeli
 | IDSee | 8006 | `php artisan serve --port=8006` |
 | JudoToernooi | 8007 | `php artisan serve --port=8007` |
 | HavunVet | 8008 | `php artisan serve --port=8008` |
+| HavunClub | 8009 | `php artisan serve --port=8009` |
 
 ### Node.js / Frontend Projects
 
@@ -96,6 +100,8 @@ Standaard poorten per project. Voorkomt conflicten bij meerdere projecten tegeli
 /etc/nginx/sites-available/
 ├── havuncore.havun.nl
 ├── havunadmin.havun.nl
+├── havunclub.havun.nl
+├── staging.havunclub.havun.nl
 └── herdenkingsportaal.nl
 ```
 

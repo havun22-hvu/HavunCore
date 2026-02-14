@@ -140,6 +140,38 @@ chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 ```
 
+## HavunClub
+
+```bash
+# 1. Lokaal testen
+cd D:\GitHub\HavunClub
+php artisan test
+
+# 2. Push naar GitHub
+git add .
+git commit -m "Description"
+git push
+
+# 3. Deploy naar staging
+ssh root@188.245.159.115
+cd /var/www/havunclub/staging
+git pull origin main
+php artisan migrate
+php artisan config:clear && php artisan cache:clear
+
+# 4. Test staging
+# Open https://staging.havunclub.havun.nl
+
+# 5. Deploy naar production
+cd /var/www/havunclub/production
+git pull origin main
+php artisan migrate
+php artisan config:clear && php artisan cache:clear
+```
+
+> **Let op:** HavunClub gebruikt `main` branch (niet `master`)
+> **Git remote:** `github-havunclub:havun22-hvu/HavunClub.git`
+
 ---
 
 ## Checklist na deploy
