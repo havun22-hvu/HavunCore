@@ -15,6 +15,7 @@
 | **Studieplanner-api** | Laravel 11 | (via /api/) | D:\GitHub\Studieplanner-api | /var/www/studieplanner-api |
 | **Infosyst** | Laravel + Ollama | infosyst.havun.nl | D:\GitHub\infosyst | /var/www/infosyst/production |
 | **IDSee** | Node.js + React | - | D:\GitHub\IDSee | (in development) |
+| **HavunClub** | Laravel 11 SaaS | havunclub.havun.nl | D:\GitHub\HavunClub | /var/www/havunclub/production |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (in development) |
 
 ## Korte beschrijving
@@ -35,6 +36,8 @@
 
 ### In Development
 
+- **HavunClub** - Multi-club SaaS ledenadministratie (judo/sport)
+  - Gezinnen, abonnementen, Mollie recurring, bandexamens, QR check-in
 - **SafeHavun** - Smart Money Crypto Tracker (whale alerts, sentiment)
 - **HavunVet** - Dierenarts praktijkbeheer (ZZP), integratie met HavunAdmin
 - **Studieplanner** - PWA voor leerling-mentor studiesessies

@@ -26,8 +26,11 @@ Als het Doc Intelligence systeem actief is, run in HavunCore:
 
 ```bash
 cd D:\GitHub\HavunCore
-php artisan docs:issues --project=[huidig project]
+php artisan docs:issues [huidig project]
 ```
+
+> **Let op:** project is een positional argument, niet een --flag.
+> Voorbeeld: `php artisan docs:issues havunclub`
 
 Als er openstaande issues zijn, toon ze aan de gebruiker:
 
