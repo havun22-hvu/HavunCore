@@ -85,6 +85,51 @@ php artisan migrate --force
 php artisan config:clear && php artisan cache:clear
 ```
 
+## Architectuur
+
+| Onderdeel | Aantal | Opmerking |
+|-----------|--------|-----------|
+| Models | 30 | Incl. Wimpel systeem, sync queue |
+| Controllers | 34 | Fat controllers zijn tech debt |
+| Services | 22 | BlokVerdeling helpers zijn voorbeeldig |
+| Migrations | 127 | Multi-tenant, offline sync |
+| Middleware | 7 | Role, device, freemium, security, locale, offline |
+| Enums | 4 | Band, Geslacht, Leeftijdsklasse, AanwezigheidsStatus |
+
+**Stack:** Laravel 11, Alpine.js 3.14, Tailwind CSS 3.4, Vite 5.4, Reverb WebSockets
+
+**Patterns:**
+- Service layer voor business logic
+- Model traits (HasMolliePayments, HasPortaalModus, HasCategorieBepaling)
+- Result Object pattern, Circuit Breaker
+- Custom exception hiërarchie (JudoToernooiException)
+- BlokVerdeling subfolder met SOLID helpers (voorbeeldig)
+
+## Code Review (14 feb 2026)
+
+**Scores:** Models 8.5/10 | Controllers B+ | Services B+ | Security B+
+
+**Sterke punten:**
+- BlokVerdeling helpers: SOLID, pure functions, goed testbaar
+- Exception hiërarchie: user/technical message scheiding
+- Security headers: CSP, HSTS, permissions policy
+- Multi-layer auth: organisator + role + device binding
+- FreemiumService & ActivityLogger: clean en focused
+
+**Bekende tech debt:**
+- Fat controllers: BlokController (1315 LOC), PouleController (1192), MatController (1161)
+- N+1 query risks in Toernooi, Poule, Club, Mat models
+- Missing DB transactions bij judoka verplaatsingen (WedstrijddagController)
+- Inconsistente naming (NL/EN mix in methods)
+- Club pincodes plaintext, CoachKaart pincode 4 cijfers
+
+**Security aandachtspunten:**
+- Local sync API (`api.php`) heeft geen auth → data leak risico
+- Coach PIN login geen rate limiting → brute force risico
+- `/health/detailed` onbeschermd → info disclosure
+- Hardcoded admin password defaults in `config/toernooi.php`
+- CSP met `unsafe-inline` en `unsafe-eval`
+
 ## Documentatie in Project
 
 | Doc | Locatie |
@@ -97,4 +142,4 @@ php artisan config:clear && php artisan cache:clear
 
 ---
 
-*Laatste update: 3 februari 2026*
+*Laatste update: 14 februari 2026*
