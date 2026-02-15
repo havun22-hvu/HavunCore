@@ -25,6 +25,7 @@ class DocIndexer
         'idsee' => 'D:/GitHub/IDSee',
         'havunvet' => 'D:/GitHub/HavunVet',
         'havuncore-webapp' => 'D:/GitHub/havuncore-webapp',
+        'havunclub' => 'D:/GitHub/HavunClub',
     ];
 
     protected array $serverPaths = [
@@ -38,6 +39,7 @@ class DocIndexer
         'safehavun' => '/var/www/safehavun/production',
         'havun' => '/var/www/havun.nl',
         'havunvet' => '/var/www/havunvet/staging',
+        'havunclub' => '/var/www/havunclub/production',
     ];
 
     protected array $excludePaths = [
