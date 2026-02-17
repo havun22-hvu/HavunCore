@@ -61,6 +61,32 @@ cd /var/www/herdenkingsportaal/staging
 cd /var/www/herdenkingsportaal/production
 ```
 
+## JudoToernooi
+
+```bash
+# 1. Lokaal testen
+cd D:\GitHub\JudoToernooi\laravel
+php artisan test
+
+# 2. Push naar GitHub
+git add .
+git commit -m "Description"
+git push
+
+# 3. Deploy naar production
+ssh root@SERVER_IP (zie context.md)
+cd /var/www/judotoernooi/laravel
+git pull origin main
+composer install --no-dev
+npm run build
+php artisan migrate --force
+php artisan config:clear && php artisan cache:clear
+```
+
+> **Let op:** JudoToernooi gebruikt `main` branch (niet `master`)
+> **Server pad:** `/var/www/judotoernooi/laravel`
+> **Staging:** `/var/www/staging.judotoernooi/laravel`
+
 ## HavunCore Webapp
 
 ```bash

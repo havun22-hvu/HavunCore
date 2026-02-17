@@ -105,6 +105,19 @@ php artisan config:clear && php artisan cache:clear
 - Custom exception hiërarchie (JudoToernooiException)
 - BlokVerdeling subfolder met SOLID helpers (voorbeeldig)
 
+## AutoFix (Automatische Error Fixing)
+
+Claude AI analyseert production errors automatisch en past fixes direct toe (max 2 pogingen). Pas als beide mislukken krijgt de admin een email.
+
+- **Config:** `config/autofix.php`
+- **Service:** `app/Services/AutoFixService.php`
+- **Model:** `app/Models/AutofixProposal.php` (tabel: `autofix_proposals`)
+- **Email:** havun22@gmail.com (alleen bij falen)
+- **API:** HavunCore AI Proxy (tenant: `judotoernooi`)
+- **Review:** `/autofix/{token}` web UI
+
+Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
+
 ## Code Review (14 feb 2026)
 
 **Scores:** Models 8.5/10 | Controllers B+ | Services B+ | Security B+
@@ -142,4 +155,4 @@ php artisan config:clear && php artisan cache:clear
 
 ---
 
-*Laatste update: 14 februari 2026*
+*Laatste update: 18 februari 2026*

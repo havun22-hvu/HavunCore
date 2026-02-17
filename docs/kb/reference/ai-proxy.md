@@ -31,7 +31,7 @@ Stuur een bericht naar Claude.
 
 | Parameter | Type | Verplicht | Beschrijving |
 |-----------|------|-----------|--------------|
-| tenant | string | Ja | Project identifier: `infosyst`, `herdenkingsportaal`, `havunadmin`, `havuncore` |
+| tenant | string | Ja | Project identifier: `infosyst`, `herdenkingsportaal`, `havunadmin`, `havuncore`, `judotoernooi` |
 | message | string | Ja | Gebruikersvraag (max 10.000 tekens) |
 | context | array | Nee | Extra context als array van strings |
 | system_prompt | string | Nee | Override default system prompt |
@@ -122,6 +122,7 @@ Elke tenant heeft een default system prompt:
 | herdenkingsportaal | Memorial beheer, monument editor, empathisch |
 | havunadmin | Facturatie, klantenbeheer, technisch |
 | havuncore | Centrale hub, Task Queue, orchestratie |
+| judotoernooi | AutoFix: production error analyse en fix voorstellen |
 
 Je kunt de default overriden met `system_prompt` parameter.
 
