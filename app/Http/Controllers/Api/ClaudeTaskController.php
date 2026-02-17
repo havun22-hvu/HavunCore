@@ -62,7 +62,7 @@ class ClaudeTaskController extends Controller
     {
 
         $validator = Validator::make($request->all(), [
-            'project' => 'required|string|in:havuncore,havunadmin,herdenkingsportaal',
+            'project' => 'required|string|in:havuncore,havunadmin,herdenkingsportaal,judotoernooi',
             'task' => 'required|string|min:5',
             'priority' => 'nullable|in:low,normal,high,urgent',
             'created_by' => 'nullable|string',

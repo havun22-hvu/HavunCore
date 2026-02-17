@@ -45,7 +45,7 @@ class AIProxyController extends Controller
     public function chat(Request $request): JsonResponse
     {
         $validator = Validator::make($request->all(), [
-            'tenant' => 'required|string|in:infosyst,herdenkingsportaal,havunadmin,havuncore',
+            'tenant' => 'required|string|in:infosyst,herdenkingsportaal,havunadmin,havuncore,judotoernooi',
             'message' => 'required|string|min:1|max:10000',
             'context' => 'nullable|array',
             'system_prompt' => 'nullable|string|max:5000',
