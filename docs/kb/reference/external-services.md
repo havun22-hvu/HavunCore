@@ -62,7 +62,7 @@
 MAIL_MAILER=resend
 MAIL_FROM_ADDRESS="noreply@herdenkingsportaal.nl"
 MAIL_FROM_NAME="Herdenkingsportaal"
-RESEND_KEY=re_KQABaL9N_...  (volledige key op server .env)
+RESEND_KEY=re_...  (zie credentials.md of server .env)
 ```
 
 > **Let op:** Resend gratis tier staat maar 1 domein toe. Voor extra domeinen: betaald plan ($20/mnd) of ander provider (bijv. Brevo).
