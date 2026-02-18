@@ -49,6 +49,21 @@
 - ✅ Device fingerprinting
 - ✅ Rate limiting (5 pogingen/minuut)
 
+## Deploy Keys (GitHub)
+
+| Repository | Key naam | Fingerprint | Status |
+|------------|----------|-------------|--------|
+| havun22-hvu/HavunClub | server-deploy | SHA256:avC0cOwq1fLYgjl05d+i2vfAbNc6/5M01NgKxBQ7a+Y | Nodig - server heeft geen toegang via hoofdkey |
+
+> De hoofdkey (`id_ed25519`) heeft geen toegang tot HavunClub. Deze deploy key is vereist.
+
+## Security Incidenten
+
+| Datum | Project | Wat | Status |
+|-------|---------|-----|--------|
+| 2025-11-23 | Alle | SSH key aangemaakt door Claude zonder toestemming (ADR-003) | Opgelost |
+| 2026-02-18 | HavunClub | Echt wachtwoord in seeder gecommit (a4a19d0) | Wachtwoord moet gewijzigd worden |
+
 ## Aandachtspunten
 
 1. **Repos NOOIT public maken** - git history bevat oude credentials
