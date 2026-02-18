@@ -157,7 +157,8 @@ Externe API's en dashboards:
 - Mollie (betalingen)
 - Anthropic (Claude AI)
 - GitGuardian (secret scanning)
-- Brevo (email, voorheen SendGrid)
+- Resend (email Herdenkingsportaal)
+- Brevo (email JudoToernooi)
 
 ### AI Proxy (`reference/ai-proxy.md`)
 AI proxy service voor Claude API calls.

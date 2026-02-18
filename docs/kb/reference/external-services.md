@@ -76,7 +76,7 @@ RESEND_KEY=re_KQABaL9N_...  (volledige key op server .env)
 | Project | Provider | Status | From address |
 |---------|----------|--------|-------------|
 | Herdenkingsportaal | Resend | ✅ Actief | noreply@herdenkingsportaal.nl |
-| JudoToernooi | Brevo | ⏳ Nog in te stellen | - |
+| JudoToernooi | Brevo | ✅ Actief | noreply@judotournament.org |
 | Studieplanner | - | ⏳ Gepland | - |
 
 ---
