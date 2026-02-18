@@ -2,19 +2,18 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 15 februari 2026
+## Laatste Sessie: 19 februari 2026
 
 ### Wat is gedaan:
-- **HavunClub commands:** Alle 9 Claude commands (/start, /end, /kb, /md, /audit, /test, /errors, /lint, /update) aangemaakt in HavunClub
-- **HavunClub server setup:** Staging + production op Hetzner server
-  - Directories: `/var/www/havunclub/staging` + `/production`
-  - GitHub deploy key: `~/.ssh/deploy_havunclub` + SSH config
-  - MySQL: `havunclub_staging` + `havunclub_production` (user: `havunclub`)
-  - Nginx + SSL (Let's Encrypt, verloopt 15 mei 2026)
-  - Laravel: composer, migrate, seed (inclusief sitebeheerder account)
-- **HavunClub in ecosysteem:** Geregistreerd in projects-index, CLAUDE.md, context.md, server.md, deploy.md
-- **docs:issues fix:** /start commands gebruikten `--project=X` maar het is een positional argument (`docs:issues havunclub`)
-- **Chrome integratie uitgeschakeld:** Globale CLAUDE.md aangepast (werkt momenteel niet)
+- **HavunClub security incident:** Wachtwoord in seeder (commit a4a19d0) gevonden via GitGuardian
+  - Wachtwoord verwijderd uit volledige git history (filter-branch)
+  - Force push naar GitHub + server staging/production gereset
+  - Wachtwoord wordt gewijzigd door eigenaar
+- **HavunClub `.claude/rules.md`:** Security rules aangemaakt met seeder-regels, credential-verboden
+- **HavunClub deploy key:** `server-deploy` key was door Claude aangemaakt (herhaling ADR-003), maar is WEL nodig — hoofdkey heeft geen toegang tot HavunClub repo
+- **HavunCore security.md:** Deploy keys sectie + security incidenten tabel toegevoegd, HavunClub in repo-tabel
+- **USB tools:** `tools/usb-fix/` gecommit (START.bat + TOERNOOI-FIX.bat)
+- **Deploy docs:** HavunClub remote gecorrigeerd — blijft `github-havunclub` (niet `github.com`)
 
 ### Openstaande items:
 - [ ] Admin auth middleware voor Vault admin routes
@@ -26,6 +25,7 @@
 - [ ] JudoToernooi `routes/api.php` is dode code (niet geladen) - verwijderen of correct laden
 - [ ] HavunClub: Mollie API key nog niet geconfigureerd in .env
 - [ ] HavunClub: SMTP email nog niet geconfigureerd
+- [ ] HavunClub hoofdkey toegang: `id_ed25519` heeft geen toegang tot HavunClub repo — overweeg toe te voegen aan GitHub account
 
 ### Belangrijke context:
 - **USB vault wachtwoord:** 3224
@@ -38,5 +38,6 @@
 - HavunClub branch: `main` (niet `master`)
 - HavunClub staging: https://staging.havunclub.havun.nl
 - HavunClub production: https://havunclub.havun.nl
-- HavunClub git remote op server: `github-havunclub:havun22-hvu/HavunClub.git`
+- HavunClub git remote op server: `github-havunclub:havun22-hvu/HavunClub.git` (deploy key vereist)
+- HavunClub deploy key: `server-deploy` SHA256:avC0cOwq1fLYgjl05d+i2vfAbNc6/5M01NgKxBQ7a+Y
 - Chrome integratie: UITGESCHAKELD (globale CLAUDE.md)
