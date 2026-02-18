@@ -51,42 +51,33 @@
 
 ---
 
-## Brevo (Email / SMTP)
+## Resend (Email)
 
-**Dashboard:** https://app.brevo.com
-**Voorheen:** SendGrid (proefperiode verlopen, niet meer actief)
-
-### SMTP Credentials vinden
-1. Log in op https://app.brevo.com
-2. Ga naar **Settings** → **SMTP & API**
-3. SMTP credentials staan daar
+**Dashboard:** https://resend.com (login: havun22@gmail.com)
+**Voorheen:** SendGrid (proefperiode verlopen dec 2025, niet meer actief)
+**Gratis tier:** 3000 emails/maand, 1 domein
 
 ### Laravel .env configuratie
 ```env
-MAIL_MAILER=smtp
-MAIL_HOST=smtp-relay.brevo.com
-MAIL_PORT=587
-MAIL_USERNAME=<brevo-email>
-MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@domein.nl"
-MAIL_FROM_NAME="${APP_NAME}"
+MAIL_MAILER=resend
+MAIL_FROM_ADDRESS="noreply@herdenkingsportaal.nl"
+MAIL_FROM_NAME="Herdenkingsportaal"
+RESEND_KEY=re_KQABaL9N_...  (volledige key op server .env)
 ```
 
-> **Let op:** MAIL_PASSWORD is de Brevo SMTP key, NIET je account wachtwoord
+> **Let op:** Resend gratis tier staat maar 1 domein toe. Voor extra domeinen: betaald plan ($20/mnd) of ander provider (bijv. Brevo).
+
+### Domein verificatie
+- DNS records (DKIM + SPF) toevoegen bij **mijn.host** (DNS provider)
+- Resend → Domains → Add Domain → kopieer records naar mijn.host DNS
 
 ### Gebruikt in
-- Herdenkingsportaal (production - live emails)
-- JudoToernooi (production - AutoFix failure notifications)
-- Studieplanner (gepland)
 
-### Migratie van SendGrid
-SendGrid proefperiode is verlopen (feb 2026). Alle projecten zijn/worden gemigreerd naar Brevo.
-
-| Project | Status |
-|---------|--------|
-| Herdenkingsportaal | ✅ Brevo actief |
-| JudoToernooi | ✅ Brevo actief |
-| Studieplanner | ⏳ Gepland |
+| Project | Status | From address |
+|---------|--------|-------------|
+| Herdenkingsportaal | ✅ Resend actief | noreply@herdenkingsportaal.nl |
+| JudoToernooi | ⏳ Nog in te stellen | - |
+| Studieplanner | ⏳ Gepland | - |
 
 ---
 
