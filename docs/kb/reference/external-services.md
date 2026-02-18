@@ -73,11 +73,35 @@ RESEND_KEY=re_KQABaL9N_...  (volledige key op server .env)
 
 ### Gebruikt in
 
-| Project | Status | From address |
-|---------|--------|-------------|
-| Herdenkingsportaal | ✅ Resend actief | noreply@herdenkingsportaal.nl |
-| JudoToernooi | ⏳ Nog in te stellen | - |
-| Studieplanner | ⏳ Gepland | - |
+| Project | Provider | Status | From address |
+|---------|----------|--------|-------------|
+| Herdenkingsportaal | Resend | ✅ Actief | noreply@herdenkingsportaal.nl |
+| JudoToernooi | Brevo | ⏳ Nog in te stellen | - |
+| Studieplanner | - | ⏳ Gepland | - |
+
+---
+
+## Brevo (Email / SMTP)
+
+**Dashboard:** https://app.brevo.com
+**Gratis tier:** 300 emails/dag
+**Gebruikt voor:** Projecten die niet op Resend kunnen (2e domein)
+
+### Laravel .env configuratie
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp-relay.brevo.com
+MAIL_PORT=587
+MAIL_USERNAME=<brevo-email>
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@judotournament.org"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+> **Let op:** MAIL_PASSWORD is de Brevo SMTP key, NIET je account wachtwoord
+
+### Domein verificatie
+- DNS records toevoegen bij **mijn.host** (zelfde als Resend procedure)
 
 ---
 
