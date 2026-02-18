@@ -49,14 +49,6 @@
 - ✅ Device fingerprinting
 - ✅ Rate limiting (5 pogingen/minuut)
 
-## Deploy Keys (GitHub)
-
-| Repository | Key naam | Fingerprint | Toegevoegd |
-|------------|----------|-------------|------------|
-| havun22-hvu/HavunClub | server-deploy | SHA256:avC0cOwq1fLYgjl05d+i2vfAbNc6/5M01NgKxBQ7a+Y | 2026-02-18 |
-
-> Beheer: https://github.com/havun22-hvu/HavunClub/settings/keys
-
 ## Aandachtspunten
 
 1. **Repos NOOIT public maken** - git history bevat oude credentials
