@@ -140,7 +140,7 @@ Gebruikt zelfde SMTP als andere Havun projecten:
 | Wat | Waar te vinden |
 |-----|----------------|
 | DB wachtwoord | Kopieer van server: `/var/www/herdenkingsportaal/production/.env` (DB_PASSWORD) |
-| SendGrid API key | Kopieer van server: `/var/www/herdenkingsportaal/production/.env` (MAIL_PASSWORD) |
+| Brevo SMTP key | Zie Brevo dashboard of kopieer MAIL_PASSWORD van Herdenkingsportaal `.env` |
 | APP_KEY | Genereer nieuw: `php artisan key:generate` |
 
 **Server .env setup:**
@@ -190,13 +190,13 @@ php artisan config:clear
 - [x] AuthController met register/login/reset endpoints
 - [x] Email templates (plain text)
 
-### Fase 2: Email Service (TODO - eind week)
-- [ ] SendGrid configureren (zelfde account als Herdenkingsportaal)
+### Fase 2: Email Service (TODO)
+- [ ] Brevo configureren (zelfde account als Herdenkingsportaal)
 - [ ] Domain authenticeren: `studieplanner.havun.nl`
-- [ ] `.env` configureren met SendGrid API key
+- [ ] `.env` configureren met Brevo SMTP key
 - [ ] Test email versturen
 
-**SendGrid config:** Kopieer MAIL_* settings van Herdenkingsportaal `.env` op server.
+**Brevo config:** Kopieer MAIL_* settings van Herdenkingsportaal `.env` op server. Zie [External Services](../reference/external-services.md).
 
 ### Fase 3: Backend Deploy (TODO)
 - [ ] Server folder aanmaken: `/var/www/studieplanner-api`

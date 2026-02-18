@@ -51,6 +51,45 @@
 
 ---
 
+## Brevo (Email / SMTP)
+
+**Dashboard:** https://app.brevo.com
+**Voorheen:** SendGrid (proefperiode verlopen, niet meer actief)
+
+### SMTP Credentials vinden
+1. Log in op https://app.brevo.com
+2. Ga naar **Settings** → **SMTP & API**
+3. SMTP credentials staan daar
+
+### Laravel .env configuratie
+```env
+MAIL_MAILER=smtp
+MAIL_HOST=smtp-relay.brevo.com
+MAIL_PORT=587
+MAIL_USERNAME=<brevo-email>
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@domein.nl"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+> **Let op:** MAIL_PASSWORD is de Brevo SMTP key, NIET je account wachtwoord
+
+### Gebruikt in
+- Herdenkingsportaal (production - live emails)
+- JudoToernooi (production - AutoFix failure notifications)
+- Studieplanner (gepland)
+
+### Migratie van SendGrid
+SendGrid proefperiode is verlopen (feb 2026). Alle projecten zijn/worden gemigreerd naar Brevo.
+
+| Project | Status |
+|---------|--------|
+| Herdenkingsportaal | ✅ Brevo actief |
+| JudoToernooi | ✅ Brevo actief |
+| Studieplanner | ⏳ Gepland |
+
+---
+
 ## Hetzner (Hosting & Backups)
 
 **Console:** https://console.hetzner.com

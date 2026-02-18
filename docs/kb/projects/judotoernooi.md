@@ -73,12 +73,23 @@ Per organisator blijft bewaard tussen toernooien:
 | **Gewichtsklasse** | NIET invullen bij variabele gewichten |
 | **Bug fixes** | Max 2 pogingen, daarna verslag aan gebruiker |
 
+## Email (Brevo)
+
+Email voor AutoFix failure notifications en toekomstige transactionele emails.
+
+- **Provider:** Brevo (voorheen SendGrid, proefperiode verlopen)
+- **SMTP:** `smtp-relay.brevo.com:587`
+- **From:** noreply@judotournament.org
+- **Credentials:** Brevo SMTP key in `.env` op server
+
+Zie [External Services](../reference/external-services.md) voor Brevo dashboard toegang.
+
 ## Server
 
 ```bash
 # Deploy
 cd /var/www/judotoernooi/laravel
-git pull
+git pull origin main
 composer install --no-dev
 npm run build
 php artisan migrate --force
