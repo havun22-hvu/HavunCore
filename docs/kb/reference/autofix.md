@@ -4,7 +4,7 @@
 
 ## Overzicht
 
-AutoFix analyseert production errors automatisch met Claude AI en past fixes direct toe op de server. Bij falen (max 2 pogingen) krijgt de admin een email.
+AutoFix analyseert production errors automatisch met Claude AI en past fixes direct toe op de server. Bij zowel succes als falen krijgt de admin een email notificatie.
 
 **Actief in:** JudoToernooi
 **API:** HavunCore AI Proxy (`/api/ai/chat`, tenant: `judotoernooi`)
@@ -19,13 +19,13 @@ Production Error (500-level)
     → gatherCodeContext() — leest bronbestanden uit stack trace
     → Poging 1:
       → askClaude() — HTTP POST naar HavunCore AI Proxy
-      → createProposal() — opslaan in database
+      → createProposal() — opslaan in database (incl. user/toernooi context)
       → applyFix() — parse FILE/OLD/NEW, str_replace, backup
-      → Succes? → klaar, geen email
+      → Succes? → sendSuccessNotification() → klaar
     → Poging 2 (indien poging 1 faalt):
       → askClaude() — inclusief foutmelding van poging 1
       → applyFix()
-      → Succes? → klaar
+      → Succes? → sendSuccessNotification() → klaar
     → Beide pogingen mislukt:
       → sendFailureNotification() — email naar admin
 ```
@@ -39,6 +39,8 @@ Production Error (500-level)
 | `app/Models/AutofixProposal.php` | Eloquent model + rate limit check |
 | `app/Mail/AutoFixProposalMail.php` | Failure notification email |
 | `app/Http/Controllers/AutoFixController.php` | Review/approve/reject web UI |
+| `app/Http/Controllers/AdminController.php` | Admin overzicht (`autofix()` method) |
+| `resources/views/pages/admin/autofix.blade.php` | Admin overzicht pagina |
 | `resources/views/autofix/show.blade.php` | Review pagina |
 | `resources/views/emails/autofix-proposal.blade.php` | Email template |
 | `bootstrap/app.php` | Exception handler integratie (regel ~132) |
@@ -59,6 +61,12 @@ Production Error (500-level)
 | status | enum | pending, approved, rejected, applied, failed |
 | apply_error | text | Foutmelding bij mislukt toepassen |
 | url | string | Request URL |
+| organisator_id | bigint | Ingelogde organisator ID |
+| organisator_naam | string | Ingelogde organisator naam |
+| toernooi_id | bigint | Toernooi uit route parameter |
+| toernooi_naam | string | Toernooi naam |
+| http_method | string | GET, POST, etc. |
+| route_name | string | Laravel route naam |
 | email_sent_at | timestamp | Wanneer email verstuurd |
 | applied_at | timestamp | Wanneer fix toegepast |
 
@@ -99,7 +107,7 @@ AUTOFIX_RATE_LIMIT=60
 
 - `enabled` — aan/uit schakelaar
 - `havuncore_url` — HavunCore API base URL
-- `email` — admin email voor failure notifications
+- `email` — admin email voor success + failure notifications
 - `rate_limit_minutes` — cooldown per uniek error (default: 60 min)
 - `max_context_files` — max bestanden in context (default: 5)
 - `max_file_size` — max context grootte in bytes (default: 50000)
@@ -151,4 +159,14 @@ find /var/www/judotoernooi -name "*.autofix-backup.*"
 
 ---
 
-*Aangemaakt: 18 februari 2026*
+## Admin Overzicht
+
+Toegankelijk via `/admin/autofix` (alleen sitebeheerders). Toont:
+- Stats: totaal, toegepast, mislukt, in behandeling
+- Tabel met alle proposals incl. gebruiker/toernooi context
+- Detail panel met URL, HTTP method, route, Claude analyse
+- Knop in admin dashboard met badge voor proposals van afgelopen 24 uur
+
+---
+
+*Laatste update: 19 februari 2026*

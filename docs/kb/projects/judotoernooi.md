@@ -118,14 +118,16 @@ php artisan config:clear && php artisan cache:clear
 
 ## AutoFix (Automatische Error Fixing)
 
-Claude AI analyseert production errors automatisch en past fixes direct toe (max 2 pogingen). Pas als beide mislukken krijgt de admin een email.
+Claude AI analyseert production errors automatisch en past fixes direct toe (max 2 pogingen).
 
 - **Config:** `config/autofix.php`
 - **Service:** `app/Services/AutoFixService.php`
 - **Model:** `app/Models/AutofixProposal.php` (tabel: `autofix_proposals`)
-- **Email:** havun22@gmail.com (alleen bij falen)
+- **Email:** havun22@gmail.com (success + failure notificaties)
 - **API:** HavunCore AI Proxy (tenant: `judotoernooi`)
+- **Admin:** `/admin/autofix` - overzicht met stats, proposals, user/toernooi context
 - **Review:** `/autofix/{token}` web UI
+- **Context:** Slaat organisator naam/id en toernooi naam/id op bij elke proposal
 
 Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
 
@@ -166,4 +168,4 @@ Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
 
 ---
 
-*Laatste update: 18 februari 2026*
+*Laatste update: 19 februari 2026*
