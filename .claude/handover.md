@@ -2,18 +2,24 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 19 februari 2026
+## Laatste Sessie: 19 februari 2026 (avond)
 
 ### Wat is gedaan:
-- **HavunClub security incident:** Wachtwoord in seeder (commit a4a19d0) gevonden via GitGuardian
-  - Wachtwoord verwijderd uit volledige git history (filter-branch)
-  - Force push naar GitHub + server staging/production gereset
-  - Wachtwoord wordt gewijzigd door eigenaar
-- **HavunClub `.claude/rules.md`:** Security rules aangemaakt met seeder-regels, credential-verboden
-- **HavunClub deploy key:** `server-deploy` key was door Claude aangemaakt (herhaling ADR-003), maar is WEL nodig — hoofdkey heeft geen toegang tot HavunClub repo
-- **HavunCore security.md:** Deploy keys sectie + security incidenten tabel toegevoegd, HavunClub in repo-tabel
-- **USB tools:** `tools/usb-fix/` gecommit (START.bat + TOERNOOI-FIX.bat)
-- **Deploy docs:** HavunClub remote gecorrigeerd — blijft `github-havunclub` (niet `github.com`)
+- **AutoFix voor Herdenkingsportaal:** Volledig systeem geïmplementeerd en gedeployd
+  - Migration, Model, Config, Service, Mail, Admin view, Exception handler
+  - Tenant: `herdenkingsportaal` (was al geconfigureerd in HavunCore AI Proxy)
+  - Admin overzicht: `/admin/autofix` met dark mode support
+  - Dashboard knop met 24h badge counter (orange kleur voor dark mode)
+  - Context: user_id/user_name/user_email/memorial_id/memorial_naam
+- **AutoFix security fix (beide projecten):** `isProjectFile()` check in `applyFix()`
+  - Bug: Claude kon vendor/artisan bestanden aanpassen — nu geblokkeerd
+  - Fix gedeployd naar zowel JudoToernooi als Herdenkingsportaal production
+  - Artisan bestand hersteld uit backup op Herdenkingsportaal production
+- **JudoToernooi AutoFix user/toernooi context:** Eerder in sessie toegevoegd
+  - organisator_id/naam, toernooi_id/naam, http_method, route_name
+- **HavunCore KB docs geüpdatet:**
+  - `docs/kb/reference/autofix.md` — Herdenkingsportaal sectie, context kolommen per project
+  - `docs/kb/projects/judotoernooi.md` — AutoFix sectie bijgewerkt
 
 ### Openstaande items:
 - [ ] Admin auth middleware voor Vault admin routes
@@ -25,19 +31,18 @@
 - [ ] JudoToernooi `routes/api.php` is dode code (niet geladen) - verwijderen of correct laden
 - [ ] HavunClub: Mollie API key nog niet geconfigureerd in .env
 - [ ] HavunClub: SMTP email nog niet geconfigureerd
-- [ ] HavunClub hoofdkey toegang: `id_ed25519` heeft geen toegang tot HavunClub repo — overweeg toe te voegen aan GitHub account
+- [ ] HavunClub hoofdkey toegang: `id_ed25519` heeft geen toegang tot HavunClub repo
+- [ ] Herdenkingsportaal KB project doc aanmaken in HavunCore (`docs/kb/projects/herdenkingsportaal.md`)
 
 ### Belangrijke context:
+- **AutoFix actief op:** JudoToernooi production + Herdenkingsportaal production
+- **AutoFix .env:** Identiek voor alle projecten (AUTOFIX_ENABLED, AUTOFIX_EMAIL, HAVUNCORE_API_URL, AUTOFIX_RATE_LIMIT)
+- **AutoFix tenant verschil:** JudoToernooi = `judotoernooi`, Herdenkingsportaal = `herdenkingsportaal`
+- **AutoFix auth verschil:** JudoToernooi = `auth('organisator')`, Herdenkingsportaal = `auth()` (web guard)
+- **AutoFix view verschil:** JudoToernooi = `@extends('layouts.app')`, Herdenkingsportaal = `<x-app-layout>` + dark mode
+- **HavunCore AI Proxy config key:** `CLAUDE_API_KEY` (niet ANTHROPIC_API_KEY)
 - **USB vault wachtwoord:** 3224
 - **SSH keys:** Encrypted in `H:\ssh-keys.vault` (zelfde wachtwoord)
 - PWA frontend source: `D:\GitHub\havuncore-webapp` (geen remote)
 - JudoToernooi login: `/organisator/login` (niet `/login`)
-- Doc Intelligence: `php artisan docs:index all` op server
-- USB sync script: `D:\GitHub\sync-to-usb.ps1` (15 projecten)
-- JudoToernooi code review scores: Models 8.5/10, Controllers B+, Services B+, Security B+
-- HavunClub branch: `main` (niet `master`)
-- HavunClub staging: https://staging.havunclub.havun.nl
-- HavunClub production: https://havunclub.havun.nl
-- HavunClub git remote op server: `github-havunclub:havun22-hvu/HavunClub.git` (deploy key vereist)
-- HavunClub deploy key: `server-deploy` SHA256:avC0cOwq1fLYgjl05d+i2vfAbNc6/5M01NgKxBQ7a+Y
 - Chrome integratie: UITGESCHAKELD (globale CLAUDE.md)

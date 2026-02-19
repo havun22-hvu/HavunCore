@@ -6,8 +6,8 @@
 
 AutoFix analyseert production errors automatisch met Claude AI en past fixes direct toe op de server. Bij zowel succes als falen krijgt de admin een email notificatie.
 
-**Actief in:** JudoToernooi
-**API:** HavunCore AI Proxy (`/api/ai/chat`, tenant: `judotoernooi`)
+**Actief in:** JudoToernooi, Herdenkingsportaal
+**API:** HavunCore AI Proxy (`/api/ai/chat`)
 
 ## Flow
 
@@ -45,6 +45,23 @@ Production Error (500-level)
 | `resources/views/emails/autofix-proposal.blade.php` | Email template |
 | `bootstrap/app.php` | Exception handler integratie (regel ~132) |
 
+## Bestanden (Herdenkingsportaal)
+
+Identieke structuur als JudoToernooi, maar aangepast voor Herdenkingsportaal context:
+
+| Bestand | Functie |
+|---------|---------|
+| `config/autofix.php` | Configuratie |
+| `app/Services/AutoFixService.php` | Kernlogica (tenant: `herdenkingsportaal`) |
+| `app/Models/AutofixProposal.php` | Eloquent model |
+| `app/Mail/AutoFixProposalMail.php` | Failure notification email |
+| `app/Http/Controllers/AdminController.php` | Admin overzicht (`autofix()` method) |
+| `resources/views/admin/autofix.blade.php` | Admin overzicht (x-app-layout, dark mode) |
+| `resources/views/emails/autofix-proposal.blade.php` | Email template |
+| `bootstrap/app.php` | Exception handler (`$exceptions->report()`) |
+
+**Verschil met JudoToernooi:** Auth guard `web` (User), context: user_name/user_email/memorial i.p.v. organisator/toernooi.
+
 ## Database: autofix_proposals
 
 | Kolom | Type | Beschrijving |
@@ -61,14 +78,18 @@ Production Error (500-level)
 | status | enum | pending, approved, rejected, applied, failed |
 | apply_error | text | Foutmelding bij mislukt toepassen |
 | url | string | Request URL |
-| organisator_id | bigint | Ingelogde organisator ID |
-| organisator_naam | string | Ingelogde organisator naam |
-| toernooi_id | bigint | Toernooi uit route parameter |
-| toernooi_naam | string | Toernooi naam |
+| *context kolommen* | | *Verschilt per project (zie onder)* |
 | http_method | string | GET, POST, etc. |
 | route_name | string | Laravel route naam |
 | email_sent_at | timestamp | Wanneer email verstuurd |
 | applied_at | timestamp | Wanneer fix toegepast |
+
+### Context kolommen per project
+
+| Project | Kolommen |
+|---------|---------|
+| JudoToernooi | organisator_id, organisator_naam, toernooi_id, toernooi_naam, http_method, route_name |
+| Herdenkingsportaal | user_id, user_name, user_email, memorial_id, memorial_naam, http_method, route_name |
 
 ## Claude Prompt Format
 
@@ -94,7 +115,7 @@ De `applyFix()` methode parsed dit met regex en voert `str_replace` uit.
 
 ## Configuratie
 
-### .env (JudoToernooi production)
+### .env (identiek voor alle projecten)
 
 ```
 AUTOFIX_ENABLED=true
@@ -102,6 +123,8 @@ AUTOFIX_EMAIL=havun22@gmail.com
 HAVUNCORE_API_URL=https://havuncore.havun.nl
 AUTOFIX_RATE_LIMIT=60
 ```
+
+**Geconfigureerd op:** JudoToernooi production, Herdenkingsportaal production
 
 ### config/autofix.php
 
@@ -127,7 +150,7 @@ AUTOFIX_RATE_LIMIT=60
 
 - **Rate limiting:** Max 1 analyse per uniek error (class+file+line) per uur
 - **Backup:** Origineel bestand wordt gebackupt als `.autofix-backup.{timestamp}`
-- **Scope:** Alleen projectbestanden (geen vendor/, node_modules/, storage/)
+- **Scope:** Alleen projectbestanden — `isProjectFile()` check in zowel `gatherCodeContext()` als `applyFix()` (vendor/, node_modules/, storage/ geblokkeerd)
 - **Beperkingen Claude:** Geen .env, config, database schema, of dependency wijzigingen
 - **Failsafe:** AutoFixService in try/catch — breekt nooit de error handling
 - **Review URL:** `/autofix/{token}` voor handmatige inspectie achteraf
