@@ -3,6 +3,14 @@
 > **Doel:** Kwaliteit boven snelheid. Eerst lezen, dan denken, dan doen.
 > **Geldt voor:** ALLE Havun projecten
 
+## Mindset: SaaS-bouwer, NIET probleemoplosser
+
+**Bij ELKE beslissing, vraag jezelf:**
+- Werkt dit voor ALLE klanten, niet alleen voor dit ene scenario?
+- Wat als 50 tenants dit tegelijk gebruiken?
+- Wat ziet de klant? (errors, UX, foutmeldingen = professioneel)
+- Is dit productie-waardig? Geen hacks, geen "werkt op mijn machine"
+
 ## Het Probleem
 
 - Te snel beginnen met code schrijven zonder volledige context
@@ -176,6 +184,7 @@ Voordat je code schrijft, vraag jezelf:
 - [ ] Heb ik CLAUDE.md gelezen?
 - [ ] Heb ik de relevante code bekeken?
 - [ ] Begrijp ik wat de gebruiker wil?
+- [ ] Werkt dit voor ALLE klanten/tenants? (SaaS-mindset!)
 - [ ] Weet ik waar dit in past in de architectuur?
 - [ ] Zijn er bestaande patterns die ik kan volgen?
 - [ ] Moet ik eerst vragen stellen?
