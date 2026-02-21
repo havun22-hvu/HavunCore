@@ -54,6 +54,15 @@
 - Nooit aannemen, altijd verifiëren
 - Als gebruiker iets herhaalt: direct opslaan in docs
 
+### Bescherming bestaande code (Kritiek!)
+
+> **Volledige uitleg:** `docs/kb/runbooks/beschermingslagen.md`
+
+- **Check altijd `DO NOT REMOVE` comments** voordat je views, templates of componenten wijzigt
+- **Verwijder NOOIT** UI-elementen, features of logica zonder expliciete instructie van de gebruiker
+- **Bij refactoring:** behoud ALLE bestaande functionaliteit — alleen herstructureren, niet verwijderen
+- **Bij twijfel:** vraag de gebruiker of een element bewust is toegevoegd
+
 ### Forbidden without permission
 - SSH keys, credentials, .env files wijzigen
 - Database migrations op production

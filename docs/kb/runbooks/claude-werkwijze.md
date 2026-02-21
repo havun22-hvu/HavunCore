@@ -132,6 +132,19 @@ Als de gebruiker iets moet herhalen:
 4. Bevestig aan gebruiker
 ```
 
+## Bescherming Bestaande Code
+
+> **Volledig document:** `docs/kb/runbooks/beschermingslagen.md`
+
+**5 beschermingslagen (van licht naar zwaar):**
+1. **MD docs** — documenteer waarom iets bestaat
+2. **DO NOT REMOVE comments** — in-code bescherming van kritieke elementen
+3. **Tests** — regressietests die breken als features verdwijnen
+4. **CLAUDE.md regels** — project-brede instructies voor alle sessies
+5. **Memory** — cross-session context
+
+**Kernregel:** Check altijd `DO NOT REMOVE` comments voordat je views wijzigt. Verwijder NOOIT UI-elementen zonder expliciete instructie.
+
 ## Snelheid vs Kwaliteit
 
 | Fout | Goed |
@@ -189,5 +202,7 @@ Voordat je code schrijft, vraag jezelf:
 - [ ] Zijn er bestaande patterns die ik kan volgen?
 - [ ] Moet ik eerst vragen stellen?
 - [ ] Behoud ik scroll/focus bij async operaties? (standaard!)
+- [ ] Heb ik DO NOT REMOVE comments gecheckt in bestanden die ik wijzig?
+- [ ] Verwijder ik geen bestaande UI-elementen of features?
 
 **Als je ook maar 1 vakje niet kunt aanvinken: STOP en lees/vraag eerst.**
