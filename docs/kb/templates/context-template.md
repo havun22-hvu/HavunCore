@@ -18,19 +18,19 @@
 ## Documentatie
 
 ### Functioneel
-- [Features](docs/features.md) - Alle functionaliteit
-- [User Flows](docs/user-flows.md) - Gebruikersstromen
+- `docs/features.md` - Alle functionaliteit
+- `docs/user-flows.md` - Gebruikersstromen
 
 ### Technisch
-- [Tech Stack](docs/tech-stack.md) - Packages, configuratie
-- [API](docs/api.md) - Alle endpoints
-- [Data Types](docs/data-types.md) - Types + database schema
+- `docs/tech-stack.md` - Packages, configuratie
+- `docs/api.md` - Alle endpoints
+- `docs/data-types.md` - Types + database schema
 
 ### UI/UX
-- [Screens](docs/ui/screens.md) - Alle schermen
-- [Components](docs/ui/components.md) - Herbruikbare componenten
-- [Navigation](docs/ui/navigation.md) - Navigatie flow
-- [Styling](docs/ui/styling.md) - Design tokens
+- `docs/ui/screens.md` - Alle schermen
+- `docs/ui/components.md` - Herbruikbare componenten
+- `docs/ui/navigation.md` - Navigatie flow
+- `docs/ui/styling.md` - Design tokens
 
 ## Quick Start
 
@@ -40,4 +40,4 @@
 
 ## Status
 
-Zie [features.md](docs/features.md) voor de TODO checklist.
+Zie `docs/features.md` voor de TODO checklist.
