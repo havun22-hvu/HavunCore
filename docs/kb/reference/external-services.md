@@ -116,6 +116,55 @@ MAIL_FROM_NAME="${APP_NAME}"
 
 ---
 
+## Google Analytics (GA4)
+
+**Dashboard:** https://analytics.google.com
+
+### Measurement ID
+- `G-42KGYDWS5J` (JudoToernooi property, Sport categorie)
+
+### Implementatie
+- Geladen via `<x-seo />` Blade component
+- Alleen in production (`app()->environment('production')`)
+- Geen `.env` configuratie nodig (hardcoded in component)
+
+### Gebruikt in
+| Project | Measurement ID | Status |
+|---------|---------------|--------|
+| JudoToernooi | G-42KGYDWS5J | ✅ Actief |
+
+---
+
+## Google Search Console
+
+**Dashboard:** https://search.google.com/search-console
+
+### Verificatie
+- DNS TXT record via mijn.host nameservers
+- Sitemap ingediend (`/sitemap.xml`)
+
+### Gebruikt in
+| Project | Domein | Status |
+|---------|--------|--------|
+| JudoToernooi | judotournament.org | ✅ Geverifieerd |
+
+---
+
+## Bing Webmaster Tools
+
+**Dashboard:** https://www.bing.com/webmasters
+
+### Verificatie
+- Geïmporteerd vanuit Google Search Console
+- Sitemap handmatig ingediend (`/sitemap.xml`)
+
+### Gebruikt in
+| Project | Domein | Status |
+|---------|--------|--------|
+| JudoToernooi | judotournament.org | ✅ Geverifieerd |
+
+---
+
 ## Key Rotatie Checklist
 
 Bij het roteren van API keys:

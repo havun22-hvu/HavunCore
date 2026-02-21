@@ -84,6 +84,16 @@ Email voor AutoFix failure notifications en toekomstige transactionele emails.
 
 Zie [External Services](../reference/external-services.md) voor Brevo dashboard toegang.
 
+## SEO & Analytics
+
+- **Google Analytics:** GA4 property `G-42KGYDWS5J` (production only, via `<x-seo />` component)
+- **Google Search Console:** DNS TXT verificatie, sitemap ingediend
+- **Bing Webmaster Tools:** Geïmporteerd vanuit Google Search Console, sitemap ingediend
+- **Structured Data:** Organization, WebSite, SoftwareApplication, FAQPage, SportsEvent, BreadcrumbList
+- **Nginx:** Gzip compression, static cache headers (30d assets, 1h XML/JSON)
+
+Zie `laravel/docs/4-SEO/SEO.md` voor volledige SEO documentatie.
+
 ## Server
 
 ```bash
@@ -168,4 +178,4 @@ Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
 
 ---
 
-*Laatste update: 19 februari 2026*
+*Laatste update: 21 februari 2026*
