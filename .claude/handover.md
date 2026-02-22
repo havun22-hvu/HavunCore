@@ -2,26 +2,26 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 19 februari 2026 (avond)
+## Laatste Sessie: 22 februari 2026
 
 ### Wat is gedaan:
-- **AutoFix voor Herdenkingsportaal:** Volledig systeem geïmplementeerd en gedeployd
-  - Migration, Model, Config, Service, Mail, Admin view, Exception handler
-  - Tenant: `herdenkingsportaal` (was al geconfigureerd in HavunCore AI Proxy)
-  - Admin overzicht: `/admin/autofix` met dark mode support
-  - Dashboard knop met 24h badge counter (orange kleur voor dark mode)
-  - Context: user_id/user_name/user_email/memorial_id/memorial_naam
-- **AutoFix security fix (beide projecten):** `isProjectFile()` check in `applyFix()`
-  - Bug: Claude kon vendor/artisan bestanden aanpassen — nu geblokkeerd
-  - Fix gedeployd naar zowel JudoToernooi als Herdenkingsportaal production
-  - Artisan bestand hersteld uit backup op Herdenkingsportaal production
-- **JudoToernooi AutoFix user/toernooi context:** Eerder in sessie toegevoegd
-  - organisator_id/naam, toernooi_id/naam, http_method, route_name
-- **HavunCore KB docs geüpdatet:**
-  - `docs/kb/reference/autofix.md` — Herdenkingsportaal sectie, context kolommen per project
-  - `docs/kb/projects/judotoernooi.md` — AutoFix sectie bijgewerkt
+- **5 Beschermingslagen gedocumenteerd:** Nieuw runbook `docs/kb/runbooks/beschermingslagen.md`
+  - MD docs → DO NOT REMOVE comments → Tests → CLAUDE.md regels → Memory
+  - Escalatietabel: hoe vaker fout, hoe meer lagen
+- **CLAUDE.md bescherming toegevoegd:** Alle 3 projecten (HavunCore, JudoToernooi, Herdenkingsportaal)
+  - HavunCore + Herdenkingsportaal: sectie "Bescherming bestaande code" toegevoegd
+  - JudoToernooi: had dit al (regels 117-136)
+- **DO NOT REMOVE comments:** Toegevoegd aan kritieke views in beide projecten
+  - JudoToernooi: 6 views (layouts/app, home, dashboards, auth)
+  - Herdenkingsportaal: 5 views (navigation, footer, dashboard, memorial editor, payments)
+- **JudoToernooi AutoFix vendor fix:** Vendor stack trace logica toegevoegd
+  - Was al in Herdenkingsportaal, miste bij JudoToernooi
+  - Vendor bestand als "NOT editable" referentie + eerste project bestand als "FIX TARGET"
+  - System prompt: "Never modify vendor/ files - fix the PROJECT file"
+- **AutoFix docs bijgewerkt:** `docs/kb/reference/autofix.md` + memory met vendor sectie
 
 ### Openstaande items:
+- [ ] JudoToernooi AutoFix vendor fix deployen op server (`git pull` in `/var/www/judotoernooi/laravel`)
 - [ ] Admin auth middleware voor Vault admin routes
 - [ ] Restore functionaliteit in LaravelAppBackupStrategy
 - [ ] HavunCore workflow docs consolideren (5 → 1)
@@ -36,10 +36,8 @@
 
 ### Belangrijke context:
 - **AutoFix actief op:** JudoToernooi production + Herdenkingsportaal production
-- **AutoFix .env:** Identiek voor alle projecten (AUTOFIX_ENABLED, AUTOFIX_EMAIL, HAVUNCORE_API_URL, AUTOFIX_RATE_LIMIT)
-- **AutoFix tenant verschil:** JudoToernooi = `judotoernooi`, Herdenkingsportaal = `herdenkingsportaal`
-- **AutoFix auth verschil:** JudoToernooi = `auth('organisator')`, Herdenkingsportaal = `auth()` (web guard)
-- **AutoFix view verschil:** JudoToernooi = `@extends('layouts.app')`, Herdenkingsportaal = `<x-app-layout>` + dark mode
+- **AutoFix vendor logica:** Beide projecten hebben nu identieke vendor stack trace following
+- **5 Beschermingslagen:** Alle 3 projecten hebben CLAUDE.md regels + DO NOT REMOVE comments
 - **HavunCore AI Proxy config key:** `CLAUDE_API_KEY` (niet ANTHROPIC_API_KEY)
 - **USB vault wachtwoord:** 3224
 - **SSH keys:** Encrypted in `H:\ssh-keys.vault` (zelfde wachtwoord)
