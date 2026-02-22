@@ -146,11 +146,25 @@ AUTOFIX_RATE_LIMIT=60
 - MethodNotAllowedHttpException
 - TooManyRequestsHttpException
 
+## Vendor Stack Trace Following
+
+Wanneer een error in vendor code ontstaat (bijv. `BcryptHasher.php`, `QueryBuilder.php`), volgt AutoFix de stack trace naar het eerste **project** bestand:
+
+1. Vendor bestand wordt meegestuurd als referentie met label `(VENDOR - error origin, NOT editable)`
+2. Stack trace wordt doorlopen tot het eerste project bestand
+3. Dat bestand krijgt label `(FIX TARGET - called vendor code at line X)` + 20 regels context (i.p.v. 10)
+4. System prompt instrueert Claude: "fix the PROJECT file, not vendor"
+
+**Zonder dit:** Claude kreeg lege context bij vendor errors en kon geen fix voorstellen.
+
+**Actief in:** JudoToernooi + Herdenkingsportaal (sinds 22 feb 2026)
+
 ## Veiligheid
 
 - **Rate limiting:** Max 1 analyse per uniek error (class+file+line) per uur
 - **Backup:** Origineel bestand wordt gebackupt als `.autofix-backup.{timestamp}`
 - **Scope:** Alleen projectbestanden — `isProjectFile()` check in zowel `gatherCodeContext()` als `applyFix()` (vendor/, node_modules/, storage/ geblokkeerd)
+- **Vendor errors:** Vendor bestanden worden NOOIT gewijzigd — alleen meegestuurd als context voor de fix in project code
 - **Beperkingen Claude:** Geen .env, config, database schema, of dependency wijzigingen
 - **Failsafe:** AutoFixService in try/catch — breekt nooit de error handling
 - **Review URL:** `/autofix/{token}` voor handmatige inspectie achteraf
@@ -192,4 +206,4 @@ Toegankelijk via `/admin/autofix` (alleen sitebeheerders). Toont:
 
 ---
 
-*Laatste update: 19 februari 2026*
+*Laatste update: 22 februari 2026*
