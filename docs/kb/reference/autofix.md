@@ -159,6 +159,18 @@ Wanneer een error in vendor code ontstaat (bijv. `BcryptHasher.php`, `QueryBuild
 
 **Actief in:** JudoToernooi + Herdenkingsportaal (sinds 22 feb 2026)
 
+## Claude Fix Strategie (Prompt Rules)
+
+De system prompt bevat expliciete regels voor hoe Claude fixes moet voorstellen:
+
+1. **Try/catch als primaire strategie** — Wrap de falende call in een try/catch block dat de specifieke exception vangt. Log de error en return een veilige fallback.
+2. **Geen argumenten/logica wijzigen** — De aanroepende code is correct; het probleem zit in de data/input.
+3. **Vendor exceptions** — Bij RuntimeException, TypeError etc. uit vendor: de vendor code is correct, de input/data is fout. Vang de exception in de aanroepende project code.
+
+**Waarom:** Zonder deze regels stelde Claude vaak verkeerde fixes voor (bijv. methode-argumenten wijzigen i.p.v. try/catch toevoegen). Try/catch is de veiligste auto-fix pattern omdat het bestaande logica niet breekt.
+
+**Actief in:** JudoToernooi + Herdenkingsportaal (sinds 22 feb 2026)
+
 ## Veiligheid
 
 - **Rate limiting:** Max 1 analyse per uniek error (class+file+line) per uur
