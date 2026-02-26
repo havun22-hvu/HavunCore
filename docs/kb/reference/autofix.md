@@ -4,7 +4,7 @@
 
 ## Overzicht
 
-AutoFix analyseert production errors automatisch met Claude AI en past fixes direct toe op de server. Bij zowel succes als falen krijgt de admin een email notificatie.
+AutoFix analyseert production errors automatisch met Claude AI en past fixes direct toe op de server. Bij zowel succes als falen krijgt de admin een email notificatie. Claude kan ook `NOTIFY_ONLY` antwoorden als een code fix niet mogelijk is (bijv. schema issues) — dan wordt alleen een melding gestuurd.
 
 **Actief in:** JudoToernooi, Herdenkingsportaal
 **API:** HavunCore AI Proxy (`/api/ai/chat`)
@@ -15,12 +15,21 @@ AutoFix analyseert production errors automatisch met Claude AI en past fixes dir
 Production Error (500-level)
   → Laravel exception handler
   → AutoFixService::handle($e)
-    → shouldProcess() check (rate limit + exclusions)
-    → gatherCodeContext() — leest bronbestanden uit stack trace
+    → shouldProcess() check:
+      - Excluded exception classes (incl. Tinker/PsySH, artisan commands)
+      - Excluded file patterns (/tmp/, vendor/psy/)
+      - isProjectFile check op error origin (moet project file in stack trace zijn)
+      - Rate limit (1 per uur per uniek error)
+      - Recently-fixed check (geen fix-op-fix in 24h)
+    → gatherCodeContext() — hele file als < 50KB, anders 100 regels
     → Poging 1:
       → askClaude() — HTTP POST naar HavunCore AI Proxy
-      → createProposal() — opslaan in database (incl. user/toernooi context)
-      → applyFix() — parse FILE/OLD/NEW, str_replace, backup
+      → NOTIFY_ONLY? → createProposal(notify_only) → email → klaar
+      → createProposal() → opslaan in database
+      → applyFix():
+        - Protected files check
+        - 24h rollback check (was bestand al gewijzigd?)
+        - Parse FILE/OLD/NEW, str_replace, backup
       → Succes? → sendSuccessNotification() → klaar
     → Poging 2 (indien poging 1 faalt):
       → askClaude() — inclusief foutmelding van poging 1
@@ -34,7 +43,7 @@ Production Error (500-level)
 
 | Bestand | Functie |
 |---------|---------|
-| `config/autofix.php` | Configuratie (enabled, email, excluded exceptions) |
+| `config/autofix.php` | Configuratie (enabled, email, excluded exceptions, file patterns, protected files) |
 | `app/Services/AutoFixService.php` | Kernlogica: analyze, apply, notify |
 | `app/Models/AutofixProposal.php` | Eloquent model + rate limit check |
 | `app/Mail/AutoFixProposalMail.php` | Failure notification email |
@@ -75,7 +84,7 @@ Identieke structuur als JudoToernooi, maar aangepast voor Herdenkingsportaal con
 | claude_analysis | longText | Claude's volledige response |
 | proposed_diff | longText | Kopie van claude_analysis |
 | approval_token | string(64) | Uniek token voor review URL |
-| status | enum | pending, approved, rejected, applied, failed |
+| status | enum | pending, approved, rejected, applied, failed, **notify_only** |
 | apply_error | text | Foutmelding bij mislukt toepassen |
 | url | string | Request URL |
 | *context kolommen* | | *Verschilt per project (zie onder)* |
@@ -93,12 +102,13 @@ Identieke structuur als JudoToernooi, maar aangepast voor Herdenkingsportaal con
 
 ## Claude Prompt Format
 
-AutoFixService stuurt een system prompt die Claude instrueert om te antwoorden in dit exacte format:
+AutoFixService stuurt een system prompt die Claude instrueert om te antwoorden in dit format:
 
 ```
+ACTION: FIX | NOTIFY_ONLY
 ANALYSIS: [1-2 zinnen over de oorzaak]
 
-FILE: [relatief pad, bijv. app/Services/MyService.php]
+FILE: [relatief pad, bijv. app/Services/MyService.php]    (alleen bij ACTION: FIX)
 OLD:
 ```php
 [exacte code om te vervangen]
@@ -111,7 +121,28 @@ NEW:
 RISK: [low/medium/high]
 ```
 
-De `applyFix()` methode parsed dit met regex en voert `str_replace` uit.
+Bij `ACTION: NOTIFY_ONLY` worden de FILE/OLD/NEW blokken niet verwacht. AutoFix slaat de proposal op met status `notify_only` en stuurt alleen een email met Claude's analyse.
+
+De `applyFix()` methode parsed het FIX-format met regex en voert `str_replace` uit.
+
+## Claude Fix Strategie (Prompt Rules)
+
+De system prompt bevat een gerangschikte fix strategie:
+
+1. **NULL SAFETY** — Als error "on null" bevat: gebruik `?->` of null checks
+2. **COLUMN/SCHEMA** — Als kolom niet bestaat: `ACTION: NOTIFY_ONLY` (migration nodig)
+3. **MISSING RESOURCE** — Als command/class/file niet bestaat: `ACTION: NOTIFY_ONLY` (handmatige actie nodig)
+4. **LOGIC FIX** — Bij logische fouten: fix de logica minimaal
+5. **TRY/CATCH** — Alleen als **laatste redmiddel**, NOOIT rond entrypoints of hele method bodies
+
+**Verboden:**
+- Nooit het `artisan` bestand wijzigen
+- Nooit try/catch rond hele method bodies
+- Nooit code verzinnen die niet in de context staat
+
+**Waarom deze volgorde:** Analyse van 11 AutoFix pogingen (feb 2026) toonde dat try/catch als default meer kapot maakte dan het repareerde. De nieuwe strategie lost problemen bij de bron op i.p.v. ze te maskeren.
+
+**Actief in:** JudoToernooi + Herdenkingsportaal (sinds 25 feb 2026)
 
 ## Configuratie
 
@@ -130,21 +161,41 @@ AUTOFIX_RATE_LIMIT=60
 
 - `enabled` — aan/uit schakelaar
 - `havuncore_url` — HavunCore API base URL
-- `email` — admin email voor success + failure notifications
+- `email` — admin email voor success + failure + notify_only notifications
 - `rate_limit_minutes` — cooldown per uniek error (default: 60 min)
 - `max_context_files` — max bestanden in context (default: 5)
 - `max_file_size` — max context grootte in bytes (default: 50000)
 - `excluded_exceptions` — lijst van exception classes die geskipt worden
+- `excluded_file_patterns` — regex patterns voor file paths die genegeerd worden
+- `protected_files` — bestanden die nooit gewijzigd mogen worden door AutoFix
 
 ### Excluded Exceptions
 
-- ValidationException
-- AuthenticationException
-- TokenMismatchException
-- NotFoundHttpException
-- ModelNotFoundException
-- MethodNotAllowedHttpException
-- TooManyRequestsHttpException
+**Standaard (Laravel):**
+- ValidationException, AuthenticationException, TokenMismatchException
+- NotFoundHttpException, ModelNotFoundException
+- MethodNotAllowedHttpException, TooManyRequestsHttpException
+
+**Nieuw toegevoegd (25 feb 2026):**
+- `Psy\Exception\ParseErrorException` — Tinker syntax errors
+- `Psy\Exception\ErrorException` — Tinker runtime errors
+- `Symfony\Component\Console\Exception\NamespaceNotFoundException` — missing artisan commands
+- `Symfony\Component\Console\Exception\CommandNotFoundException` — missing artisan commands
+
+### Excluded File Patterns
+
+Regex patterns — errors uit deze paden worden genegeerd:
+- `#/tmp/#` — tijdelijke bestanden
+- `#vendor/psy/#` — PsySH/Tinker
+- `#vendor/laravel/tinker/#` — Laravel Tinker
+
+### Protected Files
+
+Bestanden die nooit gewijzigd mogen worden:
+- `artisan` — entrypoint, te risicovol
+- `public/index.php` — entrypoint
+- `bootstrap/app.php` — app bootstrap
+- `composer.json`, `composer.lock` — dependencies
 
 ## Vendor Stack Trace Following
 
@@ -152,31 +203,31 @@ Wanneer een error in vendor code ontstaat (bijv. `BcryptHasher.php`, `QueryBuild
 
 1. Vendor bestand wordt meegestuurd als referentie met label `(VENDOR - error origin, NOT editable)`
 2. Stack trace wordt doorlopen tot het eerste project bestand
-3. Dat bestand krijgt label `(FIX TARGET - called vendor code at line X)` + 20 regels context (i.p.v. 10)
+3. Dat bestand wordt volledig meegestuurd (als < 50KB) met label `(FULL FILE - FIX TARGET)`
 4. System prompt instrueert Claude: "fix the PROJECT file, not vendor"
 
-**Zonder dit:** Claude kreeg lege context bij vendor errors en kon geen fix voorstellen.
-
 **Actief in:** JudoToernooi + Herdenkingsportaal (sinds 22 feb 2026)
 
-## Claude Fix Strategie (Prompt Rules)
+## Context Gathering
 
-De system prompt bevat expliciete regels voor hoe Claude fixes moet voorstellen:
+Verbeterd (25 feb 2026) om meer context mee te sturen:
 
-1. **Try/catch als primaire strategie** — Wrap de falende call in een try/catch block dat de specifieke exception vangt. Log de error en return een veilige fallback.
-2. **Geen argumenten/logica wijzigen** — De aanroepende code is correct; het probleem zit in de data/input.
-3. **Vendor exceptions** — Bij RuntimeException, TypeError etc. uit vendor: de vendor code is correct, de input/data is fout. Vang de exception in de aanroepende project code.
+- **Bestanden < 50KB:** Hele file wordt meegestuurd met label `(FULL FILE - ...)`
+- **Bestanden > 50KB:** 100 regels rond de error (was: 20 regels)
+- **FIX TARGET (vendor errors):** Hele file meegestuurd (was: 20 regels)
 
-**Waarom:** Zonder deze regels stelde Claude vaak verkeerde fixes voor (bijv. methode-argumenten wijzigen i.p.v. try/catch toevoegen). Try/catch is de veiligste auto-fix pattern omdat het bestaande logica niet breekt.
-
-**Actief in:** JudoToernooi + Herdenkingsportaal (sinds 22 feb 2026)
+**Waarom:** Met slechts 20 regels context kon Claude de code niet begrijpen en stelde verkeerde fixes voor.
 
 ## Veiligheid
 
 - **Rate limiting:** Max 1 analyse per uniek error (class+file+line) per uur
-- **Backup:** Origineel bestand wordt gebackupt als `.autofix-backup.{timestamp}`
+- **Backup:** Origineel bestand wordt gebackupt in `storage/app/autofix-backups/` (JudoToernooi) of als `.autofix-backup.{timestamp}` (Herdenkingsportaal)
 - **Scope:** Alleen projectbestanden — `isProjectFile()` check in zowel `gatherCodeContext()` als `applyFix()` (vendor/, node_modules/, storage/ geblokkeerd)
+- **No-project-file check:** Als er geen enkel project bestand in de stack trace zit, wordt de error geskipt
 - **Vendor errors:** Vendor bestanden worden NOOIT gewijzigd — alleen meegestuurd als context voor de fix in project code
+- **Protected files:** Bestanden in `config('autofix.protected_files')` kunnen niet gewijzigd worden
+- **Rollback-bewustzijn:** Als een bestand al in de afgelopen 24 uur door AutoFix is gewijzigd, wordt het overgeslagen (voorkomt cascade-fixes)
+- **NOTIFY_ONLY:** Claude kan aangeven dat een code fix niet mogelijk is — dan wordt alleen een melding gestuurd, geen code gewijzigd
 - **Beperkingen Claude:** Geen .env, config, database schema, of dependency wijzigingen
 - **Failsafe:** AutoFixService in try/catch — breekt nooit de error handling
 - **Review URL:** `/autofix/{token}` voor handmatige inspectie achteraf
@@ -194,6 +245,7 @@ php artisan tinker
 
 # Backup bestanden zoeken
 find /var/www/judotoernooi -name "*.autofix-backup.*"
+find /var/www/judotoernooi/laravel/storage/app/autofix-backups -type f
 
 # AutoFix uitschakelen
 # In .env: AUTOFIX_ENABLED=false
@@ -211,11 +263,11 @@ find /var/www/judotoernooi -name "*.autofix-backup.*"
 ## Admin Overzicht
 
 Toegankelijk via `/admin/autofix` (alleen sitebeheerders). Toont:
-- Stats: totaal, toegepast, mislukt, in behandeling
+- Stats: totaal, toegepast, mislukt, in behandeling, notify_only
 - Tabel met alle proposals incl. gebruiker/toernooi context
 - Detail panel met URL, HTTP method, route, Claude analyse
 - Knop in admin dashboard met badge voor proposals van afgelopen 24 uur
 
 ---
 
-*Laatste update: 22 februari 2026*
+*Laatste update: 25 februari 2026*
