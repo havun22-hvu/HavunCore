@@ -2,23 +2,12 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 22 februari 2026
+## Laatste Sessie: 26 februari 2026 (USB laptop)
 
 ### Wat is gedaan:
-- **5 Beschermingslagen gedocumenteerd:** Nieuw runbook `docs/kb/runbooks/beschermingslagen.md`
-  - MD docs → DO NOT REMOVE comments → Tests → CLAUDE.md regels → Memory
-  - Escalatietabel: hoe vaker fout, hoe meer lagen
-- **CLAUDE.md bescherming toegevoegd:** Alle 3 projecten (HavunCore, JudoToernooi, Herdenkingsportaal)
-  - HavunCore + Herdenkingsportaal: sectie "Bescherming bestaande code" toegevoegd
-  - JudoToernooi: had dit al (regels 117-136)
-- **DO NOT REMOVE comments:** Toegevoegd aan kritieke views in beide projecten
-  - JudoToernooi: 6 views (layouts/app, home, dashboards, auth)
-  - Herdenkingsportaal: 5 views (navigation, footer, dashboard, memorial editor, payments)
-- **JudoToernooi AutoFix vendor fix:** Vendor stack trace logica toegevoegd
-  - Was al in Herdenkingsportaal, miste bij JudoToernooi
-  - Vendor bestand als "NOT editable" referentie + eerste project bestand als "FIX TARGET"
-  - System prompt: "Never modify vendor/ files - fix the PROJECT file"
-- **AutoFix docs bijgewerkt:** `docs/kb/reference/autofix.md` + memory met vendor sectie
+- **AutoFix KB docs gecommit + gepusht:** `docs/kb/reference/autofix.md` — NOTIFY_ONLY, fix strategie, context improvements, protected files, excluded patterns
+- **`toolsgit-credentials` verwijderd:** Bevatte plaintext GitHub token, was per ongeluk aangemaakt
+- **Opruiming:** Working tree is clean, alles gepusht naar origin/master
 
 ### Openstaande items:
 - [ ] JudoToernooi AutoFix vendor fix deployen op server (`git pull` in `/var/www/judotoernooi/laravel`)
