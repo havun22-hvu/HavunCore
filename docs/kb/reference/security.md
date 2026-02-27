@@ -37,10 +37,17 @@
 - ✅ Cleanup uitgevoerd op 2025-12-25 (commits 88efb58, d8e0133)
 
 ### USB Beveiliging
-- ✅ `credentials.vault` - encrypted met 7-Zip AES-256
-- ✅ `START.bat` - unlockt vault bij sessie start
-- ✅ `STOP.bat` - lockt vault en verwijdert plaintext credentials
+- ✅ `credentials.vault` - encrypted met 7-Zip AES-256 (.env, git-credentials, context.md, SSH keys)
+- ✅ `ssh-keys.vault` - apart encrypted bestand met SSH keys (zelfde wachtwoord)
+- ✅ `start.bat` - unlockt vault, extraheert SSH keys naar `%USERPROFILE%\.ssh\`, doet git pull
+- ✅ `start.bat` cleanup - verwijdert SSH keys, git-credentials, .env bij afsluiten
 - ✅ `.claude/context.md` files in vault opgenomen
+
+### SSH Keys op USB
+- SSH keys worden bij vault unlock automatisch naar `%USERPROFILE%\.ssh\` gekopieerd
+- Bij afsluiten (`Q`) worden alle SSH keys weer verwijderd van de reis-laptop
+- Keys zitten in `credentials.vault` (id_*) en/of `ssh-keys.vault` (apart bestand)
+- Beide vaults gebruiken hetzelfde wachtwoord
 
 ### Login Systeem (SafeHavun standaard)
 - ✅ PIN code (PC + smartphone)

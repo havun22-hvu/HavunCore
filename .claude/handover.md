@@ -28,8 +28,8 @@
 - **AutoFix vendor logica:** Beide projecten hebben nu identieke vendor stack trace following
 - **5 Beschermingslagen:** Alle 3 projecten hebben CLAUDE.md regels + DO NOT REMOVE comments
 - **HavunCore AI Proxy config key:** `CLAUDE_API_KEY` (niet ANTHROPIC_API_KEY)
-- **USB vault wachtwoord:** 3224
-- **SSH keys:** Encrypted in `H:\ssh-keys.vault` (zelfde wachtwoord)
+- **USB vault wachtwoord:** zie fysieke notitie / wachtwoordmanager
+- **SSH keys:** Encrypted in `H:\ssh-keys.vault` (zelfde wachtwoord als credentials.vault)
 - PWA frontend source: `D:\GitHub\havuncore-webapp` (geen remote)
 - JudoToernooi login: `/organisator/login` (niet `/login`)
 - Chrome integratie: UITGESCHAKELD (globale CLAUDE.md)

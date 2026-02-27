@@ -87,6 +87,35 @@ if exist "%DRIVE%\credentials.vault" (
             echo   [OK] GitHub credentials
         )
 
+        REM Extract SSH keys naar user profile
+        if not exist "%USERPROFILE%\.ssh\" mkdir "%USERPROFILE%\.ssh\" 2>nul
+        set "ssh_found=0"
+        for %%F in ("%DRIVE%\.vault-temp\id_*") do (
+            copy /y "%%F" "%USERPROFILE%\.ssh\%%~nxF" >nul
+            set "ssh_found=1"
+        )
+        if exist "%DRIVE%\.vault-temp\known_hosts" (
+            copy /y "%DRIVE%\.vault-temp\known_hosts" "%USERPROFILE%\.ssh\known_hosts" >nul
+        )
+        if "!ssh_found!"=="1" (
+            echo   [OK] SSH keys geinstalleerd
+        )
+
+        REM Also try separate ssh-keys.vault with same password
+        if exist "%DRIVE%\ssh-keys.vault" (
+            "!SEVENZIP!" x -p"!vault_pass!" -o"%DRIVE%\.vault-temp-ssh\" "%DRIVE%\ssh-keys.vault" -y >nul 2>&1
+            if !ERRORLEVEL! EQU 0 (
+                for %%F in ("%DRIVE%\.vault-temp-ssh\id_*") do (
+                    copy /y "%%F" "%USERPROFILE%\.ssh\%%~nxF" >nul
+                )
+                if exist "%DRIVE%\.vault-temp-ssh\known_hosts" (
+                    copy /y "%DRIVE%\.vault-temp-ssh\known_hosts" "%USERPROFILE%\.ssh\known_hosts" >nul
+                )
+                echo   [OK] SSH keys uit ssh-keys.vault
+                rmdir /s /q "%DRIVE%\.vault-temp-ssh\" 2>nul
+            )
+        )
+
         echo Vault unlocked: %date% %time% > "%DRIVE%\.vault-unlocked"
         rmdir /s /q "%DRIVE%\.vault-temp\" 2>nul
         echo [OK] Vault unlocked!
@@ -209,12 +238,12 @@ echo [ERROR] Ongeldige keuze!
 goto :action_menu
 
 :do_vscode
-start "" "%DRIVE%\tools\VSCode\Code.exe" --user-data-dir "%TEMP%\vscode-havun" --new-window "%CODEDIR%"
+start "" "%DRIVE%\tools\VSCode\Code.exe" --user-data-dir "%TEMP%\vscode-havun" --reuse-window --disable-workspace-trust "%CODEDIR%"
 echo [OK] VS Code geopend
 goto :action_menu
 
 :do_both
-start "" "%DRIVE%\tools\VSCode\Code.exe" --user-data-dir "%TEMP%\vscode-havun" --new-window "%CODEDIR%"
+start "" "%DRIVE%\tools\VSCode\Code.exe" --user-data-dir "%TEMP%\vscode-havun" --reuse-window --disable-workspace-trust "%CODEDIR%"
 echo [OK] VS Code geopend
 echo [INFO] Claude Code starten in nieuw venster...
 start "%PROJNAME% - Claude" cmd /k "cd /d "%CODEDIR%" && set PATH=%DRIVE%\tools\php;%DRIVE%\tools\git\cmd;%DRIVE%\tools\git\usr\bin;%DRIVE%\tools\nodejs;%DRIVE%\tools\npm-global;%DRIVE%\tools\7-Zip;%PATH% && title %PROJNAME% - Claude Code && claude"
@@ -324,6 +353,16 @@ for /d %%D in ("%DRIVE%\projects\*") do (
     if exist "%%D\.claude\context.md" del /q "%%D\.claude\context.md" 2>nul
     if exist "%%D\.vscode\settings.json" del /q "%%D\.vscode\settings.json" 2>nul
     if exist "%%D\laravel\.vscode\settings.json" del /q "%%D\laravel\.vscode\settings.json" 2>nul
+)
+
+REM SSH keys verwijderen van reis-laptop
+if exist "%USERPROFILE%\.ssh\id_ed25519" (
+    del /q "%USERPROFILE%\.ssh\id_ed25519" 2>nul
+    del /q "%USERPROFILE%\.ssh\id_ed25519.pub" 2>nul
+    del /q "%USERPROFILE%\.ssh\id_rsa" 2>nul
+    del /q "%USERPROFILE%\.ssh\id_rsa.pub" 2>nul
+    del /q "%USERPROFILE%\.ssh\known_hosts" 2>nul
+    echo   [OK] SSH keys verwijderd
 )
 
 REM Vault unlock marker verwijderen
