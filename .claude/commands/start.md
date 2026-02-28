@@ -15,9 +15,7 @@ Lees deze bestanden in volgorde en bevestig aan de gebruiker:
 ## Stap 2: Lees de HavunCore kennisbank (VERPLICHT)
 
 ```
-4. D:\GitHub\HavunCore\docs\kb\runbooks\claude-werkwijze.md  ← LEES-DENK-DOE-DOCUMENTEER
-5. D:\GitHub\HavunCore\docs\kb\runbooks\docs-first-workflow.md ← DOCS-FIRST (KRITIEK!)
-6. D:\GitHub\HavunCore\docs\kb\PKM-SYSTEEM.md                ← Waar staat wat
+4. D:\GitHub\HavunCore\docs\kb\runbooks\claude-werkwijze.md  ← Werkwijze, DOCS-FIRST, PKM (alles-in-1)
 ```
 
 ## Stap 3: Check Doc Intelligence issues (indien beschikbaar)
@@ -54,9 +52,7 @@ Na het lezen, geef een KORTE bevestiging:
 ✓ MD files gelezen:
   - CLAUDE.md (X regels)
   - context.md (X regels)
-  - claude-werkwijze.md
-  - docs-first-workflow.md
-  - PKM-SYSTEEM.md
+  - claude-werkwijze.md (werkwijze + docs-first + PKM)
 
 📋 Dit project: [korte beschrijving]
 ⚠️ Verboden: [belangrijkste restricties]

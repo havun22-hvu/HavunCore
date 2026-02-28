@@ -3,7 +3,9 @@
 > **Doel:** Kwaliteit boven snelheid. Eerst lezen, dan denken, dan doen.
 > **Geldt voor:** ALLE Havun projecten
 
-## Mindset: SaaS-bouwer, NIET probleemoplosser
+---
+
+## 1. Mindset: SaaS-bouwer, NIET probleemoplosser
 
 **Bij ELKE beslissing, vraag jezelf:**
 - Werkt dit voor ALLE klanten, niet alleen voor dit ene scenario?
@@ -11,18 +13,11 @@
 - Wat ziet de klant? (errors, UX, foutmeldingen = professioneel)
 - Is dit productie-waardig? Geen hacks, geen "werkt op mijn machine"
 
-## Het Probleem
+---
 
-- Te snel beginnen met code schrijven zonder volledige context
-- Fouten maken die later hersteld moeten worden
-- Informatie niet opslaan, waardoor gebruiker zich moet herhalen
-- Slechte documentatie, moeilijk terug te vinden
+## 2. LEES-DENK-DOE-DOCUMENTEER
 
-## De Oplossing: LEES-DENK-DOE-DOCUMENTEER
-
-### 1. LEES (Hiërarchisch!)
-
-> **Volledig systeem:** `docs/kb/PKM-SYSTEEM.md`
+### LEES (Hierarchisch!)
 
 **Lees in deze volgorde, stop wanneer je genoeg weet:**
 
@@ -44,18 +39,12 @@ Niveau 4: Bij nieuwe patronen/systemen
 
 **Principe:** Lees alleen wat RELEVANT is voor de taak. Niet alles - projecten zijn te groot.
 
-**Bij specifieke opdracht:**
-1. Lees CLAUDE.md (altijd)
-2. Zoek relevante code/docs voor DIE opdracht
-3. Lees die specifieke bestanden opnieuw, grondig
-4. Pas dan beginnen met uitvoeren
-
 **Nooit:**
 - Direct code schrijven zonder relevante context
 - Aannemen hoe iets werkt
 - Vorige oplossingen vergeten
 
-### 2. DENK (Analyseer)
+### DENK (Analyseer)
 
 **Voor je begint:**
 - Begrijp ik het probleem volledig?
@@ -64,31 +53,20 @@ Niveau 4: Bij nieuwe patronen/systemen
 - Wat zijn de mogelijke gevolgen van mijn wijziging?
 - Moet ik eerst vragen stellen?
 
-**Bij twijfel: VRAAG**
-- Liever 1 vraag teveel dan 1 aanname verkeerd
-- Wacht op antwoord voordat je doorgaat
+**Bij twijfel: VRAAG** - Liever 1 vraag teveel dan 1 aanname verkeerd. Wacht op antwoord.
 
-### 3. DOE (Uitvoeren)
+### DOE (Uitvoeren)
 
-**Principes:**
 - Kleine, atomaire wijzigingen
 - Test na elke significante wijziging
 - Geen haast - kwaliteit boven snelheid
 - Bij fout: stop, analyseer, vraag indien nodig
+- Nooit meerdere onafhankelijke wijzigingen tegelijk
 
-**Verboden:**
-- Meerdere onafhankelijke wijzigingen tegelijk
-- "Even snel" iets fixen zonder context
-- Doorgaan bij onduidelijkheid
-
-### 4. DOCUMENTEER (Altijd!)
+### DOCUMENTEER (Altijd!)
 
 **Na elke taak/oplossing:**
-- Sla nieuwe kennis op in de juiste plek
-- Update relevante docs als er iets veranderd is
-- Noteer waarom een beslissing is genomen
 
-**Waar opslaan:**
 | Type informatie | Locatie |
 |-----------------|---------|
 | Project-specifiek | `{project}/CLAUDE.md` of `{project}/.claude/` |
@@ -97,7 +75,185 @@ Niveau 4: Bij nieuwe patronen/systemen
 | Architectuur beslissing | `HavunCore/docs/kb/decisions/` |
 | Credentials/server info | `HavunCore/.claude/context.md` |
 
-## Concrete Regels
+---
+
+## 3. DOCS-FIRST Workflow
+
+> **De #1 regel:** Code volgt docs. Nooit andersom.
+
+### Classificeer elke vraag
+
+**GROTE WIJZIGING (-> Docs-first):**
+- Nieuwe features, bestaande features aanpassen
+- Prijzen, teksten, labels, styling/design wijzigen
+- User flows, business rules
+- Alles wat de gebruiker ZIET of ERVAART
+
+**SMALLWORK (-> Log in smallwork.md):**
+- Typos in code, bug fixes, performance optimalisaties
+- Technische refactoring, dependency updates
+
+### Docs-first stappen (grote wijzigingen)
+
+```
+1. ZOEK alle MD files over dit onderwerp (grep/glob)
+2. LEES volledig (niet scannen!)
+3. MELD aan gebruiker:
+   - Wat er staat per bestand
+   - Inconsistenties
+   - Wat ontbreekt
+4. WACHT op bevestiging
+5. UPDATE DOCS EERST als nodig
+6. DAN PAS CODE schrijven vanuit de docs
+```
+
+### Smallwork stappen
+
+```
+1. Log in .claude/smallwork.md (datum, wat, waarom, bestanden)
+2. Voer fix uit
+3. Bij /end: review of iets permanent moet
+```
+
+### Voorbeeld: goed vs fout
+
+**Gebruiker:** "Pas de checkout flow aan"
+
+**FOUT:** Claude begint direct code te schrijven...
+
+**GOED:**
+```
+Over checkout vond ik:
+
+SPEC.md (regel 45-67):
+  - Stap 1: Pakket kiezen → Stap 2: Gegevens → Stap 3: Betalen
+
+CHECKOUT-FLOW.md (regel 12-34):
+  - Na betaling: redirect naar /success + email
+
+Inconsistentie: SPEC.md noemt geen email, CHECKOUT-FLOW.md wel
+Ontbreekt: Wat gebeurt bij mislukte betaling?
+
+Is dit correct en compleet? Wat wil je aanpassen?
+```
+
+---
+
+## 4. 5 Beschermingslagen
+
+> **Probleem:** Claude verwijdert of wijzigt UI-elementen die bewust zijn toegevoegd.
+> **Oplossing:** 5 lagen van bescherming, van licht tot zwaar.
+
+| Laag | Wat | Effort | Wanneer |
+|------|-----|--------|---------|
+| **1. MD docs** | Documenteer in `.claude/` WAAROM iets bestaat | Laag | Bij niet-vanzelfsprekende features |
+| **2. DO NOT REMOVE** | `<!-- DO NOT REMOVE -->` comments bij kritieke code | Zeer laag | Bij eerder onterecht verwijderde elementen |
+| **3. Tests** | Regressietests die breken als features verdwijnen | Medium | Bij 2x+ per ongeluk verwijderd |
+| **4. CLAUDE.md regels** | Project-brede regels voor alle sessies | Eenmalig | Bij project-brede patronen |
+| **5. Memory** | Cross-session context in memory files | Zeer laag | Bij project-overstijgende patronen |
+
+### Escalatietabel
+
+| Situatie | Minimale laag | Aanbevolen |
+|----------|--------------|------------|
+| Feature voor het eerst gebouwd | Laag 1 (docs) | Laag 1 + 2 |
+| Feature 1x per ongeluk verwijderd | Laag 2 (comment) | Laag 2 + 4 |
+| Feature 2x+ per ongeluk verwijderd | Laag 3 (test) | Laag 2 + 3 + 4 |
+| Project-breed patroon | Laag 4 (CLAUDE.md) | Laag 4 + 5 |
+| Cross-project patroon | Laag 5 (memory) | Laag 4 + 5 |
+
+**Vuistregel:** Hoe vaker een fout voorkomt, hoe meer lagen je toepast. Begin met laag 1-2 (goedkoop), escaleer naar 3-5 als het probleem terugkeert.
+
+---
+
+## 5. PKM: Waar Staat Wat
+
+**Projecten zijn zelfstandig, HavunCore is de orchestrator.**
+
+```
+           HavunCore (orchestrator)
+                    |
+    +---------------+---------------+
+    v               v               v
+ Project A       Project B       Project C
+ (zelfstandig)   (zelfstandig)   (zelfstandig)
+ Eigen docs      Eigen docs      Eigen docs
+ Weet iets niet? -> Vraag Core
+```
+
+### In elk PROJECT (zelfstandig):
+
+```
+Project/
+├── CLAUDE.md              <- Korte regels + context (max 60 regels)
+├── .claude/
+│   ├── context.md         <- ALLES over dit project (features, auth, DB, deploy)
+│   └── rules.md           <- Security regels
+└── docs/                  <- Eventuele extra project docs
+```
+
+### In HAVUNCORE (gedeeld):
+
+```
+HavunCore/
+├── CLAUDE.md              <- Korte regels
+├── .claude/
+│   ├── context.md         <- Server, credentials, API keys
+│   └── rules.md           <- Security regels
+└── docs/kb/
+    ├── runbooks/          <- Procedures (hoe doe ik X?)
+    ├── patterns/          <- Herbruikbare code patterns
+    ├── contracts/         <- Gedeelde definities tussen projecten
+    ├── reference/         <- API specs, server config
+    ├── decisions/         <- Architectuur beslissingen
+    ├── templates/         <- Setup templates
+    └── projects/          <- Per-project details
+```
+
+### Wat-staat-waar
+
+| Vraag | Antwoord |
+|-------|----------|
+| Project-specifieke info? | In het project zelf |
+| Credentials, server paths? | HavunCore/.claude/context.md |
+| "Hoe werkt feature X"? | In het project dat feature X heeft |
+| Gedeelde definities? | HavunCore/docs/kb/contracts/ |
+| Herbruikbare code? | HavunCore/docs/kb/patterns/ |
+
+### Kennisflow
+
+Project weet iets niet -> HavunCore geeft antwoord -> Update project docs -> Volgende keer weet project het zelf.
+
+### Token-efficientie
+
+```
+CLAUDE.md = Wat ik ALTIJD moet weten (gedrag, regels) - max 60 regels
+.claude/  = Wat ik moet kunnen OPZOEKEN (details) - on-demand
+```
+
+---
+
+## 6. UI/UX Standaarden
+
+**Altijd automatisch toepassen, niet wachten tot gebruiker vraagt.**
+
+### Scroll positie behouden
+Bij ELKE async operatie die de UI update:
+- Bewaar `window.scrollY` voor de operatie
+- Herstel met `window.scrollTo(0, scrollPos)` na voltooiing
+- Geldt voor: AJAX/fetch, modal open/close, dropdown wijzigingen, DOM manipulaties
+
+### Focus behouden
+- Na form submit zonder page reload: focus terug op relevant element
+- Na modal sluiten: focus terug naar trigger element
+
+### Loading states
+- Toon loading indicator bij operaties > 200ms
+- Disable knoppen tijdens operatie (voorkom dubbel klikken)
+
+---
+
+## 7. Concrete Regels
 
 ### Bij nieuwe taak
 ```
@@ -116,93 +272,38 @@ Niveau 4: Bij nieuwe patronen/systemen
 2. Zoek in codebase naar gerelateerde code
 3. Check of dit probleem eerder voorkwam (git log, docs)
 4. Analyseer root cause
-5. Stel vragen indien nodig
-6. Fix
-7. Documenteer oplossing voor toekomst
+5. Fix
+6. Documenteer oplossing voor toekomst
 ```
 
 ### Bij herhaling van informatie door gebruiker
 ```
 DIT MAG NIET GEBEUREN!
-
-Als de gebruiker iets moet herhalen:
 1. Stop direct
 2. Vraag waar dit opgeslagen moet worden
 3. Sla het NU op
 4. Bevestig aan gebruiker
 ```
 
-## Bescherming Bestaande Code
-
-> **Volledig document:** `docs/kb/runbooks/beschermingslagen.md`
-
-**5 beschermingslagen (van licht naar zwaar):**
-1. **MD docs** — documenteer waarom iets bestaat
-2. **DO NOT REMOVE comments** — in-code bescherming van kritieke elementen
-3. **Tests** — regressietests die breken als features verdwijnen
-4. **CLAUDE.md regels** — project-brede instructies voor alle sessies
-5. **Memory** — cross-session context
-
-**Kernregel:** Check altijd `DO NOT REMOVE` comments voordat je views wijzigt. Verwijder NOOIT UI-elementen zonder expliciete instructie.
-
-## Snelheid vs Kwaliteit
-
-| Fout | Goed |
-|------|------|
-| Snel 3x proberen | 1x rustig goed doen |
-| Aannemen | Vragen |
-| Code eerst, docs later | Docs lezen, dan code |
-| "Dat wist ik niet" | "Laat me dat opzoeken" |
-| Vergeten wat eerder besproken | Documenteren en teruglezen |
-
-## UI/UX Standaarden
-
-**Altijd automatisch toepassen, niet wachten tot gebruiker vraagt:**
-
-### Scroll positie behouden
-Bij ELKE async operatie die de UI update:
-- Bewaar `window.scrollY` vóór de operatie
-- Herstel met `window.scrollTo(0, scrollPos)` na voltooiing
-
-```javascript
-async function doAsyncOperation() {
-    const scrollPos = window.scrollY;
-    // ... fetch/ajax call ...
-    // Na success:
-    window.scrollTo(0, scrollPos);
-}
-```
-
-**Geldt voor:**
-- AJAX/fetch calls
-- Modal open/close
-- Dropdown/select wijzigingen
-- DOM manipulaties
-- Preset opslaan/laden/verwijderen
-
-### Focus behouden
-- Na form submit zonder page reload: focus terug op relevant element
-- Na modal sluiten: focus terug naar trigger element
-
-### Loading states
-- Toon loading indicator bij operaties > 200ms
-- Disable knoppen tijdens operatie (voorkom dubbel klikken)
-
 ---
 
-## Checklist voor Claude
+## 8. Checklist
 
 Voordat je code schrijft, vraag jezelf:
 
 - [ ] Heb ik CLAUDE.md gelezen?
-- [ ] Heb ik de relevante code bekeken?
+- [ ] Heb ik de relevante code/docs bekeken?
 - [ ] Begrijp ik wat de gebruiker wil?
 - [ ] Werkt dit voor ALLE klanten/tenants? (SaaS-mindset!)
-- [ ] Weet ik waar dit in past in de architectuur?
 - [ ] Zijn er bestaande patterns die ik kan volgen?
 - [ ] Moet ik eerst vragen stellen?
-- [ ] Behoud ik scroll/focus bij async operaties? (standaard!)
-- [ ] Heb ik DO NOT REMOVE comments gecheckt in bestanden die ik wijzig?
+- [ ] Heb ik DO NOT REMOVE comments gecheckt?
 - [ ] Verwijder ik geen bestaande UI-elementen of features?
+- [ ] Behoud ik scroll/focus bij async operaties?
+- [ ] Zijn docs-first stappen gevolgd? (grote wijziging)
 
 **Als je ook maar 1 vakje niet kunt aanvinken: STOP en lees/vraag eerst.**
+
+---
+
+*Laatst bijgewerkt: 28 februari 2026*

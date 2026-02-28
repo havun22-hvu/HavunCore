@@ -25,7 +25,7 @@ Project/
 
 | Check | Wat |
 |-------|-----|
-| **Structuur** | Voldoet aan PKM-SYSTEEM.md hiërarchie? |
+| **Structuur** | Voldoet aan claude-werkwijze.md PKM hiërarchie? |
 | **Consistentie** | Zelfde format/headers als andere projecten? |
 | **Duplicaten** | Staat info dubbel? (project én HavunCore) |
 | **Actualiteit** | Verouderde info? Dode links? |

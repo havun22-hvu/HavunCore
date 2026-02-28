@@ -241,7 +241,6 @@ Bevat:
 docs/kb/
 ├── OVERZICHT.md      ← Dit bestand
 ├── INDEX.md          ← Quick links
-├── PKM-SYSTEEM.md    ← Hoe werkt het kennissysteem
 │
 ├── patterns/         ← Herbruikbare code
 │   ├── email-verification.md

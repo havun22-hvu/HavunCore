@@ -322,9 +322,7 @@ Volgende audit: 18 januari 2026
 
 ## 📚 Gerelateerde Documentatie
 
-- [docs-first-workflow.md](../runbooks/docs-first-workflow.md) - De DOCS-FIRST regel
-- [claude-werkwijze.md](../runbooks/claude-werkwijze.md) - LEES-DENK-DOE-DOCUMENTEER
-- [PKM-SYSTEEM.md](../PKM-SYSTEEM.md) - Kennisstructuur
+- [claude-werkwijze.md](../runbooks/claude-werkwijze.md) - Werkwijze, DOCS-FIRST, PKM (alles-in-1)
 - [md-file-audit.md](../runbooks/md-file-audit.md) - Huidige audit procedure
 
 ---

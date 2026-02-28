@@ -95,4 +95,4 @@ CLAUDE.md
 .claude/rules.md
 ```
 
-Zie PKM-SYSTEEM.md voor de structuur.
+Zie `docs/kb/runbooks/claude-werkwijze.md` (sectie 5: PKM) voor de structuur.

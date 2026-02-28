@@ -6,14 +6,12 @@
 ## Lees eerst
 
 - [OVERZICHT.md](OVERZICHT.md) - Compleet overzicht met uitleg van alle systemen
-- [PKM-SYSTEEM.md](PKM-SYSTEEM.md) - Hoe werkt ons kennissysteem
 
 ## Structuur
 
 ```
 docs/kb/
 ├── INDEX.md              ← Je bent hier
-├── PKM-SYSTEEM.md        ← Hoe werkt het kennissysteem
 ├── projects-index.md     ← Overzicht alle projecten (kort)
 │
 ├── projects/             ← Per-project details
@@ -34,7 +32,6 @@ docs/kb/
 │
 ├── runbooks/             ← Algemene procedures
 │   ├── claude-werkwijze.md
-│   ├── docs-first-workflow.md
 │   ├── deploy.md
 │   ├── backup.md
 │   └── ...
@@ -54,7 +51,6 @@ docs/kb/
 
 ### Essentials
 - [projects-index.md](projects-index.md) - Overzicht alle projecten
-- [PKM-SYSTEEM.md](PKM-SYSTEEM.md) - Hoe werkt dit systeem
 
 ### Contracts (gedeelde definities)
 - [memorial-reference.md](contracts/memorial-reference.md) - Memorial Reference format
@@ -63,8 +59,7 @@ docs/kb/
 - [new-laravel-site.md](templates/new-laravel-site.md) - Nieuwe site opzetten
 
 ### Runbooks (hoe doe ik X?)
-- [claude-werkwijze.md](runbooks/claude-werkwijze.md) - LEES-DENK-DOE-DOCUMENTEER (kritiek!)
-- [docs-first-workflow.md](runbooks/docs-first-workflow.md) - DOCS-FIRST workflow
+- [claude-werkwijze.md](runbooks/claude-werkwijze.md) - Werkwijze, DOCS-FIRST, beschermingslagen, PKM (alles-in-1)
 - [md-file-audit.md](runbooks/md-file-audit.md) - 2-wekelijkse documentatie audit
 - [chrome-testing.md](runbooks/chrome-testing.md) - Browser testing met Claude for Chrome
 - [deploy.md](runbooks/deploy.md) - Deployen naar server

@@ -43,7 +43,7 @@
 > **Volledige uitleg:** `docs/kb/runbooks/claude-werkwijze.md`
 
 **Bij ELKE taak:**
-1. **LEES** - Hiërarchisch: CLAUDE.md → relevante code/docs voor de taak (zie `docs/kb/PKM-SYSTEEM.md`)
+1. **LEES** - Hiërarchisch: CLAUDE.md → relevante code/docs voor de taak (zie `docs/kb/runbooks/claude-werkwijze.md`)
 2. **DENK** - Analyseer, begrijp, stel vragen bij twijfel
 3. **DOE** - Pas dan uitvoeren, rustig, geen haast
 4. **DOCUMENTEER** - Sla nieuwe kennis op in de juiste plek (project vs HavunCore)
@@ -56,7 +56,7 @@
 
 ### Bescherming bestaande code (Kritiek!)
 
-> **Volledige uitleg:** `docs/kb/runbooks/beschermingslagen.md`
+> **Volledige uitleg:** `docs/kb/runbooks/claude-werkwijze.md` (sectie 4)
 
 - **Check altijd `DO NOT REMOVE` comments** voordat je views, templates of componenten wijzigt
 - **Verwijder NOOIT** UI-elementen, features of logica zonder expliciete instructie van de gebruiker

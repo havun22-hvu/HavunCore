@@ -14,7 +14,7 @@
 De volledige kennisbank staat in `docs/kb/`:
 
 - [docs/kb/INDEX.md](docs/kb/INDEX.md) - Kennisbank navigatie
-- [docs/kb/PKM-SYSTEEM.md](docs/kb/PKM-SYSTEEM.md) - Hoe werkt het kennissysteem
+- [docs/kb/runbooks/claude-werkwijze.md](docs/kb/runbooks/claude-werkwijze.md) - Werkwijze, DOCS-FIRST, PKM (alles-in-1)
 - [docs/kb/projects-index.md](docs/kb/projects-index.md) - Overzicht alle projecten
 
 ### Belangrijke secties
