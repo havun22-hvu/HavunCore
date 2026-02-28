@@ -40,6 +40,67 @@ Dit is het ENIGE document dat je nodig hebt om het Havun login systeem te implem
 4. Volgende keer → Direct numpad
 ```
 
+### Error Fallback (KRITIEK — gebruiker mag NOOIT vastlopen!)
+
+Elke login methode kan falen. Bij falen ALTIJD de andere methodes aanbieden.
+
+```
+Biometrie faalt ──→ Toon numpad (PIN) + "Ander account" link (wachtwoord)
+PIN faalt (5x)  ──→ Toon "Probeer wachtwoord" link + QR/biometrie knoppen
+QR faalt/verloopt → Toon "Probeer PIN" knop + "Ander account" link
+Wachtwoord faalt ─→ Toon "Wachtwoord vergeten" + registratie link
+Device onbekend  ─→ Toon wachtwoord form + "Registreer" link
+```
+
+**"Ander account" link** = altijd zichtbaar onder numpad. Gaat naar wachtwoord form.
+
+**JavaScript — toon alternatieven bij falen:**
+```javascript
+function showFallbackOptions(failedMethod) {
+    // Toon altijd: error message + beschikbare alternatieven
+    const msg = document.getElementById('login-error');
+    const fallback = document.getElementById('fallback-options');
+
+    switch (failedMethod) {
+        case 'biometric':
+            msg.textContent = 'Biometrie niet gelukt. Gebruik je PIN of wachtwoord.';
+            showPinSection();   // Toon numpad
+            break;
+        case 'pin':
+            msg.textContent = 'PIN onjuist. Probeer opnieuw of gebruik een andere methode.';
+            fallback.classList.remove('hidden');  // Toon wachtwoord + QR links
+            break;
+        case 'qr':
+            msg.textContent = 'QR code verlopen. Vernieuw of gebruik een andere methode.';
+            fallback.classList.remove('hidden');
+            break;
+    }
+    msg.classList.remove('hidden');
+}
+```
+
+**HTML — fallback opties (ALTIJD aanwezig in login.blade.php):**
+```html
+{{-- Error message --}}
+<p id="login-error" class="text-red-600 text-sm text-center hidden"></p>
+
+{{-- Fallback opties — tonen bij falen --}}
+<div id="fallback-options" class="text-center space-y-2 mt-4 hidden">
+    <button onclick="showPasswordSection()" class="text-blue-600 underline text-sm">
+        Inloggen met wachtwoord
+    </button>
+    <br>
+    <button onclick="showPinSection()" class="text-blue-600 underline text-sm">
+        Inloggen met PIN
+    </button>
+</div>
+
+{{-- "Ander account" — ALTIJD zichtbaar onder numpad --}}
+<a href="#" onclick="showPasswordSection()" class="text-gray-500 text-sm block text-center mt-3">
+    Ander account gebruiken
+</a>
+```
+
 ---
 
 ## 1. Installatie
@@ -322,7 +383,11 @@ public function loginWithPin(Request $request): JsonResponse
         ->first();
 
     if (!$device || !$device->verifyPin($request->pin)) {
-        return response()->json(['success' => false, 'message' => 'Ongeldige PIN'], 401);
+        return response()->json([
+            'success' => false,
+            'message' => 'Ongeldige PIN',
+            'attempts_left' => 5 - $this->getAttemptCount($request),  // Rate limit feedback
+        ], 401);
     }
 
     return response()->json([
@@ -594,13 +659,16 @@ async function setupBiometric() {
             window.location.href = '/';
         }
     } catch (err) {
+        // Bij falen: biometrie overslaan, PIN is al ingesteld → redirect naar dashboard
         if (err.name === 'NotAllowedError') {
-            alert('Biometrie geannuleerd of niet beschikbaar.');
+            showMessage('Biometrie overgeslagen. Je kunt altijd je PIN gebruiken.', 'info');
         } else if (err.name === 'InvalidStateError') {
-            alert('Er is al een passkey geregistreerd op dit device.');
+            showMessage('Er is al een passkey geregistreerd op dit device.', 'info');
         } else {
-            console.error('Biometric setup failed:', err);
+            showMessage('Biometrie instellen niet gelukt. Je kunt altijd je PIN gebruiken.', 'warning');
         }
+        // Na 2 sec redirect naar dashboard (PIN werkt al)
+        setTimeout(() => { window.location.href = '/'; }, 2000);
     }
 }
 ```
@@ -669,8 +737,11 @@ async function startBiometric() {
             window.location.href = '/auth/token-login/' + data.device_token;
         }
     } catch (err) {
+        // KRITIEK: bij ELKE fout → fallback naar andere methodes
         if (err.name === 'NotAllowedError') {
-            // Gebruiker annuleerde, toon PIN numpad
+            showFallbackOptions('biometric');  // Geannuleerd → toon PIN + wachtwoord
+        } else {
+            showFallbackOptions('biometric');  // Server/netwerk error → zelfde fallback
         }
     }
 }
@@ -735,6 +806,8 @@ $socialUser = Socialite::driver($provider)->stateless()->user();
 | OAuth traag op mobiel | Session state validatie | Gebruik stateless mode, verberg op mobiel |
 | Biometrie doet niks | Geen HTTPS | WebAuthn vereist HTTPS |
 | QR verlopen | Token > 5 min oud | Vernieuw knop in QR modal |
+| Gebruiker zit vast | Geen fallback opties | Toon altijd "Ander account" + alternatieve methodes |
+| PIN rate limited | 5 pogingen/min bereikt | Toon "Probeer wachtwoord" + wachttijd |
 
 ## 9. Implementatie Checklist
 
@@ -750,6 +823,9 @@ $socialUser = Socialite::driver($provider)->stateless()->user();
 - [ ] QR knop op desktop, biometrie knop op mobiel
 - [ ] Base64url helpers in beide views
 - [ ] OAuth stateless mode + verbergen op mobiel
+- [ ] Fallback opties bij falen (biometrie → PIN, PIN → wachtwoord, etc.)
+- [ ] "Ander account" link altijd zichtbaar onder numpad
+- [ ] Error messages tonen beschikbare alternatieven
 
 ## Referentie Implementaties
 
