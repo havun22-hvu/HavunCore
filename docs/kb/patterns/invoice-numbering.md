@@ -14,15 +14,23 @@ XX-JJJJMMDD-NNN
 
 ## Project Prefixes
 
-| Project | Prefix | Voorbeeld |
-|---------|--------|-----------|
-| HavunAdmin | HA | `HA-20260301-001` |
-| Herdenkingsportaal | HP | `HP-20260301-001` |
-| JudoToernooi | JT | `JT-20260301-001` |
-| Studieplanner | SP | `SP-20260301-001` |
-| Infosyst | IN | `IN-20260301-001` |
-| HavunClub | HC | `HC-20260301-001` |
-| SafeHavun | SH | `SH-20260301-001` |
+| Project | Prefix | Formaat | Voorbeeld |
+|---------|--------|---------|-----------|
+| HavunAdmin | HA | standaard | `HA-20260301-001` |
+| Herdenkingsportaal | hp | **afwijkend** | `hp-202603-cc80b72f993e` |
+| JudoToernooi | JT | standaard | `JT-20260301-001` |
+| Studieplanner | SP | standaard | `SP-20260301-001` |
+| Infosyst | IN | standaard | `IN-20260301-001` |
+| HavunClub | HC | standaard | `HC-20260301-001` |
+| SafeHavun | SH | standaard | `SH-20260301-001` |
+
+### Uitzondering: Herdenkingsportaal
+
+HP gebruikt een eigen formaat: **`hp-JJJJMM-{memorial-uuid-12}`**
+
+- Prefix lowercase `hp` + jaar+maand + eerste 12 chars van memorial UUID
+- UUID fragment linkt direct naar het memorial → informatiever dan volgnummer
+- Reeds in productie, niet wijzigen
 
 ## Implementatie
 
