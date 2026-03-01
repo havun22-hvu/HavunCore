@@ -48,7 +48,7 @@ class AIProxyController extends Controller
             'tenant' => 'required|string|in:infosyst,herdenkingsportaal,havunadmin,havuncore,judotoernooi',
             'message' => 'required|string|min:1|max:10000',
             'context' => 'nullable|array',
-            'system_prompt' => 'nullable|string|max:5000',
+            'system_prompt' => 'nullable|string|max:15000',
             'max_tokens' => 'nullable|integer|min:100|max:4096',
         ]);
 
