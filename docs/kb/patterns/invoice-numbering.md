@@ -17,20 +17,21 @@ XX-JJJJMMDD-NNN
 | Project | Prefix | Formaat | Voorbeeld |
 |---------|--------|---------|-----------|
 | HavunAdmin | HA | standaard | `HA-20260301-001` |
-| Herdenkingsportaal | hp | **afwijkend** | `hp-202603-cc80b72f993e` |
+| Herdenkingsportaal | HP | UUID-variant | `HP-20260301-cc80b72f993e` |
 | JudoToernooi | JT | standaard | `JT-20260301-001` |
 | Studieplanner | SP | standaard | `SP-20260301-001` |
 | Infosyst | IN | standaard | `IN-20260301-001` |
 | HavunClub | HC | standaard | `HC-20260301-001` |
 | SafeHavun | SH | standaard | `SH-20260301-001` |
 
-### Uitzondering: Herdenkingsportaal
+### Variant: Herdenkingsportaal
 
-HP gebruikt een eigen formaat: **`hp-JJJJMM-{memorial-uuid-12}`**
+HP gebruikt memorial UUID in plaats van volgnummer: **`HP-JJJJMMDD-{memorial-uuid-12}`**
 
-- Prefix lowercase `hp` + jaar+maand + eerste 12 chars van memorial UUID
-- UUID fragment linkt direct naar het memorial → informatiever dan volgnummer
-- Reeds in productie, niet wijzigen
+- Zelfde `XX-JJJJMMDD-` structuur als standaard
+- Laatste deel: eerste 12 chars van memorial UUID (i.p.v. volgnummer)
+- Linkt direct naar het memorial → informatiever
+- Voorbeeld: `HP-20260301-cc80b72f993e`
 
 ## Implementatie
 
