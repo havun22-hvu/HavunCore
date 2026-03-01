@@ -2,26 +2,29 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 26 februari 2026 (USB laptop)
+## Laatste Sessie: 1 maart 2026
 
 ### Wat is gedaan:
-- **AutoFix KB docs gecommit + gepusht:** `docs/kb/reference/autofix.md` — NOTIFY_ONLY, fix strategie, context improvements, protected files, excluded patterns
-- **`toolsgit-credentials` verwijderd:** Bevatte plaintext GitHub token, was per ongeluk aangemaakt
-- **Opruiming:** Working tree is clean, alles gepusht naar origin/master
+- **Workflow docs geconsolideerd (5 → 1):** `docs/kb/runbooks/claude-werkwijze.md` (309 regels, was ~748)
+  - Samengevoegd: `claude-werkwijze.md`, `docs-first-workflow.md`, `beschermingslagen.md`, `PKM-SYSTEEM.md`
+  - 3 oude bestanden verwijderd, 7 referenties bijgewerkt
+  - Commit: `e9e286b`
+- **Eerdere sessie: Auth docs geconsolideerd** (6 → 1): commit `cc46514`
 
 ### Openstaande items:
-- [ ] JudoToernooi AutoFix vendor fix deployen op server (`git pull` in `/var/www/judotoernooi/laravel`)
 - [ ] Admin auth middleware voor Vault admin routes
 - [ ] Restore functionaliteit in LaravelAppBackupStrategy
-- [ ] HavunCore workflow docs consolideren (5 → 1)
 - [ ] 63 broken links in andere projecten
 - [ ] JudoToernooi Sprint 1 (4 taken, zie `D:\GitHub\JudoToernooi\.claude\code-review-2026-02-14.md`)
 - [ ] JudoToernooi Sprint 2-5 (tech debt, zie zelfde bestand)
 - [ ] JudoToernooi `routes/api.php` is dode code (niet geladen) - verwijderen of correct laden
-- [ ] HavunClub: Mollie API key nog niet geconfigureerd in .env
-- [ ] HavunClub: SMTP email nog niet geconfigureerd
-- [ ] HavunClub hoofdkey toegang: `id_ed25519` heeft geen toegang tot HavunClub repo
 - [ ] Herdenkingsportaal KB project doc aanmaken in HavunCore (`docs/kb/projects/herdenkingsportaal.md`)
+- [ ] Studieplanner operationeel maken
+
+### Geparkeerd (HavunClub):
+- [ ] Mollie API key configureren
+- [ ] SMTP email configureren
+- [ ] Hoofdkey toegang: `id_ed25519` heeft geen toegang tot HavunClub repo
 
 ### Belangrijke context:
 - **AutoFix actief op:** JudoToernooi production + Herdenkingsportaal production
