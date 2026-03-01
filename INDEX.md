@@ -31,7 +31,6 @@ De volledige kennisbank staat in `docs/kb/`:
 | Folder | Inhoud |
 |--------|--------|
 | [docs/projects/](docs/projects/) | Per-project overzichten |
-| [docs/setup/](docs/setup/) | Setup en MCP configuratie |
 
 ## Credentials
 

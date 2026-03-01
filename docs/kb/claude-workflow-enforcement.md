@@ -156,7 +156,6 @@ Voor PreToolUse/PostToolUse:
 ```
 Bash              # Exact match
 Edit|Write        # Regex (OR)
-mcp__*__read_*    # MCP tools
 *                 # Alle tools
 ```
 

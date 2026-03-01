@@ -9,13 +9,7 @@
 tail -100 storage/logs/laravel.log 2>/dev/null | grep -i "error\|exception\|fatal" | tail -20
 ```
 
-### 2. Browser console (via MCP indien beschikbaar)
-```bash
-# Via Chrome MCP tool
-read_console_messages met pattern: "error|Error|ERROR|exception|Exception"
-```
-
-### 3. NPM/Build errors
+### 2. NPM/Build errors
 ```bash
 npm run build 2>&1 | grep -i "error\|failed"
 ```

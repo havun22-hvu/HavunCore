@@ -17,7 +17,6 @@ Local (30 dagen)     →     Offsite (7 jaar)
 | Herdenkingsportaal | Daily 04:00 | CRITICAL | 7 jaar |
 | Studieplanner | Daily 05:00 | MEDIUM | 1 jaar |
 | HavunCore | Weekly zo 05:00 | HIGH | 3 jaar |
-| havun-mcp | Weekly zo 06:00 | MEDIUM | 1 jaar |
 
 ## Hetzner Storage Box
 
@@ -115,9 +114,6 @@ php artisan havun:backup:cleanup --all --dry-run
    Last backup: 18 hours ago
    Offsite: ✅ Accessible
 
-❌ havun-mcp (MEDIUM)
-   Last backup: 9 days ago
-   ⚠️ WARNING: Expected weekly backup
 ```
 
 ## Troubleshooting

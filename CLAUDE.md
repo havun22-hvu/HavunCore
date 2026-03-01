@@ -106,9 +106,3 @@ Zoek info in deze folders:
 | Waarom beslissingen | `docs/kb/decisions/` |
 | Herbruikbare patterns | `docs/kb/patterns/` |
 
-## MCP Tools
-
-Gebruik `mcp__havun__*` tools voor:
-- `getMessages(project)` - Berichten voor project
-- `readFile(project, path)` - Bestand lezen
-- `scanMarkdownFiles()` - Alle docs scannen

@@ -172,6 +172,5 @@ Fix alle console errors, commit daarna met message "fix: resolve console warning
 
 ## Zie ook
 
-- `docs/setup/MCP-SETUP.md` - MCP server configuratie
 - `docs/kb/runbooks/troubleshoot.md` - Algemene troubleshooting
 - `.claude/context.md` - Local development ports

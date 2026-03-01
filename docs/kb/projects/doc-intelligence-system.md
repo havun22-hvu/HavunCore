@@ -256,7 +256,6 @@ Volgende audit: 18 januari 2026
 
 ### 3. API Layer
 - REST endpoints voor zoeken en issue management
-- MCP tool integratie voor Claude CLI
 - Webhook voor real-time updates
 
 ### 4. Scheduler

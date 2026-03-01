@@ -88,7 +88,6 @@ Standaard poorten per project. Voorkomt conflicten bij meerdere projecten tegeli
 
 | Project | Poort | Command |
 |---------|-------|---------|
-| havun-mcp | 3000 | MCP server |
 | Havun (website) | 3001 | `npm run dev` (Next.js) |
 | VPDUpdate | 3002 | `node server.js` |
 | Studieplanner | 5173 | `npm run dev` (Vite/React) |

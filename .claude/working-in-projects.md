@@ -12,18 +12,17 @@
 {project}/.claude/rules.md       ← Wat mag niet
 ```
 
-### Stap 2: Gebruik MCP tools
+### Stap 2: Lees bestanden direct
 
-```javascript
-// Bestand lezen
-mcp__havun__readFile("herdenkingsportaal", "CLAUDE.md")
-mcp__havun__readFile("herdenkingsportaal", ".claude/context.md")
+Claude Code heeft directe toegang tot alle projecten in `D:\GitHub\`:
 
-// Alle markdown files scannen
-mcp__havun__scanMarkdownFiles()
+```bash
+# Bestand lezen
+Read D:\GitHub\Herdenkingsportaal\CLAUDE.md
+Read D:\GitHub\HavunAdmin\.claude\context.md
 
-// Specifiek bestand zoeken
-mcp__havun__searchFiles("context.md")
+# Zoeken in project
+Grep pattern="zoekterm" path="D:\GitHub\Herdenkingsportaal"
 ```
 
 ## Standaard project structuur
@@ -73,13 +72,6 @@ Project/
 Als het project iets niet weet dat ik wel weet:
 1. Geef het antwoord
 2. Update de project docs zodat het volgende keer zelf weet
-
-```bash
-# Voorbeeld: SSH command toevoegen aan project docs
-# Als project vraagt "hoe SSH ik naar server?"
-# → Antwoord geven
-# → Toevoegen aan {project}/.claude/context.md
-```
 
 ## Niet vergeten
 
