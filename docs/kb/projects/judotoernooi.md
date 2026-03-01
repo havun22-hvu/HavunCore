@@ -73,6 +73,15 @@ Per organisator blijft bewaard tussen toernooien:
 | **Gewichtsklasse** | NIET invullen bij variabele gewichten |
 | **Bug fixes** | Max 2 pogingen, daarna verslag aan gebruiker |
 
+## Stripe Betalingen
+
+Online betalingen voor toernooi-inschrijvingen via Stripe.
+
+- **Config:** `config/services.php` (stripe key, secret, webhook_secret)
+- **Keys:** Live + test keys in HavunCore credentials
+- **Webhook secret:** In HavunCore credentials
+- **Env vars:** `STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET`
+
 ## Email (Brevo)
 
 Email voor AutoFix failure notifications en toekomstige transactionele emails.
