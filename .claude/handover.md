@@ -2,14 +2,18 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 1 maart 2026
+## Laatste Sessie: 2 maart 2026
 
 ### Wat is gedaan:
-- **Workflow docs geconsolideerd (5 → 1):** `docs/kb/runbooks/claude-werkwijze.md` (309 regels, was ~748)
-  - Samengevoegd: `claude-werkwijze.md`, `docs-first-workflow.md`, `beschermingslagen.md`, `PKM-SYSTEEM.md`
-  - 3 oude bestanden verwijderd, 7 referenties bijgewerkt
-  - Commit: `e9e286b`
-- **Eerdere sessie: Auth docs geconsolideerd** (6 → 1): commit `cc46514`
+- **Apache → Nginx cleanup (5 projecten):**
+  - HavunAdmin: 9 bestanden, docs herschreven, `deployment/apache/` + `.htaccess` verwijderd
+  - Herdenkingsportaal: 9 bestanden, docs + code comments + `.htaccess` verwijderd
+  - Infosyst, SafeHavun, HavunClub: `.htaccess` verwijderd
+- **Password hashing fix (2 projecten):**
+  - HavunAdmin + Herdenkingsportaal: redundante `Hash::make()` calls verwijderd
+  - Oorzaak: `'password' => 'hashed'` cast + manuele `Hash::make()` = redundant
+  - Pattern gedocumenteerd: `docs/kb/patterns/password-hashing.md`
+  - HavunAdmin: hardcoded admin wachtwoord in seeder → `env('SEED_ADMIN_PASSWORD')`
 
 ### Openstaande items:
 - [ ] Admin auth middleware voor Vault admin routes
@@ -27,6 +31,9 @@
 - [ ] Hoofdkey toegang: `id_ed25519` heeft geen toegang tot HavunClub repo
 
 ### Belangrijke context:
+- **Server = Nginx** (NIET Apache) — alle projecten opgeschoond (2 maart 2026)
+- **Password hashing:** Gebruik NOOIT `Hash::make()` als model `'hashed'` cast heeft (zie `docs/kb/patterns/password-hashing.md`)
+- **Bestaande users met corrupte hashes** moeten wachtwoord resetten (HavunAdmin/Herdenkingsportaal)
 - **AutoFix actief op:** JudoToernooi production + Herdenkingsportaal production
 - **AutoFix vendor logica:** Beide projecten hebben nu identieke vendor stack trace following
 - **5 Beschermingslagen:** Alle 3 projecten hebben CLAUDE.md regels + DO NOT REMOVE comments
