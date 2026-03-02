@@ -44,7 +44,25 @@ Als er openstaande issues zijn, toon ze aan de gebruiker:
 Wil je deze eerst oplossen of later?
 ```
 
-## Stap 4: Bevestig aan gebruiker
+## Stap 4: Registreer sessie starttijd
+
+Schrijf een sessie-bestand om de starttijd vast te leggen voor urenregistratie:
+
+```bash
+# Maak .claude/session.json aan in de WERKDIRECTORY van het project
+echo '{"start":"'$(date -u +%Y-%m-%dT%H:%M:%S)'","project":"[project-slug]"}' > .claude/session.json
+```
+
+De project-slug herken je aan de werkdirectory:
+- `D:\GitHub\JudoToernooi` of `/var/www/judotoernooi` → `judotoernooi`
+- `D:\GitHub\HavunCore` → `havuncore`
+- `D:\GitHub\HavunAdmin` → `havunadmin`
+- `D:\GitHub\Herdenkingsportaal` → `herdenkingsportaal`
+- `D:\GitHub\infosyst` → `infosyst`
+- `D:\GitHub\SafeHavun` → `safehavun`
+- `D:\GitHub\Studieplanner` → `studieplanner`
+
+> **Let op:** `.claude/session.json` staat in .gitignore — dit bestand wordt NIET gecommit.
 
 Na het lezen, geef een KORTE bevestiging:
 
@@ -62,7 +80,7 @@ Na het lezen, geef een KORTE bevestiging:
 Klaar om te beginnen. Wat wil je doen?
 ```
 
-## Stap 5: ONTHOUD deze principes
+## Stap 6: ONTHOUD deze principes
 
 ### ⛔ DOCS-FIRST WORKFLOW (HOOFDREGEL!)
 

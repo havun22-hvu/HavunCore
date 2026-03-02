@@ -109,24 +109,38 @@ git branch --merged | grep -v master | xargs git branch -d
 powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
 ```
 
-## 9. Bevestig aan Gebruiker
+## 9. Urenregistratie (VERPLICHT)
+
+Registreer de gewerkte uren automatisch:
+
+1. **Lees** `.claude/session.json` voor de starttijd
+2. **Bereken** uren: nu - starttijd, afgerond op kwartier (0.25)
+3. **Maak samenvatting**: max 1 regel, kort en zakelijk (bv. "AutoFix security fix + password eye toggle alle views")
+4. **Stuur naar HavunAdmin API**:
+
+```bash
+curl -s -X POST https://havunadmin.havun.nl/api/time-entries \
+  -H "Content-Type: application/json" \
+  -d '{"project":"[slug]","date":"[YYYY-MM-DD]","hours":[X.XX],"description":"[1-regel samenvatting]"}'
+```
+
+5. **Toon resultaat** aan gebruiker:
+```
+⏱️ [X.X] uur geregistreerd voor [project] — [samenvatting]
+```
+
+> Als `.claude/session.json` niet bestaat (vergeten /start), gebruik dan de eerste commit van vandaag als starttijd.
+
+## 10. Bevestig aan Gebruiker
 
 ```
-📋 Sessie Samenvatting:
-  - [Wat gedaan]
-  - [Wat gedaan]
+⏱️ [X.X] uur — [project]: [1-regel samenvatting]
 
-📝 Gedocumenteerd:
-  - [Welke MD files bijgewerkt]
+📋 Gedaan: [2-3 bullets max]
+⏳ Open: [items of "geen"]
+✅ Gepusht + gedeployed
 
-⏳ Openstaand:
-  - [Nog te doen]
-
-✅ Handover gemaakt voor volgende sessie
-✅ Git gepusht
-✅ [Server gedeployed / USB bijgewerkt]
-
-Sessie afgerond. Typ 'exit' of Ctrl+D om te sluiten.
+Sessie afgerond.
 ```
 
 ## NIET DOEN BIJ AFSLUITEN
