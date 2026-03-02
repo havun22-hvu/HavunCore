@@ -46,23 +46,24 @@ Wil je deze eerst oplossen of later?
 
 ## Stap 4: Registreer sessie starttijd
 
-Schrijf een sessie-bestand om de starttijd vast te leggen voor urenregistratie:
+Schrijf een **globaal** sessie-bestand voor urenregistratie:
 
 ```bash
-# Maak .claude/session.json aan in de WERKDIRECTORY van het project
-echo '{"start":"'$(date -u +%Y-%m-%dT%H:%M:%S)'","project":"[project-slug]"}' > .claude/session.json
+echo '{"start":"'$(date +%Y-%m-%dT%H:%M:%S)'","project":"[project-slug]"}' > "C:/Users/henkv/.claude/session.json"
 ```
 
-De project-slug herken je aan de werkdirectory:
-- `D:\GitHub\JudoToernooi` of `/var/www/judotoernooi` → `judotoernooi`
-- `D:\GitHub\HavunCore` → `havuncore`
-- `D:\GitHub\HavunAdmin` → `havunadmin`
-- `D:\GitHub\Herdenkingsportaal` → `herdenkingsportaal`
-- `D:\GitHub\infosyst` → `infosyst`
-- `D:\GitHub\SafeHavun` → `safehavun`
-- `D:\GitHub\Studieplanner` → `studieplanner`
+Project-slug mapping (herken aan werkdirectory):
+| Directory | Slug |
+|-----------|------|
+| `D:\GitHub\JudoToernooi` | `judotoernooi` |
+| `D:\GitHub\HavunCore` | `havuncore` |
+| `D:\GitHub\HavunAdmin` | `havunadmin` |
+| `D:\GitHub\Herdenkingsportaal` | `herdenkingsportaal` |
+| `D:\GitHub\infosyst` | `infosyst` |
+| `D:\GitHub\SafeHavun` | `safehavun` |
+| `D:\GitHub\Studieplanner` | `studieplanner` |
 
-> **Let op:** `.claude/session.json` staat in .gitignore — dit bestand wordt NIET gecommit.
+> Elke `/start` → `/end` cyclus = 1 aparte TimeEntry. Meerdere sessies per dag is normaal.
 
 Na het lezen, geef een KORTE bevestiging:
 

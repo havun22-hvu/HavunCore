@@ -111,12 +111,12 @@ powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
 
 ## 9. Urenregistratie (VERPLICHT)
 
-Registreer de gewerkte uren automatisch:
+Elke `/start` → `/end` cyclus = 1 aparte TimeEntry.
 
-1. **Lees** `.claude/session.json` voor de starttijd
-2. **Bereken** uren: nu - starttijd, afgerond op kwartier (0.25)
-3. **Maak samenvatting**: max 1 regel, kort en zakelijk (bv. "AutoFix security fix + password eye toggle alle views")
-4. **Stuur naar HavunAdmin API** (via SSH, want lokale curl heeft SSL issues):
+1. **Lees** `C:/Users/henkv/.claude/session.json` voor starttijd en project
+2. **Bereken** uren: nu - starttijd, afgerond op kwartier (0.25), minimum 0.25
+3. **Samenvatting**: max 1 regel (bv. "AutoFix security fix + password eye toggle")
+4. **Stuur naar HavunAdmin API**:
 
 ```bash
 ssh root@188.245.159.115 'curl -s -X POST https://havunadmin.havun.nl/api/time-entries \
@@ -124,12 +124,10 @@ ssh root@188.245.159.115 'curl -s -X POST https://havunadmin.havun.nl/api/time-e
   -d "{\"project\":\"[slug]\",\"date\":\"[YYYY-MM-DD]\",\"hours\":[X.XX],\"description\":\"[1-regel samenvatting]\"}"'
 ```
 
-5. **Toon resultaat** aan gebruiker:
-```
-⏱️ [X.X] uur geregistreerd voor [project] — [samenvatting]
-```
+5. **Verwijder** session.json na succesvolle registratie
+6. **Toon** aan gebruiker: `⏱️ [X.X] uur geregistreerd voor [project] — [samenvatting]`
 
-> Als `.claude/session.json` niet bestaat (vergeten /start), gebruik dan de eerste commit van vandaag als starttijd.
+> Als session.json niet bestaat (vergeten /start): gebruik eerste commit van vandaag als starttijd.
 
 ## 10. Bevestig aan Gebruiker
 
