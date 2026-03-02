@@ -116,12 +116,12 @@ Registreer de gewerkte uren automatisch:
 1. **Lees** `.claude/session.json` voor de starttijd
 2. **Bereken** uren: nu - starttijd, afgerond op kwartier (0.25)
 3. **Maak samenvatting**: max 1 regel, kort en zakelijk (bv. "AutoFix security fix + password eye toggle alle views")
-4. **Stuur naar HavunAdmin API**:
+4. **Stuur naar HavunAdmin API** (via SSH, want lokale curl heeft SSL issues):
 
 ```bash
-curl -s -X POST https://havunadmin.havun.nl/api/time-entries \
+ssh root@188.245.159.115 'curl -s -X POST https://havunadmin.havun.nl/api/time-entries \
   -H "Content-Type: application/json" \
-  -d '{"project":"[slug]","date":"[YYYY-MM-DD]","hours":[X.XX],"description":"[1-regel samenvatting]"}'
+  -d "{\"project\":\"[slug]\",\"date\":\"[YYYY-MM-DD]\",\"hours\":[X.XX],\"description\":\"[1-regel samenvatting]\"}"'
 ```
 
 5. **Toon resultaat** aan gebruiker:
