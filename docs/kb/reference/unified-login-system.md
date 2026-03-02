@@ -827,9 +827,31 @@ $socialUser = Socialite::driver($provider)->stateless()->user();
 - [ ] "Ander account" link altijd zichtbaar onder numpad
 - [ ] Error messages tonen beschikbare alternatieven
 
+## Project Status (maart 2026)
+
+| Project | Wachtwoord | PIN | QR | Biometrie | Compleet? |
+|---------|:---:|:---:|:---:|:---:|:---:|
+| JudoToernooi | ✅ | ✅ | ✅ | ✅ | ✅ |
+| SafeHavun | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Herdenkingsportaal | ✅ | ✅ | ❌ | ✅ | QR mist |
+| HavunAdmin | ✅ | ❌ | ✅ | ✅ | PIN mist |
+| Infosyst | ✅ | ✅ | ✅ | ❌ | Biometrie mist |
+| HavunClub | ✅ | ❌ | ❌ | ❌ | Alleen wachtwoord |
+
+**Standaard:** Elk project MOET alle 4 methodes hebben (wachtwoord, PIN, QR, biometrie).
+
+**Login page keuze:** Gebruiker kiest methode op login pagina:
+- **PC:** Wachtwoord, PIN, QR code
+- **Smartphone/PWA:** Wachtwoord, PIN, Biometrie
+- **Tablet/iPad:** Wachtwoord, PIN, QR code (biometrie alleen op nieuwste modellen)
+
 ## Referentie Implementaties
 
-| Project | Locatie |
-|---------|---------|
-| SafeHavun | `D:\GitHub\SafeHavun` |
-| Herdenkingsportaal | `D:\GitHub\Herdenkingsportaal` |
+| Project | Locatie | Status |
+|---------|---------|--------|
+| SafeHavun | `D:\GitHub\SafeHavun` | Compleet (alle 4 methodes) |
+| JudoToernooi | `D:\GitHub\Judotoernooi\laravel` | Compleet (alle 4 methodes) |
+| Herdenkingsportaal | `D:\GitHub\Herdenkingsportaal` | Mist QR |
+| HavunAdmin | `D:\GitHub\HavunAdmin` | Mist PIN |
+| Infosyst | `D:\GitHub\infosyst` | Mist Biometrie |
+| HavunClub | `D:\GitHub\HavunClub` | Mist PIN, QR, Biometrie |
