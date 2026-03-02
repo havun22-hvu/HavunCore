@@ -44,27 +44,6 @@ Als er openstaande issues zijn, toon ze aan de gebruiker:
 Wil je deze eerst oplossen of later?
 ```
 
-## Stap 4: Registreer sessie starttijd
-
-Schrijf een **globaal** sessie-bestand voor urenregistratie:
-
-```bash
-echo '{"start":"'$(date +%Y-%m-%dT%H:%M:%S)'","project":"[project-slug]"}' > "C:/Users/henkv/.claude/session.json"
-```
-
-Project-slug mapping (herken aan werkdirectory):
-| Directory | Slug |
-|-----------|------|
-| `D:\GitHub\JudoToernooi` | `judotoernooi` |
-| `D:\GitHub\HavunCore` | `havuncore` |
-| `D:\GitHub\HavunAdmin` | `havunadmin` |
-| `D:\GitHub\Herdenkingsportaal` | `herdenkingsportaal` |
-| `D:\GitHub\infosyst` | `infosyst` |
-| `D:\GitHub\SafeHavun` | `safehavun` |
-| `D:\GitHub\Studieplanner` | `studieplanner` |
-
-> Elke `/start` → `/end` cyclus = 1 aparte TimeEntry. Meerdere sessies per dag is normaal.
-
 Na het lezen, geef een KORTE bevestiging:
 
 ```

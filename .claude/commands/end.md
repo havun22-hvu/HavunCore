@@ -109,36 +109,22 @@ git branch --merged | grep -v master | xargs git branch -d
 powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
 ```
 
-## 9. Urenregistratie (VERPLICHT)
+## 9. Dagsamenvatting (VERPLICHT)
 
-Elke `/start` → `/end` cyclus = 1 aparte TimeEntry.
-
-1. **Lees** `C:/Users/henkv/.claude/session.json` voor starttijd en project
-2. **Bereken** uren: nu - starttijd, afgerond op kwartier (0.25), minimum 0.25
-3. **Samenvatting**: max 1 regel (bv. "AutoFix security fix + password eye toggle")
-4. **Stuur naar HavunAdmin API**:
-
-```bash
-ssh root@188.245.159.115 'curl -s -X POST https://havunadmin.havun.nl/api/time-entries \
-  -H "Content-Type: application/json" \
-  -d "{\"project\":\"[slug]\",\"date\":\"[YYYY-MM-DD]\",\"hours\":[X.XX],\"description\":\"[1-regel samenvatting]\"}"'
-```
-
-5. **Verwijder** session.json na succesvolle registratie
-6. **Toon** aan gebruiker: `⏱️ [X.X] uur geregistreerd voor [project] — [samenvatting]`
-
-> Als session.json niet bestaat (vergeten /start): gebruik eerste commit van vandaag als starttijd.
-
-## 10. Bevestig aan Gebruiker
+Geef een beknopt overzicht van ALLE werkzaamheden van vandaag, over alle projecten. Max 5 regels.
 
 ```
-⏱️ [X.X] uur — [project]: [1-regel samenvatting]
+[DD-MM-YYYY]:
+- [Project]: [wat gedaan, 1 regel]
+- [Project]: [wat gedaan, 1 regel]
+```
 
-📋 Gedaan: [2-3 bullets max]
-⏳ Open: [items of "geen"]
-✅ Gepusht + gedeployed
-
-Sessie afgerond.
+Voorbeeld:
+```
+03-03-2026:
+- JudoToernooi: password eye toggle + AutoFix security fix
+- HavunCore: urenregistratie commands
+- HavunAdmin: time entry API endpoint
 ```
 
 ## NIET DOEN BIJ AFSLUITEN
