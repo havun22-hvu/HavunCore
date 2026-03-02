@@ -69,8 +69,38 @@ Route::get('/csrf-refresh', function () {
 | SafeHavun | ✅ Route + helper toegevoegd | 24-01-2026 |
 | infosyst | ✅ Route + helper (frontend + admin) | 24-01-2026 |
 
+## 419 Exception Handler (verplicht in elk project)
+
+**Regel: Toon NOOIT een error pagina bij 419. Altijd redirect naar login.**
+
+```php
+// bootstrap/app.php — in withExceptions()
+$exceptions->respond(function ($response) {
+    if ($response->getStatusCode() === 419) {
+        if (request()->expectsJson()) {
+            return response()->json(['error' => 'csrf_mismatch'], 419);
+        }
+        return redirect()->guest(route('login'))
+            ->with('warning', 'Je sessie is verlopen. Log opnieuw in.');
+    }
+    return $response;
+});
+```
+
+## Projecten status
+
+| Project | CSRF refresh | 419→login redirect | Status |
+|---------|-------------|-------------------|--------|
+| HavunAdmin | ✅ | ✅ | OK |
+| Herdenkingsportaal | ✅ | ✅ | OK |
+| HavunClub | — | ✅ | OK |
+| JudoToernooi | ✅ | ✅ | OK (maart 2026) |
+| SafeHavun | ✅ | ✅ | OK (maart 2026) |
+| Infosyst | ✅ | ✅ | OK (maart 2026) |
+
 ## Checklist nieuwe AJAX calls
 
 - [ ] Gebruik `fetchWithCsrf()` of axios met interceptor
 - [ ] `/csrf-refresh` route bestaat
 - [ ] Meta tag `<meta name="csrf-token" content="{{ csrf_token() }}">` aanwezig
+- [ ] 419 exception handler redirect naar login (NIET error pagina tonen)
