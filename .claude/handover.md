@@ -2,18 +2,19 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 2 maart 2026
+## Laatste Sessie: 3 maart 2026
 
 ### Wat is gedaan:
-- **Apache → Nginx cleanup (5 projecten):**
-  - HavunAdmin: 9 bestanden, docs herschreven, `deployment/apache/` + `.htaccess` verwijderd
-  - Herdenkingsportaal: 9 bestanden, docs + code comments + `.htaccess` verwijderd
-  - Infosyst, SafeHavun, HavunClub: `.htaccess` verwijderd
-- **Password hashing fix (2 projecten):**
-  - HavunAdmin + Herdenkingsportaal: redundante `Hash::make()` calls verwijderd
-  - Oorzaak: `'password' => 'hashed'` cast + manuele `Hash::make()` = redundant
-  - Pattern gedocumenteerd: `docs/kb/patterns/password-hashing.md`
-  - HavunAdmin: hardcoded admin wachtwoord in seeder → `env('SEED_ADMIN_PASSWORD')`
+- **Doc cleanup Herdenkingsportaal KB:**
+  - Oude pricing/packages verwijderd (premium_upgrade, memorial_website, memorial_monument)
+  - Nieuwe pakketten: basis (€9,95), standaard (€24,95), compleet (€49,95)
+  - XRP + EPC QR betalingen verwijderd (obsoleet), Stripe als gepland toegevoegd
+  - "Premium" rol → "Betaald" hernoemd
+  - crypto-payments.md: Herdenkingsportaal referentie verwijderd
+- **ARCHITECTURE.md verwijderd** — verouderd (98 dagen), overlapt met CLAUDE.md/context.md
+  - Referenties opgeruimd in INDEX.md en README.md
+- **Doc Intelligence issues [3191] en [3192] resolved**
+- **Herdenkingsportaal AutoFix errors onderzocht** — eenmalig filesystem issue, geen fix nodig
 
 ### Openstaande items:
 - [ ] Admin auth middleware voor Vault admin routes
@@ -22,7 +23,7 @@
 - [ ] JudoToernooi Sprint 1 (4 taken, zie `D:\GitHub\JudoToernooi\.claude\code-review-2026-02-14.md`)
 - [ ] JudoToernooi Sprint 2-5 (tech debt, zie zelfde bestand)
 - [ ] JudoToernooi `routes/api.php` is dode code (niet geladen) - verwijderen of correct laden
-- [ ] Herdenkingsportaal KB project doc aanmaken in HavunCore (`docs/kb/projects/herdenkingsportaal.md`)
+- [x] Herdenkingsportaal KB project doc bijgewerkt (3 maart 2026)
 - [ ] Studieplanner operationeel maken
 
 ### Geparkeerd (HavunClub):

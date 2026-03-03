@@ -20,12 +20,11 @@ Online platform waar gebruikers digitale herdenkingspagina's (memorials) aanmake
 | Rol | Beschrijving |
 |-----|--------------|
 | **Admin** | Havun, beheert templates, symbolen, betalingen, blockchain |
-| **Premium** | Betaalde gebruiker, volledige memorial functies |
+| **Betaald** | Gebruiker met basis/standaard/compleet pakket |
 | **Registered** | Gratis account, 7 dagen trial |
 | **Guest** | Niet ingelogd, 10 min sessie |
 
-**Access levels:** guest (10 min) → registered (7 dagen gratis) → premium
-**Pricing:** €19.99 (1e memorial), €14.99 (2e), €9.99 (3e+)
+**Access levels:** guest (10 min) → registered (7 dagen gratis) → betaald pakket
 
 ## Auth
 
@@ -38,7 +37,7 @@ Online platform waar gebruikers digitale herdenkingspagina's (memorials) aanmake
 
 - **Memorial Editor** - Monument templates, foto's, verhalen, condoleances
 - **Blockchain** - Arweave permanente opslag (Node.js bridge)
-- **Betalingen** - Mollie (iDEAL, creditcard), Tikkie, XRP, EPC QR
+- **Betalingen** - Mollie (iDEAL, creditcard), Tikkie, Stripe (gepland)
 - **AI Chatbot** - Claude-powered hulp voor gebruikers
 - **Export** - PDF export van memorials
 - **Reviews** - Gebruikersbeoordelingen met moderatie
@@ -64,10 +63,9 @@ Online platform waar gebruikers digitale herdenkingspagina's (memorials) aanmake
 |----------|---------|
 | Mollie | iDEAL, creditcard, banktransfer, PayPal |
 | Tikkie | Handmatig/API |
-| XRP | Crypto |
-| EPC QR | Bankoverschrijving met QR code |
+| Stripe | *Gepland* |
 
-**Packages:** premium_upgrade (€4.99), memorial_website (€24.95), memorial_monument (€9.95-19.95)
+**Pakketten:** basis (€9,95), standaard (€24,95), compleet (€49,95)
 
 ## Blockchain (Arweave)
 

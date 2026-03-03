@@ -231,7 +231,6 @@ HavunCore/
 ├── bootstrap/app.php         # Laravel bootstrap
 ├── artisan                   # CLI entry point
 ├── CLAUDE.md                # Claude session guide
-├── ARCHITECTURE.md          # System design
 ├── CHANGELOG.md             # Version history
 └── INDEX.md                 # Documentation index
 ```
@@ -242,7 +241,6 @@ HavunCore/
 
 **Essential Guides:**
 - 🤖 [CLAUDE.md](CLAUDE.md) - Claude Code session guide
-- 🏗️ [ARCHITECTURE.md](ARCHITECTURE.md) - System architecture
 - 📖 [INDEX.md](INDEX.md) - Complete documentation index
 - 💾 [Backup System](docs/backup/) - Backup documentation
 - 🔌 [API Reference](docs/kb/reference/) - API docs (Task Queue, Vault)

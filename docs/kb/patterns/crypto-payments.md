@@ -215,7 +215,7 @@ class MonitorCryptoPayments extends Command
 
 ## Projecten die dit gebruiken
 
-- Herdenkingsportaal (XRP, ADA, SOL)
+- ~~Herdenkingsportaal~~ (verwijderd, crypto betalingen niet meer actief)
 
 ---
 

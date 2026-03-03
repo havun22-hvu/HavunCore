@@ -6,7 +6,6 @@
 
 - [README.md](README.md) - Project overview
 - [CLAUDE.md](CLAUDE.md) - Instructies voor Claude AI
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Systeem architectuur
 - [CHANGELOG.md](CHANGELOG.md) - Versie geschiedenis
 
 ## Knowledge Base
