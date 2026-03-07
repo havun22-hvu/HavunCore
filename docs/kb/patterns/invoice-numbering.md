@@ -3,42 +3,45 @@
 ## Formaat
 
 ```
-XX-JJJJMMDD-NNN
+XX-JJJJMMDD-[herkenbare code]
 ```
 
 | Deel | Betekenis | Voorbeeld |
 |------|-----------|-----------|
 | `XX` | Project prefix (2 letters) | `JT` |
-| `JJJJMMDD` | Datum | `20260301` |
-| `NNN` | Volgnummer per dag | `001` |
+| `JJJJMMDD` | Factuurdatum | `20260301` |
+| `code` | Herkenbare code (verschilt per project) | `001`, `noordzee-cup`, `cc80b72f993e` |
 
-## Project Prefixes
+**Doel:** Elke factuur is herleidbaar naar het project, de datum, en het specifieke object (toernooi, memorial, klant, etc.)
 
-| Project | Prefix | Formaat | Voorbeeld |
-|---------|--------|---------|-----------|
-| HavunAdmin | HA | standaard | `HA-20260301-001` |
-| Herdenkingsportaal | HP | UUID-variant | `HP-20260301-cc80b72f993e` |
-| JudoToernooi | JT | standaard | `JT-20260301-001` |
-| Studieplanner | SP | standaard | `SP-20260301-001` |
-| Infosyst | IN | standaard | `IN-20260301-001` |
-| HavunClub | HC | standaard | `HC-20260301-001` |
-| SafeHavun | SH | standaard | `SH-20260301-001` |
+## Project Prefixes & Code
 
-### Variant: Herdenkingsportaal
+| Project | Prefix | Code deel | Voorbeeld |
+|---------|--------|-----------|-----------|
+| HavunAdmin | HA | volgnummer per dag | `HA-20260301-001` |
+| Herdenkingsportaal | HP | memorial UUID (12 chars) | `HP-20260301-cc80b72f993e` |
+| JudoToernooi | JT | toernooi slug | `JT-20260301-noordzee-cup` |
+| HavunCore | HC | volgnummer per dag | `HC-20260301-001` |
+| Infosyst | IS | volgnummer per dag | `IS-20260301-001` |
+| Studieplanner | SP | volgnummer per dag | `SP-20260301-001` |
+| SafeHavun | SH | volgnummer per dag | `SH-20260301-001` |
 
-HP gebruikt memorial UUID in plaats van volgnummer: **`HP-JJJJMMDD-{memorial-uuid-12}`**
+### Varianten per project
 
-- Zelfde `XX-JJJJMMDD-` structuur als standaard
-- Laatste deel: eerste 12 chars van memorial UUID (i.p.v. volgnummer)
-- Linkt direct naar het memorial → informatiever
-- Voorbeeld: `HP-20260301-cc80b72f993e`
+**Herdenkingsportaal (HP):** `HP-JJJJMMDD-{memorial-uuid-12}`
+- Eerste 12 chars van memorial UUID → direct herleidbaar naar het memorial
+
+**JudoToernooi (JT):** `JT-JJJJMMDD-{toernooi-slug}`
+- Slug van het toernooi → direct herleidbaar naar welk toernooi
+
+**Overige projecten:** `XX-JJJJMMDD-NNN`
+- Volgnummer per dag, begint bij `001`
 
 ## Implementatie
 
+### Standaard (volgnummer)
+
 ```php
-/**
- * Generate invoice number: XX-YYYYMMDD-NNN
- */
 public static function generateInvoiceNumber(string $prefix): string
 {
     $date = now()->format('Ymd');
@@ -58,9 +61,21 @@ public static function generateInvoiceNumber(string $prefix): string
 }
 ```
 
+### Herdenkingsportaal (memorial UUID)
+
+```php
+$invoiceNumber = sprintf('HP-%s-%s', now()->format('Ymd'), substr($memorial->uuid, 0, 12));
+```
+
+### JudoToernooi (toernooi slug)
+
+```php
+$invoiceNumber = sprintf('JT-%s-%s', now()->format('Ymd'), $toernooi->slug);
+```
+
 ## Regels
 
 - Factuurnummers zijn **uniek** en **onwijzigbaar** na aanmaak
-- Volgnummer begint elke dag opnieuw bij `001`
 - Prefix is altijd 2 hoofdletters
 - Datum is altijd `JJJJMMDD` (ISO 8601 zonder streepjes)
+- Code moet het factuurnummer **herleidbaar** maken naar het onderliggende object
