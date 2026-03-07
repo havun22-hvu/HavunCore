@@ -20,7 +20,7 @@ XX-JJJJMMDD-[herkenbare code]
 |---------|--------|-----------|-----------|
 | HavunAdmin | HA | volgnummer per dag | `HA-20260301-001` |
 | Herdenkingsportaal | HP | memorial UUID (12 chars) | `HP-20260301-cc80b72f993e` |
-| JudoToernooi | JT | toernooi slug | `JT-20260301-noordzee-cup` |
+| JudoToernooi | JT | toernooi slug + volgnummer | `JT-20260301-noordzee-cup-001` |
 | HavunCore | HC | volgnummer per dag | `HC-20260301-001` |
 | Infosyst | IS | volgnummer per dag | `IS-20260301-001` |
 | Studieplanner | SP | volgnummer per dag | `SP-20260301-001` |
@@ -31,8 +31,9 @@ XX-JJJJMMDD-[herkenbare code]
 **Herdenkingsportaal (HP):** `HP-JJJJMMDD-{memorial-uuid-12}`
 - Eerste 12 chars van memorial UUID → direct herleidbaar naar het memorial
 
-**JudoToernooi (JT):** `JT-JJJJMMDD-{toernooi-slug}`
-- Slug van het toernooi → direct herleidbaar naar welk toernooi
+**JudoToernooi (JT):** `JT-JJJJMMDD-{toernooi-slug}-NNN`
+- Slug van het toernooi + volgnummer → direct herleidbaar naar welk toernooi
+- Meerdere betalingen per dag per toernooi mogelijk (upgrade stappen)
 
 **Overige projecten:** `XX-JJJJMMDD-NNN`
 - Volgnummer per dag, begint bij `001`
@@ -70,7 +71,10 @@ $invoiceNumber = sprintf('HP-%s-%s', now()->format('Ymd'), substr($memorial->uui
 ### JudoToernooi (toernooi slug)
 
 ```php
-$invoiceNumber = sprintf('JT-%s-%s', now()->format('Ymd'), $toernooi->slug);
+// Slug + volgnummer (meerdere upgrades per dag mogelijk)
+$prefix = sprintf('JT-%s-%s-', now()->format('Ymd'), $toernooi->slug);
+// Zoek laatste volgnummer en tel 1 op
+$invoiceNumber = $prefix . '001'; // of volgende in reeks
 ```
 
 ## Regels
