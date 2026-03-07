@@ -80,13 +80,48 @@ Dit zorgt ervoor dat:
 - Nieuwe inconsistenties gedetecteerd worden
 - De volgende sessie up-to-date info heeft
 
-## 5. Git Commit & Push
+## 5. Git Commit & Push (KRITIEK - NIETS MAG ACHTERBLIJVEN!)
+
+### Stap A: Commit ALLE code-wijzigingen EERST
 
 ```bash
-git add .
-git commit -m "docs: Session handover [datum] + [korte beschrijving]"
-git push origin master
+# 1. Check wat er open staat
+git status
+
+# 2. Groepeer wijzigingen in logische, atomaire commits
+#    - Per feature/fix een aparte commit
+#    - Gebruik duidelijke commit messages (feat:/fix:/refactor:)
+#    Voorbeeld:
+#      git add src/controllers/UserController.php src/views/user.blade.php
+#      git commit -m "feat: Add user profile page"
+
+# 3. HERHAAL tot ALLE code-wijzigingen gecommit zijn
 ```
+
+⚠️ **HARD RULE:** Na deze stap mag `git status` GEEN gewijzigde code-bestanden meer tonen. Alleen docs mogen nog open staan.
+
+### Stap B: Commit docs/handover
+
+```bash
+git add .claude/context.md .claude/smallwork.md
+git commit -m "docs: Session handover [datum] + [korte beschrijving]"
+```
+
+### Stap C: Push ALLES
+
+```bash
+git push
+```
+
+### Stap D: Verificatie (VERPLICHT)
+
+```bash
+# Dit MOET leeg zijn (behalve untracked files die bewust niet gecommit worden)
+git status
+git diff
+```
+
+⚠️ **Als er NOG wijzigingen open staan: NIET doorgaan. Eerst committen!**
 
 ## 6. Deploy naar Server (indien van toepassing)
 
