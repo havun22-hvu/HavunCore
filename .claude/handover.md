@@ -13,11 +13,19 @@
   - `STRIPE_CLIENT_ID` verwijderd uit config + .env.example (niet meer nodig)
   - BETALINGEN.md volledig bijgewerkt met Account Links flow + statussen
   - HavunCore KB judotoernooi.md bijgewerkt
+- **AutoFix EADDRINUSE fix** (JudoToernooi)
+  - `excluded_message_patterns` in `config/autofix.php` — filtert server/infra errors
+  - `shouldProcess()` checkt message patterns VOOR stack trace analyse
+- **HavunAdmin StripeService fix**
+  - Fallback prefix `ST` vervangen door werkelijke project code uit DB
+- **Invoice numbering KB** bijgewerkt met JT slug+sequence format
 
 ### Nog te doen:
 - [ ] Stripe Connect testen op staging (organisator onboarding flow)
 - [ ] `account.updated` webhook voor automatische status updates
+- [ ] Herdenkingsportaal: `excluded_message_patterns` toevoegen aan AutoFix
 - [ ] Google Business Profile: aanvraag ingediend, wacht op goedkeuring
+- [ ] HavunAdmin deployen (StripeService prefix fix)
 
 ---
 
