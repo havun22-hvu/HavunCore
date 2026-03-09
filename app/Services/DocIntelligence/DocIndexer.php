@@ -85,8 +85,10 @@ class DocIndexer
         $mdFiles = $this->findMdFiles($basePath);
 
         foreach ($mdFiles as $filePath) {
-            $relativePath = str_replace($basePath . '/', '', $filePath);
-            $relativePath = str_replace('\\', '/', $relativePath);
+            // Normalize path separators first, then strip basePath (case-insensitive for Windows)
+            $normalizedFile = str_replace('\\', '/', $filePath);
+            $normalizedBase = str_replace('\\', '/', $basePath);
+            $relativePath = preg_replace('#^' . preg_quote($normalizedBase . '/', '#') . '#i', '', $normalizedFile);
 
             try {
                 $indexed = $this->indexFile($project, $relativePath, $filePath, $forceReindex);

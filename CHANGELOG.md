@@ -1066,7 +1066,6 @@ Logging: PASS (all levels tested)
 
 #### Documentation
 - [README.md](README.md) - Project overview en quick start
-- [ARCHITECTURE.md](ARCHITECTURE.md) - Architectuur en design decisions
 - [CHANGELOG.md](CHANGELOG.md) - Dit bestand
 - [docs/kb/INDEX.md](docs/kb/INDEX.md) - Knowledge Base
 
