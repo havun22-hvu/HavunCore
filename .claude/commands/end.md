@@ -144,22 +144,23 @@ git branch --merged | grep -v master | xargs git branch -d
 powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
 ```
 
-## 9. Dagsamenvatting (VERPLICHT)
+## 9. Urenregistratie (VERPLICHT)
 
-Geef een beknopt overzicht van ALLE werkzaamheden van vandaag, over alle projecten. Max 5 regels.
+Geef een beknopt overzicht voor de urenregistratie. Dit is voor de belastingdienst: alleen aannemelijk maken dat er gewerkt is.
+**GEEN commit details of technische beschrijvingen.** Alleen projectnaam + globaal onderwerp (max 3 woorden).
 
 ```
 [DD-MM-YYYY]:
-- [Project]: [wat gedaan, 1 regel]
-- [Project]: [wat gedaan, 1 regel]
+- [Project]: [globaal onderwerp, max 3 woorden]
+- [Project]: [globaal onderwerp, max 3 woorden]
 ```
 
 Voorbeeld:
 ```
-03-03-2026:
-- JudoToernooi: password eye toggle + AutoFix security fix
-- HavunCore: urenregistratie commands
-- HavunAdmin: time entry API endpoint
+09-03-2026:
+- JudoToernooi: Stripe Connect, AutoFix
+- HavunAdmin: StripeService fix
+- HavunCore: KB bijwerken
 ```
 
 ## NIET DOEN BIJ AFSLUITEN
