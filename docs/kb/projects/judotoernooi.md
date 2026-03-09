@@ -75,12 +75,15 @@ Per organisator blijft bewaard tussen toernooien:
 
 ## Stripe Betalingen
 
-Online betalingen voor toernooi-inschrijvingen via Stripe.
+Online betalingen voor toernooi-inschrijvingen en upgrades via Stripe.
 
 - **Config:** `config/services.php` (stripe key, secret, webhook_secret)
 - **Keys:** Live + test keys in HavunCore credentials
 - **Webhook secret:** In HavunCore credentials
 - **Env vars:** `STRIPE_KEY`, `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET`
+- **Connect:** Account Links onboarding (NIET legacy OAuth — geen `STRIPE_CLIENT_ID` nodig)
+- **Connect flow:** Account aanmaken → Account Link → Stripe-hosted onboarding → callback
+- **Docs:** `laravel/docs/2-FEATURES/BETALINGEN.md` (volledige flow + statussen)
 
 ## Email (Brevo)
 

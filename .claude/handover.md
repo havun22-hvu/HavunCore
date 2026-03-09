@@ -2,7 +2,26 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 3 maart 2026
+## Laatste Sessie: 9 maart 2026
+
+### Wat is gedaan:
+- **Stripe Connect: OAuth → Account Links**
+  - StripePaymentProvider: OAuth flow vervangen door Account Links onboarding
+  - StripeController: callback verwerkt nu onboarding status (charges_enabled check)
+  - Toernooi edit view: 3 onboarding statussen (geen account / pending / gekoppeld)
+  - Afrekenen view: dynamische knoptekst per provider (iDEAL vs Stripe)
+  - `STRIPE_CLIENT_ID` verwijderd uit config + .env.example (niet meer nodig)
+  - BETALINGEN.md volledig bijgewerkt met Account Links flow + statussen
+  - HavunCore KB judotoernooi.md bijgewerkt
+
+### Nog te doen:
+- [ ] Stripe Connect testen op staging (organisator onboarding flow)
+- [ ] `account.updated` webhook voor automatische status updates
+- [ ] Google Business Profile: aanvraag ingediend, wacht op goedkeuring
+
+---
+
+## Vorige Sessie: 3 maart 2026
 
 ### Wat is gedaan:
 - **Doc cleanup Herdenkingsportaal KB:**
