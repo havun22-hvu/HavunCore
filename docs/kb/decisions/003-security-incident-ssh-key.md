@@ -87,7 +87,6 @@
 - VPDUpdate (toekomstig)
 
 **Communicatiekanalen:**
-- MCP messages naar projecten
 - Direct vragen aan eigenaar
 - Documentatie updaten in CLAUDE.md
 

@@ -2,7 +2,9 @@
 
 **URL:** https://studieplanner.havun.nl
 **API:** https://studieplanner.havun.nl/api/ (geen apart subdomain)
-**Type:** React PWA (frontend) + Laravel API (backend)
+**Type:** Expo React Native (frontend) + Laravel API (backend)
+
+> **Waarom Expo i.p.v. PWA:** Alarms en timer/stopwatch werken onbetrouwbaar in PWA (achtergrond, notificaties).
 
 ## Repositories
 
@@ -26,7 +28,7 @@ Zie: `docs/kb/decisions/005-studieplanner-architecture.md`
 | Component | Keuze |
 |-----------|-------|
 | Backend | Laravel (eigen app) |
-| Frontend | React PWA |
+| Frontend | Expo React Native |
 | Real-time | Pusher Channels (WebSockets) |
 | Auth | Pincode-based (geen wachtwoord) |
 

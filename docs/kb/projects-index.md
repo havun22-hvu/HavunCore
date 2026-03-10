@@ -1,6 +1,8 @@
 # Projects Index
 
-> Overzicht van alle Havun projecten (bijgewerkt: 3 februari 2026)
+> Overzicht van alle Havun projecten (bijgewerkt: 10 maart 2026)  
+> **Doc Intelligence:** Index van alle projecten bijgewerkt op 2026-03-10 (`docs:index all`). HavunClub lokaal pad ontbreekt (D:\GitHub\HavunClub).
+> **Projectnamen:** Altijd met hoofdletter (JudoToernooi, Infosyst, HavunClub, etc.)
 
 | Project | Type | URL | Local | Server |
 |---------|------|-----|-------|--------|
@@ -11,7 +13,7 @@
 | **JudoToernooi** | Laravel 11 SaaS | judotournament.org | D:\GitHub\JudoToernooi | /var/www/judotoernooi/laravel |
 | **SafeHavun** | Laravel 12 + React | safehavun.havun.nl | D:\GitHub\SafeHavun | /var/www/safehavun/production |
 | **HavunVet** | Laravel 11 + Livewire | staging.havunvet.havun.nl | D:\GitHub\HavunVet | /var/www/havunvet/staging |
-| **Studieplanner** | React PWA + Laravel API | studieplanner.havun.nl | D:\GitHub\Studieplanner | /var/www/studieplanner/production |
+| **Studieplanner** | Expo React Native + Laravel API | studieplanner.havun.nl | D:\GitHub\Studieplanner | /var/www/studieplanner/production |
 | **Studieplanner-api** | Laravel 11 | (via /api/) | D:\GitHub\Studieplanner-api | /var/www/studieplanner-api |
 | **Infosyst** | Laravel + Ollama | infosyst.havun.nl | D:\GitHub\infosyst | /var/www/infosyst/production |
 | **IDSee** | Node.js + React | - | D:\GitHub\IDSee | (in development) |
@@ -40,7 +42,7 @@
   - Gezinnen, abonnementen, Mollie recurring, bandexamens, QR check-in
 - **SafeHavun** - Smart Money Crypto Tracker (whale alerts, sentiment)
 - **HavunVet** - Dierenarts praktijkbeheer (ZZP), integratie met HavunAdmin
-- **Studieplanner** - PWA voor leerling-mentor studiesessies
+- **Studieplanner** - Expo app voor leerling-mentor studiesessies (alarms/timer werken slecht in PWA)
   - Pusher real-time, pincode auth
 - **Infosyst** - Wikipedia-achtige kennisbank + eigen AI chat (Ollama)
 - **IDSee** - (details volgen)

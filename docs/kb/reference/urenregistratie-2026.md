@@ -1,7 +1,8 @@
 # Urenregistratie 2026 - Havun
 
-> Automatisch gegenereerd op basis van git commit historie.
-> Uren berekend op basis van eerste en laatste commit per dag (gap > 4 uur = pauze/slaap).
+> **Handmatige bron:** `HavunCore/urenregistratie-2026.csv` (formaat: Datum;Uren;Project;Onderdeel) — jij vult zelf in, onderbouwd door /end sessie-overzicht. Projectnamen met hoofdletter: JudoToernooi, Infosyst, HavunClub.
+>
+> **Dit doc:** Automatisch gegenereerd op basis van git commit historie. Uren berekend op basis van eerste en laatste commit per dag (gap > 4 uur = pauze/slaap).
 
 ## Maandtotalen
 

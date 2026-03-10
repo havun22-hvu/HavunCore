@@ -1,4 +1,4 @@
-﻿Datum;Uren;Project;Onderdeel
+Datum;Uren;Project;Onderdeel
 2026-01-01;0,5;HavunAdmin;Add LEES-DENK-DOE-DOCUMENTEER workflow to CLAUDE.md
 2026-01-01;1,0;HavunCore;Add Laravel scheduler cron for Studieplanner, Add LEES-DENK-DOE-DOCUMENTEER workflow + MD audit system, Fix audit frequency to 2x per week
 2026-01-01;0,5;Herdenkingsportaal;Add LEES-DENK-DOE-DOCUMENTEER workflow to CLAUDE.md
@@ -89,7 +89,7 @@
 2026-02-02;12,0;Judotoernooi;Fix: updateTitel() now updates for variable weight classes, Fix: use isDynamisch() for updateTitel check, Add complete network configuration to noodplan (+95 meer)
 2026-02-03;0,5;HavunCore;Update projects index and add JudoToernooi docs
 2026-02-03;6,0;Judotoernooi;Band not preserved when editing judoka in coach portal, Add missing Mat model import in BlokController, Add Email Log button to Clubs page (+52 meer)
-2026-02-04;0,5; Leeftijd | Gewicht kg'|Judotoernooi;Change poule header order in Excel export to 'Poule X 
+2026-02-04;0,5;JudoToernooi;Change poule header order in Excel export to 'Poule X  Leeftijd | Gewicht kg' 
 2026-02-04;0,5;HavunCore;Add server paths to DocIndexer for Linux environment, Session handover 4 feb 2026 - project audit + USB prep
 2026-02-04;10,5;Judotoernooi;Correct shared position calculation in poule standings, Make spreker notities textarea larger (min 400px, resizable), Shared positions for judokas with equal WP+JP (+61 meer)
 2026-02-05;5,0;Judotoernooi;"Make IP help collapsible, keep input fields always visible, Add inline IP edit button on ""Bij storing"" section, Downgrade QRCode.js from 1.5.3 to 1.5.1 (+18 meer)"

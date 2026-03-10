@@ -144,20 +144,22 @@ git branch --merged | grep -v master | xargs git branch -d
 powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
 ```
 
-## 9. Urenregistratie (VERPLICHT)
+## 9. Urenregistratie (VERPLICHT - belastingaangifte)
 
-Geef een beknopt overzicht voor de urenregistratie. Dit is voor de belastingdienst: alleen aannemelijk maken dat er gewerkt is.
+**Jij vult zelf de uren in.** Geef een zeer beknopt overzicht om de werkzaamheden te onderbouwen.
 **GEEN commit details of technische beschrijvingen.** Alleen projectnaam + globaal onderwerp (max 3 woorden).
 
+→ Kopieer naar `HavunCore/urenregistratie-2026.csv` (formaat: `Datum;Uren;Project;Onderdeel`). Projectnamen met hoofdletter: JudoToernooi, Infosyst, HavunClub, etc.
+
 ```
-[DD-MM-YYYY]:
+[YYYY-MM-DD]:
 - [Project]: [globaal onderwerp, max 3 woorden]
 - [Project]: [globaal onderwerp, max 3 woorden]
 ```
 
 Voorbeeld:
 ```
-09-03-2026:
+2026-03-09:
 - JudoToernooi: Stripe Connect, AutoFix
 - HavunAdmin: StripeService fix
 - HavunCore: KB bijwerken

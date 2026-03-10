@@ -1,5 +1,7 @@
 # HavunCore Vision: Multi-Claude Orchestration Systeem
 
+> ⚠️ **DEPRECATED (2026-03-01):** MCP is verwijderd. Dit doc beschrijft de oorspronkelijke visie; MCP wordt niet meer gebruikt.
+
 **Datum:** 18 november 2025
 **Versie:** 1.0
 **Auteur:** Henk van Unen
