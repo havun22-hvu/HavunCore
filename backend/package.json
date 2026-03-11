@@ -1,0 +1,18 @@
+{
+  "name": "havuncore-backend",
+  "version": "1.0.0",
+  "description": "Node.js backend voor HavunCore webapp – SQLite + Command-R + Claude hybrid flow",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "node src/app.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
+    "express": "^4.21.0",
+    "sqlite3": "^5.1.7"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

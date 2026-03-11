@@ -73,7 +73,7 @@ Standaard poorten per project. Voorkomt conflicten bij meerdere projecten tegeli
 
 | Project | Poort | Command |
 |---------|-------|---------|
-| HavunCore | 8000 | `php artisan serve` |
+| HavunCore | - | geen lokale dev nodig |
 | HavunAdmin | 8001 | `php artisan serve --port=8001` |
 | Herdenkingsportaal | 8002 | `php artisan serve --port=8002` |
 | Studieplanner-api | 8003 | `php artisan serve --port=8003` |
@@ -91,7 +91,7 @@ Standaard poorten per project. Voorkomt conflicten bij meerdere projecten tegeli
 | Havun (website) | 3001 | `npm run dev` (Next.js) |
 | VPDUpdate | 3002 | `node server.js` |
 | Studieplanner | 5173 | `npm run dev` (Vite/React) |
-| havuncore-webapp | 5174 | `npm run dev` (Vite/React) |
+| havuncore-webapp | 8000 | `npm run dev` (Vite/React) |
 
 ## Nginx Configs
 

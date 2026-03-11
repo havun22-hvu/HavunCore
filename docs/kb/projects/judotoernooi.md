@@ -22,15 +22,29 @@ Havun verhuurt de JudoToernooi software aan judoscholen (organisatoren).
 | Staging | - | `/var/www/staging.judotoernooi/laravel` | MySQL |
 | Production | judotournament.org | `/var/www/judotoernooi/laravel` | MySQL |
 
+## Freemium Model (9 mrt 2026)
+
+| Tier | Eigen Import | Handmatig | Totaal Max | Demo CSV |
+|------|-------------|-----------|------------|----------|
+| **Free** | Max 20 | Max 20 | Max 50 | Ja (30/40/50 judoka's) |
+| **Betaald** | Onbeperkt | Onbeperkt | Onbeperkt | N.v.t. |
+
+- Demo CSV's: `storage/app/demo/demo-30/40/50.csv`
+- `is_demo` veld op judokas tabel
+- Docs: `laravel/docs/2-FEATURES/FREEMIUM.md`
+
 ## Core Features
 
 - **Toernooi Management** - Aanmaken, configureren, templates hergebruiken
-- **Deelnemers Import** - CSV/Excel met auto-classificatie
-- **Poule Indeling** - Automatisch algoritme
-- **Mat Interface** - Wedstrijden en uitslagen
-- **Eliminatie** - Double elimination
-- **Coach Portal** - Coaches beheren hun judoka's
-- **Real-time Sync** - Reverb WebSockets voor chat en score updates
+- **Deelnemers Import** - CSV/Excel met auto-classificatie + "Uit database" stam-import
+- **Poule Indeling** - Automatisch algoritme met clubspreiding
+- **Mat Interface** - Wedstrijden en uitslagen (real-time via Reverb)
+- **Eliminatie** - Double elimination met B-bracket, aparte B-mat
+- **Coach Portal** - Coaches beheren hun judoka's (3 modi: volledig/mutaties/bekijken)
+- **Real-time Sync** - Reverb WebSockets voor scores, beurten, poule status
+- **Danpunten (JBN)** - JBN lidnummers, CSV export, toggle per toernooi (deployed)
+- **Offline Server Pakket** - Go launcher + portable PHP, download via noodplan pagina
+- **Unified Login** - PIN, QR code, passkey authenticatie
 
 ## Coach Portal
 
@@ -190,4 +204,4 @@ Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
 
 ---
 
-*Laatste update: 21 februari 2026*
+*Laatste update: 11 maart 2026*

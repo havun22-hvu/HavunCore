@@ -44,17 +44,7 @@ Als er openstaande issues zijn, toon ze aan de gebruiker:
 Wil je deze eerst oplossen of later?
 ```
 
-## Stap 4: Rittenregistratie-plan (VERPLICHT)
-
-Scan de centrale KB en maak of actualiseer het plan in smallwork.md:
-
-1. **Scan** de centrale KB: `D:\GitHub\HavunCore\docs\kb\` (INDEX.md, OVERZICHT.md, relevante runbooks/patterns/reference).
-2. **Maak of werk bij** in **dit project** het bestand `.claude/smallwork.md`: een plan om de **rittenregistratie-pagina** te bouwen volgens de Havun-standaarden (DOCS-FIRST, werkwijze, UI/UX uit `docs/kb/runbooks/claude-werkwijze.md`).
-3. Als er al een rittenregistratie-plan in smallwork.md staat: controleer of het nog aansluit bij de KB; pas zo nodig aan.
-
-> **Let op:** In HavunCore zelf gebruik je `D:\GitHub\HavunCore\.claude\smallwork.md`. In andere projecten gebruik je `{project}/.claude/smallwork.md`.
-
-## Na Stap 1–4: Korte bevestiging
+## Na Stap 1–3: Korte bevestiging
 
 Geef een KORTE bevestiging:
 
@@ -64,8 +54,6 @@ Geef een KORTE bevestiging:
   - context.md (X regels)
   - claude-werkwijze.md (werkwijze + docs-first + PKM)
 
-✓ Rittenregistratie-plan: smallwork.md gescand/bijgewerkt
-
 📋 Dit project: [korte beschrijving]
 ⚠️ Verboden: [belangrijkste restricties]
 📄 DOCS-FIRST: Ik schrijf alleen code zoals het in de docs staat.
@@ -74,7 +62,7 @@ Geef een KORTE bevestiging:
 Klaar om te beginnen. Wat wil je doen?
 ```
 
-## Stap 6: ONTHOUD deze principes
+## Stap 4: ONTHOUD deze principes
 
 ### ⛔ DOCS-FIRST WORKFLOW (HOOFDREGEL!)
 

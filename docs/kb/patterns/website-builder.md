@@ -1,5 +1,8 @@
 # Pattern: Website Builder (Pagina Builder)
 
+> **Status:** VERWIJDERD uit JudoToernooi (14 feb 2026, verplaatst naar Havunity project).
+> Dit pattern wordt momenteel NIET actief gebruikt in productie.
+
 > Drag-and-drop website builder - een eigen WordPress-alternatief.
 
 ## Wanneer gebruiken
@@ -328,8 +331,9 @@ Route::prefix('toernooi/{toernooi}/pagina-builder')->group(function () {
 
 ## Projecten die dit gebruiken
 
-- Judotoernooi (event pagina's)
+- ~~Judotoernooi~~ (verwijderd 14 feb 2026, naar Havunity)
 
 ---
 
-*Pattern toegevoegd: 2025-12-30*
+*Pattern toegevoegd: 30 december 2025*
+*Status update: 14 februari 2026 - verwijderd uit JudoToernooi*

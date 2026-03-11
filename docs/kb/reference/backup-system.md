@@ -1,6 +1,7 @@
 # Backup System Reference
 
 > Complete backup architectuur voor alle Havun projecten.
+> **Let op:** Config (`havun-backup.php`) bestaat, maar artisan commands (`havun:backup:run` etc.) zijn nog NIET geïmplementeerd. De 5-minuten hot backup voor kritieke databases is wel actief (cron-based).
 
 ## Architectuur
 

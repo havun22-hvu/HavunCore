@@ -6,6 +6,7 @@
 ## Lees eerst
 
 - [OVERZICHT.md](OVERZICHT.md) - Compleet overzicht met uitleg van alle systemen
+- [werkzaamheden-overzicht.md](werkzaamheden-overzicht.md) - Wat is gedaan, waar we staan, koppeling uren
 - **Kennisbank doorzoeken/updaten:** `cd D:\GitHub\HavunCore && php artisan docs:index all --force` daarna `php artisan docs:detect`
 
 ## Structuur
@@ -20,7 +21,10 @@ docs/kb/
 │
 ├── projects/             ← Per-project details
 │   ├── doc-intelligence-system.md
+│   ├── havunadmin.md
+│   ├── havunclub.md
 │   ├── herdenkingsportaal.md
+│   ├── infosyst.md
 │   ├── judotoernooi.md
 │   ├── safehavun.md
 │   └── studieplanner.md
@@ -57,9 +61,11 @@ docs/kb/
 │   ├── fix-qr-login-csrf.md
 │   ├── ggshield-setup.md
 │   ├── md-file-audit.md
+│   ├── op-reis-workflow.md
 │   ├── passkey-mobile-fix.md
 │   ├── project-cleanup.md
 │   ├── ssl-monitoring.md
+│   ├── sync-start-command.md
 │   ├── token-based-login.md
 │   ├── troubleshoot.md
 │   └── unified-login-system.md
@@ -91,6 +97,10 @@ docs/kb/
 
 ### Essentials
 - [projects-index.md](projects-index.md) - Overzicht alle projecten
+
+### Internal (architectuur & hybrid flow)
+- [architecture.md](../internal/architecture.md) - Database & metadata (doc_embeddings, uitbreiden bestandstypen, Node backend)
+- [context-filter-flow.md](../internal/context-filter-flow.md) - Tap 1: Command-R filtert context → Claude (orchestrate.js, POST /api/intelligent)
 
 ### Contracts (gedeelde definities)
 - [memorial-reference.md](contracts/memorial-reference.md) - Memorial Reference format
@@ -148,11 +158,14 @@ docs/kb/
 - [qr-code-url-matching.md](patterns/qr-code-url-matching.md) - QR code URL matching
 
 ### Projects (per-project details)
-- [studieplanner.md](projects/studieplanner.md) - Studieplanner app info
-- [safehavun.md](projects/safehavun.md) - SafeHavun crypto tracker
-- [doc-intelligence-system.md](projects/doc-intelligence-system.md) - Doc Intelligence systeem
+- [havunadmin.md](projects/havunadmin.md) - HavunAdmin boekhouding SaaS
+- [havunclub.md](projects/havunclub.md) - HavunClub ledenadministratie
 - [herdenkingsportaal.md](projects/herdenkingsportaal.md) - Herdenkingsportaal
+- [infosyst.md](projects/infosyst.md) - Infosyst kennisbank + AI
 - [judotoernooi.md](projects/judotoernooi.md) - JudoToernooi
+- [safehavun.md](projects/safehavun.md) - SafeHavun crypto tracker
+- [studieplanner.md](projects/studieplanner.md) - Studieplanner app info
+- [doc-intelligence-system.md](projects/doc-intelligence-system.md) - Doc Intelligence systeem
 
 ### Decisions (waarom zo?)
 - [001-havuncore-standalone.md](decisions/001-havuncore-standalone.md) - HavunCore als standalone app

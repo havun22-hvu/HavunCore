@@ -1,9 +1,10 @@
 # HavunCore Bibliotheek - Compleet Overzicht
 
-> Laatst bijgewerkt: 2026-03-10  
+> Laatst bijgewerkt: 2026-03-11
 > Laatste full index (alle projecten): 2026-03-10 — `php artisan docs:index all --force`
 
-Dit document geeft een compleet overzicht van alle systemen, methodes en kennis in de HavunCore bibliotheek.
+Dit document geeft een compleet overzicht van alle systemen, methodes en kennis in de HavunCore bibliotheek.  
+**Werkzaamheden (wat is gedaan, waar we staan):** [werkzaamheden-overzicht.md](werkzaamheden-overzicht.md)
 
 ---
 
@@ -197,28 +198,55 @@ Urenregistratie overzicht.
 ### Design Inspiration Session (`reference/design-inspiration-session.md`)
 Design inspiration sessie referentie.
 
+### HavunAIBridge & Hybrid Flow
+- **HavunAIBridge (PHP):** `scripts/HavunAIBridge.php` — vraag → PDO + cosine similarity op `doc_embeddings` → Ollama (Command-R). Zie `reference/havun-ai-bridge.md`.
+- **Hybrid Flow (Node backend):** `backend/src/routes/orchestrate.js` — `POST /api/intelligent`: top 15 uit SQLite → Command-R filtert context → Claude (Sonnet) antwoordt. Zelfde SQLite in `backend/src/app.js` (HAVUNCORE_DB_PATH). Zie `docs/internal/context-filter-flow.md` en `docs/internal/architecture.md`.
+
 ---
 
 ## Projects
 
-### Studieplanner (`projects/studieplanner.md`)
-Mentor-leerling studiesessie tracking app:
-- React PWA frontend
-- Laravel API backend
-- Pincode authenticatie
-- Pusher real-time sync
+### HavunAdmin (`projects/havunadmin.md`)
+Multi-tenant SaaS boekhouding & facturatie:
+- Database-per-tenant met centrale user management
+- Bunq import, Mollie sync, PDF parsing met Claude AI
+- 97% belastingcompliant, audit trail, 7 jaar snapshots
 
-### SafeHavun (`projects/safehavun.md`)
-Crypto tracker / wachtwoord manager applicatie.
-
-### Doc Intelligence System (`projects/doc-intelligence-system.md`)
-Doc indexering en semantic search.
+### HavunClub (`projects/havunclub.md`)
+Multi-club SaaS ledenadministratie (judo/sport):
+- Leden, gezinnen, abonnementen, bandexamens
+- Mollie recurring, QR check-in
+- Opgezet feb 2026, in development
 
 ### Herdenkingsportaal (`projects/herdenkingsportaal.md`)
-Memorial portaal project.
+Memorial portaal (v3.0.80):
+- Digitale herdenkingspagina's met blockchain (Arweave)
+- Mollie betalingen, AI chatbot, PDF export
+- AutoFix systeem actief
+
+### Infosyst (`projects/infosyst.md`)
+Gedistribueerde kennisbank (Henkiepedia):
+- Lokaal invoeren (SQLite + PWA), sync via Git JSON
+- Server read-only wiki + AI chat (Ollama)
 
 ### JudoToernooi (`projects/judotoernooi.md`)
-Judo toernooi SaaS.
+SaaS judo toernooi management:
+- Freemium model, Reverb WebSockets, double elimination
+- Danpunten (JBN), offline server pakket, unified login
+- AutoFix systeem actief
+
+### Studieplanner (`projects/studieplanner.md`)
+Expo React Native app voor leerling-mentor studiesessies:
+- Pusher real-time sync, pincode authenticatie
+- Laravel API backend
+
+### SafeHavun (`projects/safehavun.md`)
+Smart Money Crypto Tracker:
+- Whale alerts, sentiment analyse
+- Laravel 12 + React
+
+### Doc Intelligence System (`projects/doc-intelligence-system.md`)
+Doc indexering en semantic search voor alle projecten.
 
 ---
 
@@ -303,7 +331,7 @@ docs/kb/
 ├── patterns/         ← Herbruikbare code (11 bestanden)
 ├── runbooks/         ← How-to guides (15 bestanden)
 ├── reference/        ← Specificaties (12 bestanden)
-├── projects/         ← Project details (5: studieplanner, safehavun, doc-intelligence, herdenkingsportaal, judotoernooi)
+├── projects/         ← Project details (8: havunadmin, havunclub, herdenkingsportaal, infosyst, judotoernooi, safehavun, studieplanner, doc-intelligence)
 ├── decisions/       ← Waarom zo? (6 bestanden)
 ├── templates/        ← new-laravel-site, context-template, CLAUDE-template, claude-settings.json
 └── contracts/        ← memorial-reference.md

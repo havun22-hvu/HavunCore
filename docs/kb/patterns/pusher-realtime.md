@@ -208,4 +208,5 @@ Pusher.logToConsole = true;
 
 ---
 
-*Pattern toegevoegd: 2025-12-30*
+*Pattern toegevoegd: 30 december 2025*
+*Gebruikt door: Studieplanner (real-time sync)*

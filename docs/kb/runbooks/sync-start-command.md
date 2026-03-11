@@ -1,6 +1,6 @@
 # Runbook: Start-command sync naar alle projecten
 
-> **Doel:** Alle projecten gebruiken dezelfde /start command inclusief rittenregistratie-plan stap.
+> **Doel:** Alle projecten gebruiken dezelfde /start command.
 > **Bron van waarheid:** `HavunCore/.claude/commands/start.md`
 
 ## Wanneer syncen?
@@ -30,13 +30,6 @@
 
 3. **Optioneel:** Als een project geen `.claude/commands/` heeft, maak de map aan en plak start.md.
 
-## Verplichte stap in start (sinds 2026-03-10)
-
-Stap 4 moet in elke start-command zitten:
-
-- **Rittenregistratie-plan (VERPLICHT):** Scan `D:\GitHub\HavunCore\docs\kb\`, maak of werk bij het plan in het project zijn `.claude/smallwork.md` voor de rittenregistratie-pagina volgens Havun-standaarden.
-
 ## Referentie
 
 - Start-command inhoud: HavunCore `.claude/commands/start.md`
-- Rittenregistratie-plan voorbeeld: HavunCore `.claude/smallwork.md` (sectie "Plan: Rittenregistratie-pagina")

@@ -2,7 +2,7 @@
 
 **URL:** https://herdenkingsportaal.nl
 **Type:** Laravel 11 memorial portal met blockchain (Arweave)
-**Versie:** 3.0.74
+**Versie:** 3.0.80
 
 ## Wat is het?
 
@@ -84,6 +84,8 @@ Claude AI analyseert production errors automatisch en past fixes direct toe (max
 - **Email:** havun22@gmail.com (success + failure notificaties)
 - **Admin:** `/admin/autofix` - overzicht met stats, proposals, user/memorial context
 - **Context:** Slaat user naam/email en memorial naam op bij elke proposal
+- **Blade detection:** `extractBladeFile()` voor ViewException messages
+- **Let op:** `excluded_message_patterns` nog NIET geïmplementeerd (wel in JudoToernooi)
 
 Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
 
@@ -123,4 +125,4 @@ php artisan optimize:clear
 
 ---
 
-*Laatste update: 19 februari 2026*
+*Laatste update: 11 maart 2026*

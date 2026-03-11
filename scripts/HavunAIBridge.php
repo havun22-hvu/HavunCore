@@ -1,17 +1,15 @@
-#!/usr/bin/env php
 <?php
+declare(strict_types=1);
+
 /**
- * HavunAIBridge – Vraag → vector-KB (PDO + cosine similarity) → Ollama (POST, system prompt)
- *
- * Gebruik: php scripts/HavunAIBridge.php "Jouw vraag hier"
- * Of:      php scripts/HavunAIBridge.php   (vraag van stdin)
- *
- * - SQLite: direct PDO naar dezelfde DB als /kb (doc_intelligence.sqlite, tabel doc_embeddings).
- * - Cosine similarity: in dit script (vraag-embedding vs. opgeslagen vectoren).
- * - Ollama: POST naar 11434 met "system" (niet-passieve instructies) en "prompt" (context + vraag).
+ * HavunAIBridge – Vraag → vector-KB (PDO + cosine similarity) → Ollama
  */
 
-declare(strict_types=1);
+// De rest van je script (autoload, bootstrap, etc.) komt hieronder...
+
+ini_set('display_errors', '1');
+ini_set('display_startup_errors', '1');
+error_reporting(E_ALL);
 
 $baseDir = dirname(__DIR__);
 if (!is_dir($baseDir . '/vendor')) {
@@ -24,7 +22,7 @@ $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 // --- Config ---
 define('OLLAMA_URL', env('OLLAMA_URL', 'http://127.0.0.1:11434'));
-define('OLLAMA_MODEL', env('OLLAMA_MODEL', 'llama3'));
+define('OLLAMA_MODEL', env('OLLAMA_MODEL', 'command-r'));
 define('HAVUN_AI_DB_PATH', $baseDir . '/database/doc_intelligence.sqlite');
 const CONTEXT_LIMIT_CHARS = 12000;
 const CONTEXT_PER_DOC_CHARS = 3500;
@@ -93,11 +91,18 @@ final class HavunAIBridge
     public function run(string $question): void
     {
         echo "=== HavunAIBridge ===\n";
-        echo "Vraag: " . substr($question, 0, 80) . (strlen($question) > 80 ? '...' : '') . "\n\n";
+        echo "[1/3] Zoeken in Havun-kennisbank (SQLite via PDO)...\n";
 
         $context = $this->retrieveContext($question);
+        $contextSize = strlen($context);
+
+        echo "[2/3] Context verzameld ($contextSize tekens)...\n";
+
         $systemPrompt = $this->getSystemPrompt();
         $userPrompt = $this->buildUserPrompt($question, $context);
+
+        echo "[3/3] Command-R aanroepen (laden kan 30-60 sec duren)...\n";
+
         $response = $this->callOllama($systemPrompt, $userPrompt);
 
         echo "\n--- Antwoord (Ollama) ---\n";
@@ -254,10 +259,14 @@ TEXT;
     {
         $url = OLLAMA_URL . '/api/generate';
         $body = [
-            'model' => OLLAMA_MODEL,
+            'model'  => OLLAMA_MODEL,
             'system' => $systemPrompt,
             'prompt' => $userPrompt,
             'stream' => false,
+            'options' => [
+                'num_ctx' => 24576, // Verhoog naar 24k voor jouw 15.5k context + antwoordruimte
+                'temperature' => 0.2,
+            ],
         ];
 
         $responseBody = null;
@@ -273,8 +282,8 @@ TEXT;
                 CURLOPT_POSTFIELDS => json_encode($body),
                 CURLOPT_HTTPHEADER => ['Content-Type: application/json'],
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_TIMEOUT => 120,
-                CURLOPT_CONNECTTIMEOUT => 5,
+                CURLOPT_TIMEOUT => 600,          // Verhoog van 120 naar 600 (10 minuten)
+                CURLOPT_CONNECTTIMEOUT => 10,     // Iets ruimer voor de initiële handshake
             ]);
             $responseBody = curl_exec($ch);
             $httpCode = (int) curl_getinfo($ch, CURLINFO_HTTP_CODE);

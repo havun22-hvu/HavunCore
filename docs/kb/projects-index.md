@@ -1,7 +1,7 @@
 # Projects Index
 
-> Overzicht van alle Havun projecten (bijgewerkt: 10 maart 2026)  
-> **Doc Intelligence:** Index van alle projecten bijgewerkt op 2026-03-10 (`docs:index all`). HavunClub lokaal pad ontbreekt (D:\GitHub\HavunClub).
+> Overzicht van alle Havun projecten (bijgewerkt: 11 maart 2026)
+> **Doc Intelligence:** Index van alle projecten bijgewerkt op 2026-03-10 (`docs:index all`).
 > **Projectnamen:** Altijd met hoofdletter (JudoToernooi, Infosyst, HavunClub, etc.)
 
 | Project | Type | URL | Local | Server |
@@ -38,13 +38,15 @@
 
 ### In Development
 
-- **HavunClub** - Multi-club SaaS ledenadministratie (judo/sport)
+- **HavunClub** - Multi-club SaaS ledenadministratie (judo/sport) — opgezet feb 2026
   - Gezinnen, abonnementen, Mollie recurring, bandexamens, QR check-in
+  - Server: `/var/www/havunclub/production`, lokaal: `D:\GitHub\HavunClub`
 - **SafeHavun** - Smart Money Crypto Tracker (whale alerts, sentiment)
 - **HavunVet** - Dierenarts praktijkbeheer (ZZP), integratie met HavunAdmin
-- **Studieplanner** - Expo app voor leerling-mentor studiesessies (alarms/timer werken slecht in PWA)
+- **Studieplanner** - Expo React Native app voor leerling-mentor studiesessies
   - Pusher real-time, pincode auth
-- **Infosyst** - Wikipedia-achtige kennisbank + eigen AI chat (Ollama)
+- **Infosyst** - Gedistribueerde kennisbank (Henkiepedia) + eigen AI chat (Ollama)
+  - Lokaal invoeren (SQLite + PWA), sync via Git JSON, server read-only wiki
 - **IDSee** - (details volgen)
 - **VPDUpdate** - Sync tool voor VPD data
 
