@@ -1,6 +1,7 @@
 # HavunCore Bibliotheek - Compleet Overzicht
 
-> Laatst bijgewerkt: 2025-12-30
+> Laatst bijgewerkt: 2026-03-10  
+> Laatste full index (alle projecten): 2026-03-10 — `php artisan docs:index all --force`
 
 Dit document geeft een compleet overzicht van alle systemen, methodes en kennis in de HavunCore bibliotheek.
 
@@ -56,6 +57,18 @@ Dit document geeft een compleet overzicht van alle systemen, methodes en kennis 
 
 ---
 
+### 4. Overige patterns
+- **invoice-numbering.md** - Factuurnummering
+- **csrf-token-refresh.md** - CSRF token refresh
+- **password-hashing.md** - Wachtwoord hashing
+- **qr-code-url-matching.md** - QR code URL matching
+- **mollie-payments.md** - Mollie betalingen
+- **crypto-payments.md** - Crypto betalingen
+- **arweave-upload.md** - Arweave blockchain opslag
+- **website-builder.md** - Drag-and-drop pagina builder
+
+---
+
 ## Runbooks (How-To Guides)
 
 ### Deploy (`runbooks/deploy.md`)
@@ -108,6 +121,12 @@ Oplossing voor CSRF issues bij QR code login.
 
 ### Passkey Mobile Fix (`runbooks/passkey-mobile-fix.md`)
 Fixes voor passkey authenticatie op mobiele devices.
+
+### Doc Intelligence Setup (`runbooks/doc-intelligence-setup.md`)
+Indexering en issue-detectie voor MD-bestanden in projecten.
+
+### Project Cleanup (`runbooks/project-cleanup.md`)
+Project opschonen (dode code, missende indexes, etc.).
 
 ---
 
@@ -166,6 +185,18 @@ AI proxy service voor Claude API calls.
 ### Postcode Service (`reference/postcode-service.md`)
 Nederlandse postcode lookup service.
 
+### Security (`reference/security.md`)
+Security richtlijnen en best practices.
+
+### Autofix (`reference/autofix.md`)
+Autofix referentie.
+
+### Urenregistratie 2026 (`reference/urenregistratie-2026.md`)
+Urenregistratie overzicht.
+
+### Design Inspiration Session (`reference/design-inspiration-session.md`)
+Design inspiration sessie referentie.
+
 ---
 
 ## Projects
@@ -178,7 +209,16 @@ Mentor-leerling studiesessie tracking app:
 - Pusher real-time sync
 
 ### SafeHavun (`projects/safehavun.md`)
-Wachtwoord manager applicatie.
+Crypto tracker / wachtwoord manager applicatie.
+
+### Doc Intelligence System (`projects/doc-intelligence-system.md`)
+Doc indexering en semantic search.
+
+### Herdenkingsportaal (`projects/herdenkingsportaal.md`)
+Memorial portaal project.
+
+### JudoToernooi (`projects/judotoernooi.md`)
+Judo toernooi SaaS.
 
 ---
 
@@ -235,41 +275,38 @@ Bevat:
 
 ---
 
+## Doc Intelligence (doorzoek alle projecten)
+
+**Kennisbank bijwerken:** Indexeer en doorzoek alle projecten vanuit HavunCore:
+
+```bash
+cd D:\GitHub\HavunCore
+php artisan docs:index all --force   # Indexeer alle MD-bestanden
+php artisan docs:detect              # Detecteer broken links, etc.
+php artisan docs:search "ZOEKTERM"   # Zoek in geïndexeerde docs
+```
+
+**Laatste index (2026-03-10):** havuncore 87, havunadmin 87, herdenkingsportaal 63, judotoernooi 86, infosyst 31, studieplanner 26, studieplanner-api 3, safehavun 23, havun 8, vpdupdate 23, idsee 21, havunvet 11, havuncore-webapp 28. HavunClub: pad niet gevonden lokaal.
+
+---
+
 ## Structuur
 
 ```
 docs/kb/
 ├── OVERZICHT.md      ← Dit bestand
-├── INDEX.md          ← Quick links
+├── INDEX.md          ← Quick links + volledige structuur
+├── projects-index.md
+├── audit-rapport-2026-01-20.md
+├── claude-workflow-enforcement.md
 │
-├── patterns/         ← Herbruikbare code
-│   ├── email-verification.md
-│   ├── pdf-to-image-conversion.md
-│   └── pusher-realtime.md
-│
-├── runbooks/         ← How-to guides
-│   ├── deploy.md
-│   ├── backup.md
-│   ├── troubleshoot.md
-│   └── ...
-│
-├── reference/        ← Specificaties
-│   ├── api-taskqueue.md
-│   ├── api-vault.md
-│   └── ...
-│
-├── projects/         ← Project details
-│   ├── studieplanner.md
-│   └── safehavun.md
-│
-├── decisions/        ← Waarom zo?
-│   └── 001-*.md
-│
-├── templates/        ← Setup templates
-│   └── new-laravel-site.md
-│
-└── contracts/        ← Gedeelde definities
-    └── memorial-reference.md
+├── patterns/         ← Herbruikbare code (11 bestanden)
+├── runbooks/         ← How-to guides (15 bestanden)
+├── reference/        ← Specificaties (12 bestanden)
+├── projects/         ← Project details (5: studieplanner, safehavun, doc-intelligence, herdenkingsportaal, judotoernooi)
+├── decisions/       ← Waarom zo? (6 bestanden)
+├── templates/        ← new-laravel-site, context-template, CLAUDE-template, claude-settings.json
+└── contracts/        ← memorial-reference.md
 ```
 
 ---

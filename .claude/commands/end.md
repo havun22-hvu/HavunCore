@@ -138,11 +138,12 @@ php artisan config:clear && php artisan cache:clear
 git branch --merged | grep -v master | xargs git branch -d
 ```
 
-## 8. USB Stick Bijwerken (HavunCore only)
+## 8. USB / Op reis (HavunCore only)
 
-```powershell
-powershell -ExecutionPolicy Bypass -File "D:\GitHub\sync-to-usb.ps1"
-```
+**Nieuwe werkwijze:** USB bevat alleen credentials (vault) + startscript; geen code sync meer nodig. Code op reis via `git clone`/`git pull`.
+
+- **Vault bijwerken (thuis):** Zorg dat `credentials.vault` op de USB de actuele `.env` en `context.md` per project bevat (handmatig of eigen script).
+- **Runbook:** `docs/kb/runbooks/op-reis-workflow.md`
 
 ## 9. Urenregistratie (VERPLICHT - belastingaangifte)
 

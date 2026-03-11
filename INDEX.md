@@ -40,18 +40,43 @@ Credentials staan in: `.claude/context.md`
 ```
 HavunCore/
 ├── CLAUDE.md              # Instructies voor Claude
+├── INDEX.md               # Dit bestand
+├── README.md
+├── CHANGELOG.md
 ├── .claude/
-│   ├── context.md         # Credentials, server info
-│   └── commands/          # Slash commands (/start, /kb, etc.)
-├── docs/
-│   ├── kb/                # Knowledge Base (hoofd-documentatie)
-│   ├── projects/          # Per-project info
-│   └── setup/             # Setup guides
+│   ├── context.md         # Credentials, server info (niet in git)
+│   ├── handover.md
+│   ├── working-in-projects.md
+│   └── commands/          # Slash commands: start, end, kb, audit, lint, md, test, update, errors
+├── .github/
+│   └── workflows/
+│       └── api-contract-check.yml
 ├── app/                   # Laravel applicatie
-├── database/              # Migrations, SQLite databases
-└── src/                   # HavunCore package source
+│   ├── Console/Commands/  # DocIndex, DocSearch, DocDetectIssues, DocIssues
+│   ├── Events/
+│   ├── Http/Controllers/  # Api/, Web/
+│   ├── Models/            # Auth*, Vault*, DocIntelligence/, MCPMessage, ClaudeTask, etc.
+│   └── Services/          # QrAuth, AIProxy, DocIntelligence/, Postcode, DeviceTrust
+├── config/                # app, database, cors, havun-backup, reverb, services, etc.
+├── database/
+│   └── migrations/       # auth, vault, claude_tasks, backup, doc_*, webauthn, mcp, ai_usage
+├── docs/
+│   ├── handover.md
+│   ├── kb/                # Knowledge Base: INDEX.md, OVERZICHT.md, projects-index, patterns, runbooks, reference, decisions, contracts, templates
+│   └── projects/         # HAVUNCORE, HAVUNADMIN, HERDENKINGSPORTAAL, BERTVANDERHEIDE, VPDUPDATE, INDEX
+├── public/
+│   └── index.php
+├── routes/               # api.php, web.php, console.php, channels.php
+├── scripts/              # claude-task-poller.service, setup-task-poller.sh
+├── src/                   # HavunCore package (Commands, Services, Models, Events, Listeners, Strategies, Traits, Testing)
+├── stubs/                # Havun auth: views, HavunAuthController, config, routes
+├── temp/                 # Tijdelijke blade/scripts
+├── tests/
+│   └── Pact/             # InvoiceSyncPactTest.php.example
+├── tools/                # local-backup.ps1, usb-fix/
+└── urenregistratie-2026.csv
 ```
 
 ---
 
-**Laatste update:** 2026-01-04
+**Laatste update:** 2026-03-10
