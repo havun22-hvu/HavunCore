@@ -25,7 +25,6 @@ class DocIndexer
         'idsee' => 'D:/GitHub/IDSee',
         'havunvet' => 'D:/GitHub/HavunVet',
         'havuncore-webapp' => 'D:/GitHub/havuncore-webapp',
-        'havunclub' => 'D:/GitHub/HavunClub',
     ];
 
     protected array $serverPaths = [
@@ -39,7 +38,6 @@ class DocIndexer
         'safehavun' => '/var/www/safehavun/production',
         'havun' => '/var/www/havun.nl',
         'havunvet' => '/var/www/havunvet/staging',
-        'havunclub' => '/var/www/havunclub/production',
     ];
 
     protected array $excludePaths = [
@@ -51,11 +49,22 @@ class DocIndexer
     ];
 
     protected ?string $claudeApiKey = null;
+    protected string $ollamaUrl = 'http://127.0.0.1:11434';
+    protected string $embeddingModel = 'nomic-embed-text';
 
     public function __construct()
     {
-        // Optional: For future Claude API embedding support
         $this->claudeApiKey = config('services.claude.api_key') ?? env('CLAUDE_API_KEY');
+        $this->ollamaUrl = env('OLLAMA_URL', 'http://127.0.0.1:11434');
+        $this->embeddingModel = env('OLLAMA_EMBEDDING_MODEL', 'nomic-embed-text');
+
+        // WAL mode: lezen (webapp) en schrijven (indexer) kunnen tegelijk
+        try {
+            \DB::connection('doc_intelligence')->statement('PRAGMA journal_mode=WAL');
+            \DB::connection('doc_intelligence')->statement('PRAGMA synchronous=NORMAL');
+        } catch (\Exception $e) {
+            // Niet kritiek — ga door
+        }
 
         // Use server paths on Linux, local paths on Windows
         $this->projectPaths = PHP_OS_FAMILY === 'Windows'
@@ -184,6 +193,7 @@ class DocIndexer
                 'content' => $content,
                 'content_hash' => $contentHash,
                 'embedding' => $embedding,
+                'embedding_model' => $embedding ? $this->embeddingModel : 'tfidf-fallback',
                 'token_count' => $tokenCount,
                 'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
             ]
@@ -193,16 +203,34 @@ class DocIndexer
     }
 
     /**
-     * Generate embedding using Claude API
-     *
-     * Note: Claude doesn't have a native embedding endpoint, so we use a workaround
-     * by asking Claude to create a semantic summary and then using that for comparison.
-     * For production, consider using OpenAI's embedding API or a dedicated embedding service.
+     * Generate embedding using Ollama (nomic-embed-text).
+     * Falls back to TF-IDF if Ollama is unavailable.
      */
     protected function generateEmbedding(string $content): ?array
     {
-        // For now, we'll use a simple TF-IDF-like approach locally
-        // This avoids API costs and works offline
+        // Truncate content to avoid token limits (nomic-embed-text: 8192 tokens)
+        $truncated = mb_substr($content, 0, 8000);
+
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(30)->post(
+                "{$this->ollamaUrl}/api/embeddings",
+                [
+                    'model' => $this->embeddingModel,
+                    'prompt' => $truncated,
+                ]
+            );
+
+            if ($response->successful()) {
+                $embedding = $response->json('embedding');
+                if (is_array($embedding) && count($embedding) > 0) {
+                    return $embedding;
+                }
+            }
+        } catch (\Exception $e) {
+            Log::warning("Ollama embedding failed, falling back to TF-IDF: " . $e->getMessage());
+        }
+
+        // Fallback to TF-IDF if Ollama unavailable
         return $this->generateLocalEmbedding($content);
     }
 
@@ -266,7 +294,7 @@ class DocIndexer
      */
     public function search(string $query, ?string $project = null, int $limit = 5): array
     {
-        $queryEmbedding = $this->generateLocalEmbedding($query);
+        $queryEmbedding = $this->generateEmbedding($query);
 
         $documents = DocEmbedding::when($project, function ($q) use ($project) {
             return $q->where('project', strtolower($project));

@@ -16,6 +16,7 @@ class DocEmbedding extends Model
         'content',
         'content_hash',
         'embedding',
+        'embedding_model',
         'token_count',
         'file_modified_at',
     ];
