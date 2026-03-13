@@ -61,7 +61,7 @@ ssh root@SERVER_IP (zie context.md)
 | 22 | SSH |
 | 80 | HTTP (redirect to 443) |
 | 443 | HTTPS |
-| 5175 | havuncore-webapp Node.js backend (lokaal) |
+| 3001 | havuncore-webapp Node.js backend (pm2) |
 | 3306 | MySQL (localhost only) |
 
 ## Local Development Ports
@@ -89,7 +89,8 @@ Standaard poorten per project. Voorkomt conflicten bij meerdere projecten tegeli
 | Havun (website) | 3001 | `npm run dev` (Next.js) |
 | VPDUpdate | 3002 | `node server.js` |
 | Studieplanner | 5173 | `npm run dev` (Vite/React) |
-| havuncore-webapp | 8000 | `npm run dev` (Vite/React) |
+| havuncore-webapp frontend | 8000 | `npm run dev` (Vite/React) |
+| havuncore-webapp backend | 8009 | `node src/server.js` (Express) |
 
 ## Frontend Build Tool per Project
 

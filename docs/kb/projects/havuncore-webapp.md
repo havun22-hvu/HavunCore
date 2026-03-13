@@ -14,7 +14,7 @@ Een dynamische workspace manager die fungeert als cockpit voor 500+ bestanden ve
 ```
 D:/GitHub/[project]/          ← projectroot per tab
         ↓
-backend/ (Node.js poort 5175) ← API + AI hybride
+backend/ (Node.js poort 8009) ← API + AI hybride
         ↓
 frontend (poort 8000)         ← Command Center UI
 ```
@@ -57,7 +57,7 @@ CLAUDE_MASTER_KEY=sk-ant-api03-...   # HavunCore API key (webapp AI)
 PROJECT_ROOT_DEFAULT=D:/GitHub/
 ANTHROPIC_API_KEY=                   # zelfde als CLAUDE_MASTER_KEY of alias
 HAVUNCORE_DB_PATH=database/doc_intelligence.sqlite
-PORT=5175
+PORT=8009
 ```
 
 > ⚠️ `CLAUDE_MASTER_KEY` ≠ botsen met andere keys in andere projecten — webapp-only.
