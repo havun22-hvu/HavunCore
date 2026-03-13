@@ -45,7 +45,7 @@ In `backend/src/app.js` wordt dezelfde SQLite-database gekoppeld als de PHP-inde
 - **HAVUNCORE_DB_PATH** (optioneel): pad naar `doc_intelligence.sqlite`; default: `backend/../../database/doc_intelligence.sqlite` (HavunCore-repo).
 - **ANTHROPIC_API_KEY**: verplicht voor Stap 3 (Claude). Zet in `.env` of omgeving.
 
-Start: `cd backend && npm install && npm start`. Luistert op `PORT` (default 5175). Route: `POST /api/intelligent` met body `{ "instruction": "...", "project": "havuncore" }`.
+Start: `cd backend && npm install && npm start`. Luistert op `PORT` (default 8009). Route: `POST /api/intelligent` met body `{ "instruction": "...", "project": "havuncore" }`.
 
 ## Gerelateerd
 
