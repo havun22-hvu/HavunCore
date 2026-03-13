@@ -54,43 +54,68 @@ ssh root@SERVER_IP (zie context.md)
 | PM2 | `pm2 status` |
 | Task Poller | `systemctl status claude-task-poller@havunadmin` |
 
-## Server Ports
+## Poorten — Compleet Overzicht
 
-| Port | Service |
-|------|---------|
-| 22 | SSH |
-| 80 | HTTP (redirect to 443) |
-| 443 | HTTPS |
-| 3001 | havuncore-webapp Node.js backend (pm2) |
-| 3306 | MySQL (localhost only) |
+> **Gereserveerde range: 8000–8009** — alle Havun projecten gebruiken deze range lokaal.
+> Bij nieuwe projecten: pak de eerstvolgende vrije poort in deze range.
 
-## Local Development Ports
+### Lokale Development Poorten (Henk's PC)
 
-Standaard poorten per project. Voorkomt conflicten bij meerdere projecten tegelijk.
+Elke app heeft een vaste poort zodat meerdere projecten tegelijk kunnen draaien zonder conflicten.
 
-### Laravel Projects (php artisan serve)
+| Poort | Project | Type | Command |
+|-------|---------|------|---------|
+| 8000 | havuncore-webapp frontend | Vite/React SPA | `npm run dev` |
+| 8001 | HavunAdmin | Laravel | `php artisan serve --port=8001` |
+| 8002 | Herdenkingsportaal | Laravel | `php artisan serve --port=8002` |
+| 8003 | Studieplanner-api | Laravel | `php artisan serve --port=8003` |
+| 8004 | SafeHavun | Laravel + React | `php artisan serve --port=8004` |
+| 8005 | Infosyst | Laravel | `php artisan serve --port=8005` |
+| 8006 | IDSee | Laravel | `php artisan serve --port=8006` |
+| 8007 | JudoToernooi | Laravel | `php artisan serve --port=8007` |
+| 8008 | HavunVet | Laravel | `php artisan serve --port=8008` (obsoleet) |
+| 8009 | havuncore-webapp backend | Node.js/Express | `node src/server.js` |
 
-| Project | Poort | Command |
-|---------|-------|---------|
-| HavunCore | - | geen lokale dev nodig |
-| HavunAdmin | 8001 | `php artisan serve --port=8001` |
-| Herdenkingsportaal | 8002 | `php artisan serve --port=8002` |
-| Studieplanner-api | 8003 | `php artisan serve --port=8003` |
-| SafeHavun | 8004 | `php artisan serve --port=8004` |
-| Infosyst | 8005 | `php artisan serve --port=8005` |
-| IDSee | 8006 | `php artisan serve --port=8006` |
-| JudoToernooi | 8007 | `php artisan serve --port=8007` |
-| HavunVet | 8008 | `php artisan serve --port=8008` (obsoleet) |
+**Buiten de range** (legacy, niet gewijzigd):
 
-### Node.js / Frontend Projects
+| Poort | Project | Type | Command |
+|-------|---------|------|---------|
+| 3001 | Havun (website) | Next.js | `npm run dev` |
+| 3002 | VPDUpdate | Node.js | `node server.js` |
+| 5173 | Studieplanner | Vite/React Native | `npm run dev` |
+| 11434 | Ollama | Lokale AI LLM | auto-start |
 
-| Project | Poort | Command |
-|---------|-------|---------|
-| Havun (website) | 3001 | `npm run dev` (Next.js) |
-| VPDUpdate | 3002 | `node server.js` |
-| Studieplanner | 5173 | `npm run dev` (Vite/React) |
-| havuncore-webapp frontend | 8000 | `npm run dev` (Vite/React) |
-| havuncore-webapp backend | 8009 | `node src/server.js` (Express) |
+**Niet nodig lokaal:**
+
+| Project | Reden |
+|---------|-------|
+| HavunCore | Pure backend API, geen eigen dev server nodig |
+
+### Hetzner Server Poorten (188.245.159.115)
+
+Op productie draait Nginx als reverse proxy. Bezoekers gaan via HTTPS (443), Nginx stuurt door naar de juiste backend.
+
+| Poort | Service | Bereikbaar van buiten? |
+|-------|---------|----------------------|
+| 22 | SSH | Ja |
+| 80 | HTTP → redirect naar 443 | Ja |
+| 443 | HTTPS (Nginx) | Ja |
+| 3001 | havuncore-webapp Node.js backend (pm2) | Nee (alleen via Nginx proxy) |
+| 3306 | MySQL | Nee (localhost only) |
+
+### Hoe het samenhangt
+
+```
+LOKAAL (development):
+  Browser → localhost:8000 (Vite frontend) → localhost:8009 (Node.js backend)
+
+PRODUCTIE (Hetzner):
+  Browser → havuncore.havun.nl:443 (Nginx)
+            ├── statische bestanden → /var/www/.../public/
+            └── /api/* en /socket.io/* → localhost:3001 (Node.js backend via pm2)
+```
+
+> **Let op:** Vite (poort 8000) draait NIET op productie. De frontend wordt gebuild (`npm run build`) en als statische bestanden door Nginx geserveerd.
 
 ## Frontend Build Tool per Project
 
