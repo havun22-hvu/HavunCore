@@ -2,7 +2,36 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 12 maart 2026
+## Laatste Sessie: 14 maart 2026
+
+### Wat is gedaan:
+- **Poorttabel definitief gestandaardiseerd over ALLE 7 projecten + kennisbank**
+  - ~30 bestanden gefixed in 7 repos (HavunCore, HavunAdmin, Herdenkingsportaal, Studieplanner, SafeHavun, IDSee, havuncore-webapp)
+  - Meeste fixes: `localhost:8000` → juiste project-poort (8001-8009)
+  - havuncore-webapp backend: 5175/3001 → 8009 overal
+  - IDSee: type gecorrigeerd (Node.js, niet Laravel), poort 3001 → 8006
+  - HavunClub verwijderd uit poorttabel (obsoleet)
+  - Master poorttabel: `docs/kb/reference/server.md` (single source of truth)
+- **6 slash commands toegevoegd aan havuncore-webapp**
+  - /md, /audit, /errors, /lint, /test, /update (aangepast voor Node.js/React)
+  - Nu 9 commands, gelijk aan HavunCore
+
+### Openstaande items (vorige sessies):
+- [ ] Stripe Connect testen op staging (organisator onboarding flow)
+- [ ] `account.updated` webhook voor automatische status updates
+- [ ] Herdenkingsportaal: `excluded_message_patterns` toevoegen aan AutoFix
+- [ ] Google Business Profile: wacht op goedkeuring
+- [ ] HavunAdmin deployen (StripeService prefix fix)
+- [ ] Indexer-roadmap uitvoeren: metadata file_type, health check API uitbreiden
+
+### Belangrijke context:
+- Definitieve poorttabel: 8000-8009 range, zie `docs/kb/reference/server.md`
+- IDSee = Node.js (niet Laravel), backend poort 8006
+- CLAUDE.md is geüpdatet: HavunClub en HavunVet verwijderd uit Quick Reference tabel
+
+---
+
+## Vorige Sessie: 12 maart 2026
 
 ### Wat is gedaan:
 - **havuncore-webapp volledig operationeel gemaakt**
