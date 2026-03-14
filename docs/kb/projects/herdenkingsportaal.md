@@ -51,11 +51,12 @@ Online platform waar gebruikers digitale herdenkingspagina's (memorials) aanmake
 | publication_status | draft, published |
 | privacy_level | public, link_only, private |
 
-## Email (Resend)
+## Email (Brevo SMTP)
 
-- **Provider:** Resend (gratis 3000/maand)
-- **Migratie:** SendGrid → Resend (jan 2026, SendGrid trial verlopen)
+- **Provider:** Brevo (gratis 300/dag)
+- **Migratie:** SendGrid → Resend (jan 2026) → Brevo (maart 2026)
 - **From:** noreply@herdenkingsportaal.nl
+- **Domein:** herdenkingsportaal.nl (geverifieerd, DKIM+SPF+DMARC)
 
 ## Betalingen
 
@@ -104,6 +105,7 @@ Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
 - Service layer (PaymentServiceFactory, ConfigurationService)
 - WebAuthn biometric auth met password fallback
 - Multi-provider payments (factory pattern)
+- €0 test user payment bypass (Mollie overgeslagen, direct betaald)
 - Arweave Node.js bridge voor blockchain
 
 ## Server

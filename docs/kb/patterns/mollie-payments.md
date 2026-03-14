@@ -160,6 +160,23 @@ $apiKey = $isProduction
 3. **Logging** - Log alle transacties
 4. **Geen SDK** - HTTP client is lichter en flexibeler
 
+## €0 Test User Bypass (Herdenkingsportaal)
+
+Test users (`test_user = true`) krijgen default €0,00 prijs. Bij €0:
+- Mollie wordt volledig overgeslagen
+- `PaymentTransaction` wordt aangemaakt met `payment_method = 'free_test'`
+- Memorial wordt direct op `payment_status = 'paid'` gezet
+- Normale post-payment flow (upgrade, factuur, etc.) draait gewoon
+
+```php
+// In PaymentController::createMemorialPayment()
+if ($amount <= 0) {
+    return $this->processFreeTestPayment($memorial, $user, $packageType, ...);
+}
+```
+
+Custom prijs per user mogelijk via `custom_test_price` veld (bijv. €0.01 voor Mollie test).
+
 ## Projecten die dit gebruiken
 
 - Herdenkingsportaal
@@ -167,3 +184,4 @@ $apiKey = $isProduction
 ---
 
 *Pattern toegevoegd: 2025-12-30*
+*Bijgewerkt: 2026-03-14 — €0 test user bypass toegevoegd*
