@@ -7,7 +7,7 @@
 ### Wat is gedaan:
 - **havuncore-webapp volledig operationeel gemaakt**
   - Auth middleware: remote Laravel-call vervangen door lokale JWT verificatie
-  - Poorten gecorrigeerd overal: frontend=8000, backend=5175 (was 5174/3001)
+  - Poorten gecorrigeerd overal: frontend=8000, backend=8009 (was 5174/3001)
   - Alle 30+ bestanden (docs + code) gescand en gefixed op verkeerde poorten
   - Model hardcodes vervangen door `process.env.CLAUDE_MODEL`
 
@@ -43,7 +43,7 @@
 
 ### Belangrijke context:
 - havuncore-webapp staat in aparte repo: `D:/GitHub/havuncore-webapp` (geen remote ingesteld)
-- Backend draait op 5175, frontend op 8000
+- Backend draait op 8009, frontend op 8000
 - System persona staat in SQLite `ai_config` tabel (key=system_prompt) — aanpasbaar via Settings UI
 - 459 oude embeddings hebben nog null model (TF-IDF) — ragService handelt dit per-rij af
 

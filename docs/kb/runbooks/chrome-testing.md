@@ -105,7 +105,7 @@ ga naar /dashboard en check of er console errors zijn
 
 | Project | URL |
 |---------|-----|
-| HavunCore | http://localhost:8000 |
+| havuncore-webapp | http://localhost:8000 |
 | HavunAdmin | http://localhost:8001 |
 | Herdenkingsportaal | http://localhost:8002 |
 | Studieplanner-api | http://localhost:8003 |

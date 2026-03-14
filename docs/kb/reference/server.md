@@ -71,7 +71,7 @@ Elke app heeft een vaste poort zodat meerdere projecten tegelijk kunnen draaien 
 | 8003 | Studieplanner-api | Laravel | `php artisan serve --port=8003` |
 | 8004 | SafeHavun | Laravel + React | `php artisan serve --port=8004` |
 | 8005 | Infosyst | Laravel | `php artisan serve --port=8005` |
-| 8006 | IDSee | Laravel | `php artisan serve --port=8006` |
+| 8006 | IDSee | Node.js/Express | `node server.js` (PORT=8006) |
 | 8007 | JudoToernooi | Laravel | `php artisan serve --port=8007` |
 | 8008 | HavunVet | Laravel | `php artisan serve --port=8008` (obsoleet) |
 | 8009 | havuncore-webapp backend | Node.js/Express | `node src/server.js` |
@@ -80,7 +80,7 @@ Elke app heeft een vaste poort zodat meerdere projecten tegelijk kunnen draaien 
 
 | Poort | Project | Type | Command |
 |-------|---------|------|---------|
-| 3001 | Havun (website) | Next.js | `npm run dev` |
+| 3001 | Havun (website) | Next.js | `npm run dev` (legacy) |
 | 3002 | VPDUpdate | Node.js | `node server.js` |
 | 5173 | Studieplanner | Vite/React Native | `npm run dev` |
 | 11434 | Ollama | Lokale AI LLM | auto-start |
@@ -100,7 +100,7 @@ Op productie draait Nginx als reverse proxy. Bezoekers gaan via HTTPS (443), Ngi
 | 22 | SSH | Ja |
 | 80 | HTTP → redirect naar 443 | Ja |
 | 443 | HTTPS (Nginx) | Ja |
-| 3001 | havuncore-webapp Node.js backend (pm2) | Nee (alleen via Nginx proxy) |
+| 8009 | havuncore-webapp Node.js backend (pm2) | Nee (alleen via Nginx proxy) |
 | 3306 | MySQL | Nee (localhost only) |
 
 ### Hoe het samenhangt
@@ -112,7 +112,7 @@ LOKAAL (development):
 PRODUCTIE (Hetzner):
   Browser → havuncore.havun.nl:443 (Nginx)
             ├── statische bestanden → /var/www/.../public/
-            └── /api/* en /socket.io/* → localhost:3001 (Node.js backend via pm2)
+            └── /api/* en /socket.io/* → localhost:8009 (Node.js backend via pm2)
 ```
 
 > **Let op:** Vite (poort 8000) draait NIET op productie. De frontend wordt gebuild (`npm run build`) en als statische bestanden door Nginx geserveerd.

@@ -60,7 +60,7 @@ herdenkingsportaal: ACTIVE
 ```
 Frontend:   React SPA
 Backend:    Node.js + Express + Socket.io
-PM2:        havuncore-backend (port 3001 productie, 8009 lokaal)
+PM2:        havuncore-backend (port 8009)
 ```
 
 ---
