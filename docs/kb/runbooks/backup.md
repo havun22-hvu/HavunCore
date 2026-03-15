@@ -11,18 +11,21 @@ Server Local (7 dagen)    →    Offsite (permanent)
 
 ## Wat wordt gebackupt
 
-**Production databases (CRITICAL):**
+**Production databases (CRITICAL — alle projecten):**
 - havunadmin_production
 - herdenkingsportaal_production
 - infosyst
 - safehavun
 - studieplanner
 - judo_toernooi
+- havuncore
+- havunclub_production
 
 **Staging databases:**
 - havunadmin_staging
 - herdenkingsportaal_staging
 - staging_judo_toernooi
+- havunvet_staging
 
 **Storage folders:**
 - HavunAdmin: `/var/www/havunadmin/production/storage/invoices`
@@ -173,6 +176,25 @@ $action = New-ScheduledTaskAction -Execute "powershell.exe" -Argument "-Executio
 $trigger = New-ScheduledTaskTrigger -Daily -At "12:00"
 Register-ScheduledTask -TaskName "HavunLocalBackup" -Action $action -Trigger $trigger -Description "Daily Havun backup"
 ```
+
+## Monitoring (StatusView)
+
+De havuncore-webapp StatusView toont automatisch de backup status in server mode:
+- **Dagelijks** — leeftijd van de laatste backup (groen < 25u, geel >= 25u)
+- **Hot (5 min)** — of de hot backup actief draait
+- **Hetzner Offsite** — of de laatste upload geslaagd is
+- **Databases** — hoeveel databases in de backup zitten, ontbrekende DBs als error
+
+Endpoint: `GET /health/backup` op de webapp backend.
+
+## Incident Log
+
+### 15 maart 2026 — Backup script kapot sinds deploy
+- **Oorzaak:** `awk {print }` ipv `awk '{print $5}'` + `set -e` crashte script na 1e DB
+- **Gevolg:** Alleen havunadmin werd gebackupt, alle andere DBs ontbraken
+- **Hot backup:** Kapot sinds 24 jan door `#\!` shebang fout
+- **Fix:** awk quoting gefixt, `set -e` verwijderd, shebang gefixt, ontbrekende DBs toegevoegd
+- **Impact:** Geen backup van herdenkingsportaal/judotoernooi/etc beschikbaar voor restore
 
 ## Related
 

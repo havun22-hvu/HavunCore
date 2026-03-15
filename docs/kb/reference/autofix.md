@@ -301,4 +301,4 @@ Toegankelijk via `/admin/autofix` (alleen sitebeheerders). Toont:
 
 ---
 
-*Laatste update: 15 maart 2026*
+*Laatste update: 16 maart 2026*
