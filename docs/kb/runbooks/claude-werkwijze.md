@@ -276,6 +276,15 @@ Bij ELKE async operatie die de UI update:
 6. Documenteer oplossing voor toekomst
 ```
 
+### Bij nieuw Laravel project
+```
+ALTIJD i18n voorbereiden, ook bij alleen Nederlands:
+1. config/app.php: locale, fallback_locale, available_locales
+2. lang/nl.json aanmaken (mag leeg {} zijn)
+3. Alle user-facing strings: __() gebruiken, NOOIT hardcoded
+4. Zie pattern: docs/kb/patterns/laravel-i18n.md
+```
+
 ### Bij herhaling van informatie door gebruiker
 ```
 DIT MAG NIET GEBEUREN!
