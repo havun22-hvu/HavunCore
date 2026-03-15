@@ -84,6 +84,31 @@ Proposal: #42
 - RISK level wordt meegenomen
 - Proposal ID linkt terug naar de database
 
+### Commit Format: Onze keuze vs Gemini's voorstel
+
+**Gemini stelde voor:** `autofix: {error_message} in {file_name} [Ref: {db_id}]`
+
+**Onze implementatie (gekozen):**
+
+```
+autofix(FileName): Claude's analysis summary (max 72 chars)
+
+File: app/Http/Controllers/BlokController.php
+Exception: ErrorException
+Risk: low
+Proposal: #42
+```
+
+**Waarom ons format beter is:**
+
+| Aspect | Gemini | Ons |
+|--------|--------|-----|
+| Scope in titel | Nee | Ja — `(FileName)` filterable met `git log --grep` |
+| Beschrijving | Ruwe error message | Claude's analyse (root cause, niet symptoom) |
+| Structuur | Alles op 1 regel | Multi-line met metadata op aparte regels |
+| Risk level | Ontbreekt | Aanwezig |
+| DocIndexer parsing | Moeilijk (1 regel, vrij format) | Makkelijk (key: value pairs) |
+
 ## Resterende verbeterpunten (toekomst)
 
 - `isProjectFile()` deduplicatie (Service + Controller)
