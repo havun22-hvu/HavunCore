@@ -221,16 +221,35 @@ Verbeterd (25 feb 2026) om meer context mee te sturen:
 ## Veiligheid
 
 - **Rate limiting:** Max 1 analyse per uniek error (class+file+line) per uur
-- **Backup:** Origineel bestand wordt gebackupt in `storage/app/autofix-backups/` (JudoToernooi) of als `.autofix-backup.{timestamp}` (Herdenkingsportaal)
+- **Backup:** Origineel bestand wordt gebackupt in `storage/app/autofix-backups/`
+- **Syntax check:** Na elke fix wordt `php -l` uitgevoerd. Bij syntax error → automatische rollback vanuit backup (sinds 15 maart 2026)
 - **Scope:** Alleen projectbestanden — `isProjectFile()` check in zowel `gatherCodeContext()` als `applyFix()` (vendor/, node_modules/, storage/ geblokkeerd)
 - **No-project-file check:** Als er geen enkel project bestand in de stack trace zit, wordt de error geskipt
 - **Vendor errors:** Vendor bestanden worden NOOIT gewijzigd — alleen meegestuurd als context voor de fix in project code
 - **Protected files:** Bestanden in `config('autofix.protected_files')` kunnen niet gewijzigd worden
-- **Rollback-bewustzijn:** Als een bestand al in de afgelopen 24 uur door AutoFix is gewijzigd, wordt het overgeslagen (voorkomt cascade-fixes)
+- **Rollback-bewustzijn:** Als een bestand al in de afgelopen 24 uur door AutoFix is gewijzigd, wordt het overgeslagen (voorkomt cascade-fixes). Geldt voor zowel Service als Controller.
 - **NOTIFY_ONLY:** Claude kan aangeven dat een code fix niet mogelijk is — dan wordt alleen een melding gestuurd, geen code gewijzigd
 - **Beperkingen Claude:** Geen .env, config, database schema, of dependency wijzigingen
 - **Failsafe:** AutoFixService in try/catch — breekt nooit de error handling
 - **Review URL:** `/autofix/{token}` voor handmatige inspectie achteraf
+
+## Git Sync (Kennis-drift preventie)
+
+Sinds 15 maart 2026 commit en pusht AutoFix automatisch na een succesvolle fix:
+
+```
+Fix toegepast → php -l syntax check → OK → git add + commit + push
+                                        ↓
+                                      FAIL → rollback vanuit backup, geen git
+```
+
+**Commit format:** `autofix: {ExceptionClass} in {file}`
+
+**Waarom:** Zonder git sync weet de lokale ontwikkelomgeving niet dat er code gewijzigd is op de server. Dit veroorzaakte "kennis-drift" — de KB en lokale code liepen uit sync met productie.
+
+**Lokale sync:** Het `/start` command in Claude doet automatisch `git pull` bij sessie start om de lokale code te synchroniseren.
+
+**Faalveilig:** Git operations zitten in try/catch. Als push faalt (bijv. merge conflict), wordt dit gelogd maar de fix blijft actief op de server.
 
 ## Troubleshooting
 
@@ -270,4 +289,4 @@ Toegankelijk via `/admin/autofix` (alleen sitebeheerders). Toont:
 
 ---
 
-*Laatste update: 25 februari 2026*
+*Laatste update: 15 maart 2026*
