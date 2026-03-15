@@ -4,20 +4,26 @@
 
 ## Instructies
 
-1. Lees de **vorige vraag of opmerking** van de gebruiker in dit gesprek
-2. Bepaal de zoekterm(en) uit die vraag
-3. Zoek in de kennisbank:
+1. **Update de index eerst** (zodat recente wijzigingen meegenomen worden):
 
 ```bash
-cd D:/GitHub/HavunCore && php artisan docs:search "ZOEKTERM" --limit=5
+cd D:\GitHub\HavunCore && php artisan docs:index all
 ```
 
-4. Geef een samenvatting van wat je vond:
+2. Lees de **vorige vraag of opmerking** van de gebruiker in dit gesprek
+3. Bepaal de zoekterm(en) uit die vraag
+4. Zoek in de kennisbank:
+
+```bash
+cd D:\GitHub\HavunCore && php artisan docs:search "ZOEKTERM" --limit=5
+```
+
+5. Geef een samenvatting van wat je vond:
    - Welke documenten relevant zijn
    - Korte preview van de inhoud
    - Of er inconsistenties zijn
 
-5. Beantwoord de oorspronkelijke vraag met de gevonden informatie
+6. Beantwoord de oorspronkelijke vraag met de gevonden informatie
 
 ## Voorbeeld
 
@@ -25,6 +31,7 @@ cd D:/GitHub/HavunCore && php artisan docs:search "ZOEKTERM" --limit=5
 **Gebruiker:** /kb
 
 **Claude:**
+- Updatet de index (`docs:index all`)
 - Zoekt op "mollie" in kennisbank
 - Vindt relevante docs
 - Beantwoordt de vraag met die info

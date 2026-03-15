@@ -18,9 +18,15 @@ Lees deze bestanden in volgorde en bevestig aan de gebruiker:
 4. D:\GitHub\HavunCore\docs\kb\runbooks\claude-werkwijze.md  ← Werkwijze, DOCS-FIRST, PKM (alles-in-1)
 ```
 
-## Stap 3: Check Doc Intelligence issues (indien beschikbaar)
+## Stap 3: Update Doc Intelligence index (VERPLICHT)
 
-Als het Doc Intelligence systeem actief is, run in HavunCore:
+Werk de index bij zodat de kennisbank actueel is:
+
+```bash
+cd D:\GitHub\HavunCore && php artisan docs:index all --force
+```
+
+## Stap 4: Check Doc Intelligence issues
 
 ```bash
 cd D:\GitHub\HavunCore
@@ -44,7 +50,7 @@ Als er openstaande issues zijn, toon ze aan de gebruiker:
 Wil je deze eerst oplossen of later?
 ```
 
-## Na Stap 1–3: Korte bevestiging
+## Na Stap 1–4: Korte bevestiging
 
 Geef een KORTE bevestiging:
 
@@ -62,7 +68,7 @@ Geef een KORTE bevestiging:
 Klaar om te beginnen. Wat wil je doen?
 ```
 
-## Stap 4: ONTHOUD deze principes
+## Stap 5: ONTHOUD deze principes
 
 ### ⛔ DOCS-FIRST WORKFLOW (HOOFDREGEL!)
 

@@ -51,57 +51,37 @@
 
 ---
 
-## Resend (Email)
+## Brevo (Email / SMTP — alle projecten)
 
-**Dashboard:** https://resend.com (login: havun22@gmail.com)
-**Voorheen:** SendGrid (proefperiode verlopen dec 2025, niet meer actief)
-**Gratis tier:** 3000 emails/maand, 1 domein
-
-### Laravel .env configuratie
-```env
-MAIL_MAILER=resend
-MAIL_FROM_ADDRESS="noreply@herdenkingsportaal.nl"
-MAIL_FROM_NAME="Herdenkingsportaal"
-RESEND_KEY=re_...  (zie credentials.md of server .env)
-```
-
-> **Let op:** Resend gratis tier staat maar 1 domein toe. Voor extra domeinen: betaald plan ($20/mnd) of ander provider (bijv. Brevo).
-
-### Domein verificatie
-- DNS records (DKIM + SPF) toevoegen bij **mijn.host** (DNS provider)
-- Resend → Domains → Add Domain → kopieer records naar mijn.host DNS
-
-### Gebruikt in
-
-| Project | Provider | Status | From address |
-|---------|----------|--------|-------------|
-| Herdenkingsportaal | Resend | ✅ Actief | noreply@herdenkingsportaal.nl |
-| JudoToernooi | Brevo | ✅ Actief | noreply@judotournament.org |
-| Studieplanner | - | ⏳ Gepland | - |
-
----
-
-## Brevo (Email / SMTP)
-
-**Dashboard:** https://app.brevo.com
-**Gratis tier:** 300 emails/dag
-**Gebruikt voor:** Projecten die niet op Resend kunnen (2e domein)
+**Dashboard:** https://app.brevo.com (login: havun22@gmail.com)
+**Gratis tier:** 300 emails/dag, onbeperkte domeinen
+**Voorheen:** Resend voor Herdenkingsportaal (opgezegd maart 2026, 1 domein limiet)
 
 ### Laravel .env configuratie
 ```env
 MAIL_MAILER=smtp
 MAIL_HOST=smtp-relay.brevo.com
 MAIL_PORT=587
-MAIL_USERNAME=<brevo-email>
+MAIL_USERNAME=<zie credentials.md>
+MAIL_PASSWORD=<zie credentials.md>
 MAIL_ENCRYPTION=tls
-MAIL_FROM_ADDRESS="noreply@judotournament.org"
+MAIL_FROM_ADDRESS="noreply@<domein>"
 MAIL_FROM_NAME="${APP_NAME}"
 ```
 
-> **Let op:** MAIL_PASSWORD is de Brevo SMTP key, NIET je account wachtwoord
+> **Let op:** MAIL_PASSWORD is de Brevo SMTP key, NIET je account wachtwoord. Elke SMTP key is per project uniek. Alle credentials staan in `.claude/credentials.md`.
 
 ### Domein verificatie
-- DNS records toevoegen bij **mijn.host** (zelfde als Resend procedure)
+- DNS records (DKIM + SPF) toevoegen bij **mijn.host** (DNS provider)
+- Brevo → Settings → Senders, Domains & Dedicated IPs → Add Domain
+
+### Gebruikt in
+
+| Project | Status | From address |
+|---------|--------|-------------|
+| JudoToernooi | ✅ Actief | noreply@judotournament.org |
+| Herdenkingsportaal | ⏳ Domein verifiëren | noreply@herdenkingsportaal.nl |
+| Studieplanner | ⏳ Gepland | noreply@studieplanner.havun.nl |
 
 ---
 

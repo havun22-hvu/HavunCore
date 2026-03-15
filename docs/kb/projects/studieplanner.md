@@ -27,87 +27,140 @@ Zie: `docs/kb/decisions/005-studieplanner-architecture.md`
 
 | Component | Keuze |
 |-----------|-------|
-| Backend | Laravel (eigen app) |
+| Backend | Laravel 11 (eigen app) |
 | Frontend | Expo React Native |
 | Real-time | Pusher Channels (WebSockets) |
-| Auth | Pincode-based (geen wachtwoord) |
+| Auth | Magic link + pincode + biometrie |
+| Push | Web Push (VAPID) |
 
 ## Auth Systeem
 
-**Speciaal:** Geen traditionele username/password, maar:
-- 6-cijferige pincode per gebruiker
-- Email verificatie bij registratie
-- Pincode reset via email code
+### Methoden
+- **Magic link:** email → link opent app via deep link → token
+- **Pincode:** 6-cijferig, fallback login
+- **Biometrie:** vingerafdruk/gezicht voor herhaald inloggen (expo-local-authentication)
 
 ### Implementatie Status: ✅ KLAAR
 
-Gebaseerd op pattern: `docs/kb/patterns/email-verification.md`
-
-**Backend (Studieplanner-api):**
-- [x] Laravel 11 + Sanctum
-- [x] User model met pincode + verificatie velden
-- [x] AuthController met alle endpoints
-- [x] Email verzending (verificatie + reset)
-
-**Flows:**
-
-1. **Registratie:** email + pincode → verificatiecode per email → verify → token
-2. **Login:** email + pincode → token
-3. **Reset:** email → code per email → nieuwe pincode
-
-## Database
-
-```
-users: id, name, email, pincode, role (student/mentor), mentor_id
-study_sessions: id, student_id, mentor_id, started_at, stopped_at, status, evaluation
-messages: id, session_id, sender_id, message, created_at
-verification_codes: id, email, code, purpose, expires_at, used_at
-```
-
-## HavunCore Integratie
-
-| Service | Status |
-|---------|--------|
-| Backup | Daily 05:00, 1 jaar retention |
-| Vault | Beschikbaar voor credentials |
-| Task Queue | Optioneel |
-| Scheduler | ✅ Actief (cron) |
-
-## Server Cron Jobs
-
-```bash
-# Laravel scheduler (elke minuut)
-* * * * * cd /var/www/studieplanner/production && php artisan schedule:run >> /dev/null 2>&1
-```
-
-**Toegevoegd:** 1 januari 2026
-
-## API Endpoints (Studieplanner-api)
-
-### Auth (geïmplementeerd ✅)
+**Backend endpoints:**
 ```
 POST /api/register              - Registratie + verificatie email
+POST /api/register/mentor       - Mentor registratie
 POST /api/verify-email          - Verificatiecode valideren
 POST /api/login                 - Login met email + pincode
 POST /api/logout                - Uitloggen (token revoke)
+POST /api/auth/magic-link       - Magic link aanvragen
+POST /api/auth/magic-link/verify - Magic link token valideren
 POST /api/forgot-password       - Reset code aanvragen
 POST /api/reset-password        - Nieuwe pincode instellen
 POST /api/resend-verification   - Nieuwe verificatiecode
 GET  /api/user                  - Huidige gebruiker (auth)
 ```
 
-### Sessies (TODO)
+**Frontend schermen:**
+- `AuthScreen.tsx` (290 regels) — email input, magic link flow
+- `MagicLinkSentScreen.tsx` (110 regels) — "Check je inbox" wachtscherm
+
+## API Endpoints (Studieplanner-api)
+
+### Auth ✅
+Zie hierboven.
+
+### Sessies ✅
 ```
-POST /api/session/start           - Start studiesessie
-POST /api/session/stop            - Stop sessie + evaluatie
-GET  /api/session/active          - Mentor pollt voor updates
+GET  /api/session/active         - Actieve sessie ophalen
+GET  /api/session/history        - Sessie geschiedenis
+POST /api/session/start          - Start studiesessie
+POST /api/session/stop           - Stop sessie + evaluatie
+```
+
+### Mentor ✅
+```
+GET  /api/mentor/students                    - Leerlingen lijst
+POST /api/mentor/accept-student              - Uitnodiging accepteren
+GET  /api/mentor/student/{id}                - Leerling data
+DELETE /api/mentor/student/{id}              - Leerling verwijderen
+GET  /api/mentor/student/{id}/active-session - Actieve sessie van leerling
+```
+
+### Magister integratie ✅
+```
+POST /api/magister/login         - Magister inloggen
+GET  /api/magister/status        - Login status
+GET  /api/magister/grades        - Cijfers ophalen
+GET  /api/magister/homework      - Huiswerk ophalen
+GET  /api/magister/schedule      - Rooster ophalen
+GET  /api/magister/tests         - Toetsen ophalen
+GET  /api/magister/schools       - Scholen zoeken
+```
+
+### Premium ✅
+```
+GET  /api/premium/status         - Premium status
+GET  /api/premium/stats          - Statistieken
+GET  /api/premium/learning-speed - Leersnelheid analyse
+```
+
+### Push Notificaties ✅
+```
+GET  /api/push/vapid-public-key  - VAPID public key
+POST /api/push/subscribe         - Push subscription opslaan
+POST /api/push/unsubscribe       - Push subscription verwijderen
 ```
 
 ### Chat (TODO)
 ```
-POST /api/chat/send               - Verstuur bericht
-GET  /api/chat/messages           - Ophalen berichten
+POST /api/chat/send              - Verstuur bericht
+GET  /api/chat/messages          - Ophalen berichten
 ```
+
+## Database
+
+Migraties op server gedraaid (batch 1-6):
+```
+users: id, name, email, pincode, role (student/mentor), student_code, premium fields
+study_sessions: id, student_id, mentor_id, started_at, stopped_at, status, evaluation, alarm fields
+mentor_students: mentor_id, student_id (koppeltabel)
+subjects: id, user_id, name, ...
+student_invites: id, mentor_id, student_code, ...
+user_settings: id, user_id, key, value
+push_subscriptions: id, user_id, endpoint, ...
+personal_access_tokens: Sanctum tokens
+verification_codes: id, email, code, purpose, expires_at, used_at
+```
+
+## Frontend Schermen (Expo React Native)
+
+| Scherm | Regels | Status |
+|--------|--------|--------|
+| AuthScreen.tsx | 290 | Magic link + pincode flow |
+| MagicLinkSentScreen.tsx | 110 | Wachtscherm na magic link |
+| TimerScreen.tsx | 353 | Studiesessie timer |
+| SubjectsScreen.tsx | 110 | Vakken overzicht |
+| SubjectDetailScreen.tsx | 374 | Vak detail + sessies |
+| StatsScreen.tsx | 412 | Statistieken dashboard |
+| AgendaScreen.tsx | 95 | Agenda/planning |
+| MentorDashboardScreen.tsx | 235 | Mentor overzicht |
+| SettingsScreen.tsx | 254 | Instellingen |
+
+**Services:**
+- `src/services/api.ts` — API client
+- `src/services/biometrics.ts` — Biometrie wrapper
+- `src/store/AuthContext.tsx` — Auth state management
+
+## Email Configuratie
+
+✅ Brevo SMTP geconfigureerd (zelfde account als andere Havun projecten)
+- Host: `smtp-relay.brevo.com`
+- Van: noreply@studieplanner.havun.nl
+
+## HavunCore Integratie
+
+| Service | Status |
+|---------|--------|
+| Backup | ✅ Daily 05:00, 1 jaar retention |
+| Vault | Beschikbaar voor credentials |
+| Scheduler | ✅ Actief (cron) |
 
 ## Pusher (Real-time)
 
@@ -115,112 +168,42 @@ GET  /api/chat/messages           - Ophalen berichten
 **Credentials:** Zie `.claude/context.md`
 **Pattern:** Zie `docs/kb/patterns/pusher-realtime.md`
 
-**Gebruik:**
-- Mentor krijgt instant notificatie als leerling sessie start/stopt
-- Chat berichten real-time
-- Online status (presence channels)
-
-**Packages:**
-```bash
-# Backend
-composer require pusher/pusher-php-server
-
-# Frontend
-npm install pusher-js laravel-echo
-```
-
-## Email Configuratie
-
-Gebruikt zelfde SMTP als andere Havun projecten:
-- Host: Zie `.env` of HavunCore Vault
-- Van: noreply@studieplanner.havun.nl
-
-## Credentials Locaties
-
-> **Let op:** Credentials NOOIT in code of publieke docs!
-
-| Wat | Waar te vinden |
-|-----|----------------|
-| DB wachtwoord | Kopieer van server: `/var/www/herdenkingsportaal/production/.env` (DB_PASSWORD) |
-| Brevo SMTP key | Zie Brevo dashboard of kopieer MAIL_PASSWORD van Herdenkingsportaal `.env` |
-| APP_KEY | Genereer nieuw: `php artisan key:generate` |
-
-**Server .env setup:**
-```bash
-# Op server, kopieer credentials van bestaand project:
-ssh root@SERVER_IP (zie context.md)
-cat /var/www/herdenkingsportaal/production/.env | grep -E "^(DB_PASSWORD|MAIL_)"
-# Gebruik deze waarden in /var/www/studieplanner-api/.env
-```
-
 ## Deployment
 
-### Frontend (React)
+### Frontend (Expo)
 ```bash
-# Lokaal
 cd D:\GitHub\Studieplanner
 npm run build
 git add . && git commit -m "message" && git push
-
-# Server
-ssh root@SERVER_IP (zie context.md)
-cd /var/www/studieplanner/production
-git pull origin master
-npm ci && npm run build
+# Server: git pull + npm ci + npm run build
 ```
 
 ### Backend (Laravel)
 ```bash
-# Lokaal
 cd D:\GitHub\Studieplanner-api
 git add . && git commit -m "message" && git push
-
-# Server
-ssh root@SERVER_IP (zie context.md)
-cd /var/www/studieplanner-api
-git pull origin master
-composer install --no-dev
-php artisan migrate
-php artisan config:clear
+# Server: git pull + composer install --no-dev + php artisan migrate + config:clear
 ```
 
 ## Implementatie Roadmap
 
 ### Fase 1: Backend Auth ✅ KLAAR (22 dec 2025)
-- [x] Laravel 11 + Sanctum project aangemaakt
-- [x] User model met pincode + verificatie velden
-- [x] AuthController met register/login/reset endpoints
-- [x] Email templates (plain text)
+### Fase 2: Email Service ✅ KLAAR (Brevo geconfigureerd)
+### Fase 3: Backend Deploy ✅ KLAAR (Hetzner, migraties gedraaid)
+### Fase 4: Frontend Koppeling — IN PROGRESS
+- Schermen aangemaakt, services bestaan
+- Koppeling met backend endpoints moet getest/afgemaakt worden
 
-### Fase 2: Email Service (TODO)
-- [ ] Brevo configureren (zelfde account als Herdenkingsportaal)
-- [ ] Domain authenticeren: `studieplanner.havun.nl`
-- [ ] `.env` configureren met Brevo SMTP key
-- [ ] Test email versturen
-
-**Brevo config:** Kopieer MAIL_* settings van Herdenkingsportaal `.env` op server. Zie [External Services](../reference/external-services.md).
-
-### Fase 3: Backend Deploy (TODO)
-- [ ] Server folder aanmaken: `/var/www/studieplanner-api`
-- [ ] Git clone + composer install
-- [ ] Database aanmaken: `studieplanner`
-- [ ] `.env` configureren op server
-- [ ] Nginx config voor API subdomain
-- [ ] SSL certificaat
-
-### Fase 4: Frontend Koppeling (TODO)
-- [ ] API base URL configureren in React app
-- [ ] Auth flows implementeren (register, login, reset)
-- [ ] Token opslaan in localStorage
-- [ ] Protected routes
-
-### Fase 5: Mentor Features (TODO)
-- [ ] Sessie endpoints (start/stop)
-- [ ] Mentor notificaties (polling)
+### Fase 5: Mentor Features — DEELS KLAAR
+- [x] Mentor endpoints (students, accept, active session)
 - [ ] Chat endpoints
+- [ ] Pusher real-time integratie
+
+### Fase 6: Magister + Premium — ✅ BACKEND KLAAR
+- [x] Magister integratie (login, grades, homework, schedule, tests)
+- [x] Premium features (stats, learning speed)
+- [ ] Frontend schermen koppelen aan deze endpoints
 
 ---
 
-## Contact
-
-Eigenaar: Henk van Unen
+*Laatste update: 14 maart 2026*

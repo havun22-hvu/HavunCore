@@ -1,121 +1,145 @@
-# Doc Intelligence System - Setup Guide
+# Doc Intelligence System - Setup & Gebruikshandleiding
 
-> Setup instructies voor het Doc Intelligence systeem
+> Volledig overzicht van het Doc Intelligence systeem: vector embeddings, code-indexering, structuur-analyse en auto-sync.
+
+## Wat is het?
+
+Een AI-gestuurde kennisbank die alle MD docs EN code van 13 Havun projecten indexeert met Ollama vector embeddings. Vergelijkbaar met Cursor's codebase indexing, maar cross-project en met semantisch zoeken.
 
 ## Vereisten
 
 - PHP 8.2+
-- Composer
 - SQLite (standaard beschikbaar)
+- **Ollama** (lokaal draaiend op poort 11434) met `nomic-embed-text` model
+- Fallback: TF-IDF als Ollama niet beschikbaar is
 
-## Stap 1: Database aanmaken
+## Setup
 
-De Doc Intelligence system gebruikt een aparte SQLite database.
+### Stap 1: Database aanmaken
 
 ```bash
 cd D:\GitHub\HavunCore
 
-# Maak de SQLite database file aan
-touch database/doc_intelligence.sqlite
-
-# Of op Windows:
+# Windows:
 type nul > database\doc_intelligence.sqlite
+
+# Linux:
+touch database/doc_intelligence.sqlite
 ```
 
-## Stap 2: Migraties draaien
+### Stap 2: Migraties draaien
 
 ```bash
-cd D:\GitHub\HavunCore
-
-# Run de migraties voor de doc_intelligence connectie
 php artisan migrate --database=doc_intelligence
 ```
 
-## Stap 3: Initiële indexering
-
-Indexeer alle MD files van alle projecten:
+### Stap 3: Ollama model installeren
 
 ```bash
-# Indexeer alle projecten
-php artisan docs:index all
-
-# Of één specifiek project
-php artisan docs:index herdenkingsportaal
+ollama pull nomic-embed-text
 ```
 
-## Stap 4: Issue detectie draaien
-
-Na indexering, detecteer issues:
+### Stap 4: Eerste indexering
 
 ```bash
-# Detecteer issues in alle projecten
-php artisan docs:detect
+# Indexeer alles (MD + code) voor alle projecten
+php artisan docs:index all --force
 
-# Of met indexering in één commando
+# Genereer structuur-overzichten
+php artisan docs:structure all --force
+
+# Detecteer issues
 php artisan docs:detect --index
-
-# Of voor één project
-php artisan docs:detect herdenkingsportaal
 ```
 
-## Dagelijks gebruik
+## Beschikbare Commando's
 
-### Bij /start van een Claude sessie
+| Commando | Beschrijving |
+|----------|--------------|
+| `docs:index [project]` | Indexeer MD + code bestanden |
+| `docs:index [project] --no-code` | Alleen MD bestanden |
+| `docs:index [project] --force` | Forceer herindexering |
+| `docs:structure [project]` | Genereer structuur-overzicht (models, controllers, routes, etc.) |
+| `docs:watch` | Auto-sync: detecteer changes en herindexeer (continu) |
+| `docs:watch --once` | Enkele sync-cyclus |
+| `docs:watch --interval=60` | Interval in seconden (default: 30) |
+| `docs:search "query"` | Semantisch zoeken in alle docs |
+| `docs:search "query" --project=X` | Zoeken binnen 1 project |
+| `docs:detect [project]` | Detecteer issues (duplicaten, inconsistenties) |
+| `docs:issues [project]` | Toon open issues |
+| `docs:issues --resolve=ID` | Markeer issue als opgelost |
+| `docs:issues --ignore=ID` | Negeer issue |
 
-Het systeem checkt automatisch op issues:
+## Wat wordt geindexeerd?
 
+### MD Documenten
+Alle `.md` bestanden in elk project (excl. vendor, node_modules, .git, storage).
+
+### Code Bestanden (nieuw, maart 2026)
+Code wordt niet raw opgeslagen maar als gestructureerde samenvatting:
+
+| Bestandstype | Wat wordt geextraheerd |
+|-------------|----------------------|
+| **PHP classes** | Namespace, class naam, methods (signatures), properties, constants, Eloquent relations, fillable, casts |
+| **Routes** | Alle Route::get/post/etc definities met middleware en namen |
+| **Migrations** | Tabel naam, kolommen met types en modifiers |
+| **Config** | Config keys en comments |
+| **Blade templates** | @extends, @section, @component, @include, DO NOT REMOVE comments |
+| **JS/TS** | Imports, exports, functies, classes |
+
+**Gescande directories:**
+`app/Models`, `app/Http/Controllers`, `app/Http/Middleware`, `app/Services`, `app/Contracts`, `app/DTOs`, `app/Enums`, `app/Events`, `app/Jobs`, `app/Console/Commands`, `app/Traits`, `app/Exceptions`, `config`, `routes`, `database/migrations`
+
+Ondersteunt ook geneste layout (bijv. `laravel/app/Models` voor JudoToernooi).
+
+### Structuur-index (nieuw, maart 2026)
+Per project wordt een structureel overzicht gegenereerd met:
+- Alle models (met relaties, method count, LOC)
+- Alle controllers (met method count, LOC)
+- Alle services, middleware, enums, commands
+- Aantal migrations
+- Alle routes (method, URI, bestand)
+- Composer & NPM packages
+- Laravel/PHP versies
+
+### Auto-sync (nieuw, maart 2026)
+`docs:watch` draait als achtergrondproces en:
+- Detecteert gewijzigde bestanden via SHA256 hash vergelijking
+- Herindexeert alleen gewijzigde bestanden (delta)
+- Verwijdert orphaned entries (bestanden die niet meer bestaan)
+- Configureerbaar interval (default 30 sec)
+
+## Embeddings
+
+| Eigenschap | Waarde |
+|-----------|--------|
+| **Model** | nomic-embed-text (Ollama) |
+| **Dimensies** | 768 |
+| **Grootte** | 274MB |
+| **Max tokens** | 8192 |
+| **Fallback** | TF-IDF (woordfrequenties, 100 features) |
+| **Similarity** | Cosine similarity (berekend in PHP) |
+
+**Env variabelen:**
+- `OLLAMA_URL` (default: `http://127.0.0.1:11434`)
+- `OLLAMA_EMBEDDING_MODEL` (default: `nomic-embed-text`)
+
+## Dagelijks Gebruik
+
+### Bij /start van een sessie
 ```bash
-php artisan docs:issues --project=[project]
+php artisan docs:issues [project]
 ```
 
-### Bij /end van een Claude sessie
-
-Indexeer de wijzigingen:
-
+### Bij /end van een sessie
 ```bash
 php artisan docs:index [project]
 php artisan docs:detect [project]
 ```
 
-## Beschikbare commando's
-
-| Commando | Beschrijving |
-|----------|--------------|
-| `php artisan docs:index [project]` | Indexeer MD files |
-| `php artisan docs:index all` | Indexeer alle projecten |
-| `php artisan docs:detect [project]` | Detecteer issues |
-| `php artisan docs:issues [project]` | Toon open issues |
-| `php artisan docs:issues --resolve=ID` | Los issue op |
-| `php artisan docs:issues --ignore=ID` | Negeer issue |
-| `php artisan docs:search "query"` | Zoek in docs |
-
-## Troubleshooting
-
-### "Database not found"
-
+### Continu draaien (optioneel)
 ```bash
-# Controleer of de database file bestaat
-ls database/doc_intelligence.sqlite
-
-# Zo niet, maak aan:
-touch database/doc_intelligence.sqlite
-
-# En run migraties opnieuw:
-php artisan migrate --database=doc_intelligence
-```
-
-### "Table not found"
-
-```bash
-# Run migraties
-php artisan migrate --database=doc_intelligence
-```
-
-### "No results found"
-
-```bash
-# Herindexeer met force flag
-php artisan docs:index all --force
+php artisan docs:watch --interval=60
 ```
 
 ## Architectuur
@@ -123,24 +147,65 @@ php artisan docs:index all --force
 ```
 HavunCore/
 ├── database/
-│   └── doc_intelligence.sqlite      ← SQLite database
+│   └── doc_intelligence.sqlite         <- SQLite database
 │
 ├── app/
 │   ├── Models/DocIntelligence/
-│   │   ├── DocEmbedding.php         ← Document + embedding
-│   │   ├── DocIssue.php             ← Gevonden issues
-│   │   └── DocRelation.php          ← Relaties tussen docs
+│   │   ├── DocEmbedding.php            <- Document + embedding
+│   │   ├── DocIssue.php                <- Gevonden issues
+│   │   └── DocRelation.php             <- Relaties tussen docs
 │   │
 │   ├── Services/DocIntelligence/
-│   │   ├── DocIndexer.php           ← Indexeer service
-│   │   └── IssueDetector.php        ← Issue detectie
+│   │   ├── DocIndexer.php              <- MD + code indexering
+│   │   ├── StructureIndexer.php        <- Structuur-analyse per project
+│   │   └── IssueDetector.php           <- Issue detectie
 │   │
 │   └── Console/Commands/
-│       ├── DocIndexCommand.php
-│       ├── DocDetectIssuesCommand.php
-│       ├── DocIssuesCommand.php
-│       └── DocSearchCommand.php
+│       ├── DocIndexCommand.php         <- docs:index
+│       ├── DocStructureCommand.php     <- docs:structure
+│       ├── DocWatchCommand.php         <- docs:watch (auto-sync)
+│       ├── DocSearchCommand.php        <- docs:search
+│       ├── DocDetectIssuesCommand.php  <- docs:detect
+│       └── DocIssuesCommand.php        <- docs:issues
 │
 └── config/
-    └── database.php                  ← doc_intelligence connectie
+    └── database.php                     <- doc_intelligence connectie
 ```
+
+## Troubleshooting
+
+### "Database not found"
+```bash
+touch database/doc_intelligence.sqlite
+php artisan migrate --database=doc_intelligence
+```
+
+### "Ollama niet bereikbaar"
+```bash
+# Check of Ollama draait
+curl http://127.0.0.1:11434/api/tags
+
+# Start Ollama
+ollama serve
+```
+Systeem valt automatisch terug op TF-IDF als Ollama onbereikbaar is.
+
+### "No results found"
+```bash
+php artisan docs:index all --force
+php artisan docs:structure all --force
+```
+
+## Statistieken (14 maart 2026)
+
+| Project | MD docs | Code files | Structuur | Totaal |
+|---------|---------|-----------|-----------|--------|
+| HavunCore | 99 | 109 | 1 | 209 |
+| JudoToernooi | 87 | 304 | 1 | 392 |
+| HavunAdmin | 89 | 218 | 1 | 308 |
+| + 10 andere projecten | ~200 | ~400 | 10 | ~610 |
+| **Totaal** | | | | **~1753** |
+
+---
+
+*Laatste update: 14 maart 2026*

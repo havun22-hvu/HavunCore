@@ -46,6 +46,56 @@ class DocIndexer
         '.git',
         'storage',
         'bootstrap/cache',
+        'public/build',
+        'public/hot',
+        '.idea',
+        '.vscode',
+    ];
+
+    /**
+     * Code file extensions to index (in addition to .md)
+     */
+    protected array $codeExtensions = [
+        'php', 'js', 'ts', 'jsx', 'tsx', 'vue', 'blade.php',
+    ];
+
+    /**
+     * Subdirectories to scan for code files (limits scope to relevant code)
+     */
+    protected array $codeDirectories = [
+        'app/Models',
+        'app/Http/Controllers',
+        'app/Http/Middleware',
+        'app/Services',
+        'app/Contracts',
+        'app/DTOs',
+        'app/Enums',
+        'app/Events',
+        'app/Listeners',
+        'app/Jobs',
+        'app/Console/Commands',
+        'app/Traits',
+        'app/Exceptions',
+        'config',
+        'routes',
+        'database/migrations',
+        'src',
+        'laravel/app/Models',
+        'laravel/app/Http/Controllers',
+        'laravel/app/Http/Middleware',
+        'laravel/app/Services',
+        'laravel/app/Contracts',
+        'laravel/app/DTOs',
+        'laravel/app/Enums',
+        'laravel/app/Events',
+        'laravel/app/Listeners',
+        'laravel/app/Jobs',
+        'laravel/app/Console/Commands',
+        'laravel/app/Traits',
+        'laravel/app/Exceptions',
+        'laravel/config',
+        'laravel/routes',
+        'laravel/database/migrations',
     ];
 
     protected ?string $claudeApiKey = null;
@@ -73,9 +123,9 @@ class DocIndexer
     }
 
     /**
-     * Index all MD files in a specific project
+     * Index all files (MD + code) in a specific project
      */
-    public function indexProject(string $project, bool $forceReindex = false): array
+    public function indexProject(string $project, bool $forceReindex = false, bool $includeCode = true): array
     {
         $project = strtolower($project);
         $basePath = $this->projectPaths[$project] ?? null;
@@ -89,25 +139,43 @@ class DocIndexer
             'indexed' => 0,
             'skipped' => 0,
             'errors' => [],
+            'indexed_md' => 0,
+            'indexed_code' => 0,
         ];
 
+        // Index MD files
         $mdFiles = $this->findMdFiles($basePath);
-
         foreach ($mdFiles as $filePath) {
-            // Normalize path separators first, then strip basePath (case-insensitive for Windows)
-            $normalizedFile = str_replace('\\', '/', $filePath);
-            $normalizedBase = str_replace('\\', '/', $basePath);
-            $relativePath = preg_replace('#^' . preg_quote($normalizedBase . '/', '#') . '#i', '', $normalizedFile);
-
+            $relativePath = $this->toRelativePath($filePath, $basePath);
             try {
                 $indexed = $this->indexFile($project, $relativePath, $filePath, $forceReindex);
                 if ($indexed) {
                     $results['indexed']++;
+                    $results['indexed_md']++;
                 } else {
                     $results['skipped']++;
                 }
             } catch (\Exception $e) {
                 $results['errors'][] = "{$relativePath}: {$e->getMessage()}";
+            }
+        }
+
+        // Index code files
+        if ($includeCode) {
+            $codeFiles = $this->findCodeFiles($basePath);
+            foreach ($codeFiles as $filePath) {
+                $relativePath = $this->toRelativePath($filePath, $basePath);
+                try {
+                    $indexed = $this->indexCodeFile($project, $relativePath, $filePath, $forceReindex);
+                    if ($indexed) {
+                        $results['indexed']++;
+                        $results['indexed_code']++;
+                    } else {
+                        $results['skipped']++;
+                    }
+                } catch (\Exception $e) {
+                    $results['errors'][] = "{$relativePath}: {$e->getMessage()}";
+                }
             }
         }
 
@@ -117,13 +185,317 @@ class DocIndexer
     /**
      * Index all projects
      */
-    public function indexAll(bool $forceReindex = false): array
+    public function indexAll(bool $forceReindex = false, bool $includeCode = true): array
     {
         $results = [];
         foreach (array_keys($this->projectPaths) as $project) {
-            $results[$project] = $this->indexProject($project, $forceReindex);
+            $results[$project] = $this->indexProject($project, $forceReindex, $includeCode);
         }
         return $results;
+    }
+
+    /**
+     * Convert absolute path to relative path
+     */
+    protected function toRelativePath(string $filePath, string $basePath): string
+    {
+        $normalizedFile = str_replace('\\', '/', $filePath);
+        $normalizedBase = str_replace('\\', '/', $basePath);
+        return preg_replace('#^' . preg_quote($normalizedBase . '/', '#') . '#i', '', $normalizedFile);
+    }
+
+    /**
+     * Find code files in relevant subdirectories
+     */
+    protected function findCodeFiles(string $basePath): array
+    {
+        $files = [];
+
+        foreach ($this->codeDirectories as $subDir) {
+            $dirPath = $basePath . '/' . $subDir;
+            if (!is_dir($dirPath)) {
+                continue;
+            }
+
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($dirPath, \RecursiveDirectoryIterator::SKIP_DOTS)
+            );
+
+            foreach ($iterator as $file) {
+                if (!$file->isFile()) {
+                    continue;
+                }
+
+                $path = str_replace('\\', '/', $file->getPathname());
+
+                // Check excluded paths
+                $excluded = false;
+                foreach ($this->excludePaths as $excludePath) {
+                    if (str_contains($path, "/{$excludePath}/")) {
+                        $excluded = true;
+                        break;
+                    }
+                }
+                if ($excluded) {
+                    continue;
+                }
+
+                // Check if extension matches (handle .blade.php specially)
+                $filename = $file->getFilename();
+                if (str_ends_with($filename, '.blade.php')) {
+                    $files[] = $path;
+                    continue;
+                }
+
+                $ext = strtolower($file->getExtension());
+                if (in_array($ext, $this->codeExtensions) && $ext !== 'blade') {
+                    $files[] = $path;
+                }
+            }
+        }
+
+        return $files;
+    }
+
+    /**
+     * Index a code file — extracts a structured summary before embedding
+     */
+    protected function indexCodeFile(string $project, string $relativePath, string $fullPath, bool $force = false): bool
+    {
+        if (!file_exists($fullPath)) {
+            return false;
+        }
+
+        $rawContent = file_get_contents($fullPath);
+        $contentHash = hash('sha256', $rawContent);
+        $fileModified = filemtime($fullPath);
+
+        // Check if already indexed and unchanged
+        $existing = DocEmbedding::where('project', $project)
+            ->where('file_path', $relativePath)
+            ->first();
+
+        if ($existing && !$force && $existing->content_hash === $contentHash) {
+            return false;
+        }
+
+        // Extract a structured summary instead of embedding raw code
+        $summary = $this->extractCodeSummary($relativePath, $rawContent);
+
+        // Generate embedding from the summary
+        $embedding = $this->generateEmbedding($summary);
+        $tokenCount = $this->estimateTokenCount($summary);
+
+        DocEmbedding::updateOrCreate(
+            ['project' => $project, 'file_path' => $relativePath],
+            [
+                'content' => $summary,
+                'content_hash' => $contentHash,
+                'embedding' => $embedding,
+                'embedding_model' => $embedding ? $this->embeddingModel : 'tfidf-fallback',
+                'token_count' => $tokenCount,
+                'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
+            ]
+        );
+
+        return true;
+    }
+
+    /**
+     * Extract a structured summary from a code file for embedding.
+     * Captures class name, methods, properties, use statements, routes — not raw code.
+     */
+    protected function extractCodeSummary(string $relativePath, string $content): string
+    {
+        $lines = explode("\n", $content);
+        $summary = ["[FILE] {$relativePath}"];
+
+        // Detect file type
+        $isPhp = str_ends_with($relativePath, '.php');
+        $isBlade = str_contains($relativePath, '.blade.php');
+        $isJs = preg_match('/\.(js|ts|jsx|tsx|vue)$/', $relativePath);
+        $isConfig = str_starts_with($relativePath, 'config/') || str_starts_with($relativePath, 'laravel/config/');
+        $isRoute = str_starts_with($relativePath, 'routes/') || str_starts_with($relativePath, 'laravel/routes/');
+        $isMigration = str_contains($relativePath, 'migrations/');
+
+        if ($isBlade) {
+            // Blade: extract components, sections, slots
+            $summary[] = '[TYPE] Blade template';
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                if (preg_match('/@(extends|section|component|include|livewire|vite|push|slot)\s*\(/', $trimmed, $m)) {
+                    $summary[] = $trimmed;
+                }
+                if (preg_match('/DO NOT REMOVE/', $trimmed)) {
+                    $summary[] = $trimmed;
+                }
+            }
+            return implode("\n", $summary);
+        }
+
+        if ($isRoute) {
+            // Routes: extract all route definitions
+            $summary[] = '[TYPE] Route definitions';
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                if (preg_match('/Route::(get|post|put|patch|delete|any|match|resource|apiResource)\s*\(/', $trimmed)) {
+                    $summary[] = $trimmed;
+                }
+                if (preg_match('/->middleware\(/', $trimmed)) {
+                    $summary[] = '  ' . $trimmed;
+                }
+                if (preg_match('/->name\(/', $trimmed)) {
+                    $summary[] = '  ' . $trimmed;
+                }
+                // Route groups
+                if (preg_match('/Route::(prefix|group|middleware)\s*\(/', $trimmed)) {
+                    $summary[] = $trimmed;
+                }
+            }
+            return implode("\n", $summary);
+        }
+
+        if ($isMigration) {
+            // Migrations: extract table name, columns
+            $summary[] = '[TYPE] Database migration';
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                if (preg_match('/Schema::(create|table)\s*\(\s*[\'"](\w+)[\'"]/', $trimmed, $m)) {
+                    $summary[] = "[TABLE] {$m[2]} ({$m[1]})";
+                }
+                if (preg_match('/\$table->(\w+)\s*\(\s*[\'"](\w+)[\'"]/', $trimmed, $m)) {
+                    $summary[] = "  {$m[1]} {$m[2]}";
+                }
+                if (preg_match('/(->nullable|->default|->unique|->index|->foreign)/', $trimmed, $m)) {
+                    // Append modifier to previous line
+                    $lastIdx = count($summary) - 1;
+                    if ($lastIdx >= 0) {
+                        $summary[$lastIdx] .= ' ' . $m[1];
+                    }
+                }
+            }
+            return implode("\n", $summary);
+        }
+
+        if ($isConfig) {
+            // Config: extract keys and structure
+            $summary[] = '[TYPE] Configuration';
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+                if (preg_match("/^['\"](\w[\w.-]*)['\"]\\s*=>/", $trimmed, $m)) {
+                    $summary[] = "  {$m[1]}";
+                }
+                // Comments often explain config
+                if (preg_match('/^\/{2}\s*(.+)/', $trimmed, $m)) {
+                    $summary[] = "  // {$m[1]}";
+                }
+            }
+            return implode("\n", $summary);
+        }
+
+        if ($isPhp) {
+            // PHP classes: namespace, class, methods, properties, use statements
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+
+                // Namespace
+                if (preg_match('/^namespace\s+(.+);/', $trimmed, $m)) {
+                    $summary[] = "[NAMESPACE] {$m[1]}";
+                }
+
+                // Use statements (imports)
+                if (preg_match('/^use\s+(.+);/', $trimmed, $m)) {
+                    $summary[] = "[USE] {$m[1]}";
+                }
+
+                // Class/interface/trait/enum declaration
+                if (preg_match('/^(abstract\s+|final\s+)?(class|interface|trait|enum)\s+(\w+)(.*)/', $trimmed, $m)) {
+                    $summary[] = "[CLASS] {$m[2]} {$m[3]}{$m[4]}";
+                }
+
+                // Method signatures
+                if (preg_match('/^\s*(public|protected|private)(\s+static)?\s+function\s+(\w+)\s*\(([^)]*)\)/', $trimmed, $m)) {
+                    $visibility = $m[1];
+                    $static = trim($m[2] ?? '');
+                    $name = $m[3];
+                    $params = $m[4];
+                    $prefix = $static ? "{$visibility} static" : $visibility;
+                    $summary[] = "[METHOD] {$prefix} {$name}({$params})";
+                }
+
+                // Properties
+                if (preg_match('/^\s*(public|protected|private)(\s+static)?\s+(\??\w+\s+)?\$(\w+)/', $trimmed, $m)) {
+                    $summary[] = "[PROPERTY] {$m[1]} \${$m[4]}";
+                }
+
+                // Constants
+                if (preg_match('/^\s*(public|protected|private|)\s*const\s+(\w+)\s*=/', $trimmed, $m)) {
+                    $summary[] = "[CONST] {$m[2]}";
+                }
+
+                // Laravel model casts, fillable, relations
+                if (preg_match('/protected\s+\$fillable\s*=/', $trimmed)) {
+                    $summary[] = '[FILLABLE] ' . $this->extractArrayValues($lines, $line);
+                }
+                if (preg_match('/protected\s+\$casts\s*=/', $trimmed)) {
+                    $summary[] = '[CASTS] ' . $this->extractArrayValues($lines, $line);
+                }
+
+                // Eloquent relations
+                if (preg_match('/return\s+\$this->(hasMany|hasOne|belongsTo|belongsToMany|morphMany|morphTo|morphOne)\s*\((.+?)\)/', $trimmed, $m)) {
+                    $summary[] = "[RELATION] {$m[1]}({$m[2]})";
+                }
+            }
+        }
+
+        if ($isJs) {
+            // JS/TS: exports, functions, classes, imports
+            $summary[] = '[TYPE] JavaScript/TypeScript';
+            foreach ($lines as $line) {
+                $trimmed = trim($line);
+
+                if (preg_match('/^import\s+/', $trimmed)) {
+                    $summary[] = $trimmed;
+                }
+                if (preg_match('/^export\s+(default\s+)?(function|class|const|let|var|interface|type|enum)\s+(\w+)/', $trimmed, $m)) {
+                    $summary[] = "[EXPORT] {$m[2]} {$m[3]}";
+                }
+                if (preg_match('/^(function|class)\s+(\w+)/', $trimmed, $m)) {
+                    $summary[] = "[{$m[1]}] {$m[2]}";
+                }
+            }
+        }
+
+        // If summary is too short, include first part of raw content as fallback
+        if (count($summary) <= 2) {
+            $summary[] = mb_substr($content, 0, 2000);
+        }
+
+        return implode("\n", $summary);
+    }
+
+    /**
+     * Extract inline array values from a PHP line (for $fillable, $casts, etc.)
+     */
+    protected function extractArrayValues(array $allLines, string $currentLine): string
+    {
+        // Try to find the array content on this and following lines
+        $idx = array_search($currentLine, $allLines);
+        if ($idx === false) {
+            return '(...)';
+        }
+
+        $buffer = '';
+        for ($i = $idx; $i < min($idx + 20, count($allLines)); $i++) {
+            $buffer .= $allLines[$i];
+            if (str_contains($allLines[$i], '];')) {
+                break;
+            }
+        }
+
+        // Extract quoted strings
+        preg_match_all("/['\"]([^'\"]+)['\"]/", $buffer, $matches);
+        return implode(', ', $matches[1] ?? ['(...)']);
     }
 
     /**
@@ -200,6 +572,14 @@ class DocIndexer
         );
 
         return true;
+    }
+
+    /**
+     * Public wrapper for generating embeddings (used by StructureIndexer)
+     */
+    public function generateEmbeddingPublic(string $content): ?array
+    {
+        return $this->generateEmbedding($content);
     }
 
     /**

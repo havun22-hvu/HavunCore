@@ -2,7 +2,45 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 14 maart 2026
+## Laatste Sessie: 15 maart 2026
+
+### Wat is gedaan:
+- **Email migratie: alle projecten naar Brevo SMTP**
+  - Herdenkingsportaal: Resend → Brevo (server .env bijgewerkt, test email verstuurd)
+  - DNS geverifieerd voor herdenkingsportaal.nl (DKIM+SPF+DMARC bij mijn.host)
+  - DNS geverifieerd voor havun.nl (DKIM+SPF+DMARC bij mijn.host)
+  - Studieplanner SMTP key getest (authentication succeeded)
+  - Credentials.md: Resend sectie verwijderd, Brevo sectie met 3 projecten (JudoToernooi, Herdenkingsportaal, Studieplanner)
+  - external-services.md: Resend+Brevo samengevoegd naar één Brevo sectie
+  - herdenkingsportaal.md: email sectie bijgewerkt
+- **HCai integratie in Claude Code workflow**
+  - Globale CLAUDE.md: `docs:search` verplicht bij elke taak
+  - /start command: index update (`docs:index all --force`) als stap 3
+  - /kb command: index update (`docs:index all`) voor zoeken
+- **GitGuardian incident besproken** → feedback memory opgeslagen: nooit credentials in git
+- **Resend composer package** kan nog verwijderd worden uit Herdenkingsportaal
+
+### Openstaande items:
+- [ ] `/kb` command bijwerken in ALLE andere projecten (havunadmin, herdenkingsportaal, judotoernooi, etc.)
+- [ ] Resend composer package verwijderen uit Herdenkingsportaal
+- [ ] Resend account/domein opruimen (herdenkingsportaal.nl verwijderen)
+- [ ] Stripe Connect testen op staging (organisator onboarding flow)
+- [ ] `account.updated` webhook voor automatische status updates
+- [ ] Herdenkingsportaal: `excluded_message_patterns` toevoegen aan AutoFix
+- [ ] Google Business Profile: wacht op goedkeuring
+- [ ] HavunAdmin deployen (StripeService prefix fix)
+- [ ] Indexer-roadmap uitvoeren: metadata file_type, health check API uitbreiden
+- [ ] Oude `docs/projects/HERDENKINGSPORTAAL.md` opruimen (duplicate van `docs/kb/projects/`)
+
+### Belangrijke context:
+- Brevo is nu de ENIGE email provider voor alle projecten (Resend wordt opgezegd)
+- Brevo gratis tier: 300 emails/dag, onbeperkte domeinen
+- SMTP keys zijn per project uniek (zie credentials.md)
+- `docs:search` moet ALTIJD gedraaid worden voordat Claude aan een taak begint
+
+---
+
+## Vorige Sessie: 14 maart 2026
 
 ### Wat is gedaan:
 - **Poorttabel definitief gestandaardiseerd over ALLE 7 projecten + kennisbank**
