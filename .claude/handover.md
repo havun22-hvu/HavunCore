@@ -2,46 +2,43 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 15-16 maart 2026
+## Laatste Sessie: 16 maart 2026
 
-### Wat is gedaan (15 maart):
-- **Email migratie: alle projecten naar Brevo SMTP**
-  - Herdenkingsportaal: Resend → Brevo (server .env bijgewerkt, test email verstuurd)
-  - DNS geverifieerd voor herdenkingsportaal.nl en havun.nl (DKIM+SPF+DMARC bij mijn.host)
-  - Credentials.md: Resend sectie verwijderd, Brevo sectie met 3 projecten
-  - external-services.md: Resend+Brevo samengevoegd naar één Brevo sectie
-- **HCai integratie in Claude Code workflow**
-  - Globale CLAUDE.md: `docs:search` verplicht bij elke taak
-  - /start command: index update (`docs:index all --force`) als stap 3
-  - /kb command: index update (`docs:index all`) voor zoeken
-- **GitGuardian incident besproken** → feedback memory opgeslagen: nooit credentials in git
-
-### Wat is gedaan (16 maart):
-- **Doc Intelligence setup doc herschreven** (`docs/kb/runbooks/doc-intelligence-setup.md`)
-  - Nu compleet met: Ollama vector embeddings, code-indexering, structuur-index, auto-sync
-  - Statistieken, troubleshooting, architectuur overzicht
-- **i18n regel toegevoegd** aan claude-werkwijze.md (nieuw Laravel project → altijd i18n voorbereiden)
-- **Studieplanner (Expo) poort 8010** toegevoegd aan context.md poorttabel
+### Wat is gedaan:
+- **Gemini Audit — AutoFix Hardening**
+  - PHP syntax check (`php -l`) + auto-rollback na fix (JudoToernooi + Herdenkingsportaal)
+  - Git commit+push na succesvolle fix (sluit kennis-drift gap)
+  - Gestructureerde commit messages voor DocIndexer: `autofix(scope): analyse`
+  - 24h rollback check toegevoegd aan AutoFixController
+  - Decision record: `docs/kb/decisions/autofix-hardening-2026-03-15.md`
+- **i18n Pattern** — JudoToernooi vertaalsysteem als herbruikbaar KB pattern + nieuw-project regel
+- **Studieplanner Expo** — poort 8010 vastgepind, poorttabel bijgewerkt
+- **/start command** — auto `git pull` + AutoFix commit detectie met review prompt
+- **Backup Systeem Gefixt (KRITIEK)**
+  - Nachtelijk script crashte na 1e DB door `awk` bug + `set -e` → alle DBs behalve havunadmin ontbraken
+  - Hot backup kapot sinds 24 jan door `#\!` shebang fout → gefixt
+  - Ontbrekende databases toegevoegd: havuncore, havunclub_production, havunvet_staging
+  - Handmatige backup uitgevoerd: alle 8 prod + 4 staging DBs + storage + Hetzner offsite OK
+- **Backup Monitoring** — `/health/backup` endpoint + Backups sectie in StatusView webapp
 
 ### Openstaande items:
-- [ ] `/kb` command bijwerken in ALLE andere projecten (havunadmin, herdenkingsportaal, judotoernooi, etc.)
+- [ ] **Monument versioning bouwen** — memorial_versions tabel + observer (monument Nicolina template verloren, geen backup beschikbaar)
+- [ ] `/kb` command bijwerken in ALLE andere projecten
 - [ ] Resend composer package verwijderen uit Herdenkingsportaal
-- [ ] Resend account/domein opruimen (herdenkingsportaal.nl verwijderen)
-- [ ] Stripe Connect testen op staging (organisator onboarding flow)
-- [ ] `account.updated` webhook voor automatische status updates
+- [ ] Resend account/domein opruimen
+- [ ] Stripe Connect testen op staging
+- [ ] `account.updated` webhook
 - [ ] Herdenkingsportaal: `excluded_message_patterns` toevoegen aan AutoFix
 - [ ] Google Business Profile: wacht op goedkeuring
 - [ ] HavunAdmin deployen (StripeService prefix fix)
-- [ ] Indexer-roadmap uitvoeren: metadata file_type, health check API uitbreiden
-- [ ] Oude `docs/projects/HERDENKINGSPORTAAL.md` opruimen (duplicate van `docs/kb/projects/`)
-- [ ] DocIndexer duplicate bug fixen (bestanden dubbel geindexeerd: absoluut + relatief pad → 171 false positive issues)
+- [ ] DocIndexer duplicate bug fixen (171 false positive issues)
+- [ ] `isProjectFile()` deduplicatie in AutoFix (Service + Controller)
 
 ### Belangrijke context:
-- Brevo is nu de ENIGE email provider voor alle projecten (Resend wordt opgezegd)
-- Brevo gratis tier: 300 emails/dag, onbeperkte domeinen
-- SMTP keys zijn per project uniek (zie credentials.md)
-- `docs:search` moet ALTIJD gedraaid worden voordat Claude aan een taak begint
-- DocIndexer heeft duplicate-pad bug: zelfde bestand wordt met absoluut EN relatief pad geindexeerd
+- Backup script was kapot — alleen havunadmin werd gebackupt. Nu gefixt, alle projecten draaien weer
+- Monument #34 (Nicolina Sombeek) heeft template verloren, geen restore mogelijk (geen backup bestond)
+- AutoFix pusht nu automatisch naar git na fix — /start detecteert dit en vraagt om KB review
+- Gemini's SSH-tunnel/Docker suggesties waren onjuist — onze infra gebruikt gewone HTTPS API calls
 
 ---
 
