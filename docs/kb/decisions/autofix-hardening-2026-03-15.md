@@ -65,6 +65,25 @@ Bij elke `/start` wordt automatisch `git pull` uitgevoerd om AutoFix-wijzigingen
 | Volledige test suite na fix | Te zwaar voor exception handler in productie |
 | Automatische KB updates door AI | Risico op "hallucinerende documentatie" |
 
+### 5. Gestructureerde commit messages
+
+**Waar:** `AutoFixService.gitCommitAndPush()` (JudoToernooi + Herdenkingsportaal)
+
+Commit messages zijn geoptimaliseerd voor leesbaarheid door DocIndexer en `git log`:
+
+```
+autofix(FileName): Claude's analysis summary (max 72 chars)
+
+File: app/Services/MyService.php
+Exception: ErrorException
+Risk: low
+Proposal: #42
+```
+
+- ANALYSIS regel wordt automatisch geëxtraheerd uit Claude's response
+- RISK level wordt meegenomen
+- Proposal ID linkt terug naar de database
+
 ## Resterende verbeterpunten (toekomst)
 
 - `isProjectFile()` deduplicatie (Service + Controller)
