@@ -2,6 +2,17 @@
 
 > **VERPLICHT** bij elke nieuwe Claude sessie
 
+## Stap 0: Sync lokale code (VERPLICHT)
+
+AutoFix kan code wijzigen op de server en automatisch pushen.
+Pull altijd eerst de laatste wijzigingen voordat je begint:
+
+```bash
+cd [project directory] && git pull
+```
+
+Als er merge conflicts zijn: meld aan gebruiker, NIET zelf oplossen.
+
 ## Stap 1: Lees de project documentatie (VERPLICHT)
 
 Lees deze bestanden in volgorde en bevestig aan de gebruiker:
