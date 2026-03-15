@@ -2,7 +2,7 @@
 
 > **VERPLICHT** bij elke nieuwe Claude sessie
 
-## Stap 0: Sync lokale code (VERPLICHT)
+## Stap 0: Sync lokale code + AutoFix detectie (VERPLICHT)
 
 AutoFix kan code wijzigen op de server en automatisch pushen.
 Pull altijd eerst de laatste wijzigingen voordat je begint:
@@ -12,6 +12,29 @@ cd [project directory] && git pull
 ```
 
 Als er merge conflicts zijn: meld aan gebruiker, NIET zelf oplossen.
+
+### AutoFix commits detecteren
+
+Na de pull, check of er AutoFix commits zijn binnengekomen:
+
+```bash
+git log --oneline --since="3 days ago" --grep="autofix("
+```
+
+Als er AutoFix commits gevonden worden, toon aan de gebruiker:
+
+```
+🔧 AutoFix commits gedetecteerd sinds laatste sessie:
+
+  - autofix(BlokController): Added null check for $poule->judokas (#42)
+  - autofix(PouleService): Fixed undefined variable in scoring (#43)
+
+Deze bestanden zijn automatisch gefixt op de server.
+Zal ik de KB-secties voor deze bestanden markeren voor review?
+```
+
+**Bij "ja":** Lees de gewijzigde bestanden, check of de fixes consistent zijn met de KB docs, en meld inconsistenties.
+**Bij "nee":** Ga verder met de sessie.
 
 ## Stap 1: Lees de project documentatie (VERPLICHT)
 
