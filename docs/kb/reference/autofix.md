@@ -243,7 +243,19 @@ Fix toegepast → php -l syntax check → OK → git add + commit + push
                                       FAIL → rollback vanuit backup, geen git
 ```
 
-**Commit format:** `autofix: {ExceptionClass} in {file}`
+**Commit format (gestructureerd voor DocIndexer):**
+
+```
+autofix(FileName): Claude's analysis summary (max 72 chars)
+
+File: app/Services/MyService.php
+Exception: ErrorException
+Risk: low
+Proposal: #42
+```
+
+- Titel: `autofix(scope): wat er gefixt is` — leesbaar in git log
+- Body: metadata voor DocIndexer (file, exception, risk, proposal ID)
 
 **Waarom:** Zonder git sync weet de lokale ontwikkelomgeving niet dat er code gewijzigd is op de server. Dit veroorzaakte "kennis-drift" — de KB en lokale code liepen uit sync met productie.
 
