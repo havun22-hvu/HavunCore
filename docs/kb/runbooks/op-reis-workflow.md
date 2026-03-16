@@ -40,6 +40,7 @@ Na uitpakken komen bestanden op een tijdelijke of vaste plek; het startscript ko
 | **projectnaam-context.md** per project | → `{project}/.claude/context.md` |
 | **HavunAdmin.env**, **JudoToernooi.env**, etc. | → `{project}/.env` of `{project}/laravel/.env` |
 | **server-passwords.txt** (of in context.md) | Server root/wachtwoorden, DB-wachtwoorden indien nodig | Optioneel; kan ook alleen in context.md |
+| **havuncore-kb-token.txt** | `HAVUNCORE_KB_TOKEN` voor remote KB Search API | Claude kan overal de kennisbank doorzoeken |
 
 Zo hoef je voor SSH, Git, server en projectconfig **niets** in Bitwarden op te zoeken.
 
@@ -65,16 +66,20 @@ Zo hoef je voor SSH, Git, server en projectconfig **niets** in Bitwarden op te z
      - Vragen: “Waar staan je repos?” (bijv. `D:\GitHub` of `C:\Dev\Havun`);
      - Voor elke bekende projectmap in die root: juiste `.env` en `.claude/context.md` uit de vault naar die map kopiëren (als de map al bestaat).
 
-5. **Repos clonen (als ze nog niet bestaan)**  
+5. **KB token instellen**
+   - `set HAVUNCORE_KB_TOKEN=<token uit vault>` (of in gebruiker env vars)
+   - Hiermee kan Claude in elk project de HavunCore kennisbank doorzoeken via HTTP.
+
+6. **Repos clonen (als ze nog niet bestaan)**
    - Handmatig of met een meegeleverd script/lijst, bijv.:
      - `git clone git@github.com:havun22-hvu/HavunCore.git D:\GitHub\HavunCore`
      - Idem voor HavunAdmin, Herdenkingsportaal, JudoToernooi, SafeHavun, HavunClub, Studieplanner, Infosyst, etc.  
    - Lijst van repos staat in `docs/kb/projects-index.md` (GitHub: havun22-hvu/*).
 
-6. **Credentials in projectmappen (als nog niet gedaan)**  
+7. **Credentials in projectmappen (als nog niet gedaan)**
    - Als het startscript geen “clone path” vraagt: handmatig uit de uitgepakte vault de juiste `*-context.md` en `*.env` naar de betreffende projectmappen kopiëren.
 
-7. **Editor openen**  
+8. **Editor openen**
    - VS Code (vanaf USB) of Cursor (lokaal geïnstalleerd) → workspace openen (bijv. HavunCore of een project) en aan de slag.
 
 Bij afsluiten (optioneel): een **stop/cleanup-script** kan SSH keys en git-credentials van de laptop verwijderen; de vault op de USB blijft ongewijzigd.
@@ -95,6 +100,52 @@ Voor de **nieuwe** werkwijze:
 Concreet:
 - Logica voor “projectkeuze” en “git pull” in `projects\` kan blijven voor wie toch met USB-projectmappen werkt, of worden vervangen door “clone path + kopieer credentials”.
 - Cleanup bij afsluiten (SSH keys, git-credentials van de laptop verwijderen) blijft nuttig.
+
+---
+
+## Kennisbank (KB) toegang op reis
+
+Op je thuis-PC gebruikt Claude `php artisan docs:search` direct in HavunCore.
+Op een reis-PC is HavunCore niet lokaal beschikbaar — Claude gebruikt dan de **KB Search API** op de server.
+
+### Hoe werkt het?
+
+```bash
+# Thuis (HavunCore lokaal):
+cd D:\GitHub\HavunCore && php artisan docs:search "zoekterm" --project=projectnaam
+
+# Op reis (via HTTP):
+curl -s -H "Authorization: Bearer $HAVUNCORE_KB_TOKEN" \
+  "https://havuncore.havun.nl/api/docs/search?q=zoekterm&project=projectnaam"
+```
+
+### Wat moet er in de vault?
+
+De `HAVUNCORE_KB_TOKEN` moet in de credentials.vault staan (zie tabel hieronder).
+
+### Wat moet er in de globale CLAUDE.md op de reis-PC?
+
+```markdown
+## Kennisbank (HCai)
+- Als `D:\GitHub\HavunCore` bestaat: gebruik `php artisan docs:search`
+- Anders: gebruik de KB Search API:
+  curl -s -H "Authorization: Bearer $HAVUNCORE_KB_TOKEN" \
+    "https://havuncore.havun.nl/api/docs/search?q=zoekterm&project=projectnaam"
+- Token staat in environment variable HAVUNCORE_KB_TOKEN
+```
+
+### Beschikbare endpoints
+
+| Endpoint | Doel |
+|----------|------|
+| `GET /api/docs/search?q=...&project=...&limit=5` | Zoek in KB |
+| `GET /api/docs/read?project=...&path=...` | Lees specifiek document |
+| `GET /api/docs/issues?project=...` | Open doc issues |
+| `GET /api/docs/stats` | Indexering statistieken |
+
+Alle endpoints vereisen `Authorization: Bearer <token>`.
+
+Zie ook: `docs/kb/reference/api-kb-search.md`
 
 ---
 

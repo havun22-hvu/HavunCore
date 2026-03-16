@@ -12,12 +12,37 @@ use Illuminate\Http\Request;
 class DocIntelligenceController extends Controller
 {
     /**
+     * Authenticate request via Bearer token or env-configured KB token.
+     * Returns true if authenticated, false otherwise.
+     */
+    private function authenticate(Request $request): bool
+    {
+        $token = $request->bearerToken() ?? $request->header('X-KB-Token');
+
+        if (!$token) {
+            return false;
+        }
+
+        $validToken = config('services.doc_intelligence.api_token');
+
+        if (!$validToken) {
+            return false;
+        }
+
+        return hash_equals($validToken, $token);
+    }
+
+    /**
      * Search documents across all projects
      *
      * GET /api/docs/search?q=query&project=optional&limit=5
+     * Authorization: Bearer <token>
      */
     public function search(Request $request, DocIndexer $indexer): JsonResponse
     {
+        if (!$this->authenticate($request)) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         $query = $request->input('q', $request->input('query', ''));
         $project = $request->input('project');
         $limit = (int) $request->input('limit', 5);
@@ -46,6 +71,9 @@ class DocIntelligenceController extends Controller
      */
     public function issues(Request $request): JsonResponse
     {
+        if (!$this->authenticate($request)) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         $project = $request->input('project');
         $type = $request->input('type');
 
@@ -90,8 +118,11 @@ class DocIntelligenceController extends Controller
      *
      * GET /api/docs/stats
      */
-    public function stats(): JsonResponse
+    public function stats(Request $request): JsonResponse
     {
+        if (!$this->authenticate($request)) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         $stats = DocEmbedding::selectRaw('project, COUNT(*) as count, SUM(token_count) as total_tokens')
             ->groupBy('project')
             ->get()
@@ -124,6 +155,9 @@ class DocIntelligenceController extends Controller
      */
     public function read(Request $request): JsonResponse
     {
+        if (!$this->authenticate($request)) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
         $project = $request->input('project');
         $path = $request->input('path');
 

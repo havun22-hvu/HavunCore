@@ -32,4 +32,17 @@ return [
         'api_key' => env('STUDIEPLANNER_API_KEY'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Doc Intelligence KB API
+    |--------------------------------------------------------------------------
+    |
+    | Bearer token for remote KB search access (Claude on other machines).
+    |
+    */
+
+    'doc_intelligence' => [
+        'api_token' => env('DOC_INTELLIGENCE_API_TOKEN'),
+    ],
+
 ];
