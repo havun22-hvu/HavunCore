@@ -17,7 +17,7 @@
   - Globale `CLAUDE.md` — lokaal + remote KB fallback instructie
 
 ### Openstaande items:
-- [ ] KB token toevoegen aan credentials.vault op USB (USB werd niet herkend)
+- [ ] KB token verplaatsen van `H:/havuncore-kb-token.txt` naar credentials.vault (staat nu als los bestand op USB)
 - [ ] **Monument versioning bouwen** — memorial_versions tabel + observer
 - [ ] `/kb` command bijwerken in ALLE andere projecten
 - [ ] Resend composer package verwijderen uit Herdenkingsportaal
