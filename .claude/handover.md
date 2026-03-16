@@ -2,22 +2,28 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 17 maart 2026
+## Laatste Sessie: 17 maart 2026 (middag)
 
 ### Wat is gedaan:
-- **KB Search API — Remote Toegang**
-  - Bearer token auth toegevoegd aan alle `/api/docs/*` endpoints (search, issues, stats, read)
-  - Config key: `DOC_INTELLIGENCE_API_TOKEN` in `config/services.php`
-  - Token gegenereerd en in server `.env` gezet
-  - Cron job: `docs:index all --no-code` elke 6 uur op server
-  - Getest: zonder token → 401, met token → resultaten OK
+- **DocIndexer roadmap volledig afgerond (alle 5 items)**
+  - `file_type` metadata kolom: 14 types (docs, model, controller, service, etc.)
+  - `detectFileType()` in DocIndexer, automatic bij indexering
+  - `--type` filter op `docs:search` CLI en `/api/docs/search?type=X` API
+  - `/api/docs/health` endpoint: Ollama status, file type breakdown, embedding counts, DB grootte
+  - IssueDetector fix: duplicate detection alleen binnen zelfde project
+  - Shared files (.claude/commands/, _structure/, CLAUDE.md) worden geskipt
+  - Code file types (model, controller, etc.) uitgesloten van duplicate detection
+  - Threshold verhoogd van 0.85 → 0.90
+  - **Resultaat: 5928 false positive issues → 6 echte duplicates**
 - **Docs bijgewerkt**
-  - `docs/kb/reference/api-kb-search.md` — nieuwe API reference doc
-  - `docs/kb/runbooks/op-reis-workflow.md` — KB remote access sectie + vault tabel
-  - Globale `CLAUDE.md` — lokaal + remote KB fallback instructie
+  - `indexer-roadmap.md` — alle items afgevinkt, volgende stappen gedefinieerd
+  - `doc-intelligence-setup.md` — API endpoints, file types, architectuur
+- **KB Search API** (ochtend)
+  - Bearer token auth op alle `/api/docs/*` endpoints
+  - Cron: `docs:index all --no-code` elke 6 uur op server
 
 ### Openstaande items:
-- [ ] KB token verplaatsen van `H:/havuncore-kb-token.txt` naar credentials.vault (staat nu als los bestand op USB)
+- [ ] KB token verplaatsen van `H:/havuncore-kb-token.txt` naar credentials.vault
 - [ ] **Monument versioning bouwen** — memorial_versions tabel + observer
 - [ ] `/kb` command bijwerken in ALLE andere projecten
 - [ ] Resend composer package verwijderen uit Herdenkingsportaal
@@ -25,13 +31,16 @@
 - [ ] `account.updated` webhook
 - [ ] Herdenkingsportaal: `excluded_message_patterns` toevoegen aan AutoFix
 - [ ] HavunAdmin deployen (StripeService prefix fix)
-- [ ] DocIndexer duplicate bug fixen (171 false positive issues)
+- [ ] havuncore-webapp: file_type filter integreren in ragService.js + frontend ChatInterface
+- [ ] Server: migration draaien (`php artisan migrate --database=doc_intelligence`) voor file_type kolom
+- [ ] Server: `docs:index all --force` draaien om file_type te vullen voor alle projecten
 
 ### Belangrijke context:
 - KB Search API is LIVE op `https://havuncore.havun.nl/api/docs/*`
 - Token prefix: `hvn_kb_` — staat in server .env als `DOC_INTELLIGENCE_API_TOKEN`
-- Token moet nog naar USB vault voor op-reis gebruik
 - Cron draait elke 6 uur `docs:index all --no-code` (TF-IDF, geen Ollama op server)
+- DocIndexer roadmap is COMPLEET — alle 5 items afgevinkt
+- Volgende grote stap: Qdrant migratie wanneer KB > 5000 bestanden
 
 ---
 
