@@ -153,5 +153,6 @@ Route::prefix('docs')->group(function () {
     Route::get('/search', [DocIntelligenceController::class, 'search'])->name('api.docs.search');
     Route::get('/issues', [DocIntelligenceController::class, 'issues'])->name('api.docs.issues');
     Route::get('/stats', [DocIntelligenceController::class, 'stats'])->name('api.docs.stats');
+    Route::get('/health', [DocIntelligenceController::class, 'health'])->name('api.docs.health');
     Route::get('/read', [DocIntelligenceController::class, 'read'])->name('api.docs.read');
 });

@@ -293,6 +293,7 @@ class DocIndexer
                 'content_hash' => $contentHash,
                 'embedding' => $embedding,
                 'embedding_model' => $embedding ? $this->embeddingModel : 'tfidf-fallback',
+                'file_type' => $this->detectFileType($relativePath),
                 'token_count' => $tokenCount,
                 'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
             ]
@@ -566,12 +567,86 @@ class DocIndexer
                 'content_hash' => $contentHash,
                 'embedding' => $embedding,
                 'embedding_model' => $embedding ? $this->embeddingModel : 'tfidf-fallback',
+                'file_type' => $this->detectFileType($relativePath),
                 'token_count' => $tokenCount,
                 'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
             ]
         );
 
         return true;
+    }
+
+    /**
+     * Detect file type for categorization and filtering
+     */
+    protected function detectFileType(string $relativePath): string
+    {
+        // Structure files
+        if (str_contains($relativePath, '_structure/')) {
+            return 'structure';
+        }
+
+        // Documentation
+        if (str_ends_with($relativePath, '.md')) {
+            return 'docs';
+        }
+
+        // Models
+        if (preg_match('#(^|/)app/Models/#i', $relativePath) || preg_match('#laravel/app/Models/#i', $relativePath)) {
+            return 'model';
+        }
+
+        // Controllers
+        if (preg_match('#(^|/)app/Http/Controllers/#i', $relativePath)) {
+            return 'controller';
+        }
+
+        // Middleware
+        if (preg_match('#(^|/)app/Http/Middleware/#i', $relativePath)) {
+            return 'middleware';
+        }
+
+        // Services
+        if (preg_match('#(^|/)app/Services/#i', $relativePath)) {
+            return 'service';
+        }
+
+        // Commands
+        if (preg_match('#(^|/)app/Console/Commands/#i', $relativePath)) {
+            return 'command';
+        }
+
+        // Migrations
+        if (preg_match('#(^|/)database/migrations/#i', $relativePath)) {
+            return 'migration';
+        }
+
+        // Routes
+        if (preg_match('#(^|/)routes/#i', $relativePath)) {
+            return 'route';
+        }
+
+        // Config
+        if (preg_match('#(^|/)config/#i', $relativePath)) {
+            return 'config';
+        }
+
+        // Blade views
+        if (str_contains($relativePath, '.blade.php')) {
+            return 'view';
+        }
+
+        // Tests
+        if (preg_match('#(^|/)tests/#i', $relativePath)) {
+            return 'test';
+        }
+
+        // Enums, DTOs, Events, Jobs, etc.
+        if (preg_match('#(^|/)app/(Enums|DTOs|Events|Jobs|Listeners|Traits|Exceptions|Contracts)/#i', $relativePath)) {
+            return 'support';
+        }
+
+        return 'code';
     }
 
     /**
@@ -672,12 +747,14 @@ class DocIndexer
     /**
      * Search documents by query
      */
-    public function search(string $query, ?string $project = null, int $limit = 5): array
+    public function search(string $query, ?string $project = null, int $limit = 5, ?string $fileType = null): array
     {
         $queryEmbedding = $this->generateEmbedding($query);
 
         $documents = DocEmbedding::when($project, function ($q) use ($project) {
             return $q->where('project', strtolower($project));
+        })->when($fileType, function ($q) use ($fileType) {
+            return $q->where('file_type', $fileType);
         })->get();
 
         $results = [];

@@ -1,7 +1,7 @@
 # Roadmap: DocIndexer Optimalisaties
 
 > Aanbevelingen van Gemini — verwerkt 2026-03-11
-> Prioriteit: na Webapp-interface
+> Status: bijgewerkt 2026-03-17
 
 ## Architectuurprincipe
 
@@ -15,118 +15,104 @@
 
 ---
 
-## Item 1: WAL Mode (SQLite) — KLEIN, HOGE PRIORITEIT
+## Item 1: WAL Mode (SQLite) — GEDAAN
 
-**Probleem:** Als de indexer schrijft, blokkeert hij de webapp die leest.
-**Oplossing:** WAL (Write-Ahead Logging) — lezen en schrijven kunnen tegelijk.
+**Status:** Geïmplementeerd in `DocIndexer::__construct()` (runtime PRAGMA)
 
-**Wat al bestaat:** `config/database.php` heeft `doc_intelligence` SQLite connectie, geen WAL ingesteld.
-
-**Fix:**
 ```php
-// config/database.php
-'doc_intelligence' => [
-    'driver' => 'sqlite',
-    'database' => database_path('doc_intelligence.sqlite'),
-    'prefix' => '',
-    'foreign_key_constraints' => true,
-    'options' => [
-        PDO::ATTR_STRINGIFY_FETCHES => false,
-    ],
-],
-```
-Plus in een ServiceProvider of migration:
-```sql
-PRAGMA journal_mode=WAL;
-PRAGMA synchronous=NORMAL;
+DB::connection('doc_intelligence')->statement('PRAGMA journal_mode=WAL');
+DB::connection('doc_intelligence')->statement('PRAGMA synchronous=NORMAL');
 ```
 
 ---
 
-## Item 2: Metadata Verrijking (file_type detectie) — MEDIUM
+## Item 2: Metadata Verrijking (file_type detectie) — GEDAAN
 
-**Probleem:** RAG geeft alle bestanden terug zonder onderscheid.
-**Oplossing:** Bij indexering herkennen: `controller`, `model`, `migration`, `view`, `docs`, `config`, `test`.
+**Status:** Geïmplementeerd 2026-03-17
 
-**Wat al bestaat:** `DocEmbedding` model heeft geen `file_type` kolom.
+**Wat is gebouwd:**
+- Migration: `file_type VARCHAR(20)` kolom op `doc_embeddings`
+- `DocIndexer::detectFileType()` — detecteert 14 types op basis van pad:
+  `docs`, `model`, `controller`, `middleware`, `service`, `command`, `migration`, `route`, `config`, `view`, `test`, `support`, `structure`, `code`
+- `DocEmbedding::scopeOfType()` — query scope voor filtering
+- `docs:search --type=X` — CLI filter
+- `GET /api/docs/search?type=X` — API filter
+- `GET /api/docs/health` — toont `by_type` breakdown
 
-**Stappenplan:**
-1. Migration: `file_type VARCHAR(20) NULL` toevoegen aan `doc_embeddings`
-2. DocIndexer: detectielogica op basis van pad/extensie:
-   ```php
-   protected function detectFileType(string $path): string {
-       if (str_contains($path, '/Controllers/')) return 'controller';
-       if (str_contains($path, '/Models/'))      return 'model';
-       if (str_contains($path, '/migrations/'))  return 'migration';
-       if (str_contains($path, '/views/'))       return 'view';
-       if (str_contains($path, 'docs/'))         return 'docs';
-       if (preg_match('/\.(md|txt)$/', $path))   return 'docs';
-       if (preg_match('/\.(env|yaml|json)$/', $path)) return 'config';
-       if (str_contains($path, '/tests/'))       return 'test';
-       return 'code';
-   }
-   ```
-3. ragService.js: `options.fileType` filter doorgeven aan SQL query
-4. Frontend: filter-UI in ChatInterface ("Zoek in: alle / docs / controllers / models")
+**Voorbeeld:**
+```bash
+php artisan docs:search "authentication" --type=model --limit=5
+```
 
 ---
 
-## Item 3: Health Check API — KLEIN
+## Item 3: Health Check API — GEDAAN
 
-**Probleem:** Webapp heeft geen manier om te weten of de indexer gezond is.
-**Wat al bestaat:** `GET /api/docs/stats` geeft al per-project counts + issue stats.
+**Status:** Geïmplementeerd 2026-03-17
 
-**Uitbreiden naar:**
+**Endpoint:** `GET /api/docs/health` (Bearer token vereist)
+
+**Response:**
 ```json
-GET /api/docs/health
 {
   "status": "healthy",
-  "indexed_files": 973,
-  "neural_embeddings": 514,
-  "last_indexed_at": "2026-03-11 22:30:00",
-  "db_locked": false,
-  "db_size_mb": 45.2,
-  "by_project": { "havuncore": 187, "judotoernooi": 87, ... }
+  "indexed_files": 1779,
+  "neural_embeddings": 1265,
+  "tfidf_embeddings": 514,
+  "last_indexed_at": "2026-03-17T...",
+  "open_issues": 88,
+  "db_size_mb": 48.2,
+  "ollama_available": true,
+  "by_project": { "havuncore": 216, ... },
+  "by_type": { "docs": 102, "model": 16, ... }
 }
 ```
 
-**Webapp:** `StatusView.jsx` toont groen vinkje als `status === "healthy"`.
-
 ---
 
-## Item 4: Smart Watcher (Auto Re-index) — GROOT
+## Item 4: Smart Watcher (Auto Re-index) — GEDAAN
 
-**Probleem:** Handmatig `php artisan docs:index all` draaien na elke codewijziging.
-**Oplossing:** Filesystem watcher die gewijzigde bestanden direct herindexeert.
+**Status:** Geïmplementeerd als `docs:watch` command
 
-**Opties:**
-| Aanpak | Pro | Con |
-|--------|-----|-----|
-| PHP `inotify` extension | Geen extra tools | Alleen Linux |
-| Laravel Queue + Horizon | Robuust, retry logic | Extra setup |
-| Artisan command met `--watch` flag | Simpel | Polling (elke 30s) |
-| Node.js `chokidar` in webapp | Al beschikbaar | Cross-project coupling |
-
-**Aanbeveling:** `--watch` polling flag in `docs:index`:
+**Gebruik:**
 ```bash
-php artisan docs:index all --watch --interval=30
+php artisan docs:watch              # continu, elke 30 sec
+php artisan docs:watch --once       # enkele cyclus
+php artisan docs:watch --interval=60 # elke 60 sec
 ```
-Draait als achtergrondproces, checkt elke 30s welke bestanden gewijzigd zijn op basis van `file_modified_at`.
 
-**Al aanwezig:** `content_hash` en `file_modified_at` in `doc_embeddings` — basis voor change detection is er.
+**Werking:** Vergelijkt SHA256 hashes, herindexeert alleen gewijzigde bestanden, cleanup orphaned entries.
 
 ---
 
-## Volgorde van uitvoering
+## Item 5: IssueDetector verbeteringen — GEDAAN
 
-1. **WAL mode** — 30 min werk, direct betere stabiliteit
-2. **Health Check API uitbreiden** — 1 uur, Webapp kan status tonen
-3. **Metadata/file_type** — halve dag, betere RAG filtering
-4. **Smart Watcher** — 1 dag, volledig automatisch
+**Status:** Geïmplementeerd 2026-03-17
+
+**Problemen opgelost:**
+- Cross-project duplicate detection genereerde 5928 false positives (shared files als `.claude/commands/`)
+- Code files (models, controllers) werden als duplicates gemarkeerd door structurele gelijkenis
+
+**Oplossing:**
+- Duplicate detection draait nu alleen BINNEN hetzelfde project (niet cross-project)
+- Shared file patterns worden automatisch overgeslagen (`.claude/commands/`, `_structure/`, `CLAUDE.md`)
+- Code file types worden uitgesloten van duplicate detection (model, controller, migration, etc.)
+- Threshold verhoogd van 0.85 naar 0.90
+
+**Resultaat:** Van 5928 naar 6 echte duplicates voor havuncore.
+
+---
 
 ## Status
 
-- [ ] WAL mode
-- [ ] Health Check API
-- [ ] Metadata file_type
-- [ ] Smart Watcher
+- [x] WAL mode (2026-03-11)
+- [x] Health Check API (2026-03-17)
+- [x] Metadata file_type (2026-03-17)
+- [x] Smart Watcher (2026-03-16)
+- [x] IssueDetector fix (2026-03-17)
+
+## Volgende stappen (optioneel)
+
+- [ ] Qdrant migratie — wanneer KB > 5000 bestanden (zie `qdrant-migration-plan.md`)
+- [ ] Frontend file_type filter in havuncore-webapp ChatInterface
+- [ ] ragService.js integratie met file_type filter

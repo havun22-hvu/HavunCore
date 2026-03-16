@@ -65,6 +65,7 @@ php artisan docs:detect --index
 | `docs:watch --interval=60` | Interval in seconden (default: 30) |
 | `docs:search "query"` | Semantisch zoeken in alle docs |
 | `docs:search "query" --project=X` | Zoeken binnen 1 project |
+| `docs:search "query" --type=model` | Zoeken op file type (docs, model, controller, service, route, migration, config, view, command, middleware, test, support, code, structure) |
 | `docs:detect [project]` | Detecteer issues (duplicaten, inconsistenties) |
 | `docs:issues [project]` | Toon open issues |
 | `docs:issues --resolve=ID` | Markeer issue als opgelost |
@@ -142,6 +143,39 @@ php artisan docs:detect [project]
 php artisan docs:watch --interval=60
 ```
 
+## API Endpoints
+
+| Endpoint | Method | Beschrijving |
+|----------|--------|-------------|
+| `/api/docs/search?q=query` | GET | Semantisch zoeken (optioneel: `&project=X&type=model&limit=5`) |
+| `/api/docs/health` | GET | Systeemstatus: indexed files, embeddings, Ollama status, file types |
+| `/api/docs/stats` | GET | Statistieken per project |
+| `/api/docs/issues` | GET | Open issues (optioneel: `&project=X&type=duplicate`) |
+| `/api/docs/read?project=X&path=Y` | GET | Lees specifiek document |
+
+Alle endpoints vereisen Bearer token (`config('services.doc_intelligence.api_token')`) of `X-KB-Token` header.
+
+## File Types
+
+Elk geïndexeerd bestand krijgt een `file_type` label:
+
+| Type | Beschrijving |
+|------|-------------|
+| `docs` | MD documenten |
+| `model` | Eloquent models (`app/Models/`) |
+| `controller` | HTTP controllers (`app/Http/Controllers/`) |
+| `service` | Service classes (`app/Services/`) |
+| `middleware` | HTTP middleware |
+| `command` | Artisan commands |
+| `migration` | Database migrations |
+| `route` | Route definities |
+| `config` | Config bestanden |
+| `view` | Blade templates |
+| `test` | Test bestanden |
+| `support` | Enums, DTOs, Events, Jobs, Traits, Exceptions, Contracts |
+| `structure` | Auto-generated structuur-overzicht |
+| `code` | Overige code bestanden |
+
 ## Architectuur
 
 ```
@@ -159,6 +193,9 @@ HavunCore/
 │   │   ├── DocIndexer.php              <- MD + code indexering
 │   │   ├── StructureIndexer.php        <- Structuur-analyse per project
 │   │   └── IssueDetector.php           <- Issue detectie
+│   │
+│   ├── Http/Controllers/Api/
+│   │   └── DocIntelligenceController.php <- API endpoints (search, health, stats, issues, read)
 │   │
 │   └── Console/Commands/
 │       ├── DocIndexCommand.php         <- docs:index
@@ -208,4 +245,4 @@ php artisan docs:structure all --force
 
 ---
 
-*Laatste update: 14 maart 2026*
+*Laatste update: 17 maart 2026*

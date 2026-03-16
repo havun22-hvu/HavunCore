@@ -17,6 +17,7 @@ class DocEmbedding extends Model
         'content_hash',
         'embedding',
         'embedding_model',
+        'file_type',
         'token_count',
         'file_modified_at',
     ];
@@ -103,5 +104,13 @@ class DocEmbedding extends Model
     public function scopeForProject($query, string $project)
     {
         return $query->where('project', strtolower($project));
+    }
+
+    /**
+     * Scope: filter by file type (model, controller, service, docs, etc.)
+     */
+    public function scopeOfType($query, string $fileType)
+    {
+        return $query->where('file_type', $fileType);
     }
 }

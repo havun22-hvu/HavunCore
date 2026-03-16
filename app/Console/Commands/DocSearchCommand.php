@@ -10,6 +10,7 @@ class DocSearchCommand extends Command
     protected $signature = 'docs:search
                             {query : The search query}
                             {--project= : Filter by project}
+                            {--type= : Filter by file type (docs, model, controller, service, route, migration, config, view, command, middleware, test, support, code, structure)}
                             {--limit=5 : Number of results}';
 
     protected $description = 'Search documentation using semantic search';
@@ -18,12 +19,16 @@ class DocSearchCommand extends Command
     {
         $query = $this->argument('query');
         $project = $this->option('project');
+        $fileType = $this->option('type');
         $limit = (int) $this->option('limit');
 
         $this->info("Searching for: \"{$query}\"");
+        if ($fileType) {
+            $this->info("Filter: type={$fileType}");
+        }
         $this->line('');
 
-        $results = $indexer->search($query, $project, $limit);
+        $results = $indexer->search($query, $project, $limit, $fileType);
 
         if (empty($results)) {
             $this->warn('No results found.');

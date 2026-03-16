@@ -119,6 +119,7 @@ class StructureIndexer
                 'content_hash' => $summaryHash,
                 'embedding' => $embedding,
                 'embedding_model' => $embedding ? (env('OLLAMA_EMBEDDING_MODEL', 'nomic-embed-text')) : 'tfidf-fallback',
+                'file_type' => 'structure',
                 'token_count' => (int) ceil(strlen($summary) / 4),
                 'file_modified_at' => now(),
             ]

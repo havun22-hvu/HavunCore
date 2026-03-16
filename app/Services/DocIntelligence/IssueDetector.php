@@ -12,8 +12,24 @@ class IssueDetector
     protected DocIndexer $indexer;
 
     // Thresholds
-    protected float $duplicateThreshold = 0.85;  // Similarity above this = duplicate
+    protected float $duplicateThreshold = 0.90;  // Similarity above this = duplicate (raised from 0.85 to reduce noise)
     protected int $outdatedDays = 90;             // Days without update = outdated
+
+    /**
+     * Files that are intentionally shared across projects (skip duplicate detection)
+     */
+    protected array $sharedFilePatterns = [
+        '.claude/commands/',
+        '_structure/',
+        'CLAUDE.md',
+    ];
+
+    /**
+     * File types to exclude from duplicate detection (code has structural similarity, not content duplicates)
+     */
+    protected array $skipDuplicateTypes = [
+        'model', 'controller', 'middleware', 'command', 'migration', 'config', 'route', 'support', 'code', 'structure',
+    ];
 
     public function __construct(DocIndexer $indexer)
     {
@@ -36,74 +52,91 @@ class IssueDetector
     }
 
     /**
-     * Detect duplicate content across documents
+     * Detect duplicate content — only WITHIN same project, skip shared files
      */
     public function detectDuplicates(?string $project = null): int
     {
-        $documents = DocEmbedding::when($project, function ($q) use ($project) {
-            return $q->where('project', strtolower($project));
-        })->get();
-
         $issuesFound = 0;
-        $checked = [];
+        $projects = $project
+            ? [strtolower($project)]
+            : DocEmbedding::distinct()->pluck('project')->toArray();
 
-        foreach ($documents as $doc1) {
-            foreach ($documents as $doc2) {
-                // Skip same document or already checked pair
-                if ($doc1->id >= $doc2->id) continue;
+        foreach ($projects as $proj) {
+            $documents = DocEmbedding::where('project', $proj)
+                ->whereNotNull('embedding')
+                ->get()
+                ->filter(fn ($doc) => !$this->isSharedFile($doc->file_path)
+                    && !in_array($doc->file_type, $this->skipDuplicateTypes));
 
-                $pairKey = "{$doc1->id}-{$doc2->id}";
-                if (isset($checked[$pairKey])) continue;
-                $checked[$pairKey] = true;
+            $docs = $documents->values();
+            $count = $docs->count();
+            $checked = [];
 
-                // Calculate similarity
-                $similarity = $this->calculateSimilarity($doc1->embedding ?? [], $doc2->embedding ?? []);
+            for ($i = 0; $i < $count; $i++) {
+                for ($j = $i + 1; $j < $count; $j++) {
+                    $doc1 = $docs[$i];
+                    $doc2 = $docs[$j];
 
-                if ($similarity >= $this->duplicateThreshold) {
-                    // Check if issue already exists
-                    $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_DUPLICATE)
-                        ->where('status', DocIssue::STATUS_OPEN)
-                        ->whereJsonContains('affected_files', $doc1->file_path)
-                        ->whereJsonContains('affected_files', $doc2->file_path)
-                        ->first();
+                    $similarity = $this->calculateSimilarity($doc1->embedding ?? [], $doc2->embedding ?? []);
 
-                    if (!$existingIssue) {
-                        DocIssue::create([
-                            'project' => $doc1->project === $doc2->project ? $doc1->project : null,
-                            'issue_type' => DocIssue::TYPE_DUPLICATE,
-                            'severity' => DocIssue::SEVERITY_MEDIUM,
-                            'title' => "Duplicate content detected",
-                            'details' => [
-                                'similarity' => round($similarity * 100, 1) . '%',
-                                'file1' => ['project' => $doc1->project, 'path' => $doc1->file_path],
-                                'file2' => ['project' => $doc2->project, 'path' => $doc2->file_path],
-                            ],
-                            'affected_files' => [
-                                "{$doc1->project}:{$doc1->file_path}",
-                                "{$doc2->project}:{$doc2->file_path}",
-                            ],
-                            'suggested_action' => "Review both files and consolidate into one location.",
-                        ]);
+                    if ($similarity >= $this->duplicateThreshold) {
+                        $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_DUPLICATE)
+                            ->where('project', $proj)
+                            ->where('status', DocIssue::STATUS_OPEN)
+                            ->whereJsonContains('affected_files', "{$proj}:{$doc1->file_path}")
+                            ->whereJsonContains('affected_files', "{$proj}:{$doc2->file_path}")
+                            ->first();
 
-                        // Also create a relation
-                        DocRelation::updateOrCreate(
-                            [
-                                'source_project' => $doc1->project,
-                                'source_file' => $doc1->file_path,
-                                'target_project' => $doc2->project,
-                                'target_file' => $doc2->file_path,
-                                'relation_type' => DocRelation::TYPE_DUPLICATES,
-                            ],
-                            ['confidence' => $similarity, 'auto_detected' => true]
-                        );
+                        if (!$existingIssue) {
+                            DocIssue::create([
+                                'project' => $proj,
+                                'issue_type' => DocIssue::TYPE_DUPLICATE,
+                                'severity' => DocIssue::SEVERITY_MEDIUM,
+                                'title' => "Duplicate content detected",
+                                'details' => [
+                                    'similarity' => round($similarity * 100, 1) . '%',
+                                    'file1' => ['project' => $doc1->project, 'path' => $doc1->file_path],
+                                    'file2' => ['project' => $doc2->project, 'path' => $doc2->file_path],
+                                ],
+                                'affected_files' => [
+                                    "{$proj}:{$doc1->file_path}",
+                                    "{$proj}:{$doc2->file_path}",
+                                ],
+                                'suggested_action' => "Review both files and consolidate into one location.",
+                            ]);
 
-                        $issuesFound++;
+                            DocRelation::updateOrCreate(
+                                [
+                                    'source_project' => $doc1->project,
+                                    'source_file' => $doc1->file_path,
+                                    'target_project' => $doc2->project,
+                                    'target_file' => $doc2->file_path,
+                                    'relation_type' => DocRelation::TYPE_DUPLICATES,
+                                ],
+                                ['confidence' => $similarity, 'auto_detected' => true]
+                            );
+
+                            $issuesFound++;
+                        }
                     }
                 }
             }
         }
 
         return $issuesFound;
+    }
+
+    /**
+     * Check if a file path matches shared file patterns (intentionally duplicated across projects)
+     */
+    protected function isSharedFile(string $filePath): bool
+    {
+        foreach ($this->sharedFilePatterns as $pattern) {
+            if (str_contains($filePath, $pattern)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

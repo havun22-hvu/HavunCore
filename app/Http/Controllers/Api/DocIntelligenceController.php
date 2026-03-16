@@ -45,6 +45,7 @@ class DocIntelligenceController extends Controller
         }
         $query = $request->input('q', $request->input('query', ''));
         $project = $request->input('project');
+        $fileType = $request->input('type');
         $limit = (int) $request->input('limit', 5);
 
         if (empty($query)) {
@@ -54,7 +55,7 @@ class DocIntelligenceController extends Controller
             ], 400);
         }
 
-        $results = $indexer->search($query, $project, $limit);
+        $results = $indexer->search($query, $project, $limit, $fileType);
 
         return response()->json([
             'success' => true,
@@ -145,6 +146,61 @@ class DocIntelligenceController extends Controller
             'total_issues' => DocIssue::where('status', 'open')->count(),
             'by_project' => $stats,
             'issues_by_project' => $issueStats,
+        ]);
+    }
+
+    /**
+     * Health check with detailed system info
+     *
+     * GET /api/docs/health
+     */
+    public function health(Request $request): JsonResponse
+    {
+        if (!$this->authenticate($request)) {
+            return response()->json(['success' => false, 'error' => 'Unauthorized'], 401);
+        }
+
+        $dbPath = database_path('doc_intelligence.sqlite');
+        $dbExists = file_exists($dbPath);
+        $dbSizeMb = $dbExists ? round(filesize($dbPath) / 1024 / 1024, 1) : 0;
+
+        $totalFiles = DocEmbedding::count();
+        $neuralCount = DocEmbedding::where('embedding_model', '!=', 'tfidf-fallback')->count();
+        $tfidfCount = DocEmbedding::where('embedding_model', 'tfidf-fallback')->count();
+        $lastIndexed = DocEmbedding::max('updated_at');
+
+        $byProject = DocEmbedding::selectRaw('project, COUNT(*) as total')
+            ->groupBy('project')
+            ->pluck('total', 'project');
+
+        $byType = DocEmbedding::selectRaw('file_type, COUNT(*) as total')
+            ->groupBy('file_type')
+            ->pluck('total', 'file_type');
+
+        $openIssues = DocIssue::where('status', 'open')->count();
+
+        // Check Ollama connectivity
+        $ollamaOk = false;
+        try {
+            $response = \Illuminate\Support\Facades\Http::timeout(3)
+                ->get(env('OLLAMA_URL', 'http://127.0.0.1:11434') . '/api/tags');
+            $ollamaOk = $response->successful();
+        } catch (\Exception $e) {
+            // Ollama unreachable
+        }
+
+        return response()->json([
+            'success' => true,
+            'status' => $dbExists && $totalFiles > 0 ? 'healthy' : 'degraded',
+            'indexed_files' => $totalFiles,
+            'neural_embeddings' => $neuralCount,
+            'tfidf_embeddings' => $tfidfCount,
+            'last_indexed_at' => $lastIndexed,
+            'open_issues' => $openIssues,
+            'db_size_mb' => $dbSizeMb,
+            'ollama_available' => $ollamaOk,
+            'by_project' => $byProject,
+            'by_type' => $byType,
         ]);
     }
 
