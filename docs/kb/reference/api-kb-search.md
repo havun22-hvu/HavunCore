@@ -2,7 +2,7 @@
 
 > Remote toegang tot de HavunCore kennisbank voor Claude sessies op andere locaties.
 
-## Status: GEDEELTELIJK GEÏMPLEMENTEERD
+## Status: ACTIEF
 
 ## Waarom?
 
@@ -106,11 +106,11 @@ curl -s -H "Authorization: Bearer $HAVUNCORE_KB_TOKEN" \
 1. [x] Bearer token auth toevoegen aan DocIntelligenceController
 2. [x] Config key `DOC_INTELLIGENCE_API_TOKEN` in `config/services.php`
 3. [x] Op-reis-workflow.md updaten met KB remote access
-4. [ ] `DOC_INTELLIGENCE_API_TOKEN` instellen in server `.env`
-5. [ ] Cron job instellen op server voor `docs:index all --no-code`
-6. [ ] Testen vanaf externe locatie
-7. [ ] CLAUDE.md globaal updaten met remote fallback instructie
-8. [ ] KB token toevoegen aan credentials.vault
+4. [x] `DOC_INTELLIGENCE_API_TOKEN` instellen in server `.env`
+5. [x] Cron job instellen op server: `0 */6 * * *` docs:index all --no-code
+6. [x] Getest op server: zonder token → 401, met token → resultaten
+7. [x] CLAUDE.md globaal updaten met remote fallback instructie
+8. [ ] KB token toevoegen aan credentials.vault (handmatig bij volgende USB update)
 
 ## Gerelateerd
 
