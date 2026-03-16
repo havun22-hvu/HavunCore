@@ -2,7 +2,40 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 16 maart 2026
+## Laatste Sessie: 17 maart 2026
+
+### Wat is gedaan:
+- **KB Search API — Remote Toegang**
+  - Bearer token auth toegevoegd aan alle `/api/docs/*` endpoints (search, issues, stats, read)
+  - Config key: `DOC_INTELLIGENCE_API_TOKEN` in `config/services.php`
+  - Token gegenereerd en in server `.env` gezet
+  - Cron job: `docs:index all --no-code` elke 6 uur op server
+  - Getest: zonder token → 401, met token → resultaten OK
+- **Docs bijgewerkt**
+  - `docs/kb/reference/api-kb-search.md` — nieuwe API reference doc
+  - `docs/kb/runbooks/op-reis-workflow.md` — KB remote access sectie + vault tabel
+  - Globale `CLAUDE.md` — lokaal + remote KB fallback instructie
+
+### Openstaande items:
+- [ ] KB token toevoegen aan credentials.vault op USB (USB werd niet herkend)
+- [ ] **Monument versioning bouwen** — memorial_versions tabel + observer
+- [ ] `/kb` command bijwerken in ALLE andere projecten
+- [ ] Resend composer package verwijderen uit Herdenkingsportaal
+- [ ] Stripe Connect testen op staging
+- [ ] `account.updated` webhook
+- [ ] Herdenkingsportaal: `excluded_message_patterns` toevoegen aan AutoFix
+- [ ] HavunAdmin deployen (StripeService prefix fix)
+- [ ] DocIndexer duplicate bug fixen (171 false positive issues)
+
+### Belangrijke context:
+- KB Search API is LIVE op `https://havuncore.havun.nl/api/docs/*`
+- Token prefix: `hvn_kb_` — staat in server .env als `DOC_INTELLIGENCE_API_TOKEN`
+- Token moet nog naar USB vault voor op-reis gebruik
+- Cron draait elke 6 uur `docs:index all --no-code` (TF-IDF, geen Ollama op server)
+
+---
+
+## Vorige Sessie: 16 maart 2026
 
 ### Wat is gedaan:
 - **Gemini Audit — AutoFix Hardening**
