@@ -2,37 +2,43 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 18 maart 2026
+## Laatste Sessie: 18 maart 2026 (avond)
 
 ### Wat is gedaan:
-- **havuncore-webapp: Status tab fix (axios 401 interceptor bug)**
-  - Probleem: StatusView in server mode deed API calls naar Laravel `/api/docs/stats` die KB-token auth verwacht
-  - Axios interceptor logde gebruiker uit bij ELKE 401, ook van niet-eigen endpoints
-  - Fix: interceptor logt nu alleen uit bij 401 van `/api/auth/*` endpoints
-  - Bestand: `havuncore-webapp/frontend/src/App.jsx`
-  - Commit: `9584a04` op havuncore-webapp main
+- **Unified Login System v4.0 — cross-project implementatie**
+  - Nieuwe standaard: email/ww + QR (desktop) + biometrie (smartphone) + magic link
+  - PIN login verwijderd uit UI (backend intact)
+  - Geimplementeerd in: JudoToernooi (prod+staging) en Herdenkingsportaal (prod)
+  - Per project: MagicLinkToken model, MagicLinkMail, migration, views
+  - JudoToernooi: pill tabs (login/register), magic link registratie
+  - Herdenkingsportaal: clean login form, magic link registratie, Google OAuth behouden
+  - Wachtwoord nullable gemaakt (magic link maakt account zonder wachtwoord)
+  - Rate limiting (3/10min) + email enumeration prevention
+- **KB docs geschreven/bijgewerkt (HavunCore)**
+  - `patterns/magic-link-auth.md` — compleet magic link pattern
+  - `runbooks/unified-login-procedure.md` — stap-voor-stap procedure
+  - `reference/unified-login-system.md` — v3.0 → v4.0
+  - `standards/unified-auth-strategy.md` — aligned met v4.0
+- **Databases gebackupt + migrations gedraaid op production**
+- **havuncore-webapp: Status tab fix (axios 401 interceptor bug)** (eerdere sessie vandaag)
 
 ### Openstaande items:
 - [ ] havuncore-webapp deployen op server (git pull + pm2 restart)
 - [ ] KB token verplaatsen van `H:/havuncore-kb-token.txt` naar credentials.vault
-- [ ] **Monument versioning bouwen** — memorial_versions tabel + observer
-- [ ] `/kb` command bijwerken in ALLE andere projecten
+- [ ] Monument versioning bouwen — memorial_versions tabel + observer
 - [ ] Resend composer package verwijderen uit Herdenkingsportaal
 - [ ] Stripe Connect testen op staging
-- [ ] `account.updated` webhook
 - [ ] Herdenkingsportaal: `excluded_message_patterns` toevoegen aan AutoFix
 - [ ] HavunAdmin deployen (StripeService prefix fix)
-- [ ] havuncore-webapp: file_type filter integreren in ragService.js + frontend ChatInterface
-- [ ] Server: migration draaien (`php artisan migrate --database=doc_intelligence`) voor file_type kolom
-- [ ] Server: `docs:index all --force` draaien om file_type te vullen voor alle projecten
+- [ ] PIN backend code opschonen (fase 3 — niet urgent)
+- [ ] SafeHavun/HavunAdmin/Infosyst: ook magic link toevoegen (volgende projecten)
 
 ### Belangrijke context:
-- KB Search API is LIVE op `https://havuncore.havun.nl/api/docs/*`
-- Token prefix: `hvn_kb_` — staat in server .env als `DOC_INTELLIGENCE_API_TOKEN`
-- **Axios interceptor pattern:** bij multi-auth apps (device token + KB token) mag de interceptor alleen uitloggen bij 401 van eigen auth endpoints
-- Cron draait elke 6 uur `docs:index all --no-code` (TF-IDF, geen Ollama op server)
-- DocIndexer roadmap is COMPLEET — alle 5 items afgevinkt
-- Volgende grote stap: Qdrant migratie wanneer KB > 5000 bestanden
+- Backups in `/root/backups/` (judotoernooi + herdenkingsportaal, 18 maart 2026)
+- PIN login backend code BEWUST intact — alleen UI verborgen
+- Platform detectie: `isSmartphone` = touch + screen < 550px → biometrie; anders QR
+- Herdenkingsportaal login was 54KB → nu ~300 regels (grote cleanup)
+- Bestaande users+wachtwoorden 100% intact
 
 ---
 
