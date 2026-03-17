@@ -2,27 +2,18 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 17 maart 2026 (middag)
+## Laatste Sessie: 18 maart 2026
 
 ### Wat is gedaan:
-- **DocIndexer roadmap volledig afgerond (alle 5 items)**
-  - `file_type` metadata kolom: 14 types (docs, model, controller, service, etc.)
-  - `detectFileType()` in DocIndexer, automatic bij indexering
-  - `--type` filter op `docs:search` CLI en `/api/docs/search?type=X` API
-  - `/api/docs/health` endpoint: Ollama status, file type breakdown, embedding counts, DB grootte
-  - IssueDetector fix: duplicate detection alleen binnen zelfde project
-  - Shared files (.claude/commands/, _structure/, CLAUDE.md) worden geskipt
-  - Code file types (model, controller, etc.) uitgesloten van duplicate detection
-  - Threshold verhoogd van 0.85 → 0.90
-  - **Resultaat: 5928 false positive issues → 6 echte duplicates**
-- **Docs bijgewerkt**
-  - `indexer-roadmap.md` — alle items afgevinkt, volgende stappen gedefinieerd
-  - `doc-intelligence-setup.md` — API endpoints, file types, architectuur
-- **KB Search API** (ochtend)
-  - Bearer token auth op alle `/api/docs/*` endpoints
-  - Cron: `docs:index all --no-code` elke 6 uur op server
+- **havuncore-webapp: Status tab fix (axios 401 interceptor bug)**
+  - Probleem: StatusView in server mode deed API calls naar Laravel `/api/docs/stats` die KB-token auth verwacht
+  - Axios interceptor logde gebruiker uit bij ELKE 401, ook van niet-eigen endpoints
+  - Fix: interceptor logt nu alleen uit bij 401 van `/api/auth/*` endpoints
+  - Bestand: `havuncore-webapp/frontend/src/App.jsx`
+  - Commit: `9584a04` op havuncore-webapp main
 
 ### Openstaande items:
+- [ ] havuncore-webapp deployen op server (git pull + pm2 restart)
 - [ ] KB token verplaatsen van `H:/havuncore-kb-token.txt` naar credentials.vault
 - [ ] **Monument versioning bouwen** — memorial_versions tabel + observer
 - [ ] `/kb` command bijwerken in ALLE andere projecten
@@ -38,6 +29,7 @@
 ### Belangrijke context:
 - KB Search API is LIVE op `https://havuncore.havun.nl/api/docs/*`
 - Token prefix: `hvn_kb_` — staat in server .env als `DOC_INTELLIGENCE_API_TOKEN`
+- **Axios interceptor pattern:** bij multi-auth apps (device token + KB token) mag de interceptor alleen uitloggen bij 401 van eigen auth endpoints
 - Cron draait elke 6 uur `docs:index all --no-code` (TF-IDF, geen Ollama op server)
 - DocIndexer roadmap is COMPLEET — alle 5 items afgevinkt
 - Volgende grote stap: Qdrant migratie wanneer KB > 5000 bestanden
