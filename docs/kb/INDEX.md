@@ -39,6 +39,7 @@ docs/kb/
 │   ├── password-hashing.md
 │   ├── pdf-to-image-conversion.md
 │   ├── pusher-realtime.md
+│   ├── magic-link-auth.md
 │   ├── qr-code-url-matching.md
 │   └── website-builder.md
 │
@@ -68,6 +69,7 @@ docs/kb/
 │   ├── sync-start-command.md
 │   ├── token-based-login.md
 │   ├── troubleshoot.md
+│   ├── unified-login-procedure.md
 │   └── unified-login-system.md
 │
 ├── reference/            ← API's en server
@@ -125,7 +127,8 @@ docs/kb/
 - [project-cleanup.md](runbooks/project-cleanup.md) - Project opschonen
 - [ggshield-setup.md](runbooks/ggshield-setup.md) - GitGuardian pre-commit
 - [token-based-login.md](runbooks/token-based-login.md) - Token-gebaseerde login
-- [unified-login-system.md](runbooks/unified-login-system.md) - Passkeys, QR, PIN
+- [unified-login-procedure.md](runbooks/unified-login-procedure.md) - Stap-voor-stap login implementatie (v4.0)
+- [unified-login-system.md](runbooks/unified-login-system.md) - Passkeys, QR (doorverwijzing)
 - [fix-qr-login-csrf.md](runbooks/fix-qr-login-csrf.md) - QR login CSRF fix
 - [passkey-mobile-fix.md](runbooks/passkey-mobile-fix.md) - Passkey op mobiel
 
@@ -135,7 +138,7 @@ docs/kb/
 - [api-vault.md](reference/api-vault.md) - Vault API
 - [backup-system.md](reference/backup-system.md) - Backup architectuur & Hetzner
 - [external-services.md](reference/external-services.md) - Mollie, Anthropic, GitGuardian dashboards
-- [unified-login-system.md](reference/unified-login-system.md) - Passkeys & QR login
+- [unified-login-system.md](reference/unified-login-system.md) - Unified Login System v4.0 (wachtwoord, QR, biometrie, magic link)
 - [ai-proxy.md](reference/ai-proxy.md) - AI proxy voor Claude API
 - [postcode-service.md](reference/postcode-service.md) - Postcode lookup
 - [security.md](reference/security.md) - Security richtlijnen
@@ -155,6 +158,7 @@ docs/kb/
 - [invoice-numbering.md](patterns/invoice-numbering.md) - Factuurnummering
 - [csrf-token-refresh.md](patterns/csrf-token-refresh.md) - CSRF token refresh
 - [password-hashing.md](patterns/password-hashing.md) - Wachtwoord hashing
+- [magic-link-auth.md](patterns/magic-link-auth.md) - Magic link registratie + wachtwoord vergeten (Laravel)
 - [qr-code-url-matching.md](patterns/qr-code-url-matching.md) - QR code URL matching
 
 ### Projects (per-project details)

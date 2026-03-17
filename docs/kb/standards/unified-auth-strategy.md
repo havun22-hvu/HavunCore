@@ -1,16 +1,22 @@
 # Unified Auth Strategy
 
-> **Laatst bijgewerkt:** 11 maart 2026  
-> **Status:** ✅ Actieve standaard voor alle Havun-projecten  
+> **Laatst bijgewerkt:** 17 maart 2026
+> **Status:** Actieve standaard voor alle Havun-projecten
+> **Versie:** 4.0
 > **Eigenaar:** HavunCore
 
 ## Overzicht
 
-Alle Havun-applicaties gebruiken dezelfde authenticatiestrategie:
-- **Geen wachtwoorden** (tenzij gebruiker expliciet wil)
-- **Geen pincode login** (vervangen door biometrie + magic links)
-- **PWA-first** met native biometrie ondersteuning
-- **Step-up authentication** voor gevoelige acties
+Alle Havun Laravel-applicaties gebruiken dezelfde authenticatiestrategie:
+- **Magic link** voor registratie en wachtwoord vergeten
+- **Email/wachtwoord** als standaard login
+- **QR code** voor desktop login (scan met telefoon)
+- **Biometrie (WebAuthn/Passkey)** voor smartphone login
+- **Decentraal** — elke app beheert eigen auth (ADR-002)
+
+### Niet meer gebruikt (v4.0)
+- ~~PIN login~~ (vervangen door biometrie + wachtwoord)
+- ~~Device fingerprint als primaire herkenning~~ (nu alleen voor analytics)
 
 ---
 
@@ -18,233 +24,222 @@ Alle Havun-applicaties gebruiken dezelfde authenticatiestrategie:
 
 ### Flow
 ```
-1. Gebruiker voert email in
-2. Magic link wordt verstuurd
-3. Klik op link → direct ingelogd
-4. PWA installatie prompt (indien mobiel/desktop)
-5. Biometrie koppelen (indien beschikbaar)
+1. Gebruiker voert naam + email in
+2. Magic link wordt verstuurd (15 min geldig, single-use)
+3. Klik op link → account aangemaakt, direct ingelogd
+4. Optioneel: wachtwoord instellen (voor toekomstige logins)
+5. Optioneel: biometrie koppelen (smartphone)
 ```
 
 ### Technisch
-- **Laravel Breeze** met aangepaste magic link flow
-- **Signed URLs** (1 uur geldig)
-- **Rate limiting:** max 3 magic links per 10 minuten
-- **Email template:** branded, duidelijke CTA
+- **MagicLinkToken** model (64-char random token)
+- **Rate limiting:** max 3 magic links per 10 minuten per IP
+- **Email enumeration preventie:** altijd success tonen
+- **Email template:** branded, duidelijke CTA knop
+
+### Waarom magic link?
+- Geen wachtwoord nodig bij registratie → lagere drempel
+- Email verificatie ingebouwd → geen aparte verificatie stap
+- Veiliger dan wachtwoord-only registratie
 
 ---
 
 ## 2. Dagelijks Gebruik
 
-### Mobiel (PWA)
+### Smartphone
 ```
-Biometrie → WebAuthn API → ingelogd
+Biometrie (passkey) → WebAuthn API → ingelogd
+Fallback: Email/wachtwoord
 ```
-- **Fallback:** Apparaat pincode/patroon (native OS)
-- **Biometrie types:** Face ID, Touch ID, vingerafdruk, gezichtsherkenning
+- **Types:** Face ID, Touch ID, vingerafdruk
+- **Package:** laragear/webauthn (lokaal, geen cloud)
 
 ### Desktop
 ```
-QR code tonen → scan met PWA → ingelogd op desktop
+QR code tonen → scan met telefoon (ingelogd op PWA) → ingelogd op desktop
+Fallback: Email/wachtwoord
 ```
-- **QR refresh:** elke 60 seconden nieuwe code
-- **WebSocket:** real-time login bevestiging
-- **Sessie sync:** desktop + mobiel blijven synchroon
+- **QR verloopt:** na 5 minuten, vernieuw knop beschikbaar
+- **Polling:** elke 2 seconden status check
+- **Vereist:** telefoon moet al ingelogd zijn
 
 ### Fallback (altijd beschikbaar)
-- **Magic link via email** (voor alle platforms)
-- **Wachtwoord** (optioneel, gebruiker kan zelf instellen)
+- **Email/wachtwoord** op alle platforms
+- **Wachtwoord vergeten** via magic link
 
 ---
 
-## 3. Step-Up Authentication
+## 3. Wachtwoord Vergeten
+
+### Flow
+```
+1. Gebruiker voert email in
+2. Magic link wordt verstuurd (15 min geldig)
+3. Klik op link → wachtwoord reset formulier
+4. Nieuw wachtwoord instellen → direct ingelogd
+```
+
+Zelfde MagicLinkToken systeem als registratie, met type `password_reset`.
+
+---
+
+## 4. Step-Up Authentication (optioneel per project)
 
 Voor gevoelige acties (betaling, delete account, wijzig email):
 
-### Niveau 1: Pincode (6 cijfers)
-- Gebruiker stelt eenmalig in (bij eerste gevoelige actie)
-- Opgeslagen als bcrypt hash
-- Max 3 pogingen, daarna 15 min cooldown
+### Niveau 1: Wachtwoord herbevestiging
+- Gebruiker voert wachtwoord opnieuw in
+- Session-based: 15 min geldig
 
 ### Niveau 2: TOTP (optioneel)
 - Google Authenticator / Authy
 - QR code setup
-- Backup codes (10x)
+- Backup codes (8-10 stuks)
 
 ### Voorbeelden
 | Actie | Auth Niveau |
 |-------|-------------|
 | Factuur bekijken | Normale sessie |
-| Factuur betalen | Pincode |
-| IBAN wijzigen | TOTP (indien ingesteld) of pincode |
+| Factuur betalen | Wachtwoord bevestiging |
+| IBAN wijzigen | TOTP (indien ingesteld) |
 | Account verwijderen | TOTP + email bevestiging |
 
 ---
 
-## 4. Technische Stack
-
-### Frontend (PWA)
-```javascript
-// Biometrie check
-if (window.PublicKeyCredential) {
-  // WebAuthn beschikbaar
-  navigator.credentials.get({ publicKey: options })
-}
-
-// QR scanner
-import { BrowserQRCodeReader } from '@zxing/library'
-```
+## 5. Technische Stack
 
 ### Backend (Laravel)
 ```php
 // Magic link
-use Illuminate\Support\Facades\URL;
+$token = MagicLinkToken::generate($email, 'register', ['name' => $name]);
+Mail::to($email)->send(new MagicLinkMail($token));
 
-$url = URL::temporarySignedRoute(
-    'auth.verify', 
-    now()->addHour(), 
-    ['user' => $user->id]
-);
+// Login pattern (KRITIEK)
+Auth::guard('web')->login($user, true);
+session()->save(); // NIET regenerate()
+```
 
-// Step-up
-middleware(['auth', 'step-up:pincode'])
-middleware(['auth', 'step-up:totp'])
+### Frontend
+```javascript
+// Platform detectie
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+// QR (desktop)
+fetch('/auth/qr/generate') → toon QR → poll status
+
+// Biometrie (smartphone)
+navigator.credentials.get({ publicKey: options }) → passkey login
 ```
 
 ### Database
 ```sql
--- users table
-email (unique)
-email_verified_at
-step_up_pincode (bcrypt hash, nullable)
-totp_secret (encrypted, nullable)
-biometric_credentials (json, nullable) -- WebAuthn credentials
-
--- sessions table
-Laravel default + PWA metadata
+-- magic_link_tokens: registratie + wachtwoord vergeten
+-- auth_devices: device tracking + biometrie status
+-- qr_login_tokens: QR sessie management
+-- webauthn_credentials: passkey opslag (laragear)
+-- webauthn_challenges: challenge opslag (custom)
 ```
 
 ---
 
-## 5. Security Best Practices
+## 6. Security Best Practices
 
-### ✅ Doen
-- Magic links max 1 uur geldig
+### Doen
+- Magic links max 15 min geldig, single-use
 - Rate limiting op alle auth endpoints
-- IP-based anomaly detection (nieuw land → extra verificatie)
-- Biometric credentials opslaan per apparaat
-- Session tokens roteren bij step-up
+- Email enumeration preventie (altijd success tonen)
+- `session()->save()` i.p.v. `session()->regenerate()`
+- CSRF exceptions voor passkey/QR endpoints
+- HTTPS verplicht in productie (WebAuthn vereist dit)
+- Biometric credentials blijven lokaal (nooit naar server)
 
-### ❌ Niet doen
-- Pincode als primaire login
-- Wachtwoorden verplicht maken
+### Niet doen
+- Wachtwoorden verplicht maken bij registratie
 - Magic links zonder expiry
-- Biometric data naar server sturen (blijft lokaal!)
+- `session()->regenerate()` na AJAX login
+- PIN als login methode (te zwak, vervangen door biometrie)
 
 ---
 
-## 6. Implementatie per Project
+## 7. Implementatie per Project
 
-### Volgorde (prioriteit)
-1. **HavunAdmin** (betalingen, IBAN wijzigingen → step-up essentieel)
-2. **Studieplanner** (huidige pincode vervangen)
-3. **JudoToernooi** (coach portal + organisator betalingen)
-4. **HavunClub** (ledenadministratie + incasso)
-5. **HavunVet** (patiëntgegevens AVG-gevoelig)
-6. **Herdenkingsportaal** (⚠️ LIVE, voorzichtig uitrollen)
+### Prioriteit
+1. **JudoToernooi** — PIN verwijderen, magic link toevoegen
+2. **Herdenkingsportaal** — PIN verwijderen, magic link toevoegen
+3. **HavunAdmin** — magic link toevoegen
+4. **SafeHavun** — magic link toevoegen
+5. **Infosyst** — biometrie + magic link toevoegen
+6. **HavunClub** — volledige implementatie
 
 ### Migratie Strategie
 ```
-Fase 1: Nieuwe auth naast oude (feature flag)
-Fase 2: Gebruikers migreren (opt-in)
-Fase 3: Force migration (1 maand notice)
-Fase 4: Oude auth verwijderen
+Fase 1: Magic link + wachtwoord vergeten toevoegen (geen breaking changes)
+Fase 2: PIN login UI verwijderen (fallback naar wachtwoord)
+Fase 3: PIN gerelateerde code + database opschonen
 ```
 
 ---
 
-## 7. User Experience
+## 8. User Experience
 
 ### Eerste keer (onboarding)
 ```
-"Welkom! We sturen je een inloglink."
-→ Email check
-→ "Koppel je vingerafdruk voor snelle toegang"
+"Welkom! Vul je naam en email in."
+→ "Check je inbox voor de activatielink."
+→ Link klikken → "Account actief! Stel optioneel een wachtwoord in."
+→ "Koppel je vingerafdruk voor snelle toegang" (smartphone)
 → Klaar
 ```
 
 ### Dagelijks
 ```
-App openen → vingerafdruk → binnen
-```
-
-### Desktop + mobiel
-```
-Desktop: "Scan deze QR met je telefoon"
-Mobiel: Camera openen → scan → beide ingelogd
-```
-
-### Gevoelige actie
-```
-"Bevestig met je pincode" 
-(6 cijfers, numpad, duidelijke feedback)
+Smartphone: App openen → vingerafdruk → binnen
+Desktop: QR scannen met telefoon → binnen
+Fallback: Email + wachtwoord
 ```
 
 ---
 
-## 8. Monitoring & Metrics
+## 9. Monitoring & Metrics
 
-Track via HavunCore Task Queue:
-- Magic link success rate
-- Biometrie adoption rate
-- Step-up trigger frequency
+Track via logging:
+- Magic link success rate (verstuurd vs geverifieerd)
+- Biometrie adoption rate (% users met passkey)
+- QR login usage (desktop sessions)
 - Failed auth attempts (fraud detection)
 
-Alerts:
-- >10 failed step-up pogingen per user
-- Magic link click rate <50%
-- Biometrie enrollment <30% (na 1 maand)
-
 ---
 
-## 9. Dependencies
-
-### NPM Packages
-```json
-{
-  "@simplewebauthn/browser": "^9.0.0",
-  "@zxing/library": "^0.20.0",
-  "otpauth": "^9.2.0"
-}
-```
+## 10. Dependencies
 
 ### Laravel Packages
 ```json
 {
-  "laravel/breeze": "^2.0",
-  "pragmarx/google2fa-laravel": "^2.1",
-  "spatie/laravel-qrcode": "^3.0"
+  "laragear/webauthn": "^4.0"
 }
 ```
 
-### Browser APIs
-- WebAuthn (biometrie)
-- Web Crypto API (key generation)
-- Service Worker (offline magic links)
-- Push API (login notifications)
+### Browser APIs (geen NPM packages nodig)
+- WebAuthn (biometrie) — native
+- Web Crypto API (fingerprint hashing) — native
 
 ---
 
-## 10. Toekomstige Verbeteringen
+## Referentie Documenten
 
-- **Passkeys** (platform authenticators, sync via iCloud/Google)
-- **WebAuthn roaming** (YubiKey support)
-- **Risk-based auth** (ML model voor fraud detection)
-- **SSO** tussen Havun-apps (1x login, overal binnen)
+| Document | Inhoud |
+|----------|--------|
+| `reference/unified-login-system.md` | Compleet technisch document (code, migrations, troubleshooting) |
+| `patterns/magic-link-auth.md` | Magic link pattern (model, controller, email) |
+| `runbooks/unified-login-procedure.md` | Stap-voor-stap implementatie procedure |
+| `decisions/002-decentrale-auth.md` | Waarom decentrale auth (geen SSO) |
 
----
+## Changelog
 
-## Referenties
+### v4.0 (17 maart 2026)
+- PIN login verwijderd uit standaard
+- Magic link toegevoegd voor registratie en wachtwoord vergeten
+- Strategie vereenvoudigd: 3 login methodes (ww, QR, biometrie) + magic link
 
-- [WebAuthn Guide](https://webauthn.guide/)
-- [Laravel Signed URLs](https://laravel.com/docs/11.x/urls#signed-urls)
-- [OWASP Auth Cheat Sheet](https://cheatsheetseries.owasp.org/cheatsheets/Authentication_Cheat_Sheet.html)
+### v3.0 (11 maart 2026)
+- Originele versie met PIN, biometrie, QR, wachtwoord
