@@ -91,7 +91,7 @@ php artisan config:clear && php artisan cache:clear
 
 ```bash
 # 1. Build lokaal
-cd D:\GitHub\havuncore-webapp\frontend
+cd D:\GitHub\HavunCore\webapp\frontend
 npm run build
 
 # 2. Upload frontend

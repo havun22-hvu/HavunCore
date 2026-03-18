@@ -200,6 +200,30 @@ grep 'PATH\|DATABASE\|LOG_FILE' /var/www/havuncore/webapp/backend/.env.productio
 
 ---
 
+## Verhuizing 5: havuncore-webapp lokaal
+
+| | Oud | Nieuw |
+|---|-----|-------|
+| **Pad** | `D:\GitHub\havuncore-webapp` | `D:\GitHub\HavunCore\webapp` |
+| **Reden** | Consistentie met server structuur (`/var/www/havuncore/webapp`) |
+
+### Wat is aangepast
+
+| Component | Bestand | Wijziging |
+|-----------|---------|-----------|
+| HavunCore | `.gitignore` | `/webapp/` toegevoegd (aparte git repo) |
+| HavunCore | `DocIndexer.php`, `StructureIndexer.php`, `DocWatchCommand.php` | localPaths bijgewerkt |
+| Docs | `runbooks/deploy.md` | Lokaal build pad bijgewerkt |
+| Docs | `reference/server.md` | Oude `havuncore-webapp/` entry verwijderd |
+
+### Let op
+
+- `webapp/` is een **aparte git repo** binnen de HavunCore map
+- HavunCore's `.gitignore` sluit `/webapp/` uit
+- Git remote van webapp wijst nog naar `havuncore-webapp` repo op GitHub — dat is correct, de repo-naam hoeft niet te veranderen
+
+---
+
 ## Resultaat: Nieuwe directory structuur
 
 ```

@@ -27,8 +27,6 @@ ssh root@SERVER_IP (zie context.md)
 │   └── webapp/                 # Webapp (React SPA + Node.js backend)
 │       ├── public/             # Frontend build (Nginx served)
 │       └── backend/            # Node.js backend (PM2)
-├── havuncore-webapp/
-│   └── frontend/               # React SPA (Vite dev server, poort 8000)
 ├── havunadmin/
 │   ├── staging/
 │   └── production/

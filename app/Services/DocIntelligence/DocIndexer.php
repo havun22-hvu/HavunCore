@@ -24,7 +24,7 @@ class DocIndexer
         'vpdupdate' => 'D:/GitHub/VPDUpdate',
         'idsee' => 'D:/GitHub/IDSee',
         'havunvet' => 'D:/GitHub/HavunVet',
-        'havuncore-webapp' => 'D:/GitHub/havuncore-webapp',
+        'havuncore-webapp' => 'D:/GitHub/HavunCore/webapp',
     ];
 
     protected array $serverPaths = [
