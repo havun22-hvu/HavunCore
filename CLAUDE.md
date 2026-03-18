@@ -83,7 +83,7 @@
 
 | Project | Local | Server |
 |---------|-------|--------|
-| HavunCore | D:\GitHub\HavunCore | /var/www/development/HavunCore |
+| HavunCore | D:\GitHub\HavunCore | /var/www/havuncore/production |
 | HavunAdmin | D:\GitHub\HavunAdmin | /var/www/havunadmin/production |
 | Herdenkingsportaal | D:\GitHub\Herdenkingsportaal | /var/www/herdenkingsportaal/production |
 | Infosyst | D:\GitHub\infosyst | /var/www/infosyst/production |

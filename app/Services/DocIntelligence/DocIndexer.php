@@ -28,13 +28,13 @@ class DocIndexer
     ];
 
     protected array $serverPaths = [
-        'havuncore' => '/var/www/development/HavunCore',
+        'havuncore' => '/var/www/havuncore/production',
         'havunadmin' => '/var/www/havunadmin/production',
         'herdenkingsportaal' => '/var/www/herdenkingsportaal/production',
         'judotoernooi' => '/var/www/judotoernooi/laravel',
         'infosyst' => '/var/www/infosyst/production',
         'studieplanner' => '/var/www/studieplanner/production',
-        'studieplanner-api' => '/var/www/studieplanner-api',
+        'studieplanner-api' => '/var/www/studieplanner/production',
         'safehavun' => '/var/www/safehavun/production',
         'havun' => '/var/www/havun.nl',
         'havunvet' => '/var/www/havunvet/staging',

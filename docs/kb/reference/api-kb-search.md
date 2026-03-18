@@ -42,7 +42,7 @@ Cron job op de server:
 
 ```bash
 # Elke 6 uur herindexeren
-0 */6 * * * cd /var/www/development/HavunCore && php artisan docs:index all --no-code 2>&1 >> storage/logs/docs-index.log
+0 */6 * * * cd /var/www/havuncore/production && php artisan docs:index all --no-code 2>&1 >> storage/logs/docs-index.log
 ```
 
 - `--no-code` omdat code-indexering Ollama vereist (niet op server)

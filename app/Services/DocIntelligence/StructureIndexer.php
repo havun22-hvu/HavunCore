@@ -27,7 +27,7 @@ class StructureIndexer
     ];
 
     protected array $serverPaths = [
-        'havuncore' => '/var/www/development/HavunCore',
+        'havuncore' => '/var/www/havuncore/production',
         'havunadmin' => '/var/www/havunadmin/production',
         'herdenkingsportaal' => '/var/www/herdenkingsportaal/production',
         'judotoernooi' => '/var/www/judotoernooi/laravel',

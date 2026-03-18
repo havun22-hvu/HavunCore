@@ -6,7 +6,7 @@
 
 | Project | Type | URL | Local | Server |
 |---------|------|-----|-------|--------|
-| **HavunCore** | Laravel 11 + Node.js | havuncore.havun.nl | D:\GitHub\HavunCore | /var/www/development/HavunCore |
+| **HavunCore** | Laravel 11 + Node.js | havuncore.havun.nl | D:\GitHub\HavunCore | /var/www/havuncore/production |
 | **HavunAdmin** | Laravel 11 SaaS | havunadmin.havun.nl | D:\GitHub\HavunAdmin | /var/www/havunadmin/production |
 | **Herdenkingsportaal** | Laravel 11 | herdenkingsportaal.nl | D:\GitHub\Herdenkingsportaal | /var/www/herdenkingsportaal/production |
 | **Havun** | Next.js | havun.nl | D:\GitHub\Havun | /var/www/havun.nl |
@@ -14,7 +14,7 @@
 | **SafeHavun** | Laravel 12 + React | safehavun.havun.nl | D:\GitHub\SafeHavun | /var/www/safehavun/production |
 | **HavunVet** | Laravel 11 + Livewire | staging.havunvet.havun.nl | D:\GitHub\HavunVet | /var/www/havunvet/staging |
 | **Studieplanner** | Expo React Native + Laravel API | studieplanner.havun.nl | D:\GitHub\Studieplanner | /var/www/studieplanner/production |
-| **Studieplanner-api** | Laravel 11 | (via /api/) | D:\GitHub\Studieplanner-api | /var/www/studieplanner-api |
+| **Studieplanner-api** | Laravel 12 | (via /api/) | D:\GitHub\Studieplanner-api | /var/www/studieplanner/production |
 | **Infosyst** | Laravel + Ollama | infosyst.havun.nl | D:\GitHub\infosyst | /var/www/infosyst/production |
 | **IDSee** | Node.js + React | - | D:\GitHub\IDSee | (in development) |
 | **HavunClub** | Laravel 11 SaaS | havunclub.havun.nl | D:\GitHub\HavunClub | /var/www/havunclub/production |
@@ -33,7 +33,7 @@
   - Multi-tenant: organisatoren huren platform
   - Coach Portal: coaches beheren hun judoka's
   - Mollie Connect + Platform mode
-  - Staging: `/var/www/staging.judotoernooi/laravel`
+  - Staging: `/var/www/judotoernooi/staging`
 - **Havun** - Bedrijfswebsite met portfolio
 
 ### In Development

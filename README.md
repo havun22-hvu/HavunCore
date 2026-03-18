@@ -25,7 +25,7 @@ Previously a Composer package, now a full Laravel application with:
 - Own database: `havuncore`
 - Web interface: https://havuncore.havun.nl
 - SSL: Let's Encrypt
-- Server: `/var/www/development/HavunCore`
+- Server: `/var/www/havuncore/production`
 
 ### **Why the transformation?**
 HavunCore is the central orchestrator for all projects. It made no sense for HavunAdmin (accounting software) to host the Task Queue API. HavunCore now coordinates everything from a central position.
@@ -137,7 +137,7 @@ $service->sendPushNotification(
 
 ```
 Server: 188.245.159.115
-Path: /var/www/development/HavunCore
+Path: /var/www/havuncore/production
 Database: havuncore (user: havuncore)
 URL: https://havuncore.havun.nl
 ```
@@ -153,7 +153,7 @@ git push
 
 # Server update
 ssh root@188.245.159.115
-cd /var/www/development/HavunCore
+cd /var/www/havuncore/production
 git pull origin master
 php artisan config:clear
 php artisan migrate

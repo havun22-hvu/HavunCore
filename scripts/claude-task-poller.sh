@@ -25,7 +25,7 @@ POLL_INTERVAL=30  # seconds
 # Map project names to correct paths
 case "$PROJECT_NAME" in
     "havuncore")
-        PROJECT_PATH="/var/www/development/HavunCore"
+        PROJECT_PATH="/var/www/havuncore/production"
         ;;
     "havunadmin")
         PROJECT_PATH="/var/www/havunadmin/production"

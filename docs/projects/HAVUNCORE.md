@@ -22,9 +22,9 @@
 ### Paden
 
 ```
-Laravel:    /var/www/development/HavunCore
-Webapp:     /var/www/havuncore.havun.nl/public/
-Backend:    /var/www/havuncore.havun.nl/backend/
+Laravel:    /var/www/havuncore/production
+Webapp:     /var/www/havuncore/webapp/public/
+Backend:    /var/www/havuncore/webapp/backend/
 ```
 
 ---

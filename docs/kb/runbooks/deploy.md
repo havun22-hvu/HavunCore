@@ -18,7 +18,7 @@ git push
 
 # 3. Op server pullen
 ssh root@SERVER_IP (zie context.md)
-cd /var/www/development/HavunCore
+cd /var/www/havuncore/production
 git pull origin master
 php artisan config:clear
 php artisan cache:clear
@@ -85,7 +85,7 @@ php artisan config:clear && php artisan cache:clear
 
 > **Let op:** JudoToernooi gebruikt `main` branch (niet `master`)
 > **Server pad:** `/var/www/judotoernooi/laravel`
-> **Staging:** `/var/www/staging.judotoernooi/laravel`
+> **Staging:** `/var/www/judotoernooi/staging`
 
 ## HavunCore Webapp
 
@@ -95,10 +95,10 @@ cd D:\GitHub\havuncore-webapp\frontend
 npm run build
 
 # 2. Upload frontend
-scp -r dist/* root@SERVER_IP (zie context.md):/var/www/havuncore.havun.nl/public/
+scp -r dist/* root@SERVER_IP (zie context.md):/var/www/havuncore/webapp/public/
 
 # 3. Backend (indien gewijzigd)
-scp backend/src/*.js root@SERVER_IP (zie context.md):/var/www/havuncore.havun.nl/backend/src/
+scp backend/src/*.js root@SERVER_IP (zie context.md):/var/www/havuncore/webapp/backend/src/
 ssh root@SERVER_IP (zie context.md) "pm2 restart havuncore-backend"
 ```
 
@@ -130,7 +130,7 @@ git push
 
 # 2. Server deploy
 ssh root@SERVER_IP (zie context.md)
-cd /var/www/studieplanner-api
+cd /var/www/studieplanner/production
 git pull origin master
 composer install --no-dev
 php artisan migrate
@@ -150,8 +150,8 @@ FLUSH PRIVILEGES;
 exit;
 
 # 2. Git clone
-mkdir -p /var/www/studieplanner-api
-cd /var/www/studieplanner-api
+mkdir -p /var/www/studieplanner/production
+cd /var/www/studieplanner/production
 git clone git@github.com:USERNAME/Studieplanner-api.git .
 
 # 3. Laravel setup

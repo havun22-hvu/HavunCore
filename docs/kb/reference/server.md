@@ -22,11 +22,11 @@ ssh root@SERVER_IP (zie context.md)
 
 ```
 /var/www/
-├── development/
-│   └── HavunCore/              # HavunCore Laravel
-├── havuncore.havun.nl/
-│   ├── public/                 # Webapp frontend (React SPA build)
-│   └── backend/                # Node.js backend
+├── havuncore/
+│   ├── production/             # HavunCore Laravel (havuncore.havun.nl)
+│   └── webapp/                 # Webapp (React SPA + Node.js backend)
+│       ├── public/             # Frontend build (Nginx served)
+│       └── backend/            # Node.js backend (PM2)
 ├── havuncore-webapp/
 │   └── frontend/               # React SPA (Vite dev server, poort 8000)
 ├── havunadmin/
@@ -38,9 +38,8 @@ ssh root@SERVER_IP (zie context.md)
 ├── infosyst/
 │   └── production/
 ├── judotoernooi/
-│   └── laravel/                # Production (judotournament.org)
-├── staging.judotoernooi/
-│   └── laravel/                # Staging (geen publiek domein)
+│   ├── laravel/                # Production (judotournament.org)
+│   └── staging/                # Staging (staging.judotournament.org)
 └── studieplanner/
     └── production/
 ```

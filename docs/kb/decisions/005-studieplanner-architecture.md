@@ -1,70 +1,68 @@
 # Decision 005: Studieplanner Architecture
 
 **Datum:** 22 december 2025
-**Status:** Besloten
+**Laatste update:** 18 maart 2026
+**Status:** Geïmplementeerd
 **Project:** Studieplanner
 
 ## Context
 
-Studieplanner heeft functionaliteit nodig voor:
-- Mentor-leerling koppeling
-- Push notificaties bij start/stop studiesessie
-- Evaluaties na sessies
-- Chat functie tussen mentor en leerling
+Studieplanner is een studieplanningsapp voor leerlingen en mentors met:
+- Vakken & taken beheer met automatische planning
+- Timer met StudyLog tracking (achtergrond)
+- Weekagenda met drag & drop
+- Mentor-leerling koppeling met real-time status
+- Premium statistieken (leersnelheid, streaks)
 
 ## Beslissing
 
-**Eigen Laravel backend op bestaande server**, geen externe services.
+**React Native + Expo frontend, eigen Laravel 12 backend, eigen APK distributie.**
 
-### Gekozen aanpak
+### Huidige architectuur
 
 | Component | Keuze | Reden |
 |-----------|-------|-------|
-| Backend | Laravel (eigen app) | Al deployed op server |
-| Notificaties MVP | Database + polling | Zero dependencies |
-| Notificaties later | Laravel WebPush | Native, geen vendor lock-in |
-| Chat | Polling (5 sec) | Simpel, werkt voor 1-op-1 |
-| Realtime | Niet nodig voor MVP | Polling is goed genoeg |
+| Frontend | React Native + Expo SDK 54 | Native alarms, timer op achtergrond, biometrie |
+| Backend | Laravel 12 (eigen app) | Volledig controle, al op server |
+| Database | MySQL (prod) / SQLite (dev) | Standaard Laravel |
+| Real-time | Laravel Reverb (via HavunCore) | Open source, geen externe kosten |
+| Auth | Magic link + biometrie | Geen wachtwoorden, veilig, gebruiksvriendelijk |
+| Push | expo-notifications (native) | Betrouwbaar op achtergrond |
+| Payments | Mollie iDEAL (€1/jaar) | Nederlands, lage kosten |
+| Distributie | Eigen server APK | 0% commissie, geen Play Store review |
+| State | React Context | Simpel genoeg voor deze app |
+| i18n | i18next | Nederlands + Engels |
+
+### Evolutie t.o.v. origineel plan (dec 2025)
+
+| Aspect | Origineel | Nu |
+|--------|-----------|-----|
+| Real-time | Database polling | Laravel Reverb WebSocket |
+| Auth | Pincode + magic link | Magic link only + biometrie |
+| Push | Web Push (VAPID) | expo-notifications (native) |
+| Frontend | Expo (basis) | Expo SDK 54 + React Navigation 7 |
+| Backend | Laravel 11 | Laravel 12 |
+| Chat | Polling (5 sec) | Niet geïmplementeerd (niet nodig gebleken) |
 
 ### Afgewezen alternatieven
 
 | Optie | Reden afgewezen |
 |-------|-----------------|
-| Firebase | Overkill, vendor lock-in, extra complexity |
-| Pusher | Externe dependency, kosten |
-| HavunCore API | Niet de plek voor project-specifieke logic |
-
-## API Endpoints (voorstel)
-
-```
-POST /api/session/start      - Leerling start sessie
-POST /api/session/stop       - Leerling stopt sessie (+ evaluatie)
-GET  /api/session/active     - Mentor pollt voor updates
-GET  /api/session/{id}       - Sessie details + evaluatie
-POST /api/chat/send          - Bericht versturen
-GET  /api/chat/messages      - Berichten ophalen (polling)
-```
-
-## Database tabellen (voorstel)
-
-```sql
-study_sessions:
-  id, student_id, mentor_id, started_at, stopped_at,
-  status, evaluation_text, rating, mentor_feedback
-
-messages:
-  id, session_id, sender_id, message, created_at
-```
+| PWA | Timer/alarms onbetrouwbaar op achtergrond |
+| Firebase | Overkill, vendor lock-in |
+| Google Play Store | 15-30% commissie, review delays |
+| Redux/Zustand | React Context is voldoende voor deze app |
+| Pusher | Externe dependency, kosten → Reverb is gratis |
 
 ## HavunCore integratie
 
 - Backup: Daily 05:00, 1 jaar retention
 - Vault: Credentials centraal beheerd
-- Task Queue: Optioneel voor later
+- WebSocket: Reverb proxy voor mentor real-time updates
 
 ## Gevolgen
 
 - Studieplanner is volledig standalone
-- Geen externe service dependencies
-- Makkelijk te debuggen en onderhouden
-- Later uitbreidbaar naar WebPush indien nodig
+- Geen externe service dependencies (behalve Brevo email + Mollie payments)
+- Eigen distributiekanaal = volledige controle over updates
+- Later uitbreidbaar naar iOS indien gewenst

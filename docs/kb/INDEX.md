@@ -68,6 +68,7 @@ docs/kb/
 │   ├── ssl-monitoring.md
 │   ├── sync-start-command.md
 │   ├── token-based-login.md
+│   ├── server-verhuizingen-2026-03-18.md
 │   ├── troubleshoot.md
 │   ├── unified-login-procedure.md
 │   └── unified-login-system.md

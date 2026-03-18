@@ -51,7 +51,7 @@ echo ""
 
 # Copy poller script to /usr/local/bin
 echo -e "${BLUE}📁 Installing poller script...${NC}"
-cp /var/www/development/HavunCore/scripts/claude-task-poller.sh /usr/local/bin/
+cp /var/www/havuncore/production/scripts/claude-task-poller.sh /usr/local/bin/
 chmod +x /usr/local/bin/claude-task-poller.sh
 echo -e "${GREEN}✅ Poller script installed to /usr/local/bin/${NC}"
 echo ""
@@ -61,7 +61,7 @@ for PROJECT in "${PROJECTS[@]}"; do
     echo -e "${BLUE}⚙️  Setting up service for ${PROJECT}...${NC}"
 
     # Copy service file
-    cp /var/www/development/HavunCore/scripts/claude-task-poller.service \
+    cp /var/www/havuncore/production/scripts/claude-task-poller.service \
         /etc/systemd/system/claude-task-poller@.service
 
     # Create log file
