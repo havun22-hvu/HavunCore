@@ -2,28 +2,22 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 18 maart 2026 (avond)
+## Laatste Sessie: 18 maart 2026 (nacht)
 
 ### Wat is gedaan:
-- **Unified Login System v4.0 — cross-project implementatie**
-  - Nieuwe standaard: email/ww + QR (desktop) + biometrie (smartphone) + magic link
-  - PIN login verwijderd uit UI (backend intact)
-  - Geimplementeerd in: JudoToernooi (prod+staging) en Herdenkingsportaal (prod)
-  - Per project: MagicLinkToken model, MagicLinkMail, migration, views
-  - JudoToernooi: pill tabs (login/register), magic link registratie
-  - Herdenkingsportaal: clean login form, magic link registratie, Google OAuth behouden
-  - Wachtwoord nullable gemaakt (magic link maakt account zonder wachtwoord)
-  - Rate limiting (3/10min) + email enumeration prevention
-- **KB docs geschreven/bijgewerkt (HavunCore)**
-  - `patterns/magic-link-auth.md` — compleet magic link pattern
-  - `runbooks/unified-login-procedure.md` — stap-voor-stap procedure
-  - `reference/unified-login-system.md` — v3.0 → v4.0
-  - `standards/unified-auth-strategy.md` — aligned met v4.0
-- **Databases gebackupt + migrations gedraaid op production**
-- **havuncore-webapp: Status tab fix (axios 401 interceptor bug)** (eerdere sessie vandaag)
+- **Server directory herstructurering** — 5 verhuizingen voor consistent `/var/www/{project}/{omgeving}` patroon:
+  1. `/var/www/studieplanner-api` → `/var/www/studieplanner/production`
+  2. `/var/www/staging.judotoernooi/laravel` → `/var/www/judotoernooi/staging`
+  3. `/var/www/development/HavunCore` → `/var/www/havuncore/production`
+  4. `/var/www/havuncore.havun.nl` → `/var/www/havuncore/webapp`
+  5. Lokaal: `D:\GitHub\havuncore-webapp` → `D:\GitHub\HavunCore\webapp`
+- **Alle configs bijgewerkt:** nginx, systemd, cron, PM2, supervisor
+- **Alle docs/code bijgewerkt:** 12 projecten, ~50+ bestanden (alle oude paden gefixt)
+- **Studieplanner KB volledig herschreven** (was zwaar verouderd)
+- **Runbook geschreven:** `docs/kb/runbooks/server-verhuizingen-2026-03-18.md`
+- **Oude restanten opgeruimd:** backup nginx configs, lege mappen
 
 ### Openstaande items:
-- [ ] havuncore-webapp deployen op server (git pull + pm2 restart)
 - [ ] KB token verplaatsen van `H:/havuncore-kb-token.txt` naar credentials.vault
 - [ ] Monument versioning bouwen — memorial_versions tabel + observer
 - [ ] Resend composer package verwijderen uit Herdenkingsportaal
@@ -34,11 +28,9 @@
 - [ ] SafeHavun/HavunAdmin/Infosyst: ook magic link toevoegen (volgende projecten)
 
 ### Belangrijke context:
-- Backups in `/root/backups/` (judotoernooi + herdenkingsportaal, 18 maart 2026)
-- PIN login backend code BEWUST intact — alleen UI verborgen
-- Platform detectie: `isSmartphone` = touch + screen < 550px → biometrie; anders QR
-- Herdenkingsportaal login was 54KB → nu ~300 regels (grote cleanup)
-- Bestaande users+wachtwoorden 100% intact
+- havuncore-webapp staat nu als aparte git repo BINNEN HavunCore (`/webapp/`, in .gitignore)
+- Runbook `server-verhuizingen-2026-03-18.md` bevat troubleshooting per verhuizing
+- Oude studieplanner.havun.nl URL toonde gecachte oude pagina — browser cache probleem, server was al correct
 
 ---
 
