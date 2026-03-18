@@ -151,7 +151,7 @@
 - [ ] `docs:index havuncore-webapp` draaien na commit
 
 ### Belangrijke context:
-- havuncore-webapp staat in aparte repo: `D:/GitHub/havuncore-webapp` (geen remote ingesteld)
+- havuncore-webapp staat in aparte repo: `D:/GitHub/HavunCore/webapp` (remote: havuncore-webapp op GitHub)
 - Backend draait op 8009, frontend op 8000
 - System persona staat in SQLite `ai_config` tabel (key=system_prompt) — aanpasbaar via Settings UI
 - 459 oude embeddings hebben nog null model (TF-IDF) — ragService handelt dit per-rij af
