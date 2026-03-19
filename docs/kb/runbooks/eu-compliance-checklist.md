@@ -26,8 +26,10 @@ Elke pagina moet bevatten:
 - BTW-nummer (of BTW-vrijstelling vermelden)
 - Vestigingsadres
 - E-mailadres
-- Telefoonnummer
+- Telefoonnummer OF vermelding dat je alleen per e-mail bereikbaar bent
 - Bereikbaarheidsuren
+
+> **Havun keuze:** Geen telefoonnummer — alleen e-mail. Dit is toegestaan mits expliciet vermeld.
 
 **Status per project:**
 
@@ -38,10 +40,9 @@ Elke pagina moet bevatten:
 | BTW-status | ✅ (KOR) | ✅ (KOR) | ❌ |
 | Vestigingsadres | ❌ | ❌ | ❌ |
 | E-mailadres | ✅ | ✅ | ❌ |
-| Telefoonnummer | ❌ | ❌ | ❌ |
 | Bereikbaarheidsuren | ❌ | ❌ | ❌ |
 
-> **Actie:** Adres, telefoon en bereikbaarheidsuren toevoegen aan footer van alle projecten.
+> **Actie:** Adres, bereikbaarheidsuren en "alleen per e-mail bereikbaar" toevoegen aan footer van alle projecten.
 > **Havun gegevens:** Zie `credentials.md` (bedrijfsgegevens sectie)
 
 ---
@@ -57,13 +58,23 @@ Verplicht op website:
 - Link naar herroepingsformulier (modelformulier EU)
 - Uitleg wanneer het recht NIET van toepassing is (met expliciete toestemming klant)
 
-**Status:**
+**Herroepingsrecht per project:**
 
-| Project | Herroepingsinfo | Formul ier | Uitzondering vermeld |
-|---------|:--:|:--:|:--:|
-| Herdenkingsportaal | ✅ (terms) | ❌ | ✅ (digitale content) |
-| JudoToernooi | ⚠️ (impliciet) | ❌ | ❌ |
-| Studieplanner | ❌ | ❌ | ❌ |
+| Project | Type dienst | Herroeping verplicht? | Aanpak |
+|---------|------------|----------------------|--------|
+| Herdenkingsportaal | Directe digitale toegang na betaling | Nee (mag uitgesloten worden) | ✅ Checkbox bij checkout |
+| JudoToernooi | Directe inschrijving na betaling | Nee (mag uitgesloten worden) | ✅ Checkbox bij checkout |
+| Studieplanner | Jaarabonnement (doorlopend) | Ja (14 dagen) | ✅ Herroepingsformulier + info in terms |
+
+> **Regel:** Checkbox uitsluitend gebruiken bij diensten die DIRECT na betaling beschikbaar zijn. Bij doorlopende diensten (abonnement) is herroepingsrecht verplicht.
+
+**Status checkbox implementatie:**
+
+| Project | Checkbox aanwezig | Betaalknop geblokkeerd zonder vinkje |
+|---------|:--:|:--:|
+| Herdenkingsportaal | ✅ (options.blade.php) | ✅ |
+| JudoToernooi | ✅ (afrekenen.blade.php) | ✅ |
+| Studieplanner | n.v.t. | n.v.t. |
 
 ---
 
@@ -74,7 +85,10 @@ Een duidelijke knop/link waarmee klanten hun aankoop kunnen annuleren. Na klikke
 2. Systeem stuurt bevestigingsmail
 3. Retourtermijn start
 
-**Status:** ❌ Alle projecten — nog niet gebouwd
+> Voor HP en JT: niet nodig want klant sluit recht uit via checkbox bij checkout.
+> Voor SP: wel verplicht (jaarabonnement, 14 dagen herroeping).
+
+**Status:** ⚠️ Studieplanner — nog bouwen vóór 19 juni 2026
 
 ---
 
@@ -159,34 +173,35 @@ Alleen gebruiken als de aanbieding echt afloopt op dat tijdstip.
 
 ---
 
-## Actielijst per Project
+## Actielijst per Project (bijgewerkt 19 maart 2026)
 
 ### Herdenkingsportaal
-- [ ] Vestigingsadres toevoegen aan footer
-- [ ] Telefoonnummer toevoegen aan footer (of "geen telefonisch contact")
-- [ ] Bereikbaarheidsuren toevoegen
-- [ ] Herroepingsformulier (EU modelformulier) toevoegen
-- [ ] Herroepingsknop bouwen (deadline: 19 juni 2026)
-- [ ] JudoToernooi klachtenprocedure uitbreiden (nu alleen email)
+- [x] KVK, BTW in footer
+- [x] E-mailadres in footer
+- [x] Vestigingsadres in footer (Jacques Bloemhof 57, 1628 VN Hoorn)
+- [x] Privacy, Voorwaarden, Cookies pagina's aanwezig
+- [x] Herroepingscheckbox bij checkout (options.blade.php) — betaalknop geblokkeerd zonder vinkje
+- [ ] Bereikbaarheidsuren toevoegen aan footer
+- [ ] Herroepingsknop bouwen voor Studieplanner (deadline: 19 juni 2026) — HP/JT niet nodig
 
 ### JudoToernooi
-- [ ] Vestigingsadres toevoegen aan footer
-- [ ] Telefoonnummer toevoegen aan footer
-- [ ] Bereikbaarheidsuren toevoegen
-- [ ] Herroepingsrecht expliciet in terms uitwerken
-- [ ] Herroepingsformulier toevoegen
-- [ ] Herroepingsknop bouwen (deadline: 19 juni 2026)
-- [ ] Klachtenprocedure uitbreiden
+- [x] KVK, BTW in footer
+- [x] E-mailadres in footer
+- [x] Vestigingsadres in footer (Jacques Bloemhof 57, 1628 VN Hoorn)
+- [x] Privacy, Voorwaarden, Cookies pagina's aanwezig
+- [x] Herroepingscheckbox bij checkout (afrekenen.blade.php) — betaalknop geblokkeerd zonder vinkje
+- [ ] Bereikbaarheidsuren toevoegen aan footer
+- [ ] Klachtenprocedure uitbreiden (nu alleen email, geen geschillencommissie)
 
 ### Studieplanner
-- [ ] Privacy pagina aanmaken
-- [ ] Algemene Voorwaarden aanmaken
-- [ ] Cookiebeleid aanmaken
-- [ ] Footer bijwerken met alle verplichte gegevens
-- [ ] Herroepingsrecht informatie toevoegen
-- [ ] Herroepingsformulier toevoegen
-- [ ] Herroepingsknop bouwen (deadline: 19 juni 2026)
-- [ ] Klachtenprocedure toevoegen
+- [x] Privacy pagina aangemaakt (/privacy)
+- [x] Algemene Voorwaarden aangemaakt (/voorwaarden)
+- [x] Cookiebeleid aangemaakt (/cookies)
+- [x] Herroepingsformulier aangemaakt (/herroeping)
+- [x] Footer bijgewerkt: KVK, BTW, adres, email, links naar legal pagina's
+- [x] Herroepingsrecht info in terms (14 dagen, jaarabonnement)
+- [ ] Bereikbaarheidsuren toevoegen aan footer
+- [ ] Herroepingsknop bouwen (deadline: 19 juni 2026) — verplicht want jaarabonnement
 
 ---
 
@@ -224,7 +239,8 @@ Velden die in footer moeten:
 - BTW: BTW-vrijgesteld (KOR-regeling)
 - Adres: zie credentials.md
 - Email: zie credentials.md
-- Tel: zie credentials.md of "Geen telefonisch contact beschikbaar"
+- Email: havun22@gmail.com
+- Tel: niet beschikbaar — alleen e-mail
 
 ---
 
