@@ -2,6 +2,38 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Laatste Sessie: 19 maart 2026
+
+### Wat is gedaan:
+- **EU Compliance — alle 3 projecten (HP, JT, SP)**
+  - KB compliance checklist aangemaakt: `docs/kb/runbooks/eu-compliance-checklist.md`
+  - Favicons gegenereerd voor HP (hplogo.png) en havun.nl (logo.png)
+  - HP + JT + SP: adres (Jacques Bloemhof 57, 1628 VN Hoorn) + email in footer
+  - SP: privacy, voorwaarden, cookies, disclaimer, herroepingsformulier aangemaakt
+  - JT: herroepingsformulier pagina + terms sectie bijgewerkt + footer link
+  - HP + JT: herroepingscheckbox bij checkout (betaalknop geblokkeerd zonder vinkje)
+  - SP: bunq iDEAL als betaalmethode vastgelegd in legal pagina's
+  - company.php config aangemaakt voor SP en JT (was al in HP)
+
+### Openstaande items:
+- [ ] Bereikbaarheidsuren toevoegen aan footer alle projecten
+- [ ] Herroepingsknop bouwen voor SP (deadline: 19 juni 2026)
+- [ ] KB token verplaatsen naar credentials.vault
+- [ ] Monument versioning bouwen
+- [ ] Resend composer package verwijderen uit HP
+- [ ] Stripe Connect testen op staging
+- [ ] Herdenkingsportaal: `excluded_message_patterns` AutoFix
+- [ ] HavunAdmin deployen (StripeService prefix fix)
+
+### Belangrijke context:
+- Telefoonnummer NIET in footers — alleen email (privacykeuze eigenaar)
+- Vestigingsadres: Jacques Bloemhof 57, 1628 VN Hoorn (staat in company.php config)
+- HP + JT: herroeping uitgesloten via checkout checkbox (directe dienst)
+- SP: herroeping verplicht (jaarabonnement), formulier op /herroeping
+- SP betaalmethode: bunq iDEAL (niet Mollie)
+
+---
+
 ## Laatste Sessie: 18 maart 2026 (nacht)
 
 ### Wat is gedaan:
