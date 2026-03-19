@@ -8,46 +8,16 @@ use Illuminate\Support\Facades\Log;
 class StructureIndexer
 {
     protected DocIndexer $docIndexer;
-    protected array $projectPaths = [];
-
-    protected array $localPaths = [
-        'havuncore' => 'D:/GitHub/HavunCore',
-        'havunadmin' => 'D:/GitHub/HavunAdmin',
-        'herdenkingsportaal' => 'D:/GitHub/Herdenkingsportaal',
-        'judotoernooi' => 'D:/GitHub/JudoToernooi',
-        'infosyst' => 'D:/GitHub/Infosyst',
-        'studieplanner' => 'D:/GitHub/Studieplanner',
-        'studieplanner-api' => 'D:/GitHub/Studieplanner-api',
-        'safehavun' => 'D:/GitHub/SafeHavun',
-        'havun' => 'D:/GitHub/Havun',
-        'vpdupdate' => 'D:/GitHub/VPDUpdate',
-        'idsee' => 'D:/GitHub/IDSee',
-        'havunvet' => 'D:/GitHub/HavunVet',
-        'havuncore-webapp' => 'D:/GitHub/HavunCore/webapp',
-    ];
-
-    protected array $serverPaths = [
-        'havuncore' => '/var/www/havuncore/production',
-        'havunadmin' => '/var/www/havunadmin/production',
-        'herdenkingsportaal' => '/var/www/herdenkingsportaal/production',
-        'judotoernooi' => '/var/www/judotoernooi/laravel',
-        'infosyst' => '/var/www/infosyst/production',
-        'studieplanner' => '/var/www/studieplanner/production',
-        'safehavun' => '/var/www/safehavun/production',
-    ];
 
     public function __construct(DocIndexer $docIndexer)
     {
         $this->docIndexer = $docIndexer;
-        $this->projectPaths = PHP_OS_FAMILY === 'Windows'
-            ? $this->localPaths
-            : $this->serverPaths;
     }
 
     public function indexAll(bool $force = false): array
     {
         $results = [];
-        foreach (array_keys($this->projectPaths) as $project) {
+        foreach (array_keys($this->docIndexer->getProjectPaths()) as $project) {
             $results[$project] = $this->indexProject($project, $force);
         }
         return $results;
@@ -56,7 +26,7 @@ class StructureIndexer
     public function indexProject(string $project, bool $force = false): array
     {
         $project = strtolower($project);
-        $basePath = $this->projectPaths[$project] ?? null;
+        $basePath = $this->docIndexer->getProjectPath($project);
 
         if (!$basePath || !is_dir($basePath)) {
             return ['error' => "Project path not found: {$project}"];

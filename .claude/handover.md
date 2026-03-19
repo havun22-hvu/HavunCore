@@ -2,7 +2,26 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 19 maart 2026
+## Laatste Sessie: 19 maart 2026 (avond)
+
+### Wat is gedaan:
+- **DocIntelligence issues review** — 88 open issues doorgelopen:
+  - #7923 (HIGH, inconsistente prijzen): false positive — genegeerd
+  - #7922 (broken link havunclub.md): HavunClub geparkeerd — genegeerd
+  - #7840 + #7841 (duplicate code): opgelost door consolidatie
+- **DocIntelligence code refactoring** — duplicaten verwijderd:
+  - `DocIndexer`: nieuwe public methodes `getProjectPath()`, `getProjectPaths()`, `calculateSimilarity()`
+  - `IssueDetector`: eigen `calculateSimilarity()` + `getProjectPath()` verwijderd → gebruikt DocIndexer
+  - `StructureIndexer`: eigen `$localPaths`/`$serverPaths` verwijderd → haalt paden via DocIndexer
+
+### Openstaande items:
+- [ ] Doc issues #7837/#7838/#7839 — QR login runbooks overlap
+- [ ] Doc issue #7836 — crypto-payments.md en mollie-payments.md overlap
+- [ ] 80x stale doc issues — bulk ignore of review
+
+---
+
+## Vorige Sessie: 19 maart 2026
 
 ### Wat is gedaan:
 - **EU Compliance — alle 3 projecten (HP, JT, SP)**

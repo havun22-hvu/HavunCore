@@ -77,7 +77,7 @@ class IssueDetector
                     $doc1 = $docs[$i];
                     $doc2 = $docs[$j];
 
-                    $similarity = $this->calculateSimilarity($doc1->embedding ?? [], $doc2->embedding ?? []);
+                    $similarity = $this->indexer->calculateSimilarity($doc1->embedding ?? [], $doc2->embedding ?? []);
 
                     if ($similarity >= $this->duplicateThreshold) {
                         $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_DUPLICATE)
@@ -213,9 +213,9 @@ class IssueDetector
 
                 if ($isAbsolute) {
                     $docDir = dirname($doc->file_path);
-                    $basePath = $this->getProjectPath($doc->project);
+                    $basePath = $this->indexer->getProjectPath($doc->project);
                 } else {
-                    $basePath = $this->getProjectPath($doc->project);
+                    $basePath = $this->indexer->getProjectPath($doc->project);
                     $docDir = dirname($basePath . '/' . $doc->file_path);
                 }
 
@@ -389,54 +389,4 @@ class IssueDetector
         return $summary;
     }
 
-    /**
-     * Calculate similarity between embeddings
-     */
-    protected function calculateSimilarity(array $embedding1, array $embedding2): float
-    {
-        if (empty($embedding1) || empty($embedding2)) {
-            return 0.0;
-        }
-
-        $allKeys = array_unique(array_merge(array_keys($embedding1), array_keys($embedding2)));
-
-        $dotProduct = 0.0;
-        $norm1 = 0.0;
-        $norm2 = 0.0;
-
-        foreach ($allKeys as $key) {
-            $val1 = $embedding1[$key] ?? 0;
-            $val2 = $embedding2[$key] ?? 0;
-
-            $dotProduct += $val1 * $val2;
-            $norm1 += $val1 * $val1;
-            $norm2 += $val2 * $val2;
-        }
-
-        if ($norm1 == 0 || $norm2 == 0) {
-            return 0.0;
-        }
-
-        return $dotProduct / (sqrt($norm1) * sqrt($norm2));
-    }
-
-    /**
-     * Get project base path
-     */
-    protected function getProjectPath(string $project): string
-    {
-        $paths = [
-            'havuncore' => 'D:/GitHub/HavunCore',
-            'havunadmin' => 'D:/GitHub/HavunAdmin',
-            'herdenkingsportaal' => 'D:/GitHub/Herdenkingsportaal',
-            'judotoernooi' => 'D:/GitHub/Judotoernooi',
-            'infosyst' => 'D:/GitHub/infosyst',
-            'studieplanner' => 'D:/GitHub/Studieplanner',
-            'safehavun' => 'D:/GitHub/SafeHavun',
-            'havun' => 'D:/GitHub/Havun',
-            'vpdupdate' => 'D:/GitHub/VPDUpdate',
-        ];
-
-        return $paths[strtolower($project)] ?? "D:/GitHub/{$project}";
-    }
 }

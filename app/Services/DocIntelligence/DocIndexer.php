@@ -777,9 +777,25 @@ class DocIndexer
     }
 
     /**
+     * Get the resolved project path for a given project
+     */
+    public function getProjectPath(string $project): ?string
+    {
+        return $this->projectPaths[strtolower($project)] ?? null;
+    }
+
+    /**
+     * Get all configured project paths
+     */
+    public function getProjectPaths(): array
+    {
+        return $this->projectPaths;
+    }
+
+    /**
      * Calculate similarity between two embeddings
      */
-    protected function calculateSimilarity(array $embedding1, array $embedding2): float
+    public function calculateSimilarity(array $embedding1, array $embedding2): float
     {
         if (empty($embedding1) || empty($embedding2)) {
             return 0.0;
