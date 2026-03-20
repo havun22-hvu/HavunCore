@@ -2,7 +2,37 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 19 maart 2026 (avond)
+## Laatste Sessie: 20 maart 2026
+
+### Wat is gedaan:
+- **`/f` (Focus) command aangemaakt** — nieuw slash command in alle 12 projecten
+  - Dwingt Claude om ALLE relevante docs + code te lezen voordat er gecodeerd wordt
+  - Doorzoekt KB, code, docs, memory op basis van opgegeven onderwerp
+  - Geeft samenvatting die gebruiker moet goedkeuren voor code geschreven mag worden
+  - Aanleiding: Claude vergeet structureel KB/docs te raadplegen ondanks CLAUDE.md regels
+
+### Discussie: Gemini AI Studio integratie
+- Gebruiker onderzocht of Gemini als "architect" of "auditor" kan fungeren
+- Conclusie: Gemini als vooraf-briefer is nuttig, maar niet als complex protocol
+- Kernprobleem geïdentificeerd: Claude gebruikt KB en /kb niet, ondanks verplichte regels
+- Hooks eerder geprobeerd maar blokkeren de workflow te veel
+- `/f` command is de pragmatische oplossing: gebruiker geeft onderwerp, Claude leest alles
+
+### Openstaande items:
+- [ ] `/f` command testen in de praktijk
+- [ ] Gemini system prompt overwegen voor pre-sessie briefings (optioneel)
+- [ ] Doc issues #7837/#7838/#7839 — QR login runbooks overlap
+- [ ] Doc issue #7836 — crypto/mollie payments overlap
+- [ ] 80x stale doc issues — bulk ignore of review
+
+### Belangrijke context:
+- Gebruiker heeft na maanden ervaring geen vertrouwen dat Claude zelfstandig docs raadpleegt
+- `/f` is bewust simpel gehouden: geen hooks, geen subagents, alleen een verplichte leesronde
+- Bestanden gekopieerd naar: Demo, Havun, HavunAdmin, HavunVet, Herdenkingsportaal, IDSee, Infosyst, JudoToernooi, SafeHavun, Studieplanner, VPDUpdate
+
+---
+
+## Vorige Sessie: 19 maart 2026 (avond)
 
 ### Wat is gedaan:
 - **DocIntelligence issues review** — 88 open issues doorgelopen:
