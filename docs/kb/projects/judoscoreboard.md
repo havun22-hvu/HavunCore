@@ -1,9 +1,9 @@
 # Project: JudoScoreBoard
 
 **Type:** Expo React Native (TypeScript) Android app
-**Doel:** Judo scorebord voor scheidsrechter-tablets/smartphones, gekoppeld aan JudoToernooi
-**Backend:** JudoToernooi Laravel app (https://judotournament.org)
-**Status:** Nieuw project (21 maart 2026), basis opgezet
+**Doel:** Judo scorebord — standalone OF gekoppeld aan JudoToernooi
+**Backend:** JudoToernooi Laravel app (https://judotournament.org) — optioneel
+**Status:** Basis functioneel (21 maart 2026)
 
 > **Waarom standalone app?** Timer moet doorlopen op achtergrond (foreground service). Werkt niet betrouwbaar in PWA/browser.
 
@@ -16,12 +16,19 @@
 
 **GitHub:** havun22-hvu/judoscoreboard (app), havun22-hvu/judotoernooi (backend)
 
+## Twee modi
+
+| Modus | API | WebSocket | Gebruik |
+|-------|-----|-----------|---------|
+| **Standalone** | Nee | Nee | Training, klein toernooi, los gebruik |
+| **Gekoppeld** | Ja | Ja | Toernooi met JudoToernooi systeem |
+
 ## Twee interfaces
 
-| Interface | Device | Functie |
-|-----------|--------|---------|
-| **Bediening** (Android app) | Tablet, smartphone | Alle knoppen: timer, score, shido, osaekomi |
-| **Display** (Web/Blade) | TV, LCD, projector, browser | Alleen weergave, geen knoppen, **gespiegeld** |
+| Interface | Device | Type | Functie |
+|-----------|--------|------|---------|
+| **Bediening** | Tablet, smartphone | Android APK | Alle knoppen: timer, score, shido, osaekomi |
+| **Display** | TV, LCD, projector | Web (Blade + Reverb) | Alleen weergave, geen knoppen, **gespiegeld** |
 
 ### Spiegeling (IJF standaard)
 
@@ -30,105 +37,73 @@
 | **Bediening** (tafelofficial) | Blauw | Wit |
 | **Display** (scheidsrechter/publiek) | Wit | Blauw |
 
-## Tech Stack
+## Communicatie (gekoppeld modus)
 
-| Component | Keuze |
-|-----------|-------|
-| Framework | Expo SDK 55 + React Native 0.83 |
-| Taal | TypeScript 5.9 |
-| Package | nl.havun.judoscoreboard |
-| Backend API | JudoToernooi `/api/scoreboard/*` |
-| Real-time | Laravel Reverb (WebSocket) |
-| Distributie | APK via eigen server (sideloading) |
-| Display | Blade + Alpine.js + Reverb (in JudoToernooi) |
-| Orientatie | Altijd landscape |
-| State | React Context |
-| Navigation | React Navigation 7 (stack) |
+**GEEN POLLING — altijd WebSocket (Reverb)**
 
-### Dependencies
+| Richting | Methode | Endpoint/Channel |
+|----------|---------|-----------------|
+| Mat → App | WebSocket (Reverb) | `scoreboard.{toernooiId}.{matId}` |
+| App → Mat | REST POST | `/api/scoreboard/result` |
+| App → Display | POST → Reverb | `/api/scoreboard/event` → `scoreboard-display.{toernooiId}.{matId}` |
 
-- `expo-av` — geluidseffecten (match end, osaekomi, ippon)
-- `expo-keep-awake` — scherm aan tijdens wedstrijd
-- `expo-notifications` — foreground service voor timer
-- `expo-task-manager` — background timer
-- `expo-updates` — OTA updates
-- `expo-application` — versie check
-- `@react-native-async-storage/async-storage` — offline opslag
+`GET /current-match` alleen bij (re)connect, NIET voor polling.
 
-## API Endpoints (backend = JudoToernooi)
+### API Endpoints
 
 ```
 POST /api/scoreboard/auth           → Login (code + PIN) → Bearer token
-GET  /api/scoreboard/current-match  → Huidige wedstrijd ophalen
+GET  /api/scoreboard/current-match  → Huidige wedstrijd (eenmalig bij reconnect)
 POST /api/scoreboard/result         → Uitslag terugsturen
-POST /api/scoreboard/state          → Live state naar display (event-based)
+POST /api/scoreboard/event          → Sync event naar display (event-based)
 POST /api/scoreboard/heartbeat      → Keep alive
+GET  /api/scoreboard/version        → Update check (public)
 ```
 
-### Sync strategie: event-based
+### Event-based sync (niet continu)
 
-Bediening stuurt alleen events bij state changes, niet continu state.
-Display draait eigen timer lokaal. ~20-30 requests per wedstrijd.
+~20-30 requests per wedstrijd. Display draait eigen timer lokaal.
 
 Events: `match.start`, `timer.start`, `timer.stop`, `timer.reset`,
 `score.update`, `osaekomi.start`, `osaekomi.stop`, `match.end`
 
-## WebSocket Channels (Reverb)
-
-| Channel | Richting | Data |
-|---------|----------|------|
-| `scoreboard.{toernooiId}.{matId}` | Server → App | Wedstrijd assignment |
-| `scoreboard-display.{toernooiId}.{matId}` | Server → Display | Live score/timer state |
-
-## Scoring Regels (IJF 2024)
+## Scoring Regels
 
 | Actie | Regel |
 |-------|-------|
-| Waza-ari (W) | 0, 1, 2 — 2x waza-ari = awasete ippon |
 | Yuko (Y) | Aparte teller, optellend |
+| Waza-ari (W) | 0, 1, 2 — 2x = awasete ippon |
 | Ippon (I) | Direct = wedstrijd voorbij |
-| Shido | 3 kaartjes, 3e = hansoku-make = ippon tegenstander |
-| Osaekomi | 5-9s = yuko, 10-19s = waza-ari, 20s = ippon |
-| Golden Score | Bij gelijkspel, timer telt omhoog, eerste score wint |
-| Timer | 2-5 min instelbaar, rood bij 30s |
+| Shido | 3 kaartjes, 3e = hansoku-make |
+| Osaekomi | 5-9s=Y, 10-19s=W, 20s=I |
+| Golden Score | Bij gelijkspel, timer omhoog, eerste score wint |
+| Timer | 2-5 min instelbaar |
 
-## Schermen flow
+### Geluiden
 
-```
-LoginScreen → [code+PIN] → WaitingScreen → [wedstrijd via WS] → ControlScreen → [uitslag POST] → WaitingScreen
-                                 ↓ (display modus)
-                            DisplayScreen (luistert alleen op WS)
-```
+Alleen 2: match einde (timer=0) en osaekomi einde (W+W of I bij 20s)
 
-## Frontend Structuur
+## App schermen
 
-```
-src/
-├── components/     # UI componenten (timer, score panels, shido cards)
-├── constants/      # config.ts (API URL), theme.ts
-├── hooks/          # Custom hooks
-├── screens/        # Login, Waiting, Control, Display
-├── services/       # api.ts, websocket
-├── store/          # React Context (match state, auth)
-├── types/          # TypeScript interfaces
-└── utils/          # Helpers
-```
+| Scherm | Functie |
+|--------|---------|
+| HomeScreen | Keuze: Standalone / Gekoppeld + Settings/Help/About |
+| LoginScreen | Code + PIN (gekoppeld modus) |
+| WaitingScreen | WebSocket listener voor wedstrijd assignment |
+| StandaloneSetupScreen | Namen invoeren, duur kiezen |
+| ControlScreen | Scoring interface (Y/W/I, shido, osaekomi, timer) |
+| SettingsScreen | Modus, timer default, geluid, verbinding |
+| HelpScreen | Bediening uitleg, scoring regels |
+| AboutScreen | Versie, ontwikkelaar, contact |
 
-## APK Distributie
+## Documentatie
 
-- Eigen server: `/var/www/judoscoreboard/`
-- OTA updates via expo-updates (`checkAutomatically: ON_LOAD`)
-- Versie check: `GET /api/scoreboard/version`
-- Build: `eas build --platform android --profile production`
-
-## Vereisten
-
-- **Landscape** altijd (forced in app.json)
-- **Background timer** via foreground service (sticky notification)
-- **Offline resilient:** timer draait door, uitslag ge-queued, sync bij reconnect
-- **Wake lock** tijdens wedstrijd (expo-keep-awake)
-- **Geluiden:** match end, osaekomi milestone, ippon fanfare
-- **Dark mode** standaard
+| Document | Locatie |
+|----------|---------|
+| App docs | `JudoScoreBoard/docs/` (ARCHITECTUUR, SCORING, API, CONNECTIE) |
+| Feature spec | `JudoToernooi/laravel/docs/2-FEATURES/SCOREBORD-APP.md` |
+| Expo setup | `HavunCore/docs/kb/runbooks/expo-android-app-setup.md` |
+| Geen polling | `HavunCore/docs/kb/decisions/geen-polling.md` |
 
 ## Development
 
