@@ -2,31 +2,50 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 20 maart 2026
+## Laatste Sessie: 22 maart 2026
+
+### Wat is gedaan:
+- **JudoScoreBoard audit** — volledige codebase + backend analyse
+  - App (Expo RN): alle schermen, scoring, timer, osaekomi, WebSocket — KLAAR
+  - Backend (JudoToernooi): alle API endpoints, Reverb channels, middleware — KLAAR
+  - Koppeling is aan BEIDE kanten gebouwd, moet alleen end-to-end getest worden
+- **KB Scheduled Tasks** — Windows Task Scheduler aangemaakt
+  - 08:03 + 20:07: `docs:index all --force` + `docs:detect`
+  - Script: `scripts/kb-update.bat`, log: `storage/logs/kb-update.log`
+- **Claude Code features onderzocht** — Remote Control, Channels, Scheduled Tasks
+  - Remote Control: geparkeerd (GitHub/Claude account mismatch)
+  - Channels: geparkeerd (niet prioriteit)
+  - CronCreate: session-only, niet persistent — Windows Task Scheduler gekozen
+- **Expo Android app procedure** — Studieplanner als template voor JudoScoreBoard
+  - Runbook: `docs/kb/runbooks/expo-android-app-setup.md`
+
+### Openstaande items:
+- [ ] **JudoScoreBoard end-to-end test** — DeviceToegang aanmaken, login, wedstrijd toewijzen, resultaat terugsturen
+- [ ] JudoScoreBoard: pending results retry bij reconnect
+- [ ] JudoScoreBoard: audio bestanden (buzzer) toevoegen
+- [ ] JudoScoreBoard: match duration per toernooi (nu hardcoded 240s)
+- [ ] `/f` command testen in de praktijk
+- [ ] Doc issues #7837-7839 — QR login runbooks overlap
+- [ ] Doc issue #7836 — crypto/mollie payments overlap
+
+### Belangrijke context:
+- JudoScoreBoard backend endpoints zijn KLAAR in JudoToernooi (ScoreboardController, CheckScoreboardToken middleware, Reverb channels)
+- KB update draait nu 2x per dag automatisch via Windows Task Scheduler
+- Remote Control werkt niet soepel: GitHub=havun22, Claude=henkvu
+
+---
+
+## Vorige Sessie: 20 maart 2026
 
 ### Wat is gedaan:
 - **`/f` (Focus) command aangemaakt** — nieuw slash command in alle 12 projecten
-  - Dwingt Claude om ALLE relevante docs + code te lezen voordat er gecodeerd wordt
-  - Doorzoekt KB, code, docs, memory op basis van opgegeven onderwerp
-  - Geeft samenvatting die gebruiker moet goedkeuren voor code geschreven mag worden
-  - Aanleiding: Claude vergeet structureel KB/docs te raadplegen ondanks CLAUDE.md regels
-
-### Discussie: Gemini AI Studio integratie
-- Gebruiker onderzocht of Gemini als "architect" of "auditor" kan fungeren
-- Conclusie: Gemini als vooraf-briefer is nuttig, maar niet als complex protocol
-- Kernprobleem geïdentificeerd: Claude gebruikt KB en /kb niet, ondanks verplichte regels
-- Hooks eerder geprobeerd maar blokkeren de workflow te veel
-- `/f` command is de pragmatische oplossing: gebruiker geeft onderwerp, Claude leest alles
 
 ### Openstaande items:
-- [ ] `/f` command testen in de praktijk
+- [x] `/f` command aanmaken
 - [ ] Gemini system prompt overwegen voor pre-sessie briefings (optioneel)
-- [ ] Doc issues #7837/#7838/#7839 — QR login runbooks overlap
-- [ ] Doc issue #7836 — crypto/mollie payments overlap
 - [ ] 80x stale doc issues — bulk ignore of review
 
 ### Belangrijke context:
-- Gebruiker heeft na maanden ervaring geen vertrouwen dat Claude zelfstandig docs raadpleegt
 - `/f` is bewust simpel gehouden: geen hooks, geen subagents, alleen een verplichte leesronde
 - Bestanden gekopieerd naar: Demo, Havun, HavunAdmin, HavunVet, Herdenkingsportaal, IDSee, Infosyst, JudoToernooi, SafeHavun, Studieplanner, VPDUpdate
 
