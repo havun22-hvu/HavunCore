@@ -1,7 +1,7 @@
 # Decision 005: Studieplanner Architecture
 
 **Datum:** 22 december 2025
-**Laatste update:** 18 maart 2026
+**Laatste update:** 21 maart 2026
 **Status:** Geïmplementeerd
 **Project:** Studieplanner
 
@@ -28,7 +28,7 @@ Studieplanner is een studieplanningsapp voor leerlingen en mentors met:
 | Real-time | Laravel Reverb (via HavunCore) | Open source, geen externe kosten |
 | Auth | Magic link + biometrie | Geen wachtwoorden, veilig, gebruiksvriendelijk |
 | Push | expo-notifications (native) | Betrouwbaar op achtergrond |
-| Payments | Mollie iDEAL (€1/jaar) | Nederlands, lage kosten |
+| Payments | bunq.me/Havun + XRP (€1/jaar) | €0 transactiekosten, geen commissie |
 | Distributie | Eigen server APK | 0% commissie, geen Play Store review |
 | State | React Context | Simpel genoeg voor deze app |
 | i18n | i18next | Nederlands + Engels |
@@ -43,6 +43,8 @@ Studieplanner is een studieplanningsapp voor leerlingen en mentors met:
 | Frontend | Expo (basis) | Expo SDK 54 + React Navigation 7 |
 | Backend | Laravel 11 | Laravel 12 |
 | Chat | Polling (5 sec) | Niet geïmplementeerd (niet nodig gebleken) |
+| Payments | Mollie iDEAL | bunq.me/Havun + XRP (€0 kosten vs 32% bij Mollie) |
+| Updates | Geen OTA | expo-updates OTA + in-app APK download |
 
 ### Afgewezen alternatieven
 
@@ -53,6 +55,8 @@ Studieplanner is een studieplanningsapp voor leerlingen en mentors met:
 | Google Play Store | 15-30% commissie, review delays |
 | Redux/Zustand | React Context is voldoende voor deze app |
 | Pusher | Externe dependency, kosten → Reverb is gratis |
+| Mollie iDEAL | 32% transactiekosten op €1 product → bunq.me = €0 |
+| Google Play Store | 15-30% commissie + review delays + jaarlijkse dev fee |
 
 ## HavunCore integratie
 
@@ -63,6 +67,7 @@ Studieplanner is een studieplanningsapp voor leerlingen en mentors met:
 ## Gevolgen
 
 - Studieplanner is volledig standalone
-- Geen externe service dependencies (behalve Brevo email + Mollie payments)
-- Eigen distributiekanaal = volledige controle over updates
+- Geen externe service dependencies (behalve Brevo email)
+- Betalingen 100% kosteloos: bunq.me (€0) + XRP (€0)
+- Eigen distributiekanaal = volledige controle over updates (OTA + APK)
 - Later uitbreidbaar naar iOS indien gewenst

@@ -43,8 +43,8 @@
   - Server: `/var/www/havunclub/production`, lokaal: `D:\GitHub\HavunClub`
 - **SafeHavun** - Smart Money Crypto Tracker (whale alerts, sentiment)
 - **HavunVet** - Dierenarts praktijkbeheer (ZZP), integratie met HavunAdmin
-- **Studieplanner** - Expo React Native app voor leerling-mentor studiesessies
-  - Pusher real-time, pincode auth
+- **Studieplanner** - Expo React Native Android app (v1.0.4) voor leerling-mentor studiesessies
+  - Magic link + biometrie auth, eigen APK distributie, bunq.me + XRP betalingen, OTA updates
 - **Infosyst** - Gedistribueerde kennisbank (Henkiepedia) + eigen AI chat (Ollama)
   - Lokaal invoeren (SQLite + PWA), sync via Git JSON, server read-only wiki
 - **IDSee** - (details volgen)

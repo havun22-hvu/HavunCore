@@ -236,9 +236,10 @@ SaaS judo toernooi management:
 - AutoFix systeem actief
 
 ### Studieplanner (`projects/studieplanner.md`)
-Expo React Native app voor leerling-mentor studiesessies:
-- Pusher real-time sync, pincode authenticatie
-- Laravel API backend
+Expo React Native Android app (v1.0.4) voor leerling-mentor studiesessies:
+- Magic link auth + biometrie, eigen APK distributie (geen Play Store)
+- Laravel 12 API backend, bunq.me + XRP betalingen (€0 kosten)
+- OTA updates via expo-updates, in-app APK download
 
 ### SafeHavun (`projects/safehavun.md`)
 Smart Money Crypto Tracker:

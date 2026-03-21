@@ -3,7 +3,8 @@
 **URL:** https://studieplanner.havun.nl
 **API:** https://api.studieplanner.havun.nl
 **Type:** Expo React Native (frontend) + Laravel 12 API (backend)
-**Business model:** Freemium (gratis planning, premium stats/analytics €1/jaar via Mollie iDEAL)
+**Business model:** Freemium (gratis planning, premium €1/jaar via bunq.me/Havun + XRP)
+**Huidige versie:** v1.0.4 (versionCode 102)
 
 > **Waarom Expo i.p.v. PWA:** Alarms en timer/stopwatch werken onbetrouwbaar in PWA (achtergrond, notificaties).
 > **Waarom geen Play Store:** 100% eigen distributie via APK downloads op eigen server. 0% commissie.
@@ -35,7 +36,7 @@ Studieplanningsapp voor leerlingen en mentors:
 | Real-time | Laravel Reverb (WebSocket via HavunCore proxy) |
 | Auth | Magic link (email) + biometrie (expo-local-authentication) |
 | Push | expo-notifications (native OS) |
-| Payments | Mollie iDEAL (€1/jaar) |
+| Payments | bunq.me/Havun (€0 kosten) + XRP (Ledger, auto-activatie) |
 | Email | Brevo SMTP (noreply@studieplanner.havun.nl) |
 | State | React Context (geen Redux) |
 | i18n | i18next (Nederlands default, Engels) |
@@ -108,8 +109,6 @@ DELETE /api/student/mentor/{id}   - Mentor ontkoppelen
 GET /api/premium/status           - Premium status
 GET /api/premium/stats            - Statistieken (premium only)
 GET /api/premium/learning-speed   - Leersnelheid per vak
-POST /api/premium/pay             - Mollie betaling starten
-GET /api/premium/payment/{id}     - Betaling status
 ```
 
 ### SOMtoday & Magister
@@ -125,15 +124,21 @@ GET  /api/magister/schools        - Scholen zoeken
 
 ### Push & Versioning
 ```
-GET  /api/push/vapid-public-key   - VAPID public key
 POST /api/push/subscribe          - Push subscription
 POST /api/push/unsubscribe        - Unsubscribe
 GET  /api/app/version             - Version info + download URL
 ```
 
-### Webhooks
+### Admin
 ```
-POST /webhooks/mollie             - Mollie payment webhook
+GET  /admin/login                 - Admin login pagina
+GET  /admin/dashboard             - Admin dashboard (user management)
+POST /admin/users/{id}/delete     - Gebruiker verwijderen
+```
+
+### XRP Payments
+```
+php artisan xrp:check             - Poll XRPL voor sp- betalingen, activeert premium automatisch
 ```
 
 ## Database
@@ -148,7 +153,7 @@ POST /webhooks/mollie             - Mollie payment webhook
 | magic_link_tokens | id, email, token, expires_at (15 min TTL) |
 | mentor_students | mentor_id, student_id, status, invite_code |
 | student_invites | id, mentor_id, student_code |
-| premium_payments | id, user_id, amount, period, status, mollie_id |
+| premium_payments | id, user_id, amount, period, status, payment_method (bunq/xrp), reference |
 | newsletter_subscribers | id, email, is_active, unsubscribed_at |
 | newsletter_campaigns | id, subject, content, sent_at |
 | push_subscriptions | id, user_id, endpoint |
@@ -168,13 +173,30 @@ src/
 └── i18n/locales/       # nl.json, en.json
 ```
 
-## APK Distributie
+## APK Distributie & Updates
 
-- Geen Google Play Store — eigen server
+- Geen Google Play Store — eigen server, 0% commissie
 - APK locatie: `/var/www/studieplanner/production/public/downloads/studieplanner-latest.apk`
-- Versie check: `GET /api/app/version` → `{ version, downloadUrl, forceUpdate }`
-- OTA updates via expo-updates + Expo Services
-- Build via EAS Build (Expo Application Services)
+- Versie check: `GET /api/app/version` → `{ version, versionCode, downloadUrl, forceUpdate }`
+- Build via EAS Build (Expo Application Services): `eas build --platform android --profile production`
+
+### Twee update-kanalen
+
+| Kanaal | Wanneer | Gebruiker merkt |
+|--------|---------|-----------------|
+| **OTA** (expo-updates) | JS/styling/assets wijzigingen | Niets — actief bij volgende app start |
+| **APK** (in-app download) | Native changes, SDK upgrades | Melding → download → "Installeren" |
+
+### versionCode (KRITIEK!)
+- `android.versionCode` in app.json MOET altijd gezet en verhoogd worden bij nieuwe APK builds
+- Mismatch met server `.env` MOBILE_VERSION_CODE = oneindige update loop
+- In-app download: expo-file-system + expo-intent-launcher (met browser fallback)
+
+### OTA Updates
+- `checkAutomatically: "ON_LOAD"` — checkt EAS server bij elke app start
+- Channels: development, preview, production
+- Push: `npm run ota` of `npx eas update --channel production`
+- Dashboard: https://expo.dev/accounts/havun22/projects/studieplanner/updates
 
 ## HavunCore Integratie
 
@@ -216,12 +238,37 @@ php artisan serve --port=8003
 | SSL | Let's Encrypt voor beide domeinen |
 | PHP | 8.2-fpm |
 
+## Betaalflow
+
+### bunq.me/Havun (primair)
+1. App toont PremiumScreen → opent `bunq.me/Havun` met referentie `sp-YYYYMMDD-email@adres.nl`
+2. HavunAdmin bunq sync herkent `sp-` prefix → activeert premium via directe DB update
+3. App refresht premium status bij volgende API call
+
+### XRP (extra optie)
+- XRP adres: `rndey9kACEfNhST29ZJiAjJMXH98R6p79V` (Ledger, Studieplanner dedicated)
+- `php artisan xrp:check` pollt XRPL, CoinGecko koers, auto-activatie binnen 5 min
+- XRP vasthouden (niet omzetten naar EUR)
+
+## Premium Reminders
+- Automatische e-mail 14 dagen + 1 dag voor premium afloop
+- Scheduler draait dagelijks om 09:00
+
+## Admin Panel
+- URL: `studieplanner.havun.nl/admin/login` (wachtwoord auth)
+- Admin user: `henkvu@gmail.com` (is_admin=true)
+- Features: user overzicht, premium toggle, gebruiker verwijderen
+
 ## Bekende Issues
 
-- Background timer + biometrie niet testbaar in Expo Go (vereist dev APK)
-- Code wijkt deels af van docs (oude timer flow nog in code, nieuw StudyLog model moet verwerkt worden)
-- Oude web-routes in studieplanner-api/routes/web.php serveren nog een verouderde website
+- Geen bekende issues (21 maart 2026)
+
+## Openstaand
+
+- [ ] bunq.me betaling end-to-end testen
+- [ ] XRP betaling end-to-end testen
+- [ ] Magic link login testen op production APK
 
 ---
 
-*Laatste update: 18 maart 2026*
+*Laatste update: 21 maart 2026*

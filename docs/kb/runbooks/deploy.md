@@ -104,20 +104,27 @@ ssh root@SERVER_IP (zie context.md) "pm2 restart havuncore-backend"
 
 ## Studieplanner
 
-### Frontend (React)
-```bash
-# 1. Lokaal builden en pushen
-cd D:\GitHub\Studieplanner
-npm run build
-git add .
-git commit -m "Description"
-git push
+### Frontend (React Native / Expo)
 
-# 2. Server deploy
-ssh root@SERVER_IP (zie context.md)
-cd /var/www/studieplanner/production
-git pull origin master
-npm ci && npm run build
+**OTA update (JS/styling wijzigingen):**
+```bash
+cd D:\GitHub\Studieplanner
+git add . && git commit -m "Description" && git push
+npm run ota    # = eas update --channel production
+```
+
+**Nieuwe APK (native changes/SDK upgrade):**
+```bash
+cd D:\GitHub\Studieplanner
+# 1. Verhoog version + android.versionCode in app.json
+# 2. Build
+eas build --platform android --profile production
+# 3. Download APK van EAS link
+# 4. Upload + symlink
+scp studieplanner-vX.X.X.apk root@SERVER_IP:/var/www/studieplanner/production/public/downloads/
+ssh root@SERVER_IP "cd /var/www/studieplanner/production/public/downloads && ln -sf studieplanner-vX.X.X.apk studieplanner-latest.apk"
+# 5. Update server .env: MOBILE_VERSION + MOBILE_VERSION_CODE
+# 6. Update version.json op server
 ```
 
 ### Backend (Laravel API)
