@@ -17,6 +17,7 @@
 | **Studieplanner-api** | Laravel 12 | (via /api/) | D:\GitHub\Studieplanner-api | /var/www/studieplanner/production |
 | **Infosyst** | Laravel + Ollama | infosyst.havun.nl | D:\GitHub\infosyst | /var/www/infosyst/production |
 | **IDSee** | Node.js + React | - | D:\GitHub\IDSee | (in development) |
+| **JudoScoreBoard** | Expo React Native | (via JudoToernooi) | D:\GitHub\JudoScoreBoard | /var/www/judoscoreboard/ |
 | **HavunClub** | Laravel 11 SaaS | havunclub.havun.nl | D:\GitHub\HavunClub | /var/www/havunclub/production |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (in development) |
 
@@ -45,6 +46,8 @@
 - **HavunVet** - Dierenarts praktijkbeheer (ZZP), integratie met HavunAdmin
 - **Studieplanner** - Expo React Native Android app (v1.0.4) voor leerling-mentor studiesessies
   - Magic link + biometrie auth, eigen APK distributie, bunq.me + XRP betalingen, OTA updates
+- **JudoScoreBoard** - Expo React Native scorebord app voor judo wedstrijden
+  - Bediening (tablet/smartphone) + Display (Blade/TV), gekoppeld aan JudoToernooi API
 - **Infosyst** - Gedistribueerde kennisbank (Henkiepedia) + eigen AI chat (Ollama)
   - Lokaal invoeren (SQLite + PWA), sync via Git JSON, server read-only wiki
 - **IDSee** - (details volgen)

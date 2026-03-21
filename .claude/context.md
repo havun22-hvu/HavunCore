@@ -33,6 +33,7 @@ Centrale kennisbank & orchestrator voor ALLE Havun projecten:
 | HavunVet | 8008 | 5173 | Laravel + Vite |
 | havuncore-webapp backend | 8009 | - | Node.js Express |
 | Studieplanner (Expo) | 8010 | - | React Native + Expo Metro |
+| JudoScoreBoard (Expo) | 8011 | - | React Native + Expo Metro |
 | HavunCore | - | - | Laravel (pure backend, geen lokale dev) |
 | Ollama | 11434 | - | AI (Command-R) |
 

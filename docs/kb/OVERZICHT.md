@@ -241,6 +241,12 @@ Expo React Native Android app (v1.0.4) voor leerling-mentor studiesessies:
 - Laravel 12 API backend, bunq.me + XRP betalingen (€0 kosten)
 - OTA updates via expo-updates, in-app APK download
 
+### JudoScoreBoard (`projects/judoscoreboard.md`)
+Expo React Native Android scorebord app voor judo wedstrijden:
+- Bediening (tablet/smartphone) + Display (Blade/TV via Reverb)
+- Gekoppeld aan JudoToernooi API, event-based sync, IJF scoring regels
+- Expo SDK 55, landscape, foreground service timer, offline resilient
+
 ### SafeHavun (`projects/safehavun.md`)
 Smart Money Crypto Tracker:
 - Whale alerts, sentiment analyse
