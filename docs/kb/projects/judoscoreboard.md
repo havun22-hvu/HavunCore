@@ -108,7 +108,7 @@ Alleen 2: match einde (timer=0) en osaekomi einde (W+W of I bij 20s)
 ## Development
 
 ```bash
-# App starten
+# App starten (in Android Studio emulator)
 cd D:\GitHub\JudoScoreBoard
 npx expo start --android
 
@@ -117,6 +117,21 @@ cd D:\GitHub\JudoToernooi\laravel
 php artisan serve --port=8007
 ```
 
+### Lokale APK build
+
+```bash
+# Genereer native Android project
+npx expo prebuild --platform android
+
+# Open android/ map in Android Studio
+# Build → Build APK(s)
+# Output: android/app/build/outputs/apk/release/app-release.apk
+```
+
+### Emulator
+
+Android Studio emulator (Pixel 7, API 34). App API gebruikt `10.0.2.2:8007` om lokale backend te bereiken.
+
 ---
 
-*Laatste update: 21 maart 2026*
+*Laatste update: 22 maart 2026*
