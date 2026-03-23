@@ -2,7 +2,41 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 22 maart 2026
+## Laatste Sessie: 24 maart 2026
+
+### Wat is gedaan:
+- **Cursor abonnement evaluatie** — conclusie: opzeggen, geen meerwaarde boven Claude Code
+- **`/simplify` hook** — globale PostToolUse hook die na elke `git commit` herinnert om /simplify te draaien
+  - Staat in `~/.claude/settings.json` → werkt in ALLE projecten
+  - Gebruikt `node` (geen jq beschikbaar op Windows)
+- **PHPUnit test suite** voor HavunCore (19 tests, allemaal groen):
+  - `tests/Feature/RouteSmokeTest.php` — health, version, docs endpoints
+  - `tests/Feature/ApiEndpointTest.php` — task queue, vault, AI proxy, auth
+  - `tests/Feature/SecurityAuditTest.php` — stack traces, app env
+  - `tests/TestCase.php` — met `assertRouteAccessible()` helper
+  - `phpunit.xml` + `.env.testing` (gitignored)
+- **GitHub Actions CI** — `.github/workflows/tests.yml` draait bij push/PR op master
+  - Composer cache, composer audit, PHPUnit
+- **Testing plan** — `docs/kb/runbooks/github-testing-plan.md` met 4 fases
+
+### Openstaande items:
+- [ ] **Test suite uitrollen naar andere projecten** (HavunAdmin, Herdenkingsportaal, etc.)
+- [ ] Fase 2: beschermingslaag-tests (kritieke UI features)
+- [ ] Fase 3: API contract tests
+- [ ] Fase 4: mail/notification tests
+- [ ] Composer vulnerability fixen (1 critical gevonden bij `composer audit`)
+- [ ] JudoScoreBoard end-to-end test
+- [ ] Doc issues #7837-7839 — QR login runbooks overlap
+
+### Belangrijke context:
+- `/simplify` hook staat GLOBAAL in `~/.claude/settings.json` — niet per project
+- `.env.testing` staat in `.gitignore` (via `.env.*` pattern) — moet lokaal aangemaakt worden
+- GitHub Actions genereert eigen `.env.testing` via `php artisan key:generate`
+- `BROADCAST_CONNECTION=null` is nodig in test env (Reverb/Pusher crasht anders)
+
+---
+
+## Vorige Sessie: 22 maart 2026
 
 ### Wat is gedaan:
 - **JudoScoreBoard audit** — volledige codebase + backend analyse
