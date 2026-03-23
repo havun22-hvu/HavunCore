@@ -1,0 +1,43 @@
+name: Tests
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  tests:
+    name: PHP Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, sqlite3, pdo_sqlite
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --no-interaction --prefer-dist --no-progress
+
+      - name: Create .env.testing
+        run: |
+          cp .env.example .env.testing 2>/dev/null || true
+          php artisan key:generate --env=testing --force
+          echo "BROADCAST_CONNECTION=null" >> .env.testing
+
+      - name: Run composer audit
+        run: composer audit
+        continue-on-error: true
+
+      - name: Run tests
+        run: vendor/bin/phpunit --colors=always
+        env:
+          APP_ENV: testing
+          DB_CONNECTION: sqlite
+          DB_DATABASE: ":memory:"
