@@ -2,7 +2,29 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 24 maart 2026
+## Laatste Sessie: 24 maart 2026 (avond)
+
+### Wat is gedaan:
+- **GitGuardian credential leak gefixt** — JudoToernooi `staging/.env.example` bevatte `ADMIN_PASSWORD=WestFries2026`
+  - Wachtwoord verwijderd, placeholder gezet, gecommit+gepusht
+
+### Openstaande items:
+- [ ] **KRITIEK: Wachtwoord `WestFries2026` wijzigen** — MySQL root + admin password op server (staging + production)
+- [ ] **Git history opschonen** — wachtwoord zit nog in commit `4581b64` (BFG Repo Cleaner of git filter-repo)
+- [ ] **GitGuardian incident resolven** na wachtwoord wijziging
+- [ ] Test suite uitrollen naar andere projecten (HavunAdmin, Herdenkingsportaal, etc.)
+- [ ] Fase 2-4 testing plan
+- [ ] Composer vulnerability fixen (1 critical)
+- [ ] JudoScoreBoard end-to-end test
+- [ ] Doc issues #7837-7839 — QR login runbooks overlap
+
+### Belangrijke context:
+- Het gelekte wachtwoord is nog NIET gewijzigd op de server — alleen uit het bestand verwijderd
+- Git history bevat het wachtwoord nog steeds — opschonen vereist
+
+---
+
+## Vorige Sessie: 24 maart 2026
 
 ### Wat is gedaan:
 - **Cursor abonnement evaluatie** — conclusie: opzeggen, geen meerwaarde boven Claude Code
@@ -20,11 +42,10 @@
 - **Testing plan** — `docs/kb/runbooks/github-testing-plan.md` met 4 fases
 
 ### Openstaande items:
-- [ ] **Test suite uitrollen naar andere projecten** (HavunAdmin, Herdenkingsportaal, etc.)
-- [ ] Fase 2: beschermingslaag-tests (kritieke UI features)
-- [ ] Fase 3: API contract tests
-- [ ] Fase 4: mail/notification tests
-- [ ] Composer vulnerability fixen (1 critical gevonden bij `composer audit`)
+- [x] GitGuardian credential leak fixen (24 maart avond)
+- [ ] Test suite uitrollen naar andere projecten
+- [ ] Fase 2-4 testing plan
+- [ ] Composer vulnerability fixen
 - [ ] JudoScoreBoard end-to-end test
 - [ ] Doc issues #7837-7839 — QR login runbooks overlap
 
