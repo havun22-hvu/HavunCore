@@ -6,12 +6,14 @@
 
 ### Wat is gedaan:
 - **GitGuardian credential leak gefixt** — JudoToernooi `staging/.env.example` bevatte `ADMIN_PASSWORD=WestFries2026`
-  - Wachtwoord verwijderd, placeholder gezet, gecommit+gepusht
+  - Wachtwoord verwijderd uit bestand, placeholder gezet, gecommit+gepusht
+  - MySQL root wachtwoord gewijzigd op server (nieuw wachtwoord in credentials vault)
+  - Git history opgeschoond met `git-filter-repo` — wachtwoord uit alle 2449 commits verwijderd
+  - Force push naar GitHub + server repos (production + staging) gereset
+  - Server .env ADMIN_PASSWORD was al anders (niet het gelekte wachtwoord)
 
 ### Openstaande items:
-- [ ] **KRITIEK: Wachtwoord `WestFries2026` wijzigen** — MySQL root + admin password op server (staging + production)
-- [ ] **Git history opschonen** — wachtwoord zit nog in commit `4581b64` (BFG Repo Cleaner of git filter-repo)
-- [ ] **GitGuardian incident resolven** na wachtwoord wijziging
+- [ ] **GitGuardian incident resolven** via GitGuardian dashboard (kan niet via CLI)
 - [ ] Test suite uitrollen naar andere projecten (HavunAdmin, Herdenkingsportaal, etc.)
 - [ ] Fase 2-4 testing plan
 - [ ] Composer vulnerability fixen (1 critical)
@@ -19,8 +21,9 @@
 - [ ] Doc issues #7837-7839 — QR login runbooks overlap
 
 ### Belangrijke context:
-- Het gelekte wachtwoord is nog NIET gewijzigd op de server — alleen uit het bestand verwijderd
-- Git history bevat het wachtwoord nog steeds — opschonen vereist
+- MySQL root wachtwoord is gewijzigd — nieuw wachtwoord staat in deze conversatie, sla op in credentials vault!
+- Apps gebruiken eigen DB users (niet root), dus geen .env wijzigingen nodig
+- Git history is herschreven — alle lokale clones van JudoToernooi moeten opnieuw gecloned worden
 
 ---
 
