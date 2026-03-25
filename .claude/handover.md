@@ -2,28 +2,36 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 24 maart 2026 (avond)
+## Laatste Sessie: 25-26 maart 2026
 
 ### Wat is gedaan:
-- **GitGuardian credential leak gefixt** — JudoToernooi `staging/.env.example` bevatte `ADMIN_PASSWORD=WestFries2026`
-  - Wachtwoord verwijderd uit bestand, placeholder gezet, gecommit+gepusht
-  - MySQL root wachtwoord gewijzigd op server (nieuw wachtwoord in credentials vault)
-  - Git history opgeschoond met `git-filter-repo` — wachtwoord uit alle 2449 commits verwijderd
-  - Force push naar GitHub + server repos (production + staging) gereset
-  - Server .env ADMIN_PASSWORD was al anders (niet het gelekte wachtwoord)
+- **iDEAL | Wero transitie** — KB reference doc aangemaakt (`docs/kb/reference/ideal-wero-transitie.md`)
+  - Deadline al verstreken (22-01-2026): alle "iDEAL" teksten moeten "iDEAL | Wero" zijn
+  - Raakt: HP (Mollie checkout), JT (Mollie checkout), HavunCore KB
+  - Q4 2027: iDEAL verdwijnt volledig → alleen Wero
+  - API endpoints/code NIET aanpassen, alleen klantgerichte teksten en logo's
+- **Expo Android app runbook bijgewerkt** — Android Studio setup, emulator, lokale APK build
+- **JudoScoreBoard KB bijgewerkt** — lokale build + emulator instructies
+- **Resend status bevestigd** — wordt niet meer gebruikt, Brevo is enige email provider
+- **GitHub Copilot data training** — geen actie nodig (geen Copilot, wel opt-out aanbevolen)
 
 ### Openstaande items:
-- [ ] **GitGuardian incident resolven** via GitGuardian dashboard (kan niet via CLI)
-- [ ] Test suite uitrollen naar andere projecten (HavunAdmin, Herdenkingsportaal, etc.)
+- [ ] **iDEAL → iDEAL | Wero** teksten aanpassen in HP + JT checkout/terms/emails
+- [ ] **GitGuardian incident resolven** via dashboard
+- [ ] Test suite uitrollen naar andere projecten
 - [ ] Fase 2-4 testing plan
 - [ ] Composer vulnerability fixen (1 critical)
 - [ ] JudoScoreBoard end-to-end test
 - [ ] Doc issues #7837-7839 — QR login runbooks overlap
+- [ ] Resend composer package verwijderen uit HP
+- [ ] JT server structuur wijziging verwerken in KB
 
 ### Belangrijke context:
-- MySQL root wachtwoord is gewijzigd — nieuw wachtwoord staat in deze conversatie, sla op in credentials vault!
-- Apps gebruiken eigen DB users (niet root), dus geen .env wijzigingen nodig
-- Git history is herschreven — alle lokale clones van JudoToernooi moeten opnieuw gecloned worden
+- iDEAL | Wero is VERPLICHT sinds 22-01-2026 — wij zijn te laat, moet zsm aangepast
+- Resend = dood, Brevo = enige email provider
+- Android Studio is nu beschikbaar voor lokale APK builds + emulator
+- Zakelijk emailadres: havun22@gmail.com
+- GitHub Copilot opt-out: Settings → Copilot → data training uit (voor 24 april 2026)
 
 ---
 
