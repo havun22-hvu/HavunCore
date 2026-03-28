@@ -2,18 +2,14 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 25-26 maart 2026
+## Laatste Sessie: 28 maart 2026
 
 ### Wat is gedaan:
-- **iDEAL | Wero transitie** — KB reference doc aangemaakt (`docs/kb/reference/ideal-wero-transitie.md`)
-  - Deadline al verstreken (22-01-2026): alle "iDEAL" teksten moeten "iDEAL | Wero" zijn
-  - Raakt: HP (Mollie checkout), JT (Mollie checkout), HavunCore KB
-  - Q4 2027: iDEAL verdwijnt volledig → alleen Wero
-  - API endpoints/code NIET aanpassen, alleen klantgerichte teksten en logo's
-- **Expo Android app runbook bijgewerkt** — Android Studio setup, emulator, lokale APK build
-- **JudoScoreBoard KB bijgewerkt** — lokale build + emulator instructies
-- **Resend status bevestigd** — wordt niet meer gebruikt, Brevo is enige email provider
-- **GitHub Copilot data training** — geen actie nodig (geen Copilot, wel opt-out aanbevolen)
+- **Doc Intelligence issues opgeschoond** — 9 issues afgehandeld:
+  - Broken link havunclub.md → gemarkeerd als archived in INDEX.md (resolved)
+  - ICONS-README.md duplicate → dist/ versie verwijderd (resolved)
+  - 3 login runbook stubs verwijderd → waren al geconsolideerd in unified-login-system.md (resolved)
+  - 4 false positives genegeerd (prijzen, DocIndexer/StructureIndexer, CODE-REVIEW/FIXES-APPLIED, crypto/mollie)
 
 ### Openstaande items:
 - [ ] **iDEAL → iDEAL | Wero** teksten aanpassen in HP + JT checkout/terms/emails
@@ -22,7 +18,6 @@
 - [ ] Fase 2-4 testing plan
 - [ ] Composer vulnerability fixen (1 critical)
 - [ ] JudoScoreBoard end-to-end test
-- [ ] Doc issues #7837-7839 — QR login runbooks overlap
 - [ ] Resend composer package verwijderen uit HP
 - [ ] JT server structuur wijziging verwerken in KB
 
@@ -58,7 +53,7 @@
 - [ ] Fase 2-4 testing plan
 - [ ] Composer vulnerability fixen
 - [ ] JudoScoreBoard end-to-end test
-- [ ] Doc issues #7837-7839 — QR login runbooks overlap
+- [x] Doc issues #7837-7839 — QR login runbooks overlap (opgelost 28-03-2026)
 
 ### Belangrijke context:
 - `/simplify` hook staat GLOBAAL in `~/.claude/settings.json` — niet per project
@@ -91,8 +86,8 @@
 - [ ] JudoScoreBoard: audio bestanden (buzzer) toevoegen
 - [ ] JudoScoreBoard: match duration per toernooi (nu hardcoded 240s)
 - [ ] `/f` command testen in de praktijk
-- [ ] Doc issues #7837-7839 — QR login runbooks overlap
-- [ ] Doc issue #7836 — crypto/mollie payments overlap
+- [x] Doc issues #7837-7839 — QR login runbooks overlap (opgelost 28-03-2026)
+- [x] Doc issue #7836 — crypto/mollie payments (false positive, ignored 28-03-2026)
 
 ### Belangrijke context:
 - JudoScoreBoard backend endpoints zijn KLAAR in JudoToernooi (ScoreboardController, CheckScoreboardToken middleware, Reverb channels)
@@ -131,7 +126,7 @@
 
 ### Openstaande items:
 - [ ] Doc issues #7837/#7838/#7839 — QR login runbooks overlap
-- [ ] Doc issue #7836 — crypto-payments.md en mollie-payments.md overlap
+- [x] Doc issue #7836 — crypto/mollie payments (false positive, ignored 28-03-2026)
 - [ ] 80x stale doc issues — bulk ignore of review
 
 ---
