@@ -22,7 +22,7 @@ docs/kb/
 ├── projects/             ← Per-project details
 │   ├── doc-intelligence-system.md
 │   ├── havunadmin.md
-│   ├── havunclub.md
+│   ├── havunclub.md        ← ARCHIVED
 │   ├── herdenkingsportaal.md
 │   ├── infosyst.md
 │   ├── judotoernooi.md
@@ -59,15 +59,12 @@ docs/kb/
 │   ├── deploy.md
 │   ├── deploy-safehavun.md
 │   ├── doc-intelligence-setup.md
-│   ├── fix-qr-login-csrf.md
 │   ├── ggshield-setup.md
 │   ├── md-file-audit.md
 │   ├── op-reis-workflow.md
-│   ├── passkey-mobile-fix.md
 │   ├── project-cleanup.md
 │   ├── ssl-monitoring.md
 │   ├── sync-start-command.md
-│   ├── token-based-login.md
 │   ├── server-verhuizingen-2026-03-18.md
 │   ├── troubleshoot.md
 │   ├── unified-login-procedure.md
@@ -127,11 +124,8 @@ docs/kb/
 - [doc-intelligence-setup.md](runbooks/doc-intelligence-setup.md) - Doc Intelligence indexering
 - [project-cleanup.md](runbooks/project-cleanup.md) - Project opschonen
 - [ggshield-setup.md](runbooks/ggshield-setup.md) - GitGuardian pre-commit
-- [token-based-login.md](runbooks/token-based-login.md) - Token-gebaseerde login
 - [unified-login-procedure.md](runbooks/unified-login-procedure.md) - Stap-voor-stap login implementatie (v4.0)
-- [unified-login-system.md](runbooks/unified-login-system.md) - Passkeys, QR (doorverwijzing)
-- [fix-qr-login-csrf.md](runbooks/fix-qr-login-csrf.md) - QR login CSRF fix
-- [passkey-mobile-fix.md](runbooks/passkey-mobile-fix.md) - Passkey op mobiel
+- [unified-login-system.md](runbooks/unified-login-system.md) - Passkeys, QR, biometrie, magic link (v4.0)
 
 ### Reference
 - [server.md](reference/server.md) - Server configuratie
@@ -164,7 +158,7 @@ docs/kb/
 
 ### Projects (per-project details)
 - [havunadmin.md](projects/havunadmin.md) - HavunAdmin boekhouding SaaS
-- [havunclub.md](projects/havunclub.md) - HavunClub ledenadministratie
+- ~~havunclub.md~~ - HavunClub ledenadministratie (ARCHIVED, geen doc)
 - [herdenkingsportaal.md](projects/herdenkingsportaal.md) - Herdenkingsportaal
 - [infosyst.md](projects/infosyst.md) - Infosyst kennisbank + AI
 - [judotoernooi.md](projects/judotoernooi.md) - JudoToernooi
