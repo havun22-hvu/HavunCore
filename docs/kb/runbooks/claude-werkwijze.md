@@ -63,6 +63,21 @@ Niveau 4: Bij nieuwe patronen/systemen
 - Bij fout: stop, analyseer, vraag indien nodig
 - Nooit meerdere onafhankelijke wijzigingen tegelijk
 
+### TEST (Standaard bij code wijzigingen!)
+
+**Bij ELKE code wijziging:**
+1. **VOOR:** Draai bestaande tests (`php artisan test` / `npm test`)
+2. **NA:** Draai tests opnieuw — als test faalt → jouw wijziging is fout, niet de test
+3. **BUG FIX:** Schrijf EERST een test die de bug reproduceert, dan pas fixen
+4. **NIEUWE FEATURE:** Schrijf guard tests (response structuur, routes, views)
+
+**Soorten tests:**
+- **Regression test** — voorkomt dat een opgeloste bug terugkeert
+- **Guard test** — verifieert dat kritieke code/methodes nog bestaan
+- **Smoke test** — checkt dat views de verwachte elementen bevatten
+
+Volledig pattern: `docs/kb/patterns/regression-guard-tests.md`
+
 ### DOCUMENTEER (Altijd!)
 
 **Na elke taak/oplossing:**
@@ -310,9 +325,12 @@ Voordat je code schrijft, vraag jezelf:
 - [ ] Verwijder ik geen bestaande UI-elementen of features?
 - [ ] Behoud ik scroll/focus bij async operaties?
 - [ ] Zijn docs-first stappen gevolgd? (grote wijziging)
+- [ ] Heb ik bestaande tests gedraaid VOOR mijn wijziging?
+- [ ] Heb ik tests geschreven/bijgewerkt NA mijn wijziging?
+- [ ] Bij bug fix: is er een regression test die de bug reproduceert?
 
 **Als je ook maar 1 vakje niet kunt aanvinken: STOP en lees/vraag eerst.**
 
 ---
 
-*Laatst bijgewerkt: 28 februari 2026*
+*Laatst bijgewerkt: 28 maart 2026*
