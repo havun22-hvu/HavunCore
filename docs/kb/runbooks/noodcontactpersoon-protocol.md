@@ -1,106 +1,74 @@
-# Noodprotocol — Voor Backup-Contactpersoon
+# Noodprotocol — Thiemo
 
-> **Voor:** Backup-contactpersoon
-> **Doel:** Als Henk niet bereikbaar is en een website down is, kun je dit protocol volgen.
-> **Vereiste kennis:** VS Code kunnen openen — de rest staat hier.
-
----
-
-## Wanneer gebruik je dit?
-
-- Papa is ziek, op reis, of niet bereikbaar
-- Je krijgt een e-mail met "[ALERT]" in de onderwerpregel
-- Of iemand meldt dat een website niet werkt
+> **Doel:** Als Henk langere tijd niet bereikbaar is, zorgen dat de systemen blijven draaien.
+> **Realiteit:** Henk kan overal ter wereld inloggen (laptop, telefoon, Claude). Dit protocol is alleen voor het scenario dat Henk echt niet kan (ziekenhuis, etc.).
 
 ---
 
-## Stap 1: VS Code openen
+## Wat je moet weten
 
-1. Zoek op het bureaublad of in het Start-menu naar **Visual Studio Code**:
+- De server draait zelfstandig — websites blijven gewoon online
+- AutoFix herstelt automatisch de meeste fouten
+- Health check stuurt alerts als iets down gaat
+- **Jouw enige taak:** de PC thuis aan houden als dat nodig is
+
+---
+
+## Scenario 1: PC staat uit en Henk is niet bereikbaar
+
+1. Zet de PC aan en log in
+2. De server en websites draaien NIET op deze PC — die staan in een datacenter en blijven gewoon werken
+3. Deze PC is alleen nodig als je via Claude Code iets wilt checken of herstellen
+
+---
+
+## Scenario 2: Je wilt checken of alles werkt
+
+### VS Code openen
+
+1. Zoek op het bureaublad of in het Start-menu:
 
    <img src="../../audit/vscode-icon.png" width="48" alt="VS Code icoon"/> **Visual Studio Code**
 
-2. Open het project op een van deze manieren:
+2. Open HavunCore:
    - **Optie A:** Klik links in de zijbalk op het **Project Manager** icoon (4e van onderen, twee mapjes boven elkaar) en kies **HavunCore**
-   - **Optie B:** Klik op **File → Open Folder** → ga naar `D:\GitHub\HavunCore` → klik **Selecteer map**
+   - **Optie B:** **File → Open Folder** → `D:\GitHub\HavunCore` → **Selecteer map**
+
+### Claude Code starten
+
+1. Open de terminal: klik onderaan op **Terminal** (of `Ctrl + ~`)
+2. Typ: `claude` en druk Enter
+3. Typ:
+
+```
+Check de status van alle Havun websites en vertel me of er problemen zijn.
+```
+
+4. Claude checkt alles en vertelt je wat er aan de hand is
+5. Als Claude vraagt of hij iets mag doen: **ja** = doorgaan, **stop** = stoppen
 
 ---
 
-## Stap 2: Claude Code terminal openen
+## Scenario 3: Alert e-mail ontvangen
 
-1. Klik onderaan in VS Code op **Terminal** (of druk `Ctrl + ~`)
-2. Als je een gewone terminal ziet, typ: `claude` en druk Enter
-3. Je ziet nu de Claude Code prompt (een `>` teken)
+Je krijgt een e-mail met `[ALERT]` in het onderwerp. Dit betekent dat een website niet bereikbaar is.
+
+**Meestal lost het zichzelf op.** Check na 10 minuten of je nog een e-mail krijgt. Zo niet: probleem is al opgelost.
+
+Als het aanhoudt: open Claude Code (zie boven) en typ:
+
+```
+Ik heb een alert ontvangen. Check wat er aan de hand is en los het op.
+```
 
 ---
 
-## Stap 3: Vraag Claude wat er aan de hand is
+## Regels
 
-Typ precies dit in de terminal:
-
-```
-De websites van Havun zijn mogelijk down. Check de status van alle apps en vertel me wat er aan de hand is. Geef simpele instructies wat ik moet doen.
-```
-
-Claude gaat dan:
-- Controleren welke apps online/offline zijn
-- Uitleggen wat het probleem is
-- Je stap voor stap vertellen wat je moet doen
-
----
-
-## Stap 4: Volg Claude's instructies
-
-Claude kan je vragen om dingen te bevestigen. Antwoord met:
-- **ja** of **ok** als je het begrijpt en wilt doorgaan
-- **nee** of **stop** als je twijfelt
-- **leg uit** als je iets niet snapt
-
-### Wat Claude WEL mag doen:
-- De server checken (status opvragen)
-- Services herstarten (nginx, PHP)
-- Caches legen
-- Bestanden bekijken
-
-### Wat Claude NIET mag doen (en jij ook niet):
-- Wachtwoorden of SSH keys veranderen
-- Code wijzigen
-- Databases aanpassen
-- Nieuwe software installeren
-
-Als Claude iets wil doen dat je niet begrijpt: **typ "stop" en probeer Henk te bereiken.**
-
----
-
-## Noodscenario's
-
-### "Website laadt niet"
-
-Typ aan Claude:
-```
-Check of https://herdenkingsportaal.nl bereikbaar is. Als het down is, herstart de webserver.
-```
-
-### "Foutmelding op een website"
-
-Typ aan Claude:
-```
-Er is een foutmelding op [websitenaam]. Check de logs en vertel me wat er aan de hand is.
-```
-
-### "E-mail ontvangen met [ALERT]"
-
-Typ aan Claude:
-```
-Ik heb een alert e-mail ontvangen dat [naam uit e-mail] down is. Check de status en los het op als het kan.
-```
-
-### "Ik weet het niet meer"
-
-Typ aan Claude:
-```
-Ik ben de backup-contactpersoon en ik weet niet wat ik moet doen. Help me.
-```
+1. **Geen paniek** — downtime is normaal en meestal tijdelijk
+2. **Claude helpt** — je hoeft niks te weten, vraag het gewoon
+3. **Bij twijfel: stop** — liever niks doen dan iets kapot maken
+4. **Probeer Henk te bereiken** — bel, WhatsApp, SMS
 
 ---
 
@@ -108,34 +76,19 @@ Ik ben de backup-contactpersoon en ik weet niet wat ik moet doen. Help me.
 
 | Wat | Waarde |
 |-----|--------|
-| **Server IP** | 188.245.159.115 |
-| **Websites** | herdenkingsportaal.nl, judotoernooi.havun.nl, havuncore.havun.nl |
-| **E-mail Henk** | havun22@gmail.com |
-| **Hosting** | Hetzner (console.hetzner.cloud) |
+| **Henk's e-mail** | havun22@gmail.com |
+| **Websites** | herdenkingsportaal.nl, judotoernooi.havun.nl |
+| **Hosting** | Hetzner (datacenter, niet deze PC) |
 
 ---
 
-## Regels
-
-1. **Paniek is niet nodig** — websites gaan soms even offline, dat is normaal
-2. **Claude helpt je** — je hoeft niets te onthouden, vraag het gewoon
-3. **Bij twijfel: stop** — liever niks doen dan iets fout doen
-4. **Probeer Henk te bereiken** — bel, WhatsApp, SMS
-5. **Documenteer wat je hebt gedaan** — typ aan Claude: "schrijf op wat we gedaan hebben"
-
----
-
-## Droogtest (doe dit 1x samen)
-
-Voer de volgende stappen uit om te oefenen:
+## Droogtest (1x samen doen, kost 2 minuten)
 
 - [ ] VS Code openen
-- [ ] Claude Code terminal openen (typ `claude`)
+- [ ] Terminal openen, `claude` typen
 - [ ] Typ: "Check de status van alle Havun websites"
-- [ ] Lees wat Claude antwoordt
-- [ ] Typ: "stop" om te stoppen
-
-**Als dit lukt, ben je klaar.**
+- [ ] Lees het antwoord
+- [ ] Typ: `/exit` om te stoppen
 
 ---
 
