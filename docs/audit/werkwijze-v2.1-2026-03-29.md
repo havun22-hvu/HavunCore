@@ -412,14 +412,16 @@ De AI controleert deze comments altijd voor wijzigingen aan views en templates.
 
 ### 6.3 Coverage: huidige stand en doelen
 
-| Project | Tests | Huidige coverage | Doel totaal | Doel business | Prioriteit |
-|---------|-------|-----------------|-------------|---------------|------------|
-| HavunCore | 19 tests | Meting via CI | 50% | 80% | Laag |
-| Herdenkingsportaal | 39 tests | Meting via CI | 60% | 80% | Medium |
-| JudoToernooi | 0 tests | 0% | 75% | 80% | **Hoog** |
+| Project | Tests | Huidige coverage (lines) | Doel totaal | Doel business | Prioriteit |
+|---------|-------|--------------------------|-------------|---------------|------------|
+| JudoToernooi | 290 tests, 714 assertions | **15.4%** | 75% | 80% | **Hoog** |
+| Herdenkingsportaal | 39 tests, 94 assertions | **2.9%** | 60% | 80% | **Hoog** |
+| HavunCore | 19 tests, 27 assertions | Meting via CI | 50% | 80% | Medium |
 | Overige | — | — | 40% | — | Bij wijzigingen |
 
-> **Eerlijkheid:** De coverage-percentages worden gemeten via GitHub Actions CI (xdebug). Lokale metingen zijn niet beschikbaar zonder xdebug. JudoToernooi heeft nog geen tests — dit is het meest urgente verbeterpunt.
+> **Eerlijkheid:** Coverage is gemeten op de server (PCOV). De huidige percentages liggen ver onder de doelen. JudoToernooi heeft de meeste tests maar een grote codebase (17.834 regels). Herdenkingsportaal heeft de laagste coverage ondanks publiek verkeer en betalingen — dit is het meest urgente verbeterpunt.
+>
+> **Datum meting:** 29 maart 2026
 
 **CI-afdwinging:** GitHub Actions blokkeert een push als het coverage-minimum niet wordt gehaald (HavunCore: 40%, wordt verhoogd per kwartaal).
 
@@ -447,8 +449,9 @@ Geautomatiseerde test-workflow bij elke push en pull request:
 
 | Project | Tests | GitHub Actions | Coverage check |
 |---------|-------|----------------|----------------|
-| HavunCore | 20+ tests | Actief | Minimum 40% |
-| Herdenkingsportaal | Actief | Actief | Minimum 50% |
+| HavunCore | 19 tests | Actief | Minimum 40% |
+| Herdenkingsportaal | 39 tests | Actief | Gepland |
+| JudoToernooi | 290 tests | Actief | Gepland |
 | Overige | In ontwikkeling | Gepland | — |
 
 ---
