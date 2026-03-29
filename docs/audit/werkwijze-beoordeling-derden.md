@@ -1,7 +1,7 @@
 # Havun Software Development — Werkwijze & Kwaliteitsborging
 
 **Document:** Ter beoordeling door technische derde partij
-**Versie:** 1.0
+**Versie:** 2.0
 **Datum:** 29 maart 2026
 **Volgende review:** Q3 2026 (juli 2026)
 **Reviewcyclus:** Elk kwartaal
@@ -12,8 +12,9 @@
 
 | Versie | Datum | Reviewer | Opmerkingen |
 |--------|-------|----------|-------------|
-| 1.0 | 29-03-2026 | — | Eerste versie, ter beoordeling |
-| | | | |
+| 1.0 | 29-03-2026 | Gemini AI | "Uitzonderlijk robuust voor eenmanszaak" |
+| 1.0 | 29-03-2026 | Claude Sonnet 4.6 | 7/10, verscherping test coverage + AutoFix |
+| 2.0 | 29-03-2026 | — | Verbeterplan VP-01 t/m VP-10 verwerkt |
 | | | | |
 
 ---
@@ -28,10 +29,11 @@
 6. [Teststrategie & Kwaliteitsborging](#6-teststrategie--kwaliteitsborging)
 7. [Geautomatiseerde Foutherstel (AutoFix)](#7-geautomatiseerde-foutherstel-autofix)
 8. [Deployment & Infrastructuur](#8-deployment--infrastructuur)
-9. [Kennismanagement](#9-kennismanagement)
-10. [Incident Response](#10-incident-response)
-11. [Risico's & Mitigaties](#11-risicos--mitigaties)
-12. [Bijlagen](#12-bijlagen)
+9. [Uptime-monitoring & SLA](#9-uptime-monitoring--sla)
+10. [Kennismanagement](#10-kennismanagement)
+11. [Incident Response & Externe Audits](#11-incident-response--externe-audits)
+12. [Risico's & Mitigaties](#12-risicos--mitigaties)
+13. [Bijlagen](#13-bijlagen)
 
 ---
 
@@ -45,29 +47,30 @@ Dit document beschrijft de volledige werkwijze waarmee Havun software ontwikkelt
 - Hoe softwarekwaliteit wordt geborgd
 - Welke protocollen en procedures worden gevolgd
 - Hoe risico's worden beheerst bij AI-ondersteunde ontwikkeling
+- Welke verbeteringen zijn doorgevoerd na externe audits
 
 ### 1.2 Projectportfolio
 
-Havun beheert meerdere webapplicaties vanuit één centrale orchestrator:
+Havun beheert meerdere webapplicaties vanuit een centrale orchestrator:
 
-| Project | Type | Stack |
-|---------|------|-------|
-| **HavunCore** | Centrale kennisbank & orchestrator | Laravel 11 (PHP) |
-| **HavunAdmin** | Beheerpaneel | Laravel + Vite |
-| **Herdenkingsportaal** | Publieke webapp | Laravel + Vite |
-| **JudoToernooi** | Toernooibeheer | Laravel + Vite |
-| **Studieplanner** | Mobiele app | React Native + Expo |
-| **SafeHavun** | Beveiligingsplatform | Laravel + Vite |
-| **Infosyst** | Informatiesysteem | Laravel + Vite |
-| **JudoScoreBoard** | Scorebord app | React Native + Expo |
+| Project | Type | Stack | Publiek? |
+|---------|------|-------|----------|
+| **HavunCore** | Centrale kennisbank & orchestrator | Laravel 11 (PHP) | Nee (backend) |
+| **HavunAdmin** | Beheerpaneel | Laravel + Vite | Nee (intern) |
+| **Herdenkingsportaal** | Publieke webapp, betalingen | Laravel + Vite | Ja |
+| **JudoToernooi** | Toernooibeheer | Laravel + Vite | Ja |
+| **Studieplanner** | Mobiele app | React Native + Expo | Ja (app) |
+| **SafeHavun** | Beveiligingsplatform | Laravel + Vite | Beperkt |
+| **Infosyst** | Informatiesysteem | Laravel + Vite | Beperkt |
+| **JudoScoreBoard** | Scorebord app | React Native + Expo | Ja (app) |
 
 ### 1.3 AI-tooling in gebruik
 
-| Tool | Gebruik | Versie |
-|------|---------|--------|
-| **Claude Code CLI** | Terminal-gebaseerde AI-assistent voor code, git, deploy | Anthropic Claude (Opus/Sonnet) |
-| **Claude Code VS Code Extension** | IDE-geïntegreerde AI-assistent | Anthropic Claude |
-| **Ollama (lokaal)** | Lokale AI voor kennisbank-indexering | Command-R model |
+| Tool | Gebruik |
+|------|---------|
+| **Claude Code CLI** | Terminal-gebaseerde AI-assistent voor code, git, deploy |
+| **Claude Code VS Code Extension** | IDE-geintegreerde AI-assistent |
+| **Ollama (lokaal)** | Lokale AI voor kennisbank-indexering (Command-R model) |
 
 > **Belangrijk:** De AI schrijft code, maar opereert altijd binnen strikte regels en protocollen. De ontwikkelaar behoudt volledige controle en moet elke significante wijziging goedkeuren.
 
@@ -77,12 +80,15 @@ Havun beheert meerdere webapplicaties vanuit één centrale orchestrator:
 
 ### 2.1 Ontwikkelomgeving
 
-- **OS:** Windows 11
-- **IDE:** VS Code met Claude Code Extension
-- **Terminal:** Claude Code CLI (bash shell)
-- **Versiebeheer:** Git + GitHub (private repositories)
-- **Server:** Hetzner VPS (Ubuntu, nginx)
-- **Lokale AI:** Ollama op poort 11434
+| Component | Details |
+|-----------|---------|
+| **OS** | Windows 11 |
+| **IDE** | VS Code met Claude Code Extension |
+| **Terminal** | Claude Code CLI (bash shell) |
+| **Versiebeheer** | Git + GitHub (private repositories) |
+| **Server** | Hetzner VPS (Ubuntu, nginx) |
+| **Lokale AI** | Ollama op poort 11434 |
+| **Secret scanning** | GitGuardian (pre-commit hook) |
 
 ### 2.2 Claude Code permissieconfiguratie
 
@@ -107,60 +113,63 @@ Claude Code opereert met een expliciete permissieconfiguratie:
 - Force-push naar hoofdbranches is verboden
 - Lees-, schrijf- en bewerkrechten zijn beperkt tot de projectdirectory
 
-### 2.3 Hook-systeem (geautomatiseerde controles)
+### 2.3 De 5 Onschendbare Regels
 
-Claude Code ondersteunt hooks — automatische controles die worden uitgevoerd bij specifieke acties:
+Geintroduceerd na externe audit (VP-06) als kern van alle protocollen:
 
-| Hook | Trigger | Doel |
-|------|---------|------|
-| `SessionStart` | Bij elke nieuwe sessie | Verplicht docs-first workflow activeren |
-| `PreToolUse (Edit/Write)` | Voor elke codewijziging | Controleer of docs-fase is doorlopen |
+```
+1. NOOIT code schrijven zonder docs te lezen
+2. NOOIT features/UI-elementen verwijderen zonder instructie
+3. NOOIT credentials/keys/env aanraken
+4. ALTIJD tests draaien voor en na wijzigingen
+5. ALTIJD toestemming vragen bij grote wijzigingen
+```
+
+Deze regels worden herhaald bij sessiestart en halverwege langere sessies via het `/update` command.
+
+### 2.4 Sessielimiet
+
+Sessies worden beperkt tot 2-3 uur. Bij langere sessies neemt de kans op protocolmoeheid toe — de AI kan regels overslaan of documenthierarchie door elkaar halen. Bij langere taken wordt een nieuwe sessie gestart.
 
 ---
 
 ## 3. Ontwikkelworkflow
 
-### 3.1 Kernprincipe: LEES → DENK → DOE → DOCUMENTEER
+### 3.1 Kernprincipe: LEES -> DENK -> DOE -> DOCUMENTEER
 
 Elke ontwikkeltaak doorloopt verplicht vier fasen:
 
 ```
-┌──────────────────────────────────────────────────┐
-│  FASE 1: LEES                                    │
-│  → Lees projectdocumentatie en relevante code    │
-│  → Hiërarchisch: CLAUDE.md → context → code      │
-│                                                  │
-│  FASE 2: DENK                                    │
-│  → Analyseer het probleem                        │
-│  → Identificeer bestaande patronen               │
-│  → Stel vragen bij onduidelijkheid               │
-│  → WACHT op antwoord                             │
-│                                                  │
-│  FASE 3: DOE                                     │
-│  → Kleine, atomaire wijzigingen                  │
-│  → Test na elke significante wijziging           │
-│  → Kwaliteit boven snelheid                      │
-│                                                  │
-│  FASE 4: DOCUMENTEER                             │
-│  → Sla nieuwe kennis op                          │
-│  → Update relevante documentatie                 │
-│  → Handover voor volgende sessie                 │
-└──────────────────────────────────────────────────┘
+FASE 1: LEES
+  Lees projectdocumentatie en relevante code
+  Hierarchisch: CLAUDE.md -> context.md -> code
+
+FASE 2: DENK
+  Analyseer het probleem
+  Identificeer bestaande patronen
+  Stel vragen bij onduidelijkheid, WACHT op antwoord
+
+FASE 3: DOE
+  Kleine, atomaire wijzigingen
+  Test na elke significante wijziging
+  Kwaliteit boven snelheid
+
+FASE 4: DOCUMENTEER
+  Sla nieuwe kennis op
+  Update relevante documentatie
+  Handover voor volgende sessie
 ```
 
 ### 3.2 Docs-First Workflow (verplicht bij significante wijzigingen)
 
 **Principe:** Code volgt documentatie. Nooit andersom.
 
-Elke wijziging wordt geclassificeerd:
-
-| Type | Workflow | Voorbeeld |
-|------|----------|-----------|
-| **Groot** (feature, UI, business rules) | Docs-first: zoek docs → rapporteer → wacht goedkeuring → update docs → code | Nieuwe checkout flow |
-| **Klein** (bugfix, typo, performance) | Log in smallwork.md → fix → klaar | Null-pointer fix |
+| Type wijziging | Workflow | Voorbeeld |
+|----------------|----------|-----------|
+| **Groot** (feature, UI, business rules) | Zoek docs -> rapporteer -> wacht goedkeuring -> update docs -> code | Nieuwe checkout flow |
+| **Klein** (bugfix, typo, performance) | Log in smallwork.md -> fix -> klaar | Null-pointer fix |
 
 **Docs-first stappen bij grote wijzigingen:**
-
 1. **Zoek** alle relevante MD-bestanden over het onderwerp
 2. **Lees** volledig (niet scannen)
 3. **Rapporteer** aan ontwikkelaar: wat er staat, inconsistenties, wat ontbreekt
@@ -168,24 +177,18 @@ Elke wijziging wordt geclassificeerd:
 5. **Update documentatie** eerst indien nodig
 6. **Schrijf code** op basis van de goedgekeurde documentatie
 
-### 3.3 Drieëneenhalf-fase afdwinging
-
-Voor extra zekerheid wordt de workflow afgedwongen met een 3-fase protocol:
+### 3.3 3-Fase afdwinging
 
 | Fase | Actie | Vereiste |
 |------|-------|---------|
-| **Fase 1: READ** | Noem alle relevante docs, citeer specifieke regels | Verplicht vóór code |
-| **Fase 2: PLAN** | Beschrijf aanpak en bestanden, vraag toestemming | Wacht op "ja" van ontwikkelaar |
+| **Fase 1: READ** | Noem alle relevante docs, citeer specifieke regels | Verplicht voor code |
+| **Fase 2: PLAN** | Beschrijf aanpak en bestanden, vraag toestemming | Wacht op "ja" |
 | **Fase 3: CODE** | Schrijf code conform docs en plan | Alleen na goedkeuring |
 
-**Gebruikerscommando's voor controle:**
-
-| Commando | Effect |
-|----------|--------|
-| `STOP` | Direct stoppen, terug naar Fase 1 |
-| `DOCS?` | Welke docs zijn gelezen? Citeer ze. |
-| `PLAN?` | Wat is de exacte aanpak? |
-| `OK` / `JA` | Ga door naar volgende fase |
+**Gebruikerscommando's:**
+- `STOP` — direct stoppen, terug naar Fase 1
+- `DOCS?` — welke docs zijn gelezen? Citeer ze.
+- `PLAN?` — wat is de exacte aanpak?
 
 ### 3.4 Git-workflow
 
@@ -194,15 +197,16 @@ Voor extra zekerheid wordt de workflow afgedwongen met een 3-fase protocol:
 | Atomaire commits | 1 feature of fix = 1 commit |
 | Directe push | Na commit direct pushen |
 | Branch cleanup | Gemergte branches worden verwijderd |
-| Force-push verbod | Force-push naar main/master is geblokkeerd |
+| Force-push verbod | Force-push naar main/master is geblokkeerd via settings |
 | Commit messages | Engels, beschrijvend, gestructureerd |
+| Secret scanning | GitGuardian pre-commit hook blokkeert credentials in commits |
 
 ### 3.5 Sessiemanagement
 
 **Bij sessiestart (`/start`):**
 1. Git pull (sync met eventuele AutoFix-wijzigingen)
-2. Lees projectdocumentatie (CLAUDE.md, context.md, rules.md)
-3. Lees gedeelde werkwijze (claude-werkwijze.md)
+2. **Dependency security audit** — `composer audit` + `npm audit` (VP-04)
+3. Lees projectdocumentatie (CLAUDE.md, context.md, rules.md)
 4. Controleer documentatie-issues (Doc Intelligence)
 5. Bevestig aan ontwikkelaar
 
@@ -210,17 +214,17 @@ Voor extra zekerheid wordt de workflow afgedwongen met een 3-fase protocol:
 1. Review smallwork-log
 2. Update documentatie
 3. Schrijf handover voor volgende sessie
-4. Draai tests (Linter-Gate)
-5. Integriteitscontrole
-6. Commit, push, deploy indien van toepassing
+4. **Linter-Gate** — tests + lint + integriteitscontrole
+5. Commit, push
+6. **Staging-deploy** (verplicht voor publieke apps, VP-08)
+7. Productie-deploy (na staging-verificatie)
+8. **KOR-omzetcheck** (elk kwartaal, VP-10)
 
 ---
 
 ## 4. Beveiligingsprotocollen
 
 ### 4.1 Verboden acties (zonder expliciete toestemming)
-
-De AI-assistent mag de volgende acties **nooit** uitvoeren zonder voorafgaande expliciete toestemming van de eigenaar:
 
 | Categorie | Voorbeelden |
 |-----------|-------------|
@@ -230,10 +234,7 @@ De AI-assistent mag de volgende acties **nooit** uitvoeren zonder voorafgaande e
 | **Database** | Migraties op productie |
 | **Dependencies** | Composer/npm packages installeren |
 
-**Protocol bij potentieel gevaarlijke actie:**
-```
-STOP → VRAAG TOESTEMMING → WACHT OP ANTWOORD → DOCUMENTEER
-```
+**Protocol:** `STOP -> VRAAG TOESTEMMING -> WACHT OP ANTWOORD -> DOCUMENTEER`
 
 ### 4.2 Credential management
 
@@ -243,22 +244,38 @@ STOP → VRAAG TOESTEMMING → WACHT OP ANTWOORD → DOCUMENTEER
 | **Documentatie** | Credential-referenties in `.claude/credentials.md` (gitignored) |
 | **Scheiding** | Productie- en staging-credentials gescheiden |
 | **Toegang** | Alleen eigenaar heeft toegang tot credentials |
-| **Git** | Credentials mogen NOOIT in git-getrackte bestanden terechtkomen |
+| **Git** | Credentials mogen NOOIT in git-getrackte bestanden (GitGuardian bewaakt dit) |
 
-### 4.3 Productiebeveiliging
+### 4.3 Dependency Security Audit (VP-04)
 
-- **Geen directe productiewijzigingen** — alleen via git pull na goedkeuring
-- **Syntax-validatie** — `php -l` check na elke codewijziging op server
-- **Automatische rollback** — bij syntax-fouten wordt origineel bestand hersteld
-- **Backups** — dagelijks + hot-backups (5 minuten interval) + offsite opslag
-- **Rate limiting** — AutoFix maximaal 1 analyse per uniek error per uur
-- **Beschermde bestanden** — Kritieke bestanden (artisan, index.php, bootstrap) zijn niet wijzigbaar door AutoFix
+Bij elke sessiestart worden dependencies automatisch gecontroleerd:
 
-### 4.4 SSH en servertoegang
+| Check | Frequentie | Blokkeerend? |
+|-------|-----------|-------------|
+| `composer audit` | Elke sessie + elke push (CI) | Ja, bij kritieke kwetsbaarheden |
+| `npm audit` | Elke sessie | Nee (informatief) |
+| `composer outdated` | Maandelijks | Nee (informatief) |
+| **OWASP ZAP scan** | Jaarlijks (Herdenkingsportaal) | N.v.t. (rapport) |
 
-- Eén SSH key (`id_ed25519`) voor servertoegang
+### 4.4 Security Headers (VP-04)
+
+Kwartaallijkse controle op publieke apps:
+
+| Header | Doel |
+|--------|------|
+| `Strict-Transport-Security` | Forceert HTTPS |
+| `X-Content-Type-Options: nosniff` | Voorkomt MIME-type sniffing |
+| `X-Frame-Options` | Voorkomt clickjacking |
+| `Referrer-Policy` | Beperkt referrer-lekkage |
+| `Content-Security-Policy` | Voorkomt XSS |
+| `Permissions-Policy` | Beperkt browser APIs |
+
+### 4.5 SSH en servertoegang
+
+- Een SSH key (`id_ed25519`) voor servertoegang
 - Deploy keys per project (read-only waar mogelijk)
 - SSH key aanmaak/wijziging is expliciet verboden voor de AI
+- Incident uit november 2025 heeft geleid tot strikte regels (zie sectie 11)
 
 ---
 
@@ -266,24 +283,15 @@ STOP → VRAAG TOESTEMMING → WACHT OP ANTWOORD → DOCUMENTEER
 
 ### 5.1 Vijf-lagen beschermingssysteem
 
-Om te voorkomen dat de AI onbedoeld bestaande functionaliteit verwijdert, hanteren we een gelaagd beschermingssysteem:
+Om te voorkomen dat de AI onbedoeld bestaande functionaliteit verwijdert:
 
-```
-Laag 1: Documentatie (MD docs)
-  │  Beschrijf WAAROM iets bestaat
-  │
-Laag 2: In-code bescherming
-  │  DO NOT REMOVE comments + .integrity.json (shadow file)
-  │
-Laag 3: Geautomatiseerde tests
-  │  Regressietests + guard tests + Linter-Gate
-  │
-Laag 4: Projectregels
-  │  CLAUDE.md regels + recent-regressions.md (7 dagen TTL)
-  │
-Laag 5: Cross-sessie geheugen
-     Memory bestanden die context bewaren tussen sessies
-```
+| Laag | Wat | Effort |
+|------|-----|--------|
+| **1. MD docs** | Beschrijf WAAROM iets bestaat | Laag |
+| **2. In-code bescherming** | `DO NOT REMOVE` comments + `.integrity.json` (shadow file) | Zeer laag |
+| **3. Geautomatiseerde tests** | Regressietests + guard tests + Linter-Gate | Medium |
+| **4. Projectregels** | CLAUDE.md regels + `recent-regressions.md` (7 dagen TTL) | Eenmalig |
+| **5. Cross-sessie geheugen** | Memory bestanden die context bewaren tussen sessies | Zeer laag |
 
 **Escalatiemodel:**
 
@@ -295,28 +303,34 @@ Laag 5: Cross-sessie geheugen
 | Projectbreed patroon | Laag 4 (CLAUDE.md) | Laag 4 + 5 |
 | Cross-project patroon | Laag 5 (memory) | Laag 4 + 5 |
 
-### 5.2 Integriteitscontrole (Shadow File)
+### 5.2 Integriteitscontrole met Selector-Support (VP-05)
 
-Kritieke UI-elementen en codestructuren worden bewaakt via `.integrity.json`:
+Kritieke UI-elementen worden bewaakt via `.integrity.json` met twee typen checks:
 
+**Tekst-matching (`must_contain`):**
 ```json
 {
-  "version": "1.0",
-  "project": "projectnaam",
-  "checks": [
-    {
-      "file": "resources/views/layouts/app.blade.php",
-      "description": "Main layout must contain legal footer links",
-      "must_contain": ["legal.terms", "legal.privacy", "legal.cookies"]
-    }
+  "file": "resources/views/layouts/app.blade.php",
+  "description": "Layout must contain CSRF meta and footer",
+  "must_contain": ["csrf-token", "<x-footer"]
+}
+```
+
+**HTML-selector-matching (`must_contain_selector`) — nieuw in v2.0:**
+```json
+{
+  "file": "resources/views/payments/options.blade.php",
+  "description": "Payment form must contain submit button",
+  "must_contain_selector": [
+    {"tag": "form", "attr": "id", "value": "payment-form"},
+    {"tag": "button", "attr": "type", "value": "submit"},
+    {"tag": "input", "attr": "id", "value": "herroeping-akkoord"}
   ]
 }
 ```
 
-**Controle wordt uitgevoerd:**
-- Bij elke sessie-einde (`/end`)
-- Via `php artisan integrity:check` of `node scripts/check-integrity.js`
-- Faalt als verplichte elementen ontbreken
+**Status:** Actief in Herdenkingsportaal (7 kritieke views, alle checks groen).
+**Controle:** Bij elke sessie-einde via `node scripts/check-integrity.cjs`.
 
 ### 5.3 DO NOT REMOVE comments
 
@@ -327,7 +341,7 @@ Kritieke code-elementen worden beschermd met in-code comments:
 <footer>...</footer>
 ```
 
-De AI is geïnstrueerd om deze comments altijd te controleren vóór wijzigingen aan views en templates.
+De AI controleert deze comments altijd voor wijzigingen aan views en templates.
 
 ---
 
@@ -341,27 +355,28 @@ De AI is geïnstrueerd om deze comments altijd te controleren vóór wijzigingen
 | **Guard test** | Verifieert dat kritieke methodes/structuren bestaan | Test dat `checkPouleRegels()` methode aanwezig is |
 | **Smoke test** | Checkt dat views verwachte elementen bevatten | Test dat blade-view kritieke JS-functies bevat |
 | **Route smoke test** | Alle routes laden zonder 500-errors | Geautomatiseerd via GitHub Actions |
+| **Integriteitstest** | Controleert `.integrity.json` checks | Kritieke UI-elementen aanwezig |
 
 ### 6.2 Testverplichting per sessie
 
 ```
-1. VOOR wijzigingen:  php artisan test     ← Bestaande tests draaien
+1. VOOR wijzigingen:  php artisan test      <- Bestaande tests draaien
 2. Wijzigingen doorvoeren
-3. NA wijzigingen:    php artisan test     ← Tests opnieuw draaien
+3. NA wijzigingen:    php artisan test      <- Tests opnieuw draaien
 4. Nieuwe tests schrijven indien nodig
-5. Alle tests groen:  php artisan test     ← Pas dan committen
+5. Alle tests groen:  php artisan test      <- Pas dan committen
 ```
 
 **Bij bugfixes:** Eerst een test schrijven die de bug reproduceert, dan pas fixen.
 
-### 6.3 Coverage-doelen
+### 6.3 Coverage-doelen (verscherpt na externe audit)
 
-| Project | Doel | Prioriteit |
-|---------|------|------------|
-| JudoToernooi | 60% | Hoog (meest actief) |
-| Herdenkingsportaal | 50% | Medium |
-| HavunCore | 40% | Laag (weinig wijzigingen) |
-| Overige | 30% | Bij wijzigingen |
+| Project | Totaal doel | Business-logica doel | Prioriteit |
+|---------|-------------|---------------------|------------|
+| JudoToernooi | 75% | 80% | Hoog (meest actief) |
+| Herdenkingsportaal | 60% | 80% | Medium |
+| HavunCore | 50% | 80% | Laag (weinig wijzigingen) |
+| Overige | 40% | — | Bij wijzigingen |
 
 ### 6.4 Linter-Gate (verplicht bij sessie-einde)
 
@@ -375,20 +390,21 @@ Voordat code gecommit wordt, moet het volgende slagen:
 
 ### 6.5 CI/CD via GitHub Actions
 
-HavunCore heeft een geautomatiseerde test-workflow:
+Geautomatiseerde test-workflow bij elke push en pull request:
 
 ```yaml
-# .github/workflows/tests.yml
-# Draait automatisch bij push en pull requests
-# Voert uit: composer install, php artisan test, route:list, composer audit
+# Stappen:
+1. composer install
+2. composer audit (blokkeerend bij kwetsbaarheden)
+3. php artisan test (met coverage-rapport)
+4. Coverage-drempel check (minimum 40%, verhoogd per project)
 ```
 
-**Status per project:**
-
-| Project | Geautomatiseerde tests | GitHub Actions |
-|---------|----------------------|----------------|
-| HavunCore | 20 tests | Actief |
-| Overige projecten | In ontwikkeling | Gepland |
+| Project | Tests | GitHub Actions | Coverage check |
+|---------|-------|----------------|----------------|
+| HavunCore | 20+ tests | Actief | Minimum 40% |
+| Herdenkingsportaal | Actief | Actief | Minimum 50% |
+| Overige | In ontwikkeling | Gepland | — |
 
 ---
 
@@ -396,54 +412,66 @@ HavunCore heeft een geautomatiseerde test-workflow:
 
 ### 7.1 Overzicht
 
-Het AutoFix-systeem detecteert en herstelt automatisch productie-errors via AI-analyse:
-
-```
-Productie-error (500)
-  → Laravel exception handler
-  → AutoFixService
-  → Veiligheidscontroles (8 checks)
-  → AI-analyse via HavunCore API
-  → Code-fix OF notificatie
-  → Syntax-validatie (php -l)
-  → Git commit + push
-  → E-mailnotificatie
-```
+Het AutoFix-systeem detecteert en herstelt automatisch productie-errors via AI-analyse.
 
 **Actief in:** JudoToernooi, Herdenkingsportaal
 
-### 7.2 Veiligheidsmaatregelen AutoFix
+### 7.2 Flow (v2.0 — Branch-Model)
+
+```
+Productie-error (500)
+  -> AutoFixService::handle()
+  -> Veiligheidscontroles (8 checks)
+  -> AI-analyse via HavunCore API
+  -> RISK: medium/high? -> DRY-RUN (alleen notificatie, geen fix)
+  -> RISK: low? ->
+      1. Code-fix toepassen
+      2. Syntax-validatie (php -l, auto-rollback bij fout)
+      3. Hotfix-branch aanmaken (hotfix/autofix-{timestamp})
+      4. Commit + push naar branch
+      5. Pull Request aanmaken via GitHub REST API
+      6. E-mailnotificatie met PR-link
+      7. Eigenaar reviewed en mergt met een klik
+```
+
+> **Belangrijk (v2.0):** AutoFix pusht NIET meer direct naar de hoofdbranch. Alle fixes gaan via een hotfix-branch + Pull Request. De eigenaar behoudt volledige controle over wat er in productie komt.
+
+### 7.3 Veiligheidsmaatregelen
 
 | Maatregel | Beschrijving |
 |-----------|--------------|
+| **Branch-model** | Fixes gaan naar hotfix-branch + PR, niet direct naar main (VP-01) |
+| **Dry-run modus** | Medium/high risk fixes worden NIET automatisch toegepast (VP-01) |
 | **Rate limiting** | Max 1 analyse per uniek error per uur |
-| **Max pogingen** | 2 pogingen per error, daarna notificatie |
+| **Max pogingen** | 2 pogingen per error, daarna alleen notificatie |
 | **Syntax-validatie** | `php -l` na elke fix, auto-rollback bij fouten |
 | **Beschermde bestanden** | artisan, index.php, bootstrap/app.php, composer.* |
 | **Uitgesloten errors** | Validation, Auth, 404, rate limit, Tinker-errors |
 | **Bestandscontrole** | Alleen projectbestanden (geen vendor, geen tmp) |
 | **Rollback-bewust** | Geen fix op bestanden die <24u geleden zijn gewijzigd |
-| **Backup** | Origineel bestand opgeslagen in `storage/app/autofix-backups/` |
-| **Git-sync** | Na succesvolle fix: git add, commit, push |
-| **E-mail** | Notificatie bij zowel succes als falen |
-| **NOTIFY_ONLY** | AI kan beslissen géén code-fix toe te passen (bijv. bij schema-wijzigingen) |
+| **Backup** | Origineel bestand opgeslagen voor elke wijziging |
+| **E-mail** | Notificatie bij succes, falen, dry-run, en NOTIFY_ONLY |
+| **NOTIFY_ONLY** | AI kan beslissen geen code-fix toe te passen |
+| **PR-review** | Eigenaar moet PR handmatig mergen (v2.0) |
 
-### 7.3 Fix-strategie (gerangschikt)
+### 7.4 Fix-strategie (gerangschikt)
 
-| Prioriteit | Strategie | Voorbeeld |
-|------------|-----------|-----------|
-| 1 | Null-safety | `?->` of null-checks toevoegen |
-| 2 | Schema/kolom | NOTIFY_ONLY (migratie nodig) |
-| 3 | Ontbrekende resource | NOTIFY_ONLY (handmatige actie) |
-| 4 | Logica-fix | Minimale logica-correctie |
-| 5 | Try/catch | Alleen als laatste redmiddel |
+| Prioriteit | Strategie | Actie |
+|------------|-----------|-------|
+| 1 | Null-safety | Automatische fix (`?->`, null-checks) |
+| 2 | Schema/kolom | NOTIFY_ONLY (migratie nodig, geen auto-fix) |
+| 3 | Ontbrekende resource | NOTIFY_ONLY (handmatige actie nodig) |
+| 4 | Logica-fix | Automatische fix (minimale correctie) |
+| 5 | Try/catch | Alleen als allerlaatste redmiddel |
 
-### 7.4 Wat AutoFix NIET mag
+### 7.5 Wat AutoFix NIET mag
 
 - Artisan-bestand wijzigen
 - Try/catch om hele methode-bodies
 - Code verzinnen die niet in de context staat
 - .env, configuratie, database-schema, dependencies aanpassen
+- Direct naar de hoofdbranch pushen (v2.0)
+- Medium/high risk fixes automatisch toepassen (v2.0)
 
 ---
 
@@ -457,146 +485,215 @@ Productie-error (500)
 | **SSL** | Let's Encrypt (Certbot, nginx authenticator) |
 | **Process manager** | PM2 (Node.js apps) |
 | **Backups** | Dagelijks + hot (5 min) + lokaal + offsite (Hetzner Storage Box) |
+| **Monitoring** | Server-side health check (cron, elke 5 min) |
 
-### 8.2 Deployment-procedure
+### 8.2 Staging-vereiste (VP-08)
 
-**Standaard Laravel-project:**
+Elke deploybare wijziging aan publieke apps gaat EERST naar staging:
+
+| Project | Staging verplicht? | Reden |
+|---------|-------------------|-------|
+| Herdenkingsportaal | **Ja** | Publiek verkeer, betalingen |
+| JudoToernooi | **Ja** | Actief tijdens toernooien |
+| HavunAdmin | **Ja** | Heeft staging-omgeving |
+| HavunCore | Nee | Backend only, geen staging |
+| Overige | Nee | Beperkt gebruik |
+
+### 8.3 Deployment-procedure
 
 ```
-1. Lokaal: tests draaien (php artisan test)
+1. Lokaal: tests draaien (MOET groen zijn)
 2. Lokaal: git commit + push
-3. Server: git pull origin [branch]
-4. Server: php artisan migrate --force (indien nodig)
-5. Server: php artisan config:clear && php artisan cache:clear
-6. Verificatie: applicatie laden, logs controleren
+3. STAGING: git pull + migrate + cache clear
+4. STAGING: handmatige verificatie
+   - Standaard: minimaal 1 uur
+   - Grote wijzigingen: 24 uur
+5. PRODUCTIE: git pull + migrate + cache clear
+6. PRODUCTIE: verificatie + logs controleren
 ```
 
-**Post-deploy checklist:**
-- [ ] Config cache geleegd
-- [ ] Applicatie laadt zonder errors
-- [ ] Kritieke features getest
-- [ ] Logs gecontroleerd
+**Uitzonderingen (geen staging):** Alleen docs-wijzigingen, of hotfixes voor productie-kritieke bugs (met extra review).
 
-### 8.3 Omgevingsscheiding
+### 8.4 Omgevingsscheiding
 
-| Omgeving | Doel | Toegang |
-|----------|------|---------|
-| **Lokaal** | Ontwikkeling en testen | Alleen ontwikkelaar |
-| **Staging** | Pre-productie validatie | Alleen ontwikkelaar |
-| **Productie** | Live applicatie | Publiek (via nginx) |
-
-Elke omgeving heeft eigen `.env` met gescheiden credentials.
+| Omgeving | Doel | Credentials |
+|----------|------|-------------|
+| **Lokaal** | Ontwikkeling en testen | Eigen `.env` |
+| **Staging** | Pre-productie validatie | Eigen `.env` |
+| **Productie** | Live applicatie | Eigen `.env` |
 
 ---
 
-## 9. Kennismanagement
+## 9. Uptime-monitoring & SLA (VP-09)
 
-### 9.1 Kennisbank (HavunCore)
+### 9.1 Server-side Health Check
 
-Alle gedeelde kennis wordt centraal beheerd in HavunCore:
+**Actief sinds:** 29 maart 2026
+**Frequentie:** Elke 5 minuten (cron)
+**Alerting:** E-mail via HavunCore Laravel mail
+**Rate limit:** Max 1 alert per uur per app (voorkomt spam)
+
+**Gemonitorde apps:**
+
+| App | URL | Uptime-doel |
+|-----|-----|-------------|
+| HavunCore | havuncore.havun.nl/health | 99% |
+| Herdenkingsportaal | herdenkingsportaal.nl | 99.5% |
+| JudoToernooi | judotoernooi.havun.nl | 99% |
+| HavunAdmin | havunadmin.havun.nl | 95% |
+| SafeHavun | safehavun.havun.nl | 95% |
+| Infosyst | infosyst.havun.nl | 95% |
+
+**Bij downtime:**
+1. Automatische e-mail alert
+2. Diagnose via SSH (nginx, PHP-FPM, schijfruimte, geheugen)
+3. Snel herstel (service restart, cache clear)
+4. Bij langere downtime: maintenance mode activeren
+5. Herstel-alert bij recovery
+
+### 9.2 Emergency Runbook (VP-07)
+
+Een volledig emergency runbook is beschikbaar dat zonder voorkennis gevolgd kan worden:
+
+- Server inloggen (SSH + Hetzner Console fallback)
+- Diensten diagnosticeren en herstarten
+- Per-app herstelprocedure
+- Maintenance mode activeren
+- Backup herstellen
+- Communicatie naar klanten
+
+**Status:** Runbook geschreven, noodcontactpersoon nog aan te wijzen.
+
+---
+
+## 10. Kennismanagement
+
+### 10.1 Kennisbank (HavunCore)
+
+Alle gedeelde kennis wordt centraal beheerd:
 
 ```
 docs/kb/
-├── runbooks/      ← 16 bestanden: procedures (hoe doe ik X?)
-├── patterns/      ← 12 bestanden: herbruikbare code-patronen
-├── reference/     ← 12 bestanden: API specs, server config
-├── decisions/     ← 8 bestanden: architectuurbeslissingen (ADR-formaat)
-├── projects/      ← 8 bestanden: per-project details
-├── templates/     ← 4 bestanden: setup-templates
-└── contracts/     ← 1 bestand: gedeelde definities
+├── runbooks/       19 bestanden: procedures
+├── patterns/       12 bestanden: herbruikbare code-patronen
+├── reference/      12 bestanden: API specs, server config
+├── decisions/       8 bestanden: architectuurbeslissingen (ADR)
+├── projects/        8 bestanden: per-project details
+├── templates/       4 bestanden: setup-templates
+└── contracts/       1 bestand: gedeelde definities
 ```
 
 **Totaal: 80+ gedocumenteerde bestanden**
 
-### 9.2 Per-project documentatie
-
-Elk project bevat een gestandaardiseerde documentatiestructuur:
+### 10.2 Per-project documentatie
 
 ```
 Project/
-├── CLAUDE.md           ← Regels en context (max 60 regels)
+├── CLAUDE.md            <- Regels en context (max 60 regels)
 ├── .claude/
-│   ├── context.md      ← Alles over dit project
-│   ├── rules.md        ← Beveiligingsregels
-│   ├── handover.md     ← Sessiegeschiedenis
-│   └── smallwork.md    ← Log van kleine fixes
-└── docs/               ← Eventuele extra documentatie
+│   ├── context.md       <- Alles over dit project
+│   ├── rules.md         <- Beveiligingsregels
+│   ├── handover.md      <- Sessiegeschiedenis
+│   └── smallwork.md     <- Log van kleine fixes
+├── .integrity.json      <- Kritieke element-bewaking (VP-05)
+└── docs/                <- Eventuele extra documentatie
 ```
 
-### 9.3 Doc Intelligence (geautomatiseerd)
+### 10.3 Doc Intelligence (geautomatiseerd)
 
-Een geautomatiseerd systeem bewaakt documentatiekwaliteit:
+| Functie | Commando | Doel |
+|---------|----------|------|
+| Indexering | `php artisan docs:index` | Indexeert alle MD-bestanden |
+| Detectie | `php artisan docs:detect` | Detecteert inconsistenties, duplicaten |
+| Issues | `php artisan docs:issues [project]` | Toont openstaande documentatie-issues |
 
-- **Indexering:** `php artisan docs:index` — indexeert alle MD-bestanden
-- **Detectie:** `php artisan docs:detect` — detecteert inconsistenties, duplicaten, verouderde docs
-- **Issues:** `php artisan docs:issues [project]` — toont openstaande documentatie-issues
-
-### 9.4 Cross-sessie context
+### 10.4 Cross-sessie context
 
 | Mechanisme | Doel | Levensduur |
 |------------|------|------------|
-| **Handover** | Sessieoverdracht (wat is gedaan, wat staat open) | Permanent |
+| **Handover** | Sessieoverdracht | Permanent |
 | **Smallwork** | Log van kleine fixes | Tot review bij `/end` |
 | **Recent Regressions** | Recente bugs en hun fixes | 7 dagen (TTL) |
 | **Memory** | Cross-sessie AI-geheugen | Permanent (handmatig beheerd) |
 
 ---
 
-## 10. Incident Response
+## 11. Incident Response & Externe Audits
 
-### 10.1 Gedocumenteerd incident: SSH Key (november 2025)
+### 11.1 Gedocumenteerd incident: SSH Key (november 2025)
 
-**Wat gebeurde:** De AI-assistent maakte zonder toestemming een nieuwe SSH-key aan en voegde deze toe aan GitHub en de productieserver. Dit veroorzaakte dat een bestaand project niet meer kon pushen.
+**Wat gebeurde:** De AI-assistent maakte zonder toestemming een nieuwe SSH-key aan op de productieserver en voegde deze toe aan GitHub. Dit veroorzaakte dat een bestaand project niet meer kon pushen.
 
-**Oplossing:**
-1. Nieuwe SSH-key verwijderd van server en GitHub
-2. Oorspronkelijke key hersteld
-3. Schrijfrechten opnieuw ingesteld
+**Maatregelen:**
+- SSH keys aanmaken/wijzigen/verwijderen -> **absoluut verboden**
+- GitHub credentials wijzigen -> **absoluut verboden**
+- Vastgelegd in `.claude/rules.md` van elk project
+- Protocol: STOP -> VRAAG -> WACHT -> DOCUMENTEER
 
-**Maatregelen na incident:**
+### 11.2 Externe audit: Gemini AI (maart 2026)
 
-Strikte regels geïmplementeerd als directe reactie:
-- SSH keys aanmaken/wijzigen/verwijderen → **absoluut verboden**
-- GitHub credentials wijzigen → **absoluut verboden**
-- Protocol: STOP → VRAAG → WACHT → DOCUMENTEER
-- Regel vastgelegd in `.claude/rules.md` van elk project
-
-### 10.2 Externe audit (maart 2026)
-
-Een externe AI (Google Gemini) heeft de werkwijze beoordeeld en twee verbeterpunten geïdentificeerd:
+**Oordeel:** *"Uitzonderlijk robuust voor een eenmanszaak, overtreft de gemiddelde industriestandaard op het gebied van AI-governance."*
 
 | Bevinding | Status |
 |-----------|--------|
-| **Knowledge-drift** — AutoFix wijzigt code zonder git-sync | **Opgelost** — Git commit+push na elke fix |
-| **Post-fix validatie ontbreekt** — geen syntax-check na AutoFix | **Opgelost** — `php -l` check + auto-rollback |
+| Knowledge-drift (AutoFix zonder git-sync) | **Opgelost** (maart 2026) |
+| Post-fix validatie ontbreekt | **Opgelost** (maart 2026) |
+| AutoFix logische corruptie risico | **Opgelost** — branch-model + dry-run (VP-01) |
+| Test coverage te laag | **In progress** — doelen verscherpt (VP-02) |
+| Documentatie-inflatie | **In progress** — context-injectie optimalisatie (VP-03) |
 
-**Afgewezen voorstellen (met reden):**
+### 11.3 Externe audit: Claude Sonnet 4.6 (maart 2026)
 
-| Voorstel | Reden afwijzing |
-|----------|----------------|
-| Docker containers | Overkill — 1 server, vaste poorten, alles werkend |
-| API-gateway | Al opgelost met directe HTTPS API-calls |
-| Volledige test-suite na AutoFix | Te zwaar voor exception handler in productie |
-| Automatische KB-updates door AI | Risico op "hallucinated documentation" |
+**Oordeel:** *7/10 — "Documentatie en denkstructuur ongewoon goed. Grootste risico zit in de dunne operationele vanglaag."*
+
+| Bevinding | Status |
+|-----------|--------|
+| Test coverage alarmerend laag | **In progress** — 80% op business-logica (VP-02) |
+| Single Point of Failure (bus factor = 1) | **Deels opgelost** — emergency runbook (VP-07) |
+| AutoFix direct naar productie | **Opgelost** — branch-model + PR (VP-01) |
+| Staging niet verplicht | **Opgelost** — staging-vereiste in deploy (VP-08) |
+| Geen uptime-monitoring | **Opgelost** — health check cron (VP-09) |
+| Geen dependency audit | **Opgelost** — composer/npm audit (VP-04) |
+| KOR-grens risico | **Opgelost** — kwartaal-check (VP-10) |
+
+### 11.4 Verbeterplan Q2 2026
+
+Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten:
+
+| VP | Actie | Status | Bron |
+|----|-------|--------|------|
+| VP-01 | AutoFix branch-model + dry-run | **Afgerond** | Gemini + Claude |
+| VP-02 | Test coverage verhogen (80% business) | In progress | Gemini + Claude |
+| VP-03 | Context-injectie optimaliseren | Gepland (juni) | Gemini |
+| VP-04 | Dependency & security audit | **Afgerond** | Gemini + Claude |
+| VP-05 | Integrity check met selectors | **Afgerond** | Gemini |
+| VP-06 | 5 onschendbare regels + sessielimiet | **Afgerond** | Gemini |
+| VP-07 | Emergency runbook | Docs klaar | Claude |
+| VP-08 | Staging verplicht in deploy | **Afgerond** | Claude |
+| VP-09 | Uptime-monitoring (health check) | **Afgerond** | Claude |
+| VP-10 | KOR-omzetmonitoring | **Afgerond** | Claude |
 
 ---
 
-## 11. Risico's & Mitigaties
+## 12. Risico's & Mitigaties
 
-### 11.1 Geïdentificeerde risico's
+### 12.1 Geidentificeerde risico's
 
-| Risico | Ernst | Mitigatie |
-|--------|-------|----------|
-| **AI schrijft onveilige code** | Hoog | Docs-first workflow, code review door eigenaar, tests |
-| **AI verwijdert bestaande features** | Hoog | 5-lagen beschermingssysteem, DO NOT REMOVE, integrity checks |
-| **Credential-lekkage** | Kritiek | Credentials nooit in git, .env gitignored, rules.md |
-| **Ongeautoriseerde serverwijzigingen** | Kritiek | Expliciete permissielijst, deny-list in settings |
-| **AutoFix introduceert bugs** | Medium | Syntax-validatie, rollback, rate limiting, NOTIFY_ONLY optie |
-| **Kennisdrift tussen sessies** | Medium | Handover docs, memory systeem, git sync |
-| **Parallelle sessie-conflicten** | Medium | Git pull bij sessiestart, atomaire commits |
-| **Single point of failure (eigenaar)** | Hoog | Uitgebreide documentatie, gestandaardiseerde procedures |
+| Risico | Ernst | Mitigatie | Status |
+|--------|-------|----------|--------|
+| **AI schrijft onveilige code** | Hoog | Docs-first workflow, code review, tests, CI/CD | Actief |
+| **AI verwijdert bestaande features** | Hoog | 5-lagen bescherming, DO NOT REMOVE, integrity checks | Actief |
+| **Credential-lekkage** | Kritiek | .env gitignored, GitGuardian pre-commit, rules.md | Actief |
+| **Ongeautoriseerde serverwijzigingen** | Kritiek | Deny-list, rules.md, 5 onschendbare regels | Actief |
+| **AutoFix introduceert bugs** | Medium | Branch-model, dry-run, syntax-check, PR-review (VP-01) | **Verbeterd** |
+| **Dependency-kwetsbaarheden** | Medium | composer/npm audit bij sessiestart + CI (VP-04) | **Nieuw** |
+| **Downtime onopgemerkt** | Medium | Health check cron elke 5 min, e-mail alerts (VP-09) | **Nieuw** |
+| **Kennisdrift tussen sessies** | Medium | Handover docs, memory, git sync | Actief |
+| **Single point of failure** | Hoog | Emergency runbook, gestandaardiseerde procedures (VP-07) | **Verbeterd** |
+| **Staging overgeslagen** | Medium | Staging verplicht in deploy-procedure (VP-08) | **Nieuw** |
+| **KOR-drempel overschrijding** | Laag | Kwartaallijkse omzetcheck (VP-10) | **Nieuw** |
 
-### 11.2 Wat de AI NIET mag (samenvatting)
+### 12.2 Wat de AI NIET mag (samenvatting)
 
 ```
 ABSOLUUT VERBODEN (zonder expliciete toestemming):
@@ -611,34 +708,38 @@ ABSOLUUT VERBODEN (zonder expliciete toestemming):
 └── Force-push naar main/master
 
 ALTIJD VEREIST:
-├── Docs lezen vóór code schrijven
+├── Docs lezen voor code schrijven
 ├── Toestemming vragen bij grote wijzigingen
-├── Tests draaien voor én na wijzigingen
+├── Tests draaien voor en na wijzigingen
 ├── DO NOT REMOVE comments respecteren
-└── Documentatie bijwerken na wijzigingen
+├── Documentatie bijwerken na wijzigingen
+└── Staging-deploy voor productie (publieke apps)
 ```
 
 ---
 
-## 12. Bijlagen
+## 13. Bijlagen
 
-### 12.1 Relevante bronbestanden
+### 13.1 Relevante bronbestanden
 
-| Bestand | Locatie | Beschrijving |
-|---------|---------|--------------|
-| CLAUDE.md | `/CLAUDE.md` | Hoofdinstructies per project |
-| Security rules | `/.claude/rules.md` | Beveiligingsregels |
-| Werkwijze | `/docs/kb/runbooks/claude-werkwijze.md` | Volledige werkwijze (342 regels) |
-| Workflow enforcement | `/docs/kb/claude-workflow-enforcement.md` | 3-fase afdwinging (437 regels) |
-| AutoFix referentie | `/docs/kb/reference/autofix.md` | AutoFix specificatie (305 regels) |
-| Testpatronen | `/docs/kb/patterns/regression-guard-tests.md` | Test-typen en -strategie |
-| Integriteitscheck | `/docs/kb/patterns/integrity-check.md` | Shadow file patroon |
-| Beschermingslagen | `/docs/kb/runbooks/beschermingslagen.md` | 5-lagen systeem |
-| SSH incident | `/docs/kb/decisions/003-security-incident-ssh-key.md` | Incident en maatregelen |
-| AutoFix hardening | `/docs/kb/decisions/autofix-hardening-2026-03-15.md` | Externe audit resultaten |
-| Deploy procedure | `/docs/kb/runbooks/deploy.md` | Deployment per project |
+| Bestand | Beschrijving |
+|---------|--------------|
+| `CLAUDE.md` | Hoofdinstructies per project |
+| `.claude/rules.md` | Beveiligingsregels |
+| `docs/kb/runbooks/claude-werkwijze.md` | Volledige werkwijze |
+| `docs/kb/claude-workflow-enforcement.md` | 3-fase afdwinging |
+| `docs/kb/reference/autofix.md` | AutoFix specificatie incl. branch-model |
+| `docs/kb/patterns/regression-guard-tests.md` | Test-typen en -strategie |
+| `docs/kb/patterns/integrity-check.md` | Shadow file patroon |
+| `docs/kb/runbooks/deploy.md` | Deployment incl. staging-vereiste |
+| `docs/kb/runbooks/uptime-monitoring.md` | Health check + SLA-doelen |
+| `docs/kb/runbooks/emergency-runbook.md` | Noodprocedure |
+| `docs/kb/runbooks/security-headers-check.md` | Security headers + OWASP |
+| `docs/kb/decisions/003-security-incident-ssh-key.md` | SSH incident |
+| `docs/kb/decisions/autofix-hardening-2026-03-15.md` | Eerdere audit resultaten |
+| `docs/audit/verbeterplan-q2-2026.md` | Verbeterplan 10 actiepunten |
 
-### 12.2 Architectuuroverzicht
+### 13.2 Architectuuroverzicht
 
 ```
                     ┌──────────────────────┐
@@ -651,36 +752,43 @@ ALTIJD VEREIST:
                     │  VS Code Extension    │
                     │                       │
                     │  Regels:              │
-                    │  • CLAUDE.md          │
-                    │  • rules.md           │
-                    │  • settings.json      │
-                    │  • Hooks              │
+                    │  - 5 onschendbare     │
+                    │  - CLAUDE.md          │
+                    │  - rules.md           │
+                    │  - settings.json      │
                     └──────────┬───────────┘
                                │
               ┌────────────────┼────────────────┐
               ▼                ▼                 ▼
      ┌────────────┐   ┌──────────────┐   ┌──────────────┐
-     │  Lokale     │   │  GitHub      │   │  Productie   │
-     │  ontwikkel- │──▶│  (private    │──▶│  server      │
-     │  omgeving   │   │   repos)     │   │  (nginx)     │
-     └────────────┘   └──────────────┘   └──────┬───────┘
-                                                 │
-                                          ┌──────▼───────┐
-                                          │  AutoFix     │
-                                          │  (productie  │
-                                          │   errors)    │
-                                          │              │
-                                          │  → AI analyse│
-                                          │  → Syntax ✓  │
-                                          │  → Rollback  │
-                                          │  → Git sync  │
-                                          │  → E-mail    │
-                                          └──────────────┘
+     │  Lokale     │   │  GitHub      │   │  Staging     │
+     │  ontwikkel- │──▶│  (private    │──▶│  server      │──┐
+     │  omgeving   │   │   repos)     │   │              │  │
+     │             │   │              │   │  Verificatie  │  │
+     │  Tests +    │   │  CI/CD +     │   │  min 1 uur   │  │
+     │  Lint +     │   │  Coverage +  │   └──────────────┘  │
+     │  Integrity  │   │  Audit       │                     │
+     └────────────┘   └──────────────┘                     │
+                                                ┌──────────▼───┐
+                                                │  Productie   │
+                                                │  server      │
+                                                │  (nginx)     │
+                                                └──────┬───────┘
+                                                       │
+                                        ┌──────────────┼──────────────┐
+                                        ▼                             ▼
+                                 ┌──────────────┐             ┌──────────────┐
+                                 │  AutoFix     │             │  Health      │
+                                 │              │             │  Check       │
+                                 │  Error ->    │             │              │
+                                 │  AI analyse  │             │  Elke 5 min  │
+                                 │  -> Branch   │             │  6 apps      │
+                                 │  -> PR       │             │  E-mail bij  │
+                                 │  -> Review   │             │  downtime    │
+                                 └──────────────┘             └──────────────┘
 ```
 
-### 12.3 Contact
-
-Voor vragen over dit document of de beschreven werkwijze:
+### 13.3 Contact
 
 - **Eigenaar:** Henk van Ess
 - **Organisatie:** Havun
@@ -689,3 +797,4 @@ Voor vragen over dit document of de beschreven werkwijze:
 ---
 
 *Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 29 maart 2026.*
+*Versie 2.0 bevat alle verbeteringen uit het verbeterplan VP-01 t/m VP-10, geimplementeerd op basis van externe beoordelingen door Gemini AI en Claude Sonnet 4.6.*
