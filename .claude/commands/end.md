@@ -80,7 +80,48 @@ Dit zorgt ervoor dat:
 - Nieuwe inconsistenties gedetecteerd worden
 - De volgende sessie up-to-date info heeft
 
-## 5. Git Commit & Push (KRITIEK - NIETS MAG ACHTERBLIJVEN!)
+## 5. Linter-Gate: Test Verificatie (VERPLICHT bij code wijzigingen)
+
+Als er code is gewijzigd in deze sessie, draai de tests en analyseer het resultaat:
+
+```bash
+# Laravel projecten:
+php artisan test --log-junit storage/logs/test-results.xml 2>&1
+
+# Expo/React Native projecten:
+npm test -- --json --outputFile=test-results.json 2>&1
+```
+
+### Analyse (VERPLICHT):
+1. **Alle tests groen?** → Door naar stap 6
+2. **Tests falen?** → Fix de falende tests VOORDAT je commit
+3. **Nieuwe code zonder tests?** → Schrijf minimaal guard tests
+
+### Bij bug fix in deze sessie:
+- Is er een regression test geschreven die de bug reproduceert?
+- Zo nee: schrijf die NU, voor je commit
+
+### Recent Regressions bijwerken:
+Als er een regression is gevonden en gefixt, voeg toe aan `{project}/.claude/recent-regressions.md`:
+
+```markdown
+## [DATUM] - [korte beschrijving]
+- **Wat:** [wat was kapot]
+- **Oorzaak:** [waarom]
+- **Fix:** [wat gefixt]
+- **Test:** [welke test bewaakt dit nu]
+- **Vervalt:** [datum + 7 dagen]
+```
+
+Verwijder entries ouder dan 7 dagen uit dit bestand.
+
+### Integrity Check (indien `.integrity.json` bestaat):
+```bash
+# Valideer dat kritieke elementen nog aanwezig zijn
+node scripts/check-integrity.js 2>&1 || php artisan integrity:check 2>&1
+```
+
+## 6. Git Commit & Push (KRITIEK - NIETS MAG ACHTERBLIJVEN!)
 
 ### Stap A: Commit ALLE code-wijzigingen EERST
 
@@ -123,7 +164,7 @@ git diff
 
 ⚠️ **Als er NOG wijzigingen open staan: NIET doorgaan. Eerst committen!**
 
-## 6. Deploy naar Server (indien van toepassing)
+## 7. Deploy naar Server (indien van toepassing)
 
 ```bash
 ssh root@188.245.159.115
@@ -132,20 +173,20 @@ git pull
 php artisan config:clear && php artisan cache:clear
 ```
 
-## 7. Branch Cleanup
+## 8. Branch Cleanup
 
 ```bash
 git branch --merged | grep -v master | xargs git branch -d
 ```
 
-## 8. USB / Op reis (HavunCore only)
+## 9. USB / Op reis (HavunCore only)
 
 **Nieuwe werkwijze:** USB bevat alleen credentials (vault) + startscript; geen code sync meer nodig. Code op reis via `git clone`/`git pull`.
 
 - **Vault bijwerken (thuis):** Zorg dat `credentials.vault` op de USB de actuele `.env` en `context.md` per project bevat (handmatig of eigen script).
 - **Runbook:** `docs/kb/runbooks/op-reis-workflow.md`
 
-## 9. Urenregistratie (VERPLICHT - belastingaangifte)
+## 10. Urenregistratie (VERPLICHT - belastingaangifte)
 
 **Jij vult zelf de uren in.** Geef een zeer beknopt overzicht om de werkzaamheden te onderbouwen.
 **GEEN commit details of technische beschrijvingen.** Alleen projectnaam + globaal onderwerp (max 3 woorden).

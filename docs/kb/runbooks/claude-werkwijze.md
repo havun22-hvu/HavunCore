@@ -162,10 +162,15 @@ Is dit correct en compleet? Wat wil je aanpassen?
 | Laag | Wat | Effort | Wanneer |
 |------|-----|--------|---------|
 | **1. MD docs** | Documenteer in `.claude/` WAAROM iets bestaat | Laag | Bij niet-vanzelfsprekende features |
-| **2. DO NOT REMOVE** | `<!-- DO NOT REMOVE -->` comments bij kritieke code | Zeer laag | Bij eerder onterecht verwijderde elementen |
-| **3. Tests** | Regressietests die breken als features verdwijnen | Medium | Bij 2x+ per ongeluk verwijderd |
-| **4. CLAUDE.md regels** | Project-brede regels voor alle sessies | Eenmalig | Bij project-brede patronen |
+| **2. DO NOT REMOVE / Shadow File** | In-code comments OF `.integrity.json` (schonere code) | Zeer laag | Bij eerder onterecht verwijderde elementen |
+| **3. Tests + Linter-Gate** | Regressietests die breken + verplichte test-run bij `/end` | Medium | Bij 2x+ per ongeluk verwijderd |
+| **4. CLAUDE.md + Recent Regressions** | Project-brede regels + `.claude/recent-regressions.md` (7 dagen) | Eenmalig | Bij project-brede patronen |
 | **5. Memory** | Cross-session context in memory files | Zeer laag | Bij project-overstijgende patronen |
+
+**Aanvullende tools:**
+- **`.integrity.json`** — Shadow file die kritieke elementen beschrijft zonder code te vervuilen → `docs/kb/patterns/integrity-check.md`
+- **Linter-Gate** — Verplichte test-run + analyse bij `/end` voordat gecommit wordt
+- **Recent Regressions** — Max 7 dagen oud, voorkomt token-vervuiling in CLAUDE.md → `docs/kb/templates/recent-regressions.md`
 
 ### Escalatietabel
 
