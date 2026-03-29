@@ -5,25 +5,28 @@
 ## Laatste Sessie: 29 maart 2026
 
 ### Wat is gedaan:
-- **Audit-documenten aangemaakt** voor kwartaallijkse externe beoordeling:
-  - `docs/audit/werkwijze-beoordeling-derden.md` — volledig overzicht werkwijze, protocollen, beveiliging (12 secties)
-  - `docs/audit/verbeterplan-q2-2026.md` — v2.0, 10 verbeterpunten op basis van Gemini + Claude Sonnet reviews
-- **Externe beoordelingen ontvangen en verwerkt:**
-  - Gemini AI: "Uitzonderlijk robuust voor een eenmanszaak"
-  - Claude Sonnet 4.6: 7/10, strengere bevindingen op test coverage, bus factor, AutoFix
-- **Reviewcyclus ingericht:** elk kwartaal, volgende review Q3 2026 (juli)
+- **Kwartaal-audit ingericht:** beoordelingsdocument v1.0 → v2.0, verbeterplan met 10 VP's
+- **Externe beoordelingen:** Gemini (9/10) + Claude Sonnet (8.5/10)
+- **VP-01 DONE:** AutoFix branch-model + dry-run + GitHub REST API (JT + HP, deployed)
+- **VP-04 DONE:** Dependency audit in `/start`, security headers runbook, OWASP ZAP jan 2027
+- **VP-05 DONE:** `.integrity.json` + `check-integrity.cjs` op 5 projecten (HP, JT, HA, SH, IN)
+- **VP-06 DONE:** 5 onschendbare regels + sessielimiet in werkwijze + `/update`
+- **VP-07 DONE:** Emergency runbook + noodprotocol voor Thiemo (zoon)
+- **VP-08 DONE:** Staging verplicht in deploy-procedure + `/end`
+- **VP-09 DONE:** Health check cron (6 apps, elke 5 min, e-mail alerts via Laravel mail)
+- **VP-10 DONE:** KOR-omzetcheck in `/end` command
+- **CI/CD:** GitHub Actions met coverage-check op alle 6 Laravel-projecten
+- **GitGuardian:** Pre-commit hook op alle 8 projecten (JT + JSB waren nog niet actief)
+- **GITHUB_TOKEN:** Op server gezet voor JT + HP (AutoFix PR-aanmaak)
+- **Server deployed:** JT + HP AutoFix branch-model live
 
-### Openstaande items (verbeterplan VP-01 t/m VP-10):
-- [ ] **VP-01** (Kritiek, april) AutoFix branch-model + dry-run i.p.v. direct naar main
-- [ ] **VP-07** (Kritiek, april) Emergency runbook + backup-persoon aanwijzen
-- [ ] **VP-02** (Kritiek, mei) Test coverage verhogen (80% business-logica) + feature freeze JT
-- [ ] **VP-08** (Hoog, mei) Staging verplicht in deploy-procedure
-- [ ] **VP-09** (Medium, april) Uptime-monitoring (UptimeRobot) + SLA-doelen
-- [ ] **VP-04** (Medium, april) Dependency & security audit (composer/npm audit, OWASP ZAP)
-- [ ] **VP-06** (Medium, april) Protocolmoeheid: 5 onschendbare regels per project
-- [ ] **VP-05** (Medium, mei) Integrity check uitbreiden (CSS-selectors)
-- [ ] **VP-03** (Medium, juni) Context-injectie optimaliseren
-- [ ] **VP-10** (Laag, juni) KOR-omzetmonitoring kwartaalbasis
+### Openstaande items:
+- [ ] **VP-02** Test coverage verhogen — JT: 15.4% (doel 75%), HP: 2.9% (doel 60%)
+- [ ] **VP-03** Context-injectie optimaliseren (juni)
+- [ ] Morgen: streven naar 9.5/10 score bij volgende review
+- [ ] Secret rotation protocol gedocumenteerd maar nog niet uitgevoerd
+- [ ] OWASP ZAP eerste scan: januari 2027
+- [ ] Droogtest noodprotocol met Thiemo plannen
 
 ### Nog open van vorige sessies:
 - [ ] **iDEAL → iDEAL | Wero** teksten aanpassen in HP + JT checkout/terms/emails
