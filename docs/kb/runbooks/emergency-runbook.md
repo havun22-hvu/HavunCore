@@ -10,10 +10,10 @@
 
 | Rol | Naam | Telefoon | Email |
 |-----|------|----------|-------|
-| Eigenaar | Henk van Ess | [INVULLEN] | havun22@gmail.com |
-| Backup contact | [AAN TE WIJZEN] | [INVULLEN] | [INVULLEN] |
+| Eigenaar | Henk van Ess | 06-25058214 | havun22@gmail.com |
+| Backup contact | Zoon van Henk | [bekend bij beiden] | [bekend bij beiden] |
 
-> **TODO:** Wijs een vertrouwde technische contactpersoon aan en geef diegene toegang tot dit document + verzegelde credentials.
+> **Protocol:** Zoon volgt `docs/kb/runbooks/noodcontactpersoon-protocol.md` — opent VS Code, start Claude Code, en volgt stap-voor-stap instructies. Geen technische voorkennis nodig.
 
 ---
 

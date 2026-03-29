@@ -617,7 +617,7 @@ Een volledig emergency runbook is beschikbaar dat zonder voorkennis gevolgd kan 
 - Backup herstellen
 - Communicatie naar klanten
 
-**Status:** Runbook geschreven, noodcontactpersoon nog aan te wijzen.
+**Status:** Runbook geschreven, noodcontactpersoon aangewezen (zoon). Vereenvoudigd protocol beschikbaar dat zonder technische kennis te volgen is — opent VS Code, start Claude Code, en volgt stap-voor-stap instructies.
 
 ### 9.3 Mobile Apps: Studieplanner & JudoScoreBoard
 
