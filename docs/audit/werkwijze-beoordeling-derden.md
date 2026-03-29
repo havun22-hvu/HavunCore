@@ -617,7 +617,7 @@ Een volledig emergency runbook is beschikbaar dat zonder voorkennis gevolgd kan 
 - Backup herstellen
 - Communicatie naar klanten
 
-**Status:** Runbook geschreven, noodcontactpersoon aangewezen (zoon). Vereenvoudigd protocol beschikbaar dat zonder technische kennis te volgen is — opent VS Code, start Claude Code, en volgt stap-voor-stap instructies.
+**Status:** Afgerond. Noodcontactpersoon (Thiemo, zoon) aangewezen met vereenvoudigd protocol. De server draait zelfstandig in een datacenter — de noodcontactpersoon hoeft alleen de lokale PC beschikbaar te houden en kan via Claude Code de status checken en basisherstel uitvoeren. Henk zelf kan overal ter wereld inloggen (laptop, telefoon).
 
 ### 9.3 Mobile Apps: Studieplanner & JudoScoreBoard
 
@@ -720,7 +720,7 @@ Project/
 | Bevinding | Status |
 |-----------|--------|
 | Test coverage alarmerend laag | **In progress** — 80% op business-logica (VP-02) |
-| Single Point of Failure (bus factor = 1) | **Deels opgelost** — emergency runbook (VP-07) |
+| Single Point of Failure (bus factor = 1) | **Opgelost** — noodcontact (Thiemo) + remote toegang + emergency protocol (VP-07) |
 | AutoFix direct naar productie | **Opgelost** — branch-model + PR (VP-01) |
 | Staging niet verplicht | **Opgelost** — staging-vereiste in deploy (VP-08) |
 | Geen uptime-monitoring | **Opgelost** — health check cron (VP-09) |
@@ -739,7 +739,7 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | VP-04 | Dependency & security audit | **Afgerond** | Gemini + Claude |
 | VP-05 | Integrity check met selectors | **Afgerond** | Gemini |
 | VP-06 | 5 onschendbare regels + sessielimiet | **Afgerond** | Gemini |
-| VP-07 | Emergency runbook | Docs klaar | Claude |
+| VP-07 | Emergency runbook + noodcontact (Thiemo) | **Afgerond** | Claude |
 | VP-08 | Staging verplicht in deploy | **Afgerond** | Claude |
 | VP-09 | Uptime-monitoring (health check) | **Afgerond** | Claude |
 | VP-10 | KOR-omzetmonitoring | **Afgerond** | Claude |
@@ -760,7 +760,7 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | **Dependency-kwetsbaarheden** | Medium | composer/npm audit bij sessiestart + CI (VP-04) | **Nieuw** |
 | **Downtime onopgemerkt** | Medium | Health check cron elke 5 min, e-mail alerts (VP-09) | **Nieuw** |
 | **Kennisdrift tussen sessies** | Medium | Handover docs, memory, git sync | Actief |
-| **Single point of failure** | Hoog | Emergency runbook, gestandaardiseerde procedures (VP-07) | **Verbeterd** |
+| **Single point of failure** | Hoog | Noodcontactpersoon (Thiemo), emergency protocol, remote toegang (VP-07) | **Opgelost** |
 | **Staging overgeslagen** | Medium | Staging verplicht in deploy-procedure (VP-08) | **Nieuw** |
 | **KOR-drempel overschrijding** | Laag | Kwartaallijkse omzetcheck (VP-10) | **Nieuw** |
 
