@@ -120,6 +120,7 @@ docs/kb/
 - [claude-werkwijze.md](runbooks/claude-werkwijze.md) - Werkwijze, DOCS-FIRST, beschermingslagen + Linter-Gate, PKM (alles-in-1)
 - [eu-compliance-checklist.md](runbooks/eu-compliance-checklist.md) - Wettelijke verplichtingen online verkoop (KVK, herroeping, privacy)
 - [expo-android-app-setup.md](runbooks/expo-android-app-setup.md) - Android apps bouwen (Expo + Android Studio)
+- [github-actions-ci.md](runbooks/github-actions-ci.md) - GitHub Actions CI: automatische tests bij elke push
 - [op-reis-workflow.md](runbooks/op-reis-workflow.md) - USB / op reis: credentials alleen, code via git
 - [sync-start-command.md](runbooks/sync-start-command.md) - Start-command sync naar alle projecten
 - [md-file-audit.md](runbooks/md-file-audit.md) - 2-wekelijkse documentatie audit
