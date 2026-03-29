@@ -207,6 +207,43 @@ php artisan config:clear && php artisan cache:clear
 
 ---
 
+## Staging-Vereiste (VERPLICHT bij publieke apps)
+
+> **Regel:** Elke deploybare wijziging aan publieke apps gaat EERST naar staging.
+> **Bron:** Externe audit Q1 2026 (VP-08)
+
+### Welke projecten?
+
+| Project | Staging verplicht? | Staging URL |
+|---------|-------------------|-------------|
+| Herdenkingsportaal | **Ja** (publiek verkeer, betalingen) | staging.herdenkingsportaal.nl |
+| JudoToernooi | **Ja** (actief tijdens toernooien) | staging.judotoernooi.havun.nl |
+| HavunAdmin | **Ja** (heeft staging) | staging.havunadmin.havun.nl |
+| HavunCore | Nee (geen staging, backend only) | — |
+| Overige | Nee (beperkt gebruik) | — |
+
+### Procedure
+
+```
+1. Lokaal: tests draaien (php artisan test) — MOET groen zijn
+2. Lokaal: git commit + push
+3. STAGING: git pull + migrate + cache clear
+4. STAGING: handmatige verificatie
+   - Standaard: minimaal 1 uur
+   - Grote wijzigingen: 24 uur
+   - Check: kritieke features, betalingen, formulieren
+5. PRODUCTIE: git pull + migrate + cache clear
+6. PRODUCTIE: verificatie + logs controleren
+```
+
+### Uitzonderingen (geen staging vereist)
+
+- Alleen documentatie-wijzigingen (geen code)
+- Hotfixes voor productie-kritieke bugs (met extra code review)
+- Projecten zonder staging-omgeving (HavunCore, SafeHavun)
+
+---
+
 ## Checklist na deploy
 
 - [ ] Config cache gecleared

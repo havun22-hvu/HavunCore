@@ -2,16 +2,30 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 28 maart 2026
+## Laatste Sessie: 29 maart 2026
 
 ### Wat is gedaan:
-- **Doc Intelligence issues opgeschoond** — 9 issues afgehandeld:
-  - Broken link havunclub.md → gemarkeerd als archived in INDEX.md (resolved)
-  - ICONS-README.md duplicate → dist/ versie verwijderd (resolved)
-  - 3 login runbook stubs verwijderd → waren al geconsolideerd in unified-login-system.md (resolved)
-  - 4 false positives genegeerd (prijzen, DocIndexer/StructureIndexer, CODE-REVIEW/FIXES-APPLIED, crypto/mollie)
+- **Audit-documenten aangemaakt** voor kwartaallijkse externe beoordeling:
+  - `docs/audit/werkwijze-beoordeling-derden.md` — volledig overzicht werkwijze, protocollen, beveiliging (12 secties)
+  - `docs/audit/verbeterplan-q2-2026.md` — v2.0, 10 verbeterpunten op basis van Gemini + Claude Sonnet reviews
+- **Externe beoordelingen ontvangen en verwerkt:**
+  - Gemini AI: "Uitzonderlijk robuust voor een eenmanszaak"
+  - Claude Sonnet 4.6: 7/10, strengere bevindingen op test coverage, bus factor, AutoFix
+- **Reviewcyclus ingericht:** elk kwartaal, volgende review Q3 2026 (juli)
 
-### Openstaande items:
+### Openstaande items (verbeterplan VP-01 t/m VP-10):
+- [ ] **VP-01** (Kritiek, april) AutoFix branch-model + dry-run i.p.v. direct naar main
+- [ ] **VP-07** (Kritiek, april) Emergency runbook + backup-persoon aanwijzen
+- [ ] **VP-02** (Kritiek, mei) Test coverage verhogen (80% business-logica) + feature freeze JT
+- [ ] **VP-08** (Hoog, mei) Staging verplicht in deploy-procedure
+- [ ] **VP-09** (Medium, april) Uptime-monitoring (UptimeRobot) + SLA-doelen
+- [ ] **VP-04** (Medium, april) Dependency & security audit (composer/npm audit, OWASP ZAP)
+- [ ] **VP-06** (Medium, april) Protocolmoeheid: 5 onschendbare regels per project
+- [ ] **VP-05** (Medium, mei) Integrity check uitbreiden (CSS-selectors)
+- [ ] **VP-03** (Medium, juni) Context-injectie optimaliseren
+- [ ] **VP-10** (Laag, juni) KOR-omzetmonitoring kwartaalbasis
+
+### Nog open van vorige sessies:
 - [ ] **iDEAL → iDEAL | Wero** teksten aanpassen in HP + JT checkout/terms/emails
 - [ ] **GitGuardian incident resolven** via dashboard
 - [ ] Test suite uitrollen naar andere projecten

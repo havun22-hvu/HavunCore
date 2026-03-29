@@ -166,6 +166,29 @@ git diff
 
 ## 7. Deploy naar Server (indien van toepassing)
 
+### Bij publieke apps (HP, JT, HA): STAGING EERST!
+
+```bash
+ssh root@188.245.159.115
+
+# Stap 1: Deploy naar STAGING
+cd [project staging path]
+git pull
+php artisan migrate
+php artisan config:clear && php artisan cache:clear
+
+# Stap 2: Verifieer staging
+# Open staging URL, test kritieke features
+# Minimaal 1 uur wachten, bij grote wijzigingen 24 uur
+
+# Stap 3: Deploy naar PRODUCTIE (pas na staging-verificatie)
+cd [project production path]
+git pull
+php artisan config:clear && php artisan cache:clear
+```
+
+### Bij overige apps of alleen docs-wijzigingen:
+
 ```bash
 ssh root@188.245.159.115
 cd [project path]

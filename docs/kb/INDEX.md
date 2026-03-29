@@ -74,7 +74,10 @@ docs/kb/
 │   ├── server-verhuizingen-2026-03-18.md
 │   ├── troubleshoot.md
 │   ├── unified-login-procedure.md
-│   └── unified-login-system.md
+│   ├── unified-login-system.md
+│   ├── uptime-monitoring.md       ← Uptime doelen + UptimeRobot (VP-09)
+│   ├── emergency-runbook.md       ← Noodprocedure voor backup-persoon (VP-07)
+│   └── security-headers-check.md  ← Security headers + OWASP (VP-04)
 │
 ├── reference/            ← API's en server
 │   ├── ai-proxy.md
@@ -97,6 +100,10 @@ docs/kb/
     ├── 004-vision-orchestration.md
     ├── 005-studieplanner-architecture.md
     └── auth-same-origin.md
+
+docs/audit/                   ← Kwartaal-audit (extern)
+├── werkwijze-beoordeling-derden.md   ← Beoordelingsdocument voor derden
+└── verbeterplan-q2-2026.md           ← Verbeterplan 10 actiepunten (VP-01 t/m VP-10)
 ```
 
 ## Quick Links
@@ -135,6 +142,9 @@ docs/kb/
 - [ggshield-setup.md](runbooks/ggshield-setup.md) - GitGuardian pre-commit
 - [unified-login-procedure.md](runbooks/unified-login-procedure.md) - Stap-voor-stap login implementatie (v4.0)
 - [unified-login-system.md](runbooks/unified-login-system.md) - Passkeys, QR, biometrie, magic link (v4.0)
+- [uptime-monitoring.md](runbooks/uptime-monitoring.md) - Uptime doelen, SLA, UptimeRobot setup (VP-09)
+- [emergency-runbook.md](runbooks/emergency-runbook.md) - Noodprocedure voor backup-persoon (VP-07)
+- [security-headers-check.md](runbooks/security-headers-check.md) - Security headers check + OWASP ZAP (VP-04)
 
 ### Templates
 - [recent-regressions.md](templates/recent-regressions.md) - 7-dagen rolling regression log template
@@ -180,6 +190,10 @@ docs/kb/
 - [safehavun.md](projects/safehavun.md) - SafeHavun crypto tracker
 - [studieplanner.md](projects/studieplanner.md) - Studieplanner Android app (Expo)
 - [doc-intelligence-system.md](projects/doc-intelligence-system.md) - Doc Intelligence systeem
+
+### Audit (kwartaallijks)
+- [werkwijze-beoordeling-derden.md](../audit/werkwijze-beoordeling-derden.md) - Volledig werkwijze-overzicht ter beoordeling door derden
+- [verbeterplan-q2-2026.md](../audit/verbeterplan-q2-2026.md) - Verbeterplan 10 actiepunten (Gemini + Claude Sonnet reviews)
 
 ### Decisions (waarom zo?)
 - [001-havuncore-standalone.md](decisions/001-havuncore-standalone.md) - HavunCore als standalone app

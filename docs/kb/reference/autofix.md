@@ -301,4 +301,66 @@ Toegankelijk via `/admin/autofix` (alleen sitebeheerders). Toont:
 
 ---
 
-*Laatste update: 16 maart 2026*
+## Branch-Model (VP-01 — gepland Q2 2026)
+
+> **Bron:** Externe audit Q1 2026 — AutoFix pusht niet langer direct naar main.
+> **Status:** SPECIFICATIE — implementatie gepland april 2026
+
+### Waarom?
+
+Beide externe reviewers (Gemini + Claude Sonnet) adviseren om AutoFix niet direct naar de hoofdbranch te pushen. Hoewel er 8 safety-checks zijn, blijft directe productiewijziging een risico dat in de professionele industrie vrijwel universeel wordt afgeraden.
+
+### Nieuwe flow
+
+```
+Production Error (500)
+  → AutoFixService::handle($e)
+  → shouldProcess() checks (ongewijzigd)
+  → askClaude() (ongewijzigd)
+  → RISK: medium/high → DRY-RUN: alleen notificatie, geen fix
+  → RISK: low → applyFix() + branch-model:
+      1. git checkout -b hotfix/autofix-{timestamp}
+      2. Apply fix to file
+      3. php -l syntax check (auto-rollback bij fout)
+      4. git add + commit + push hotfix branch
+      5. Create PR via GitHub API (base: main/master)
+      6. Email notificatie met PR-link
+      7. Eigenaar reviewed en mergt met één klik
+```
+
+### Configuratie (gepland)
+
+```php
+// config/autofix.php — nieuw
+'branch_model' => true,                    // Branch + PR i.p.v. direct push
+'branch_prefix' => 'hotfix/autofix-',      // Branch naamgeving
+'auto_pr' => true,                         // Automatische PR via GitHub API
+'dry_run_on_risk' => ['medium', 'high'],   // Alleen notificatie bij medium/high
+'github_token' => env('GITHUB_TOKEN'),     // Voor PR aanmaak
+```
+
+### Wat verandert er NIET?
+
+- Rate limiting, syntax check, backup, protected files — alles blijft
+- Claude prompt format en fix-strategie — ongewijzigd
+- Email notificaties — ongewijzigd (PR-link wordt toegevoegd)
+- Review URL `/autofix/{token}` — blijft bestaan
+
+### Implementatie stappen
+
+1. **AutoFixService** — `gitCommitAndPush()` refactoren naar `gitBranchAndPR()`
+2. **GitHub API integratie** — PR aanmaken via `gh` CLI of GitHub REST API
+3. **Config** — nieuwe keys toevoegen aan `config/autofix.php`
+4. **Email template** — PR-link toevoegen aan notificatie
+5. **Dry-run logica** — `RISK: medium/high` skipt `applyFix()`, stuurt alleen notificatie
+6. **Testen** — guard tests voor branch-model flow
+
+### Projecten
+
+Implementeren in:
+- [ ] JudoToernooi (`app/Services/AutoFixService.php`)
+- [ ] Herdenkingsportaal (`app/Services/AutoFixService.php`)
+
+---
+
+*Laatste update: 29 maart 2026*

@@ -36,6 +36,33 @@ Zal ik de KB-secties voor deze bestanden markeren voor review?
 **Bij "ja":** Lees de gewijzigde bestanden, check of de fixes consistent zijn met de KB docs, en meld inconsistenties.
 **Bij "nee":** Ga verder met de sessie.
 
+## Stap 0b: Dependency Security Audit (VERPLICHT)
+
+Na de git pull, draai een security audit op dependencies:
+
+```bash
+# PHP projecten:
+composer audit 2>/dev/null && echo "✓ Geen bekende PHP kwetsbaarheden" || echo "⚠️ PHP kwetsbaarheden gevonden — toon details aan gebruiker!"
+
+# Node.js projecten (indien package.json aanwezig):
+npm audit --omit=dev 2>/dev/null && echo "✓ NPM packages veilig" || echo "⚠️ NPM kwetsbaarheden gevonden!"
+
+# Verouderde packages (maandelijks, of bij /start als >30 dagen sinds laatste check):
+composer outdated --direct 2>/dev/null | head -20
+```
+
+Als er **kritieke kwetsbaarheden** zijn:
+```
+🔴 SECURITY: Kritieke kwetsbaarheden gevonden!
+
+  - [package] [versie] → [CVE details]
+
+⚠️ Dit moet EERST opgelost worden voordat we verder gaan.
+Wil je de kwetsbaarheden nu oplossen?
+```
+
+Bij **lage/medium** kwetsbaarheden: melden, maar sessie mag doorgaan.
+
 ## Stap 1: Lees de project documentatie (VERPLICHT)
 
 Lees deze bestanden in volgorde en bevestig aan de gebruiker:

@@ -20,7 +20,7 @@ jobs:
         with:
           php-version: '8.2'
           extensions: mbstring, sqlite3, pdo_sqlite
-          coverage: none
+          coverage: xdebug
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -38,9 +38,23 @@ jobs:
           php artisan key:generate --env=testing --force
           echo "BROADCAST_CONNECTION=null" >> .env.testing
 
-      - name: Run composer audit
-        run: composer audit
-        continue-on-error: true
+      - name: Security audit (composer)
+        run: composer audit --format=plain
+        continue-on-error: false
 
-      - name: Run tests
-        run: vendor/bin/phpunit --colors=always
+      - name: Run tests with coverage
+        run: vendor/bin/phpunit --colors=always --coverage-text --coverage-clover=coverage.xml
+
+      - name: Check minimum coverage
+        run: |
+          if [ -f coverage.xml ]; then
+            COVERAGE=$(php -r "\$xml = simplexml_load_file('coverage.xml'); echo round((float)\$xml->project->metrics['coveredstatements'] / max(1, (float)\$xml->project->metrics['statements']) * 100, 1);")
+            echo "Coverage: ${COVERAGE}%"
+            MIN=40
+            if [ "$(echo "$COVERAGE < $MIN" | bc -l)" -eq 1 ]; then
+              echo "::error::Coverage ${COVERAGE}% is below minimum ${MIN}%"
+              exit 1
+            fi
+          else
+            echo "No coverage report found — skipping check"
+          fi

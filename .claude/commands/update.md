@@ -2,6 +2,20 @@
 
 > **Gebruik:** Tijdens langere sessies of na significante wijzigingen
 
+## Stap 0: Herinnering — 5 Onschendbare Regels
+
+Controleer voordat je verdergaat of je deze regels naleeft:
+
+```
+1. NOOIT code schrijven zonder docs te lezen
+2. NOOIT features/UI-elementen verwijderen zonder instructie
+3. NOOIT credentials/keys/env aanraken
+4. ALTIJD tests draaien voor én na wijzigingen
+5. ALTIJD toestemming vragen bij grote wijzigingen
+```
+
+**Sessielimiet:** Houd sessies onder 2-3 uur. Bij langere sessies neemt de kans op protocolmoeheid toe — overweeg een nieuwe sessie te starten.
+
 ## Stap 1: Check wat er besproken is
 
 Vraag jezelf:
