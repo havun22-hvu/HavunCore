@@ -16,9 +16,9 @@
 
 ## Stap 1: VS Code openen
 
-1. Zoek op het bureaublad of in het Start-menu naar:
+1. Zoek op het bureaublad of in het Start-menu naar **Visual Studio Code**:
 
-   <img src="https://code.visualstudio.com/assets/images/code-stable.png" width="48" alt="VS Code icoon"/> **Visual Studio Code**
+   ![VS Code](https://img.shields.io/badge/VS_Code-007ACC?logo=visualstudiocode&logoColor=white&style=for-the-badge)
 
    Herkenbaar aan het blauwe icoon met een soort `><` symbool erin.
 
