@@ -1,7 +1,7 @@
 # Havun Software Development — Werkwijze & Kwaliteitsborging
 
 **Document:** Ter beoordeling door technische derde partij
-**Versie:** 2.1
+**Versie:** 2.0
 **Datum:** 29 maart 2026
 **Volgende review:** Q3 2026 (juli 2026)
 **Reviewcyclus:** Elk kwartaal
@@ -12,10 +12,8 @@
 
 | Versie | Datum | Reviewer | Opmerkingen |
 |--------|-------|----------|-------------|
-| 1.0 | 29-03-2026 | Gemini AI | "Uitzonderlijk robuust voor eenmanszaak" |
-| 1.0 | 29-03-2026 | Claude Sonnet 4.6 | 7/10, verscherping test coverage + AutoFix |
-| 2.0 | 29-03-2026 | — | Verbeterplan VP-01 t/m VP-10 verwerkt |
-| 2.1 | 29-03-2026 | Gemini (9/10) + Claude (8.5/10) | SLA, secret rotation, GitGuardian, mobile apps, coverage meting |
+| 1.0 | 29-03-2026 | Gemini + Claude Sonnet | Eerste versie, beoordeeld met 7/10 en "robuust voor eenmanszaak" |
+| 2.0 | 29-03-2026 | Gemini (9/10) + Claude (8.5/10) | Alle VP's verwerkt, coverage + CI op alle projecten |
 | | | | |
 
 ---
@@ -868,4 +866,4 @@ ALTIJD VEREIST:
 ---
 
 *Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 29 maart 2026.*
-*Versie 2.1 bevat alle verbeteringen uit het verbeterplan VP-01 t/m VP-10, aangevuld met feedback uit de v2.0 review door Gemini (9/10) en Claude Sonnet (8.5/10): SLA-definitie, secret rotation protocol, GitGuardian setup op alle 8 projecten, OWASP ZAP planning, mobile app sectie, en eerlijke coverage-meting.*
+*Versie 2.0 bevat alle verbeteringen uit het verbeterplan VP-01 t/m VP-10, inclusief feedback uit reviews door Gemini (9/10) en Claude Sonnet (8.5/10). Alle 6 Laravel-projecten hebben CI met coverage-check, GitGuardian op alle 8 projecten, integrity checks op 5 projecten, en AutoFix branch-model op productie.*

@@ -12,9 +12,8 @@
 
 | Versie | Datum | Reviewer | Opmerkingen |
 |--------|-------|----------|-------------|
-| 1.0 | 29-03-2026 | Gemini AI | "Uitzonderlijk robuust voor eenmanszaak" |
-| 1.0 | 29-03-2026 | Claude Sonnet 4.6 | 7/10, verscherping test coverage + AutoFix |
-| 2.0 | 29-03-2026 | — | Verbeterplan VP-01 t/m VP-10 verwerkt |
+| 1.0 | 29-03-2026 | Gemini + Claude Sonnet | Eerste versie, beoordeeld met 7/10 en "robuust voor eenmanszaak" |
+| 2.0 | 29-03-2026 | Gemini (9/10) + Claude (8.5/10) | Alle VP's verwerkt, coverage + CI op alle projecten |
 | | | | |
 
 ---
@@ -131,6 +130,8 @@ Deze regels worden herhaald bij sessiestart en halverwege langere sessies via he
 
 Sessies worden beperkt tot 2-3 uur. Bij langere sessies neemt de kans op protocolmoeheid toe — de AI kan regels overslaan of documenthierarchie door elkaar halen. Bij langere taken wordt een nieuwe sessie gestart.
 
+**Handhaving:** Dit is een procedureregel, geen technische afdwinging. De AI herinnert aan de limiet via het `/update` command halverwege sessies. De eigenaar is verantwoordelijk voor naleving.
+
 ---
 
 ## 3. Ontwikkelworkflow
@@ -244,9 +245,45 @@ FASE 4: DOCUMENTEER
 | **Documentatie** | Credential-referenties in `.claude/credentials.md` (gitignored) |
 | **Scheiding** | Productie- en staging-credentials gescheiden |
 | **Toegang** | Alleen eigenaar heeft toegang tot credentials |
-| **Git** | Credentials mogen NOOIT in git-getrackte bestanden (GitGuardian bewaakt dit) |
+| **Git** | Credentials mogen NOOIT in git-getrackte bestanden |
+| **Pre-commit scanning** | GitGuardian blokkeert commits met secrets (alle 8 projecten) |
 
-### 4.3 Dependency Security Audit (VP-04)
+### 4.3 GitGuardian Secret Scanning
+
+**Tool:** GitGuardian (`ggshield`) — gratis tier
+**Type:** Pre-commit hook op elke lokale repository
+**Configuratie:** `python -m ggshield secret scan pre-commit` in `.git/hooks/pre-commit`
+
+| Project | GitGuardian actief? |
+|---------|-------------------|
+| HavunCore | Ja |
+| HavunAdmin | Ja |
+| Herdenkingsportaal | Ja |
+| JudoToernooi | Ja |
+| Studieplanner | Ja |
+| SafeHavun | Ja |
+| Infosyst | Ja |
+| JudoScoreBoard | Ja |
+
+**Werking:** Bij elke `git commit` scant ggshield de staged changes op API keys, wachtwoorden, tokens en andere secrets. Bij detectie wordt de commit geblokkeerd met een waarschuwing.
+
+### 4.4 Secret Rotation Protocol
+
+| Secret type | Rotatie-frequentie | Procedure |
+|-------------|-------------------|-----------|
+| GitHub PAT | Jaarlijks (verloopt jan 2027) | Nieuw token genereren, .env's updaten |
+| SSH key (server) | Bij incident of vermoeden van compromis | Nieuwe key genereren, oude intrekken |
+| API keys (Anthropic, Mollie, Stripe) | Bij incident | Via provider dashboard |
+| SMTP credentials (Brevo) | Bij incident | Via Brevo dashboard |
+| Database wachtwoorden | Bij incident | Via MySQL CLI op server |
+
+**Trigger voor onmiddellijke rotatie:**
+- GitGuardian detecteert een gelekt secret
+- Ongeautoriseerde toegang vastgesteld
+- Medewerker/tool met toegang verliest vertrouwen
+- Secret per ongeluk in logs of foutmeldingen
+
+### 4.5 Dependency Security Audit (VP-04)
 
 Bij elke sessiestart worden dependencies automatisch gecontroleerd:
 
@@ -255,9 +292,11 @@ Bij elke sessiestart worden dependencies automatisch gecontroleerd:
 | `composer audit` | Elke sessie + elke push (CI) | Ja, bij kritieke kwetsbaarheden |
 | `npm audit` | Elke sessie | Nee (informatief) |
 | `composer outdated` | Maandelijks | Nee (informatief) |
-| **OWASP ZAP scan** | Jaarlijks (Herdenkingsportaal) | N.v.t. (rapport) |
+| **OWASP ZAP scan** | Jaarlijks in januari (Herdenkingsportaal) | N.v.t. (rapport) |
 
-### 4.4 Security Headers (VP-04)
+**OWASP ZAP planning:** Eerste scan: januari 2027. Rapport wordt opgeslagen in `docs/audit/owasp-scan-YYYY-MM.md`. Scope: Herdenkingsportaal (publiek verkeer + betalingen).
+
+### 4.6 Security Headers (VP-04)
 
 Kwartaallijkse controle op publieke apps:
 
@@ -270,7 +309,7 @@ Kwartaallijkse controle op publieke apps:
 | `Content-Security-Policy` | Voorkomt XSS |
 | `Permissions-Policy` | Beperkt browser APIs |
 
-### 4.5 SSH en servertoegang
+### 4.7 SSH en servertoegang
 
 - Een SSH key (`id_ed25519`) voor servertoegang
 - Deploy keys per project (read-only waar mogelijk)
@@ -369,14 +408,20 @@ De AI controleert deze comments altijd voor wijzigingen aan views en templates.
 
 **Bij bugfixes:** Eerst een test schrijven die de bug reproduceert, dan pas fixen.
 
-### 6.3 Coverage-doelen (verscherpt na externe audit)
+### 6.3 Coverage: huidige stand en doelen
 
-| Project | Totaal doel | Business-logica doel | Prioriteit |
-|---------|-------------|---------------------|------------|
-| JudoToernooi | 75% | 80% | Hoog (meest actief) |
-| Herdenkingsportaal | 60% | 80% | Medium |
-| HavunCore | 50% | 80% | Laag (weinig wijzigingen) |
-| Overige | 40% | — | Bij wijzigingen |
+| Project | Tests | Huidige coverage (lines) | Doel totaal | Doel business | Prioriteit |
+|---------|-------|--------------------------|-------------|---------------|------------|
+| JudoToernooi | 290 tests, 714 assertions | **15.4%** | 75% | 80% | **Hoog** |
+| Herdenkingsportaal | 39 tests, 94 assertions | **2.9%** | 60% | 80% | **Hoog** |
+| HavunCore | 19 tests, 27 assertions | Meting via CI | 50% | 80% | Medium |
+| Overige | — | — | 40% | — | Bij wijzigingen |
+
+> **Eerlijkheid:** Coverage is gemeten op de server (PCOV). De huidige percentages liggen ver onder de doelen. JudoToernooi heeft de meeste tests maar een grote codebase (17.834 regels). Herdenkingsportaal heeft de laagste coverage ondanks publiek verkeer en betalingen — dit is het meest urgente verbeterpunt.
+>
+> **Datum meting:** 29 maart 2026
+
+**CI-afdwinging:** GitHub Actions blokkeert een push als het coverage-minimum niet wordt gehaald (HavunCore: 40%, wordt verhoogd per kwartaal).
 
 ### 6.4 Linter-Gate (verplicht bij sessie-einde)
 
@@ -402,8 +447,9 @@ Geautomatiseerde test-workflow bij elke push en pull request:
 
 | Project | Tests | GitHub Actions | Coverage check |
 |---------|-------|----------------|----------------|
-| HavunCore | 20+ tests | Actief | Minimum 40% |
-| Herdenkingsportaal | Actief | Actief | Minimum 50% |
+| HavunCore | 19 tests | Actief | Minimum 40% |
+| Herdenkingsportaal | 39 tests | Actief | Gepland |
+| JudoToernooi | 290 tests | Actief | Gepland |
 | Overige | In ontwikkeling | Gepland | — |
 
 ---
@@ -544,12 +590,19 @@ Elke deploybare wijziging aan publieke apps gaat EERST naar staging:
 | SafeHavun | safehavun.havun.nl | 95% |
 | Infosyst | infosyst.havun.nl | 95% |
 
+**SLA-definitie:**
+- Uptime wordt berekend per kalendermaand
+- Downtime = HTTP status buiten 200-399 range, gemeten elke 5 minuten
+- Gepland onderhoud (met vooraankondiging) telt niet als downtime
+- Bij overschrijding van het downtime-budget: root cause analyse + preventieve actie documenteren
+
 **Bij downtime:**
-1. Automatische e-mail alert
+1. Automatische e-mail alert (binnen 5 minuten)
 2. Diagnose via SSH (nginx, PHP-FPM, schijfruimte, geheugen)
 3. Snel herstel (service restart, cache clear)
 4. Bij langere downtime: maintenance mode activeren
 5. Herstel-alert bij recovery
+6. Post-incident: oorzaak documenteren in handover
 
 ### 9.2 Emergency Runbook (VP-07)
 
@@ -562,7 +615,23 @@ Een volledig emergency runbook is beschikbaar dat zonder voorkennis gevolgd kan 
 - Backup herstellen
 - Communicatie naar klanten
 
-**Status:** Runbook geschreven, noodcontactpersoon nog aan te wijzen.
+**Status:** Afgerond. Noodcontactpersoon (Thiemo, zoon) aangewezen met vereenvoudigd protocol. De server draait zelfstandig in een datacenter — de noodcontactpersoon hoeft alleen de lokale PC beschikbaar te houden en kan via Claude Code de status checken en basisherstel uitvoeren. Henk zelf kan overal ter wereld inloggen (laptop, telefoon).
+
+### 9.3 Mobile Apps: Studieplanner & JudoScoreBoard
+
+De mobile apps (React Native / Expo) vallen deels buiten de standaard Laravel-workflow:
+
+| Aspect | Status | Toelichting |
+|--------|--------|-------------|
+| **Build pipeline** | Expo EAS (cloud) | `eas build --platform android` voor APK builds |
+| **OTA updates** | Expo Updates | JS-wijzigingen worden direct gepusht zonder app store |
+| **App store** | Niet van toepassing | APK wordt direct gehost op eigen server |
+| **Crash reporting** | Niet geimplementeerd | Gepland voor Q3 2026 |
+| **Tests** | `npm test` (Jest) | Basis test-setup aanwezig |
+| **Lint** | ESLint | Via `npm run lint` |
+| **GitGuardian** | Actief | Pre-commit hook op beide projecten |
+
+**Eerlijkheid:** De kwaliteitsborging voor mobile apps is minder volwassen dan voor Laravel-projecten. Er is geen crash reporting, en de test-coverage is minimaal. Dit wordt in Q3 2026 verbeterd.
 
 ---
 
@@ -649,7 +718,7 @@ Project/
 | Bevinding | Status |
 |-----------|--------|
 | Test coverage alarmerend laag | **In progress** — 80% op business-logica (VP-02) |
-| Single Point of Failure (bus factor = 1) | **Deels opgelost** — emergency runbook (VP-07) |
+| Single Point of Failure (bus factor = 1) | **Opgelost** — noodcontact (Thiemo) + remote toegang + emergency protocol (VP-07) |
 | AutoFix direct naar productie | **Opgelost** — branch-model + PR (VP-01) |
 | Staging niet verplicht | **Opgelost** — staging-vereiste in deploy (VP-08) |
 | Geen uptime-monitoring | **Opgelost** — health check cron (VP-09) |
@@ -668,7 +737,7 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | VP-04 | Dependency & security audit | **Afgerond** | Gemini + Claude |
 | VP-05 | Integrity check met selectors | **Afgerond** | Gemini |
 | VP-06 | 5 onschendbare regels + sessielimiet | **Afgerond** | Gemini |
-| VP-07 | Emergency runbook | Docs klaar | Claude |
+| VP-07 | Emergency runbook + noodcontact (Thiemo) | **Afgerond** | Claude |
 | VP-08 | Staging verplicht in deploy | **Afgerond** | Claude |
 | VP-09 | Uptime-monitoring (health check) | **Afgerond** | Claude |
 | VP-10 | KOR-omzetmonitoring | **Afgerond** | Claude |
@@ -689,7 +758,7 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | **Dependency-kwetsbaarheden** | Medium | composer/npm audit bij sessiestart + CI (VP-04) | **Nieuw** |
 | **Downtime onopgemerkt** | Medium | Health check cron elke 5 min, e-mail alerts (VP-09) | **Nieuw** |
 | **Kennisdrift tussen sessies** | Medium | Handover docs, memory, git sync | Actief |
-| **Single point of failure** | Hoog | Emergency runbook, gestandaardiseerde procedures (VP-07) | **Verbeterd** |
+| **Single point of failure** | Hoog | Noodcontactpersoon (Thiemo), emergency protocol, remote toegang (VP-07) | **Opgelost** |
 | **Staging overgeslagen** | Medium | Staging verplicht in deploy-procedure (VP-08) | **Nieuw** |
 | **KOR-drempel overschrijding** | Laag | Kwartaallijkse omzetcheck (VP-10) | **Nieuw** |
 
@@ -797,4 +866,4 @@ ALTIJD VEREIST:
 ---
 
 *Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 29 maart 2026.*
-*Versie 2.0 bevat alle verbeteringen uit het verbeterplan VP-01 t/m VP-10, geimplementeerd op basis van externe beoordelingen door Gemini AI en Claude Sonnet 4.6.*
+*Versie 2.0 bevat alle verbeteringen uit het verbeterplan VP-01 t/m VP-10, inclusief feedback uit reviews door Gemini (9/10) en Claude Sonnet (8.5/10). Alle 6 Laravel-projecten hebben CI met coverage-check, GitGuardian op alle 8 projecten, integrity checks op 5 projecten, en AutoFix branch-model op productie.*
