@@ -413,7 +413,7 @@ Juli 2026
 
 | ID | Actie | Status | Prioriteit | Deadline | Bron |
 |----|-------|--------|------------|----------|------|
-| VP-01 | AutoFix Branch-Model + Dry-Run | SPEC KLAAR | Kritiek | 30-04-2026 | Gemini + Claude |
+| VP-01 | AutoFix Branch-Model + Dry-Run | DONE | Kritiek | 30-04-2026 | Gemini + Claude |
 | VP-02 | Test Coverage + Feature Freeze | IN PROGRESS | Kritiek | 31-05-2026 | Gemini + Claude |
 | VP-03 | Context-Injectie | TODO | Medium | 30-06-2026 | Gemini |
 | VP-04 | Dependency & Security Audit | DOCS KLAAR | Medium | 30-04-2026 | Gemini + Claude |
