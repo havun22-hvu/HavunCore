@@ -1,8 +1,8 @@
 # Noodprotocol — Voor Backup-Contactpersoon
 
-> **Voor:** Zoon van Henk (backup-contact)
-> **Doel:** Als papa niet bereikbaar is en een website down is, kun jij dit volgen.
-> **Vereiste kennis:** Geen — alles staat hier stap voor stap.
+> **Voor:** Backup-contactpersoon
+> **Doel:** Als Henk niet bereikbaar is en een website down is, kun je dit protocol volgen.
+> **Vereiste kennis:** VS Code kunnen openen — de rest staat hier.
 
 ---
 
@@ -64,7 +64,7 @@ Claude kan je vragen om dingen te bevestigen. Antwoord met:
 - Databases aanpassen
 - Nieuwe software installeren
 
-Als Claude iets wil doen dat je niet begrijpt: **typ "stop" en probeer papa te bereiken.**
+Als Claude iets wil doen dat je niet begrijpt: **typ "stop" en probeer Henk te bereiken.**
 
 ---
 
@@ -106,7 +106,7 @@ Ik ben de backup-contactpersoon en ik weet niet wat ik moet doen. Help me.
 |-----|--------|
 | **Server IP** | 188.245.159.115 |
 | **Websites** | herdenkingsportaal.nl, judotoernooi.havun.nl, havuncore.havun.nl |
-| **E-mail papa** | havun22@gmail.com |
+| **E-mail Henk** | havun22@gmail.com |
 | **Hosting** | Hetzner (console.hetzner.cloud) |
 
 ---
@@ -116,14 +116,14 @@ Ik ben de backup-contactpersoon en ik weet niet wat ik moet doen. Help me.
 1. **Paniek is niet nodig** — websites gaan soms even offline, dat is normaal
 2. **Claude helpt je** — je hoeft niets te onthouden, vraag het gewoon
 3. **Bij twijfel: stop** — liever niks doen dan iets fout doen
-4. **Probeer papa te bereiken** — bel, WhatsApp, SMS
+4. **Probeer Henk te bereiken** — bel, WhatsApp, SMS
 5. **Documenteer wat je hebt gedaan** — typ aan Claude: "schrijf op wat we gedaan hebben"
 
 ---
 
-## Droogtest (doe dit 1x samen met papa)
+## Droogtest (doe dit 1x samen)
 
-Voer samen de volgende stappen uit om te oefenen:
+Voer de volgende stappen uit om te oefenen:
 
 - [ ] VS Code openen
 - [ ] Claude Code terminal openen (typ `claude`)
