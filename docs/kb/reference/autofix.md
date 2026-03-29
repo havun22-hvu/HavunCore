@@ -328,15 +328,20 @@ Production Error (500)
       7. Eigenaar reviewed en mergt met één klik
 ```
 
-### Configuratie (gepland)
+### Configuratie (GEÏMPLEMENTEERD 29-03-2026)
 
 ```php
-// config/autofix.php — nieuw
-'branch_model' => true,                    // Branch + PR i.p.v. direct push
-'branch_prefix' => 'hotfix/autofix-',      // Branch naamgeving
-'auto_pr' => true,                         // Automatische PR via GitHub API
-'dry_run_on_risk' => ['medium', 'high'],   // Alleen notificatie bij medium/high
-'github_token' => env('GITHUB_TOKEN'),     // Voor PR aanmaak
+// config/autofix.php
+'branch_model' => env('AUTOFIX_BRANCH_MODEL', true),
+'branch_prefix' => 'hotfix/autofix-',
+'auto_pr' => env('AUTOFIX_AUTO_PR', true),
+'dry_run_on_risk' => ['medium', 'high'],
+'github_token' => env('GITHUB_TOKEN'),     // Personal Access Token, repo scope
+```
+
+### .env vereist op server:
+```
+GITHUB_TOKEN=ghp_...   # Personal Access Token met 'repo' scope
 ```
 
 ### Wat verandert er NIET?
@@ -346,20 +351,21 @@ Production Error (500)
 - Email notificaties — ongewijzigd (PR-link wordt toegevoegd)
 - Review URL `/autofix/{token}` — blijft bestaan
 
-### Implementatie stappen
+### Implementatie (AFGEROND 29-03-2026)
 
-1. **AutoFixService** — `gitCommitAndPush()` refactoren naar `gitBranchAndPR()`
-2. **GitHub API integratie** — PR aanmaken via `gh` CLI of GitHub REST API
-3. **Config** — nieuwe keys toevoegen aan `config/autofix.php`
-4. **Email template** — PR-link toevoegen aan notificatie
-5. **Dry-run logica** — `RISK: medium/high` skipt `applyFix()`, stuurt alleen notificatie
-6. **Testen** — guard tests voor branch-model flow
+Geïmplementeerd via GitHub REST API (Laravel `Http` facade), geen `gh` CLI nodig.
 
-### Projecten
+**Nieuwe methodes in AutoFixService:**
+- `isDryRunRisk()` — checkt of RISK level in dry_run_on_risk zit
+- `sendDryRunNotification()` — stuurt e-mail bij dry-run
+- `gitBranchAndPR()` — maakt branch, commit, push, PR via API
+- `gitDirectPush()` — fallback (legacy direct push)
+- `createGitHubPR()` — GitHub REST API call voor PR aanmaak
+- `extractRisk()` — parsed RISK level uit Claude's analyse
 
-Implementeren in:
-- [ ] JudoToernooi (`app/Services/AutoFixService.php`)
-- [ ] Herdenkingsportaal (`app/Services/AutoFixService.php`)
+**Projecten:**
+- [x] JudoToernooi — commit `6d0faa3e`
+- [x] Herdenkingsportaal — commit `8ac8c01`
 
 ---
 

@@ -14,7 +14,46 @@
 | SafeHavun | safehavun.havun.nl | 95% | Nee | Beperkt gebruik |
 | Infosyst | infosyst.havun.nl | 95% | Nee | Beperkt gebruik |
 
-## UptimeRobot Setup
+## Server-side Health Check (ACTIEF sinds 29-03-2026)
+
+**Script:** `/usr/local/bin/havun-health-check.sh`
+**Mail script:** `/usr/local/bin/havun-health-alert.php`
+**Cron:** Elke 5 minuten (`*/5 * * * *`)
+**Log:** `/var/log/havun-health.log`
+**State:** `/var/run/havun-health/`
+
+### Wat het doet:
+- Checkt alle 6 publieke apps met `curl -sk` (elke 5 min)
+- Bij downtime: stuurt e-mail via HavunCore Laravel mail
+- Bij herstel: stuurt recovery e-mail
+- Rate limit: max 1 alert per uur per app (voorkomt spam)
+
+### Gemonitorde apps:
+- HavunCore (`/health`)
+- Herdenkingsportaal
+- JudoToernooi
+- HavunAdmin
+- SafeHavun
+- Infosyst
+
+### Troubleshooting:
+```bash
+# Handmatig draaien:
+/usr/local/bin/havun-health-check.sh
+
+# Log bekijken:
+tail -20 /var/log/havun-health.log
+
+# State files (= huidige downtime):
+ls -la /var/run/havun-health/
+
+# Reset alerting (na false positive):
+rm -f /var/run/havun-health/[AppName]
+```
+
+## UptimeRobot (optioneel — externe monitoring)
+
+Extra laag bovenop de server-side check. Belangrijk als de hele server down is (dan werkt het server-script ook niet).
 
 ### Per app instellen:
 1. Monitor type: HTTPS
