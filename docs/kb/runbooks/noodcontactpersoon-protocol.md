@@ -20,8 +20,9 @@
 
    <img src="../../audit/vscode-icon.png" width="48" alt="VS Code icoon"/> **Visual Studio Code**
 
-2. Klik op **File → Open Folder**
-3. Ga naar `D:\GitHub\HavunCore` en klik **Selecteer map**
+2. Open het project op een van deze manieren:
+   - **Optie A:** Klik links in de zijbalk op het **Project Manager** icoon (4e van onderen, twee mapjes boven elkaar) en kies **HavunCore**
+   - **Optie B:** Klik op **File → Open Folder** → ga naar `D:\GitHub\HavunCore` → klik **Selecteer map**
 
 ---
 
