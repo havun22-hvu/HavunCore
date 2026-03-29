@@ -73,21 +73,28 @@ Lees deze bestanden in volgorde en bevestig aan de gebruiker:
 3. .claude/rules.md             ← Security regels (indien aanwezig)
 ```
 
-## Stap 2: Lees de HavunCore kennisbank (VERPLICHT)
+## Stap 2: Kennisbank (KB-first, NIET alles laden)
 
-```
-4. D:\GitHub\HavunCore\docs\kb\runbooks\claude-werkwijze.md  ← Werkwijze, DOCS-FIRST, PKM (alles-in-1)
-```
-
-## Stap 3: Update Doc Intelligence index (VERPLICHT)
-
-Werk de index bij zodat de kennisbank actueel is:
+**NIET** de volledige werkwijze-doc laden. Gebruik de KB on-demand:
 
 ```bash
-cd D:\GitHub\HavunCore && php artisan docs:index all --force
+# Zoek alleen wanneer je iets moet weten:
+cd D:\GitHub\HavunCore && php artisan docs:search "zoekterm"
+
+# Voorbeelden:
+php artisan docs:search "beschermingslagen"
+php artisan docs:search "autofix configuratie"
+php artisan docs:search "mollie betaling checkout"
 ```
 
-## Stap 4: Check Doc Intelligence issues
+**De 5 Onschendbare Regels (uit je hoofd kennen):**
+1. NOOIT code schrijven zonder docs te lezen
+2. NOOIT features/UI-elementen verwijderen zonder instructie
+3. NOOIT credentials/keys/env aanraken
+4. ALTIJD tests draaien voor én na wijzigingen
+5. ALTIJD toestemming vragen bij grote wijzigingen
+
+## Stap 3: Check Doc Intelligence issues
 
 ```bash
 cd D:\GitHub\HavunCore
@@ -111,7 +118,7 @@ Als er openstaande issues zijn, toon ze aan de gebruiker:
 Wil je deze eerst oplossen of later?
 ```
 
-## Na Stap 1–4: Korte bevestiging
+## Na Stap 1–3: Korte bevestiging
 
 Geef een KORTE bevestiging:
 
@@ -129,55 +136,19 @@ Geef een KORTE bevestiging:
 Klaar om te beginnen. Wat wil je doen?
 ```
 
-## Stap 5: ONTHOUD deze principes
+## Stap 4: ONTHOUD deze principes
 
-### ⛔ DOCS-FIRST WORKFLOW (HOOFDREGEL!)
-
-```
-┌─────────────────────────────────────────────────────────┐
-│  CODE MAG ALLEEN GESCHREVEN WORDEN ALS HET IN DE       │
-│  MD FILES STAAT. NIET ZOALS IK DENK DAT HET MOET.      │
-└─────────────────────────────────────────────────────────┘
-```
-
-**Bij ELKE vraag:**
+### Bij ELKE vraag:
 1. Is dit groot (feature/styling/tekst) of klein (bug/typo)?
-2. **GROOT** → Zoek docs → Meld wat er staat → Wacht op bevestiging → Update docs → Code
+2. **GROOT** → `docs:search` → Meld wat er staat → Wacht op bevestiging → Update docs → Code
 3. **KLEIN** → Log in `.claude/smallwork.md` → Fix → Klaar
 
-### LEES-DENK-DOE-DOCUMENTEER
-1. **LEES** - Eerst relevante docs/code lezen
-2. **DENK** - Analyseer, vraag bij twijfel
-3. **DOE** - Pas dan uitvoeren, geen haast
-4. **DOCUMENTEER** - Sla nieuwe kennis op
-
-### Kernregels
-- **NOOIT** code schrijven voordat docs gecheckt zijn
-- **NOOIT** aannemen hoe iets moet werken - het staat in de docs of ik vraag
-- **ALTIJD** inconsistenties in docs melden VOORDAT ik code schrijf
-- **ALTIJD** docs updaten VOORDAT code geschreven wordt
-
-### Response template bij feature/wijziging vraag
-
-```
-📄 Over [onderwerp] vond ik:
-
-[file1.md]:
-  - [wat er staat]
-
-[file2.md]:
-  - [wat er staat]
-
-⚠️ Inconsistenties: [ja/nee + details]
-❓ Ontbreekt: [wat mist in docs]
-
-Is dit correct en compleet?
+### Bij twijfel: zoek in KB
+```bash
+cd D:\GitHub\HavunCore && php artisan docs:search "onderwerp"
 ```
 
-## NIET DOEN
-
-❌ Direct beginnen met code schrijven
-❌ Zelf oplossingen verzinnen - het staat in docs of nergens
-❌ Code schrijven terwijl docs inconsistent zijn
-❌ Docs aanpassen NADAT code geschreven is
-❌ "Ik denk dat..." zonder doc-verificatie
+### NIET DOEN
+- Direct code schrijven zonder docs/KB te checken
+- Grote MD docs volledig laden (gebruik KB search)
+- Code schrijven terwijl docs inconsistent zijn
