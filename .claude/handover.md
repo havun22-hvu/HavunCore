@@ -2,9 +2,18 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 29 maart 2026
+## Laatste Sessie: 29 maart 2026 (avond — KB-first sessie)
 
-### Wat is gedaan:
+### Wat is gedaan (avond):
+- **KB-first workflow** — `/start` command omgebouwd voor alle 8 projecten
+  - Laadt NIET meer de volledige werkwijze-doc (342 regels bespaard per sessie)
+  - Gebruikt `docs:search` on-demand i.p.v. alles laden
+  - `/end` command met Linter-Gate ook naar alle projecten gesynchroniseerd
+- **VP-03 DONE:** Context-injectie geoptimaliseerd (KB-first i.p.v. alles laden)
+- **Development workflow diagram** aangemaakt (`docs/kb/reference/development-workflow.md`)
+  - Compleet schema van cursor → code → test → CI → productie → AutoFix
+
+### Wat is gedaan (overdag — andere sessie):
 - **Kwartaal-audit ingericht:** beoordelingsdocument v1.0 → v2.0, verbeterplan met 10 VP's
 - **Externe beoordelingen:** Gemini (9/10) + Claude Sonnet (8.5/10)
 - **VP-01 DONE:** AutoFix branch-model + dry-run + GitHub REST API (JT + HP, deployed)
@@ -22,7 +31,7 @@
 
 ### Openstaande items:
 - [ ] **VP-02** Test coverage verhogen — JT: 15.4% (doel 75%), HP: 2.9% (doel 60%)
-- [ ] **VP-03** Context-injectie optimaliseren (juni)
+- [x] **VP-03** Context-injectie geoptimaliseerd (KB-first workflow)
 - [ ] Morgen: streven naar 9.5/10 score bij volgende review
 - [ ] Secret rotation protocol gedocumenteerd maar nog niet uitgevoerd
 - [ ] OWASP ZAP eerste scan: januari 2027
