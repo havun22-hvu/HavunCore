@@ -26,6 +26,7 @@ docs/kb/
 │   ├── herdenkingsportaal.md
 │   ├── infosyst.md
 │   ├── judotoernooi.md
+│   ├── judoscoreboard.md   ← Android app (Expo)
 │   ├── safehavun.md
 │   └── studieplanner.md
 │
@@ -41,6 +42,8 @@ docs/kb/
 │   ├── pusher-realtime.md
 │   ├── magic-link-auth.md
 │   ├── qr-code-url-matching.md
+│   ├── regression-guard-tests.md  ← Regression/guard/smoke tests (VERPLICHT)
+│   ├── integrity-check.md         ← Shadow file .integrity.json
 │   └── website-builder.md
 │
 ├── contracts/            ← Gedeelde definities tussen projecten
@@ -50,15 +53,18 @@ docs/kb/
 │   ├── CLAUDE-template.md
 │   ├── context-template.md
 │   ├── claude-settings.json
-│   └── new-laravel-site.md
+│   ├── new-laravel-site.md
+│   └── recent-regressions.md  ← 7-dagen rolling regression log
 │
 ├── runbooks/             ← Algemene procedures
 │   ├── backup.md
 │   ├── chrome-testing.md
-│   ├── claude-werkwijze.md
+│   ├── claude-werkwijze.md       ← HOOFDDOCUMENT: werkwijze + beschermingslagen
 │   ├── deploy.md
 │   ├── deploy-safehavun.md
 │   ├── doc-intelligence-setup.md
+│   ├── eu-compliance-checklist.md ← Wettelijke verplichtingen webshops
+│   ├── expo-android-app-setup.md  ← Android apps bouwen met Expo + Android Studio
 │   ├── ggshield-setup.md
 │   ├── md-file-audit.md
 │   ├── op-reis-workflow.md
@@ -111,7 +117,9 @@ docs/kb/
 - [CLAUDE-template.md](templates/CLAUDE-template.md) - CLAUDE.md template
 
 ### Runbooks (hoe doe ik X?)
-- [claude-werkwijze.md](runbooks/claude-werkwijze.md) - Werkwijze, DOCS-FIRST, beschermingslagen, PKM (alles-in-1)
+- [claude-werkwijze.md](runbooks/claude-werkwijze.md) - Werkwijze, DOCS-FIRST, beschermingslagen + Linter-Gate, PKM (alles-in-1)
+- [eu-compliance-checklist.md](runbooks/eu-compliance-checklist.md) - Wettelijke verplichtingen online verkoop (KVK, herroeping, privacy)
+- [expo-android-app-setup.md](runbooks/expo-android-app-setup.md) - Android apps bouwen (Expo + Android Studio)
 - [op-reis-workflow.md](runbooks/op-reis-workflow.md) - USB / op reis: credentials alleen, code via git
 - [sync-start-command.md](runbooks/sync-start-command.md) - Start-command sync naar alle projecten
 - [md-file-audit.md](runbooks/md-file-audit.md) - 2-wekelijkse documentatie audit
@@ -126,6 +134,9 @@ docs/kb/
 - [ggshield-setup.md](runbooks/ggshield-setup.md) - GitGuardian pre-commit
 - [unified-login-procedure.md](runbooks/unified-login-procedure.md) - Stap-voor-stap login implementatie (v4.0)
 - [unified-login-system.md](runbooks/unified-login-system.md) - Passkeys, QR, biometrie, magic link (v4.0)
+
+### Templates
+- [recent-regressions.md](templates/recent-regressions.md) - 7-dagen rolling regression log template
 
 ### Reference
 - [server.md](reference/server.md) - Server configuratie
@@ -143,10 +154,12 @@ docs/kb/
 - [design-inspiration-session.md](reference/design-inspiration-session.md) - Design inspiration
 
 ### Patterns (herbruikbare code)
+- [regression-guard-tests.md](patterns/regression-guard-tests.md) - **VERPLICHT:** Regression/guard/smoke tests + coverage targets
+- [integrity-check.md](patterns/integrity-check.md) - Shadow file `.integrity.json` validatie
 - [email-verification.md](patterns/email-verification.md) - Email verificatie met 6-cijferige code
 - [pdf-to-image-conversion.md](patterns/pdf-to-image-conversion.md) - PDF naar JPEG (Imagick)
 - [pusher-realtime.md](patterns/pusher-realtime.md) - Real-time WebSockets met Pusher
-- [mollie-payments.md](patterns/mollie-payments.md) - iDEAL, creditcard via Mollie
+- [mollie-payments.md](patterns/mollie-payments.md) - iDEAL | Wero, creditcard via Mollie
 - [crypto-payments.md](patterns/crypto-payments.md) - XRP, ADA, SOL betalingen
 - [arweave-upload.md](patterns/arweave-upload.md) - Permanente blockchain opslag
 - [website-builder.md](patterns/website-builder.md) - Drag-and-drop pagina builder
@@ -158,12 +171,13 @@ docs/kb/
 
 ### Projects (per-project details)
 - [havunadmin.md](projects/havunadmin.md) - HavunAdmin boekhouding SaaS
-- ~~havunclub.md~~ - HavunClub ledenadministratie (ARCHIVED, geen doc)
-- [herdenkingsportaal.md](projects/herdenkingsportaal.md) - Herdenkingsportaal
+- ~~havunclub.md~~ - HavunClub ledenadministratie (ARCHIVED)
+- [herdenkingsportaal.md](projects/herdenkingsportaal.md) - Herdenkingsportaal memorial platform
 - [infosyst.md](projects/infosyst.md) - Infosyst kennisbank + AI
-- [judotoernooi.md](projects/judotoernooi.md) - JudoToernooi
+- [judotoernooi.md](projects/judotoernooi.md) - JudoToernooi toernooi management
+- [judoscoreboard.md](projects/judoscoreboard.md) - JudoScoreBoard Android app (Expo)
 - [safehavun.md](projects/safehavun.md) - SafeHavun crypto tracker
-- [studieplanner.md](projects/studieplanner.md) - Studieplanner app info
+- [studieplanner.md](projects/studieplanner.md) - Studieplanner Android app (Expo)
 - [doc-intelligence-system.md](projects/doc-intelligence-system.md) - Doc Intelligence systeem
 
 ### Decisions (waarom zo?)

@@ -325,6 +325,24 @@ php artisan docs:search "ZOEKTERM"   # Zoek in geïndexeerde docs
 
 ---
 
+---
+
+## Code Bescherming (5+3 lagen)
+
+Voorkomt dat parallelle Claude sessies elkaars code breken (~60% herstelwerk reduceren).
+
+| Laag | Wat | Pattern/doc |
+|------|-----|-------------|
+| 1. MD docs | Documenteer WAAROM iets bestaat | `.claude/` per project |
+| 2. DO NOT REMOVE / Shadow File | In-code markers OF `.integrity.json` | `patterns/integrity-check.md` |
+| 3. Tests + Linter-Gate | Regression/guard/smoke tests + verplichte test-run bij `/end` | `patterns/regression-guard-tests.md` |
+| 4. CLAUDE.md + Recent Regressions | Project-regels + 7-dagen rolling log | `templates/recent-regressions.md` |
+| 5. Memory | Cross-session context | Auto-memory bestanden |
+
+**Testing is VERPLICHT bij elke code wijziging** — zie `runbooks/claude-werkwijze.md` sectie "TEST".
+
+---
+
 ## Structuur
 
 ```
@@ -332,18 +350,16 @@ docs/kb/
 ├── OVERZICHT.md      ← Dit bestand
 ├── INDEX.md          ← Quick links + volledige structuur
 ├── projects-index.md
-├── audit-rapport-2026-01-20.md
-├── claude-workflow-enforcement.md
 │
-├── patterns/         ← Herbruikbare code (11 bestanden)
-├── runbooks/         ← How-to guides (15 bestanden)
-├── reference/        ← Specificaties (12 bestanden)
-├── projects/         ← Project details (8: havunadmin, havunclub, herdenkingsportaal, infosyst, judotoernooi, safehavun, studieplanner, doc-intelligence)
+├── patterns/         ← Herbruikbare code (13 bestanden)
+├── runbooks/         ← How-to guides (18 bestanden)
+├── reference/        ← Specificaties (13 bestanden)
+├── projects/         ← Project details (9 projecten)
 ├── decisions/       ← Waarom zo? (6 bestanden)
-├── templates/        ← new-laravel-site, context-template, CLAUDE-template, claude-settings.json
+├── templates/        ← Setup templates + recent-regressions template
 └── contracts/        ← memorial-reference.md
 ```
 
 ---
 
-*Dit overzicht wordt automatisch bijgewerkt wanneer nieuwe systemen worden toegevoegd.*
+*Laatst bijgewerkt: 29 maart 2026*
