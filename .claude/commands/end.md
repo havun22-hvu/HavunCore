@@ -209,7 +209,28 @@ git branch --merged | grep -v master | xargs git branch -d
 - **Vault bijwerken (thuis):** Zorg dat `credentials.vault` op de USB de actuele `.env` en `context.md` per project bevat (handmatig of eigen script).
 - **Runbook:** `docs/kb/runbooks/op-reis-workflow.md`
 
-## 10. Urenregistratie (VERPLICHT - belastingaangifte)
+## 10. KOR-Omzetcheck (elk kwartaal)
+
+**Alleen bij kwartaaleinde (maart, juni, september, december):**
+
+Check of de omzet richting de KOR-drempel gaat (€20.000/jaar):
+
+```
+⚠️ KOR-drempelcheck:
+   Drempel: €20.000/jaar
+   Waarschuwing bij: €16.000 (80%)
+
+   → Check Mollie dashboard: https://my.mollie.com
+   → Check Stripe dashboard: https://dashboard.stripe.com
+   → Tel op: Mollie + Stripe + overige inkomsten
+
+   Status: [onder drempel / waarschuwing / boven drempel]
+```
+
+Als omzet > €16.000: meld aan gebruiker dat BTW-overgangsplan nodig is.
+Zie: `docs/audit/verbeterplan-q2-2026.md` (VP-10)
+
+## 11. Urenregistratie (VERPLICHT - belastingaangifte)
 
 **Jij vult zelf de uren in.** Geef een zeer beknopt overzicht om de werkzaamheden te onderbouwen.
 **GEEN commit details of technische beschrijvingen.** Alleen projectnaam + globaal onderwerp (max 3 woorden).

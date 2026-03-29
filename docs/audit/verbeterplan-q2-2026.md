@@ -417,12 +417,12 @@ Juli 2026
 | VP-02 | Test Coverage + Feature Freeze | IN PROGRESS | Kritiek | 31-05-2026 | Gemini + Claude |
 | VP-03 | Context-Injectie | TODO | Medium | 30-06-2026 | Gemini |
 | VP-04 | Dependency & Security Audit | DOCS KLAAR | Medium | 30-04-2026 | Gemini + Claude |
-| VP-05 | Integrity Uitbreiden | TODO | Medium | 31-05-2026 | Gemini |
+| VP-05 | Integrity Uitbreiden | DONE | Medium | 31-05-2026 | Gemini |
 | VP-06 | Protocolmoeheid | DONE | Medium | 30-04-2026 | Gemini |
 | VP-07 | Emergency Runbook | DOCS KLAAR | Kritiek | 30-04-2026 | Claude |
 | VP-08 | Staging Verplicht | DONE | Hoog | 31-05-2026 | Claude |
 | VP-09 | Uptime-Monitoring | DONE | Medium | 30-04-2026 | Claude |
-| VP-10 | KOR-Omzetmonitoring | TODO | Laag | 30-06-2026 | Claude |
+| VP-10 | KOR-Omzetmonitoring | DONE | Laag | 30-06-2026 | Claude |
 
 ---
 
