@@ -18,9 +18,7 @@
 
 1. Zoek op het bureaublad of in het Start-menu naar **Visual Studio Code**:
 
-   ![VS Code](https://img.shields.io/badge/VS_Code-007ACC?logo=visualstudiocode&logoColor=white&style=for-the-badge)
-
-   Herkenbaar aan het blauwe icoon met een soort `><` symbool erin.
+   ![VS Code icoon](../../audit/vscode-icon.png) **Visual Studio Code**
 
 2. Klik op **File → Open Folder**
 3. Ga naar `D:\GitHub\HavunCore` en klik **Selecteer map**
