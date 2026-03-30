@@ -2,17 +2,47 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 30 maart 2026
+## Laatste Sessie: 30 maart 2026 (sessie 2 — biometric + security)
 
 ### Wat is gedaan:
-- **JT AutoFix scanner exclusion** — hackpoging URLs (`admin_phpinfo.php4`, `.php` extensies) uitgesloten van AutoFix analyse
-  - 3 nieuwe patterns in `config/autofix.php`: RouteFileRegistrar errors, admin_phpinfo, .php URLs
-  - Gedeployed naar productie
-- **Foutpreventie-analyse** uitgevoerd — complete inventarisatie van alle beschermingsmechanismen
-  - Conclusie: ~7-8 FTE equivalent productie-output (niet 4 zoals eerder geschat)
-  - AutoFix, CI, integrity checks, guard tests, doc intelligence = geautomatiseerde QA/DevOps
-- **Docker evaluatie** — niet nodig voor huidige setup, GitHub Actions CI is de juiste stap
-- **Havun.nl** — start/end commands ook gesynchroniseerd
+- **JT biometric login fix** (3 fixes, deployed prod+staging):
+  - Smartphone detectie drempel 550px → 768px (grotere telefoons zien nu biometric knop)
+  - `loginOptions` error handling + logging in PasskeyController
+  - JS `catch(e) {}` → `console.error` voor debugging
+- **JT security hardening** (3 fixes, deployed prod+staging):
+  - Reverb WebSocket `allowed_origins`: `*` → env-configurable domein whitelist
+  - Error report logging: request input gestript (voorkomt wachtwoord-leaks)
+  - `Route::fallback` voor nette 404 bij scanner/bot requests
+- **PWA versie bump** 1.3.1 → 1.4.0 (auto-update naar alle smartphones)
+- **JT 500 error** (zichtbaar_op_agenda) — was al opgelost, migration al gedraaid
+- **Verse database backup**: `/root/backups/judotoernooi_20260330_121622.sql`
+- **Security audit** JudoToernooi (OWASP top 10) — APP_DEBUG al false op servers
+- **Claude RC** getest — werkt, gebruiker draait handmatig `claude rc` + kopieert URL
+
+### Sessie 1 (eerder vandaag):
+- **JT AutoFix scanner exclusion** — hackpoging URLs uitgesloten van AutoFix analyse
+- **Foutpreventie-analyse** — ~7-8 FTE equivalent productie-output
+- **Docker evaluatie** — niet nodig, GitHub Actions CI volstaat
+- **Havun.nl** — start/end commands gesynchroniseerd
+
+### Openstaande items:
+- [ ] **VP-02** Test coverage verhogen — JT: 15.4% (doel 75%), HP: 2.9% (doel 60%)
+- [ ] Biometric login testen op smartphone (na PWA 1.4.0 update)
+- [ ] Secret rotation protocol uitvoeren
+- [ ] OWASP ZAP eerste scan: januari 2027
+- [ ] Droogtest noodprotocol met Thiemo plannen
+
+### Nog open van vorige sessies:
+- [ ] **iDEAL → iDEAL | Wero** teksten aanpassen in HP + JT
+- [ ] **GitGuardian incident resolven** via dashboard
+- [ ] Test suite uitrollen naar andere projecten
+- [ ] Composer vulnerability fixen (1 critical)
+- [ ] JudoScoreBoard end-to-end test
+- [ ] Resend composer package verwijderen uit HP
+
+### Belangrijke context:
+- Native apps sturen geen Origin header → CORS beperking breekt Android app niet
+- Claude RC werkt — `/start -rc` niet nodig, handmatig is prima
 
 ### Vorige sessie: 29 maart 2026
 
