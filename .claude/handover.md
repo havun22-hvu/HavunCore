@@ -2,9 +2,21 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 29 maart 2026 (avond — KB-first sessie)
+## Laatste Sessie: 30 maart 2026
 
-### Wat is gedaan (avond):
+### Wat is gedaan:
+- **JT AutoFix scanner exclusion** — hackpoging URLs (`admin_phpinfo.php4`, `.php` extensies) uitgesloten van AutoFix analyse
+  - 3 nieuwe patterns in `config/autofix.php`: RouteFileRegistrar errors, admin_phpinfo, .php URLs
+  - Gedeployed naar productie
+- **Foutpreventie-analyse** uitgevoerd — complete inventarisatie van alle beschermingsmechanismen
+  - Conclusie: ~7-8 FTE equivalent productie-output (niet 4 zoals eerder geschat)
+  - AutoFix, CI, integrity checks, guard tests, doc intelligence = geautomatiseerde QA/DevOps
+- **Docker evaluatie** — niet nodig voor huidige setup, GitHub Actions CI is de juiste stap
+- **Havun.nl** — start/end commands ook gesynchroniseerd
+
+### Vorige sessie: 29 maart 2026
+
+#### Wat is gedaan (avond):
 - **KB-first workflow** — `/start` command omgebouwd voor alle 8 projecten
   - Laadt NIET meer de volledige werkwijze-doc (342 regels bespaard per sessie)
   - Gebruikt `docs:search` on-demand i.p.v. alles laden
