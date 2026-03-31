@@ -1,67 +1,68 @@
 # Unified Login System
 
-> **Status:** Production (alle Havun Laravel-projecten)
-> **Versie:** 4.0
-> **Laatste update:** 17 maart 2026
+> **Status:** Production (alle Havun-applicaties: web + native)
+> **Versie:** 5.0
+> **Laatste update:** 31 maart 2026
 > **Auth model:** Decentraal (ADR-002) — elke app beheert eigen auth
 
 Dit is het ENIGE document dat je nodig hebt om het Havun login systeem te begrijpen.
 
-## Overzicht
+## Overzicht — Passwordless Authentication
 
-| Methode | Platform | Beschrijving |
-|---------|----------|--------------|
-| Email/wachtwoord | Alle | Standaard login |
-| QR code | Desktop | Scan met ingelogde telefoon |
-| Biometrie (WebAuthn) | Smartphone | Vingerafdruk/Face ID via passkey |
-| Magic link | Alle | Registratie + wachtwoord vergeten |
+| Methode | Platform | Wanneer |
+|---------|----------|---------|
+| Magic link | Alle | Eerste login + herstel (nieuw apparaat, passkey kwijt) |
+| Biometrie (WebAuthn/Passkey) | Smartphone, Android, iOS | Dagelijks gebruik |
+| QR code | Desktop | Dagelijks gebruik (scan met telefoon) |
 
-| Platform | Methode 1 | Methode 2 | Fallback |
-|----------|-----------|-----------|----------|
-| **Desktop** | QR code scan | Email/wachtwoord | Magic link |
-| **Smartphone** | Biometrisch (passkey) | Email/wachtwoord | Magic link |
+| Platform | Dagelijks | Eerste keer / herstel |
+|----------|-----------|----------------------|
+| **Smartphone (web)** | Biometrie (passkey) | Magic link |
+| **Desktop (web)** | QR code scan | Magic link |
+| **Android (native)** | Biometrie (Credential Manager) | Magic link (deep link) |
+| **iOS (native)** | Biometrie (ASAuthorization) | Magic link (universal link) |
 
-**Niet meer gebruikt:** PIN login (verwijderd in v4.0)
+**Niet meer gebruikt:** Email/wachtwoord (v5.0), PIN login (v4.0)
 
 ## Login Flow
 
 ```
 Nieuw? → Registreer (magic link email)
   → Email ontvangen → Link klikken → Account actief
-  → Optioneel: wachtwoord instellen
-  → Optioneel: biometrie koppelen (smartphone)
+  → Biometrie koppelen (verplicht op smartphone/native)
   ↓
 Terugkerend? → Login pagina
   ↓
-Desktop:     Email/wachtwoord of QR code scan
-Smartphone:  Biometrisch (passkey) of Email/wachtwoord
+Smartphone/native: Biometrie (passkey) → ingelogd
+Desktop:           QR code scan met telefoon → ingelogd
+  ↓
+Probleem? → "Stuur mij een login link" → magic link → opnieuw biometrie koppelen
 ```
 
 ### Error Fallback (KRITIEK — gebruiker mag NOOIT vastlopen!)
 
-Elke login methode kan falen. Bij falen ALTIJD de andere methodes aanbieden.
+Elke login methode kan falen. Bij falen ALTIJD magic link als hersteloptie aanbieden.
 
 ```
-Biometrie faalt   → Toon email/wachtwoord form
-QR faalt/verloopt → Toon "Probeer email/wachtwoord" + nieuwe QR knop
-Wachtwoord faalt  → Toon "Wachtwoord vergeten" link (magic link)
-                    + registratie link
+Biometrie faalt   → Toon "Stuur mij een login link" (magic link)
+QR faalt/verloopt → Toon "Stuur mij een login link" + nieuwe QR knop
+Magic link faalt  → Opnieuw aanvragen (rate limit: 3 per 10 min)
 ```
 
 **JavaScript — toon alternatieven bij falen:**
 ```javascript
 function showFallbackOptions(failedMethod) {
     const msg = document.getElementById('login-error');
-    const passwordSection = document.getElementById('password-section');
+    const magicLinkSection = document.getElementById('magic-link-section');
 
     switch (failedMethod) {
         case 'biometric':
-            msg.textContent = 'Biometrie niet gelukt. Gebruik je wachtwoord.';
-            passwordSection.classList.remove('hidden');
+            msg.textContent = 'Biometrie niet gelukt. Vraag een login link aan.';
+            magicLinkSection.classList.remove('hidden');
             break;
         case 'qr':
-            msg.textContent = 'QR code verlopen. Vernieuw of log in met wachtwoord.';
-            passwordSection.classList.remove('hidden');
+            msg.textContent = 'QR code verlopen. Vernieuw of vraag een login link aan.';
+            magicLinkSection.classList.remove('hidden');
             break;
     }
     msg.classList.remove('hidden');
@@ -73,11 +74,17 @@ function showFallbackOptions(failedMethod) {
 {{-- Error message --}}
 <p id="login-error" class="text-red-600 text-sm text-center hidden"></p>
 
-{{-- Fallback opties — tonen bij falen --}}
-<div id="fallback-options" class="text-center space-y-2 mt-4 hidden">
-    <button onclick="showPasswordSection()" class="text-sm underline">
-        Inloggen met wachtwoord
-    </button>
+{{-- Fallback: magic link aanvragen --}}
+<div id="magic-link-section" class="text-center space-y-2 mt-4 hidden">
+    <p class="text-sm text-gray-600">Problemen met inloggen?</p>
+    <form action="/auth/magic-link" method="POST">
+        @csrf
+        <input type="email" name="email" placeholder="Je email" required
+               class="w-full border rounded-lg px-4 py-2 mb-2">
+        <button type="submit" class="text-sm text-blue-600 underline">
+            Stuur mij een login link
+        </button>
+    </form>
 </div>
 ```
 
@@ -498,16 +505,17 @@ function bufferToBase64url(buf) {
 
 ---
 
-## 7. Magic Link (Registratie + Wachtwoord Vergeten)
+## 7. Magic Link (Eerste Login + Herstel)
 
 Volledig uitgewerkt in: `docs/kb/patterns/magic-link-auth.md`
 
 ### Samenvatting
-- **Registratie:** Email + naam invoeren → magic link ontvangen → link klikken → account actief → optioneel wachtwoord instellen
-- **Wachtwoord vergeten:** Email invoeren → magic link → nieuw wachtwoord instellen
+- **Registratie:** Email + naam invoeren → magic link ontvangen → link klikken → account actief → biometrie koppelen
+- **Herstel:** Email invoeren → magic link → direct ingelogd → opnieuw biometrie koppelen
 - **Token:** 64 tekens, 15 min geldig, single-use
 - **Rate limiting:** 3 per 10 min per IP
 - **Email enumeration preventie:** Altijd success tonen
+- **Native apps:** Magic link opent de app via deep link (Android) / universal link (iOS)
 
 ---
 
@@ -518,10 +526,11 @@ Volledig uitgewerkt in: `docs/kb/patterns/magic-link-auth.md`
 | Login redirect loop | `session()->regenerate()` | Gebruik `session()->save()` |
 | HTML i.p.v. JSON response | CSRF exceptions ontbreken | Voeg auth routes toe aan CSRF exceptions |
 | Passkey niet herkend | Challenge verloren (session) | Gebruik DatabaseChallengeRepository |
+| Biometrie knop doet niks | `allowCredentials` ontbreekt | Voeg alle credentials toe in loginOptions (v5.0 fix) |
 | Biometrie doet niks | Geen HTTPS | WebAuthn vereist HTTPS |
 | QR verlopen | Token > 5 min oud | Vernieuw knop in QR modal |
 | Magic link werkt niet | Token verlopen of al gebruikt | Vraag nieuwe aan |
-| Gebruiker zit vast | Geen fallback opties | Toon altijd wachtwoord + magic link als fallback |
+| Gebruiker zit vast | Geen fallback opties | Toon altijd magic link als hersteloptie |
 
 ## 9. Implementatie Checklist
 
@@ -544,26 +553,35 @@ Volledig uitgewerkt in: `docs/kb/patterns/magic-link-auth.md`
 
 ## Project Status (maart 2026)
 
-| Project | Email/WW | QR | Biometrie | Magic Link | Status |
+| Project | Biometrie | QR | Magic Link | Wachtwoord | v5.0 Status |
 |---------|:---:|:---:|:---:|:---:|:---:|
-| SafeHavun | ✅ | ✅ | ✅ | ❌ | Magic link mist |
-| JudoToernooi | ✅ | ✅ | ✅ | ❌ | Magic link mist, PIN verwijderen |
-| Herdenkingsportaal | ✅ | ✅ | ✅ | ❌ | Magic link mist, PIN verwijderen |
-| HavunAdmin | ✅ | ✅ | ✅ | ❌ | Magic link mist, PIN verwijderen |
-| Infosyst | ✅ | ✅ | ❌ | ❌ | Biometrie + magic link mist |
-| HavunClub | ✅ | ❌ | ❌ | ❌ | Alleen wachtwoord |
+| JudoToernooi | ✅ | ✅ | ❌ | ✅ (verwijderen) | Magic link toevoegen, wachtwoord verwijderen |
+| Herdenkingsportaal | ✅ | ✅ | ❌ | ✅ (verwijderen) | Magic link toevoegen, wachtwoord verwijderen |
+| HavunAdmin | ✅ | ✅ | ❌ | ✅ (verwijderen) | Magic link toevoegen, wachtwoord verwijderen |
+| SafeHavun | ✅ | ✅ | ❌ | ✅ (verwijderen) | Magic link toevoegen, wachtwoord verwijderen |
+| Infosyst | ❌ | ✅ | ❌ | ✅ (verwijderen) | Alles toevoegen |
+| JudoScoreBoard | ❌ | ❌ | ❌ | ❌ | Native Android passkey implementatie |
+| VPDUpdate | ✅ | ❌ | ❌ | ✅ (verwijderen) | Magic link toevoegen, wachtwoord verwijderen |
 
-**Standaard v4.0:** Email/wachtwoord + QR (desktop) + Biometrie (smartphone) + Magic link (registratie + ww vergeten).
+**Standaard v5.0:** Passwordless — Magic link (eerste keer + herstel) + Biometrie (dagelijks, smartphone/native) + QR (dagelijks, desktop). Geen wachtwoorden.
 
 ## Referentie Implementaties
 
 | Project | Locatie | Status |
 |---------|---------|--------|
-| SafeHavun | `D:\GitHub\SafeHavun` | QR + biometrie compleet, magic link TODO |
-| JudoToernooi | `D:\GitHub\JudoToernooi\laravel` | Eerste project voor v4.0 migratie |
-| Herdenkingsportaal | `D:\GitHub\Herdenkingsportaal` | Tweede project voor v4.0 migratie |
+| VPDUpdate | `D:\GitHub\VPDUpdate` | Biometrie werkend (raw WebAuthn, Node.js) |
+| JudoToernooi | `D:\GitHub\JudoToernooi\laravel` | Biometrie werkend (laragear, allowCredentials fix) |
+| SafeHavun | `D:\GitHub\SafeHavun` | QR + biometrie compleet |
 
 ## Changelog
+
+### v5.0 (31 maart 2026)
+- **BREAKING:** Wachtwoorden verwijderd als login methode
+- Magic link als primaire onboarding + herstel methode
+- Biometrie (passkey) als enige dagelijkse login op mobiel
+- Native app support (Android Credential Manager, iOS ASAuthorization)
+- `allowCredentials` fix in loginOptions (laragear retourneert dit niet zonder bekende user)
+- Fallback: magic link i.p.v. wachtwoord
 
 ### v4.0 (17 maart 2026)
 - **Verwijderd:** PIN login (alle projecten)

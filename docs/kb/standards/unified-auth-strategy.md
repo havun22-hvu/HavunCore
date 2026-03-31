@@ -1,21 +1,30 @@
 # Unified Auth Strategy
 
-> **Laatst bijgewerkt:** 17 maart 2026
+> **Laatst bijgewerkt:** 31 maart 2026
 > **Status:** Actieve standaard voor alle Havun-projecten
-> **Versie:** 4.0
+> **Versie:** 5.0
 > **Eigenaar:** HavunCore
 
 ## Overzicht
 
-Alle Havun Laravel-applicaties gebruiken dezelfde authenticatiestrategie:
-- **Magic link** voor registratie en wachtwoord vergeten
-- **Email/wachtwoord** als standaard login
+Alle Havun-applicaties (web + native) gebruiken een **passwordless** authenticatiestrategie:
+- **Magic link** voor eerste login + herstel (nieuw apparaat, passkey kwijt)
+- **Biometrie (WebAuthn/Passkey)** voor dagelijks gebruik (smartphone + native apps)
 - **QR code** voor desktop login (scan met telefoon)
-- **Biometrie (WebAuthn/Passkey)** voor smartphone login
 - **Decentraal** — elke app beheert eigen auth (ADR-002)
 
-### Niet meer gebruikt (v4.0)
-- ~~PIN login~~ (vervangen door biometrie + wachtwoord)
+### Platforms
+
+| Platform | Primair | Eerste keer / herstel |
+|----------|---------|----------------------|
+| **Smartphone (web)** | Biometrie (passkey) | Magic link |
+| **Desktop (web)** | QR code (scan met telefoon) | Magic link |
+| **Android app** | Biometrie (passkey via Google Play Services) | Magic link (deep link) |
+| **iOS app** | Biometrie (passkey via iCloud Keychain) | Magic link (universal link) |
+
+### Niet meer gebruikt (v5.0)
+- ~~Email/wachtwoord~~ (verwijderd — wachtwoorden zijn obsoleet)
+- ~~PIN login~~ (verwijderd in v4.0)
 - ~~Device fingerprint als primaire herkenning~~ (nu alleen voor analytics)
 
 ---
@@ -27,9 +36,11 @@ Alle Havun Laravel-applicaties gebruiken dezelfde authenticatiestrategie:
 1. Gebruiker voert naam + email in
 2. Magic link wordt verstuurd (15 min geldig, single-use)
 3. Klik op link → account aangemaakt, direct ingelogd
-4. Optioneel: wachtwoord instellen (voor toekomstige logins)
-5. Optioneel: biometrie koppelen (smartphone)
+4. Biometrie koppelen (smartphone/native app — VERPLICHT stap)
+5. Volgende keer: biometrie of QR code
 ```
+
+**Native apps:** Magic link opent de app via deep link (Android) / universal link (iOS).
 
 ### Technisch
 - **MagicLinkToken** model (64-char random token)
@@ -37,49 +48,55 @@ Alle Havun Laravel-applicaties gebruiken dezelfde authenticatiestrategie:
 - **Email enumeration preventie:** altijd success tonen
 - **Email template:** branded, duidelijke CTA knop
 
-### Waarom magic link?
-- Geen wachtwoord nodig bij registratie → lagere drempel
-- Email verificatie ingebouwd → geen aparte verificatie stap
-- Veiliger dan wachtwoord-only registratie
+### Waarom passwordless?
+- Wachtwoorden zijn obsoleet — slecht voor UX en security
+- Magic link: lagere drempel, email verificatie ingebouwd
+- Biometrie: sneller en veiliger dan elk wachtwoord
+- Geen wachtwoord = geen wachtwoord-gerelateerde support
 
 ---
 
 ## 2. Dagelijks Gebruik
 
-### Smartphone
+### Smartphone (web + native)
 ```
 Biometrie (passkey) → WebAuthn API → ingelogd
-Fallback: Email/wachtwoord
+Fallback: Magic link (nieuwe email)
 ```
 - **Types:** Face ID, Touch ID, vingerafdruk
-- **Package:** laragear/webauthn (lokaal, geen cloud)
+- **Web:** laragear/webauthn (Laravel) of raw WebAuthn API (Node.js)
+- **Android:** Google Play Services Credential Manager (passkeys)
+- **iOS:** ASAuthorization framework (passkeys via iCloud Keychain)
 
-### Desktop
+### Desktop (web)
 ```
-QR code tonen → scan met telefoon (ingelogd op PWA) → ingelogd op desktop
-Fallback: Email/wachtwoord
+QR code tonen → scan met telefoon (ingelogd) → ingelogd op desktop
+Fallback: Magic link
 ```
 - **QR verloopt:** na 5 minuten, vernieuw knop beschikbaar
 - **Polling:** elke 2 seconden status check
 - **Vereist:** telefoon moet al ingelogd zijn
 
-### Fallback (altijd beschikbaar)
-- **Email/wachtwoord** op alle platforms
-- **Wachtwoord vergeten** via magic link
+### Herstel (bij problemen)
+- **Passkey kwijt / nieuw apparaat** → Magic link aanvragen → opnieuw biometrie koppelen
+- **Magic link komt niet aan** → opnieuw aanvragen (rate limit: 3 per 10 min)
+- **Gebruiker mag NOOIT vastlopen** — altijd een pad terug via magic link
 
 ---
 
-## 3. Wachtwoord Vergeten
+## 3. Herstel & Account Recovery
 
-### Flow
+### Passkey kwijt / nieuw apparaat
 ```
-1. Gebruiker voert email in
-2. Magic link wordt verstuurd (15 min geldig)
-3. Klik op link → wachtwoord reset formulier
-4. Nieuw wachtwoord instellen → direct ingelogd
+1. Gebruiker klikt "Stuur mij een login link"
+2. Magic link wordt verstuurd (15 min geldig, single-use)
+3. Klik op link → direct ingelogd
+4. Prompt: "Koppel biometrie op dit apparaat"
+5. Nieuwe passkey geregistreerd → klaar
 ```
 
-Zelfde MagicLinkToken systeem als registratie, met type `password_reset`.
+### Geen wachtwoord reset nodig
+Er zijn geen wachtwoorden meer. Magic link IS de recovery methode.
 
 ---
 
@@ -87,8 +104,8 @@ Zelfde MagicLinkToken systeem als registratie, met type `password_reset`.
 
 Voor gevoelige acties (betaling, delete account, wijzig email):
 
-### Niveau 1: Wachtwoord herbevestiging
-- Gebruiker voert wachtwoord opnieuw in
+### Niveau 1: Biometrie herbevestiging
+- Gebruiker bevestigt met vingerafdruk/Face ID
 - Session-based: 15 min geldig
 
 ### Niveau 2: TOTP (optioneel)
@@ -100,7 +117,7 @@ Voor gevoelige acties (betaling, delete account, wijzig email):
 | Actie | Auth Niveau |
 |-------|-------------|
 | Factuur bekijken | Normale sessie |
-| Factuur betalen | Wachtwoord bevestiging |
+| Factuur betalen | Biometrie herbevestiging |
 | IBAN wijzigen | TOTP (indien ingesteld) |
 | Account verwijderen | TOTP + email bevestiging |
 
@@ -111,7 +128,7 @@ Voor gevoelige acties (betaling, delete account, wijzig email):
 ### Backend (Laravel)
 ```php
 // Magic link
-$token = MagicLinkToken::generate($email, 'register', ['name' => $name]);
+$token = MagicLinkToken::generate($email, 'login', ['name' => $name]);
 Mail::to($email)->send(new MagicLinkMail($token));
 
 // Login pattern (KRITIEK)
@@ -119,7 +136,7 @@ Auth::guard('web')->login($user, true);
 session()->save(); // NIET regenerate()
 ```
 
-### Frontend
+### Frontend (Web)
 ```javascript
 // Platform detectie
 const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -131,14 +148,28 @@ fetch('/auth/qr/generate') → toon QR → poll status
 navigator.credentials.get({ publicKey: options }) → passkey login
 ```
 
+### Native Apps
+```
+// Android — Credential Manager API
+val credentialManager = CredentialManager.create(context)
+val getCredentialRequest = GetCredentialRequest(listOf(getPublicKeyCredentialOption))
+credentialManager.getCredential(context, getCredentialRequest)
+
+// iOS — ASAuthorization
+let provider = ASAuthorizationPlatformPublicKeyCredentialProvider(relyingPartyIdentifier: rpId)
+let request = provider.createCredentialAssertionRequest(challenge: challenge)
+```
+
 ### Database
 ```sql
--- magic_link_tokens: registratie + wachtwoord vergeten
+-- magic_link_tokens: registratie + herstel login
 -- auth_devices: device tracking + biometrie status
 -- qr_login_tokens: QR sessie management
 -- webauthn_credentials: passkey opslag (laragear)
 -- webauthn_challenges: challenge opslag (custom)
 ```
+
+**Verwijderd:** password kolom is niet meer nodig voor nieuwe projecten. Bestaande projecten: kolom nullable maken, niet verwijderen (backwards compat).
 
 ---
 
@@ -152,30 +183,40 @@ navigator.credentials.get({ publicKey: options }) → passkey login
 - CSRF exceptions voor passkey/QR endpoints
 - HTTPS verplicht in productie (WebAuthn vereist dit)
 - Biometric credentials blijven lokaal (nooit naar server)
+- `allowCredentials` meesturen in loginOptions (zie JudoToernooi fix 31-03-2026)
 
 ### Niet doen
-- Wachtwoorden verplicht maken bij registratie
+- Wachtwoord velden tonen of aanbieden
 - Magic links zonder expiry
 - `session()->regenerate()` na AJAX login
-- PIN als login methode (te zwak, vervangen door biometrie)
+- PIN als login methode
+- Wachtwoord als fallback aanbieden
 
 ---
 
 ## 7. Implementatie per Project
 
 ### Prioriteit
-1. **JudoToernooi** — PIN verwijderen, magic link toevoegen
-2. **Herdenkingsportaal** — PIN verwijderen, magic link toevoegen
-3. **HavunAdmin** — magic link toevoegen
-4. **SafeHavun** — magic link toevoegen
-5. **Infosyst** — biometrie + magic link toevoegen
-6. **HavunClub** — volledige implementatie
+1. **JudoToernooi** — wachtwoord login verwijderen, magic link toevoegen
+2. **Herdenkingsportaal** — wachtwoord login verwijderen, magic link toevoegen
+3. **HavunAdmin** — wachtwoord login verwijderen, magic link toevoegen
+4. **SafeHavun** — wachtwoord login verwijderen, magic link toevoegen
+5. **Infosyst** — biometrie + magic link toevoegen, wachtwoord verwijderen
+6. **JudoScoreBoard** — native Android passkey implementatie
 
-### Migratie Strategie
+### Migratie Strategie (v4.0 → v5.0)
 ```
-Fase 1: Magic link + wachtwoord vergeten toevoegen (geen breaking changes)
-Fase 2: PIN login UI verwijderen (fallback naar wachtwoord)
-Fase 3: PIN gerelateerde code + database opschonen
+Fase 1: Magic link als login methode toevoegen (naast bestaande wachtwoord)
+Fase 2: Biometrie prompt verplicht maken na eerste login
+Fase 3: Wachtwoord login UI verwijderen (magic link als fallback)
+Fase 4: Password kolom nullable maken in database (niet verwijderen)
+```
+
+### Native App Strategie
+```
+Android: Google Credential Manager API (passkeys via Play Services)
+iOS:     ASAuthorization framework (passkeys via iCloud Keychain)
+Magic link: Deep link / universal link opent de app direct
 ```
 
 ---
@@ -185,17 +226,23 @@ Fase 3: PIN gerelateerde code + database opschonen
 ### Eerste keer (onboarding)
 ```
 "Welkom! Vul je naam en email in."
-→ "Check je inbox voor de activatielink."
-→ Link klikken → "Account actief! Stel optioneel een wachtwoord in."
-→ "Koppel je vingerafdruk voor snelle toegang" (smartphone)
-→ Klaar
+→ "Check je inbox voor de login link."
+→ Link klikken → "Account actief!"
+→ "Koppel je vingerafdruk voor snelle toegang" (verplicht op smartphone/native)
+→ Klaar — volgende keer alleen vingerafdruk
 ```
 
 ### Dagelijks
 ```
-Smartphone: App openen → vingerafdruk → binnen
+Smartphone/native: App openen → vingerafdruk → binnen
 Desktop: QR scannen met telefoon → binnen
-Fallback: Email + wachtwoord
+```
+
+### Nieuw apparaat / herstel
+```
+"Stuur mij een login link" → email → link klikken → ingelogd
+→ "Koppel je vingerafdruk op dit apparaat"
+→ Klaar
 ```
 
 ---
@@ -235,6 +282,14 @@ Track via logging:
 | `decisions/002-decentrale-auth.md` | Waarom decentrale auth (geen SSO) |
 
 ## Changelog
+
+### v5.0 (31 maart 2026)
+- **BREAKING:** Wachtwoorden volledig verwijderd als login methode
+- Magic link wordt primaire onboarding + herstel methode
+- Biometrie (passkey) wordt enige dagelijkse login methode op mobiel
+- QR code blijft desktop login methode
+- Native app support toegevoegd (Android Credential Manager, iOS ASAuthorization)
+- Password kolom nullable in bestaande projecten (niet verwijderen)
 
 ### v4.0 (17 maart 2026)
 - PIN login verwijderd uit standaard
