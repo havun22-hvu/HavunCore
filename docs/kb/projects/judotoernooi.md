@@ -88,6 +88,7 @@ Nieuw -> Voorbereiding -> Wedstrijddag -> Afgesloten
 - **Weging Interface** - Aanwezigheid + gewicht registratie, suspicious weight warnings
 - **Judoka Database** - Stambestand per organisator, hergebruik tussen toernooien
 - **Juridische Pagina's** - Voorwaarden, privacy, cookies, disclaimer
+- **Organisator Mobiel** - Responsive dashboard met quick-actions op smartphone (zoeken, overpoulen, toevoegen, mat voortgang, chat)
 
 ## Betalingen (Mollie + Stripe)
 
@@ -134,6 +135,7 @@ Coaches kunnen via het portal hun judoka's beheren. Configureerbaar per toernooi
 |-----|-----------|------|-----------|
 | Superadmin | Layout.app | Wachtwoord/PIN | Volledig |
 | Organisator | Layout.app | Email+wachtwoord | Volledig + financieel |
+| Organisator (mobiel) | Responsive dashboard | Email+wachtwoord | Quick-actions wedstrijddag |
 | Beheerder | Layout.app | Email+wachtwoord | Volledig (geen financieel) |
 | Hoofdjury | Layout.app | Email+wachtwoord | Volledig (geen financieel) |
 | Weging | Standalone PWA | URL+PIN+device | Geen |
@@ -318,4 +320,4 @@ php artisan config:clear && php artisan cache:clear
 
 ---
 
-*Laatste update: 14 maart 2026*
+*Laatste update: 30 maart 2026*
