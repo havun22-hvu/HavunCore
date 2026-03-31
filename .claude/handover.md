@@ -2,32 +2,28 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 30 maart 2026 (sessie 2 — biometric + security)
+## Laatste Sessie: 31 maart 2026 — biometric fix + auth v5.0 passwordless
 
 ### Wat is gedaan:
-- **JT biometric login fix** (3 fixes, deployed prod+staging):
-  - Smartphone detectie drempel 550px → 768px (grotere telefoons zien nu biometric knop)
-  - `loginOptions` error handling + logging in PasskeyController
-  - JS `catch(e) {}` → `console.error` voor debugging
-- **JT security hardening** (3 fixes, deployed prod+staging):
-  - Reverb WebSocket `allowed_origins`: `*` → env-configurable domein whitelist
-  - Error report logging: request input gestript (voorkomt wachtwoord-leaks)
-  - `Route::fallback` voor nette 404 bij scanner/bot requests
-- **PWA versie bump** 1.3.1 → 1.4.0 (auto-update naar alle smartphones)
-- **JT 500 error** (zichtbaar_op_agenda) — was al opgelost, migration al gedraaid
-- **Verse database backup**: `/root/backups/judotoernooi_20260330_121622.sql`
-- **Security audit** JudoToernooi (OWASP top 10) — APP_DEBUG al false op servers
-- **Claude RC** getest — werkt, gebruiker draait handmatig `claude rc` + kopieert URL
-
-### Sessie 1 (eerder vandaag):
-- **JT AutoFix scanner exclusion** — hackpoging URLs uitgesloten van AutoFix analyse
-- **Foutpreventie-analyse** — ~7-8 FTE equivalent productie-output
-- **Docker evaluatie** — niet nodig, GitHub Actions CI volstaat
-- **Havun.nl** — start/end commands gesynchroniseerd
+- **JT biometric login fix** (root cause gevonden + deployed prod+staging):
+  - `loginOptions()` retourneerde GEEN `allowCredentials` — laragear's `toVerify()` zonder user slaat dit over
+  - Fix: na `toVerify(null)` handmatig alle WebAuthnCredentials als `allowCredentials` toevoegen
+  - Verschil met VPDUpdate (werkt): VPDUpdate stuurt altijd alle credentials mee
+  - Gefixt in zowel `laravel/` als `staging/` PasskeyController
+- **Auth strategie v5.0 — PASSWORDLESS** (docs geüpdatet):
+  - Wachtwoorden volledig verwijderd als login methode (obsoleet)
+  - Magic link = eerste login + herstel (nieuw apparaat, passkey kwijt)
+  - Biometrie (passkey) = dagelijks gebruik (smartphone + native apps)
+  - QR code = dagelijks gebruik (desktop)
+  - Native app support: Android (Credential Manager), iOS (ASAuthorization)
+  - Docs: `unified-auth-strategy.md` + `unified-login-system.md` → v5.0
 
 ### Openstaande items:
+- [ ] **v5.0 migratie** — magic link implementeren in alle projecten (JT, HP, HA, SH, IN, VPD)
+- [ ] **v5.0 migratie** — wachtwoord login UI verwijderen (na magic link werkt)
+- [ ] **v5.0 migratie** — password kolom nullable maken (niet verwijderen)
 - [ ] **VP-02** Test coverage verhogen — JT: 15.4% (doel 75%), HP: 2.9% (doel 60%)
-- [ ] Biometric login testen op smartphone (na PWA 1.4.0 update)
+- [ ] Biometric login testen op smartphone (fix is deployed)
 - [ ] Secret rotation protocol uitvoeren
 - [ ] OWASP ZAP eerste scan: januari 2027
 - [ ] Droogtest noodprotocol met Thiemo plannen
@@ -41,8 +37,10 @@
 - [ ] Resend composer package verwijderen uit HP
 
 ### Belangrijke context:
-- Native apps sturen geen Origin header → CORS beperking breekt Android app niet
-- Claude RC werkt — `/start -rc` niet nodig, handmatig is prima
+- **Auth v5.0 beslissing:** Wachtwoorden zijn obsoleet — alle projecten migreren naar passwordless
+- **laragear/webauthn bug:** `toVerify()` zonder user geeft geen `allowCredentials` → altijd handmatig toevoegen
+- Native apps: Android Credential Manager + iOS ASAuthorization voor passkeys
+- Magic link in native apps via deep link (Android) / universal link (iOS)
 
 ### Vorige sessie: 29 maart 2026
 
