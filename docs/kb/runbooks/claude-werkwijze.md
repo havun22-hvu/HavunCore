@@ -74,6 +74,7 @@ Niveau 4: Bij nieuwe patronen/systemen
 ### DOE (Uitvoeren)
 
 - Kleine, atomaire wijzigingen
+- **Na ELKE code wijziging: check VSCode/IDE syntax errors** — gratis opsporing, altijd doen!
 - Test na elke significante wijziging
 - Geen haast - kwaliteit boven snelheid
 - Bij fout: stop, analyseer, vraag indien nodig
@@ -304,12 +305,13 @@ Bij ELKE async operatie die de UI update:
 
 ### Bij foutmelding/probleem
 ```
-1. Lees de VOLLEDIGE foutmelding
-2. Zoek in codebase naar gerelateerde code
-3. Check of dit probleem eerder voorkwam (git log, docs)
-4. Analyseer root cause
-5. Fix
-6. Documenteer oplossing voor toekomst
+1. Check EERST VSCode/IDE syntax errors in betrokken bestanden — gratis opsporing!
+2. Lees de VOLLEDIGE foutmelding
+3. Zoek in codebase naar gerelateerde code
+4. Check of dit probleem eerder voorkwam (git log, docs)
+5. Analyseer root cause
+6. Fix
+7. Documenteer oplossing voor toekomst
 ```
 
 ### Bij nieuw Laravel project
@@ -336,6 +338,7 @@ DIT MAG NIET GEBEUREN!
 
 Voordat je code schrijft, vraag jezelf:
 
+- [ ] Heb ik VSCode/IDE syntax errors gecheckt in betrokken bestanden?
 - [ ] Heb ik CLAUDE.md gelezen?
 - [ ] Heb ik de relevante code/docs bekeken?
 - [ ] Begrijp ik wat de gebruiker wil?
