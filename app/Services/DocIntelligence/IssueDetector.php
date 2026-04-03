@@ -312,50 +312,11 @@ class IssueDetector
             }
         }
 
-        // For prices specifically, look for different prices in same project
-        if (isset($foundValues['price'])) {
-            $pricesByProject = [];
-            foreach ($foundValues['price'] as $price => $locations) {
-                foreach ($locations as $loc) {
-                    $pricesByProject[$loc['project']][$price][] = $loc['file'];
-                }
-            }
-
-            foreach ($pricesByProject as $proj => $prices) {
-                if (count($prices) > 1) {
-                    // Multiple different prices in same project - potential issue
-                    $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_INCONSISTENT)
-                        ->where('project', $proj)
-                        ->where('status', DocIssue::STATUS_OPEN)
-                        ->where('title', 'LIKE', '%price%')
-                        ->first();
-
-                    if (!$existingIssue) {
-                        $affectedFiles = [];
-                        foreach ($prices as $price => $files) {
-                            foreach ($files as $file) {
-                                $affectedFiles[] = "{$proj}:{$file}";
-                            }
-                        }
-
-                        DocIssue::create([
-                            'project' => $proj,
-                            'issue_type' => DocIssue::TYPE_INCONSISTENT,
-                            'severity' => DocIssue::SEVERITY_HIGH,
-                            'title' => "Inconsistent prices found",
-                            'details' => [
-                                'prices_found' => array_keys($prices),
-                                'files_per_price' => $prices,
-                            ],
-                            'affected_files' => array_unique($affectedFiles),
-                            'suggested_action' => "Review and unify the prices across all documents.",
-                        ]);
-
-                        $issuesFound++;
-                    }
-                }
-            }
-        }
+        // For prices: only flag when the SAME price appears in multiple files with DIFFERENT values
+        // in a context that suggests they describe the same thing (same surrounding words).
+        // Simply having multiple different prices in a project is normal (different products/fees).
+        // Skip this check — it produces too many false positives. Projects naturally have
+        // multiple price points (platform fees, subscriptions, transaction costs, etc.).
 
         return $issuesFound;
     }
