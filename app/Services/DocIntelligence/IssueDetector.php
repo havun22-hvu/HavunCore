@@ -279,46 +279,102 @@ class IssueDetector
     }
 
     /**
-     * Detect potential inconsistencies (same topic, different values)
-     * This is a simplified heuristic-based detection
+     * Detect potential inconsistencies: same context label with different price values.
+     *
+     * Approach: extract "label + price" pairs (e.g. "toeslag €0,50", "staffel €20").
+     * Group by normalized label per project. Only flag when the SAME label has
+     * DIFFERENT prices — that's a real inconsistency.
      */
     public function detectInconsistencies(?string $project = null): int
     {
-        // Look for common patterns that might have inconsistent values
-        $patterns = [
-            'price' => '/\€\s*(\d+[,.]?\d*)/i',
-            'version' => '/v?(\d+\.\d+(\.\d+)?)/i',
-            'url' => '/(https?:\/\/[^\s\)]+)/i',
-        ];
-
         $documents = DocEmbedding::when($project, function ($q) use ($project) {
             return $q->where('project', strtolower($project));
         })->get();
 
         $issuesFound = 0;
-        $foundValues = [];
 
-        // Collect all values per pattern per topic
+        // Extract contextual price mentions: last 1-3 meaningful words before € sign
+        $priceContexts = [];
         foreach ($documents as $doc) {
-            foreach ($patterns as $patternName => $regex) {
-                preg_match_all($regex, $doc->content, $matches);
-                foreach ($matches[1] as $value) {
-                    $key = "{$patternName}:{$value}";
-                    $foundValues[$patternName][$value][] = [
-                        'project' => $doc->project,
-                        'file' => $doc->file_path,
-                    ];
+            // Match: 1-3 words directly before €amount
+            preg_match_all('/((?:\b[a-zA-Z\x{00C0}-\x{024F}]{2,}\s+){1,3})\€\s*(\d+[,.]?\d*)/u', $doc->content, $matches, PREG_SET_ORDER);
+
+            foreach ($matches as $match) {
+                $label = $this->normalizePriceLabel($match[1]);
+                if (!$label) continue;
+
+                $price = str_replace(',', '.', $match[2]);
+
+                $priceContexts[$doc->project][$label][$price][] = $doc->file_path;
+            }
+        }
+
+        // Flag only when same label has different prices within a project
+        foreach ($priceContexts as $proj => $labels) {
+            foreach ($labels as $label => $prices) {
+                if (count($prices) <= 1) continue;
+
+                $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_INCONSISTENT)
+                    ->where('project', $proj)
+                    ->where('status', DocIssue::STATUS_OPEN)
+                    ->where('title', 'LIKE', "%{$label}%")
+                    ->first();
+
+                if (!$existingIssue) {
+                    $affectedFiles = [];
+                    $priceDetails = [];
+                    foreach ($prices as $price => $files) {
+                        foreach ($files as $file) {
+                            $affectedFiles[] = "{$proj}:{$file}";
+                        }
+                        $priceDetails["€{$price}"] = $files;
+                    }
+
+                    DocIssue::create([
+                        'project' => $proj,
+                        'issue_type' => DocIssue::TYPE_INCONSISTENT,
+                        'severity' => DocIssue::SEVERITY_HIGH,
+                        'title' => "Inconsistent price for '{$label}'",
+                        'details' => [
+                            'label' => $label,
+                            'prices_found' => array_keys($prices),
+                            'files_per_price' => $priceDetails,
+                        ],
+                        'affected_files' => array_unique($affectedFiles),
+                        'suggested_action' => "Review: '{$label}' has different prices in these files.",
+                    ]);
+
+                    $issuesFound++;
                 }
             }
         }
 
-        // For prices: only flag when the SAME price appears in multiple files with DIFFERENT values
-        // in a context that suggests they describe the same thing (same surrounding words).
-        // Simply having multiple different prices in a project is normal (different products/fees).
-        // Skip this check — it produces too many false positives. Projects naturally have
-        // multiple price points (platform fees, subscriptions, transaction costs, etc.).
-
         return $issuesFound;
+    }
+
+    /**
+     * Normalize a price label: strip whitespace, lowercase, keep only meaningful words.
+     * Returns null if the label is too generic to be useful.
+     */
+    protected function normalizePriceLabel(string $raw): ?string
+    {
+        $label = mb_strtolower(trim($raw));
+        // Remove common filler/generic words
+        $fillerWords = ['van', 'per', 'voor', 'bij', 'het', 'de', 'een', 'is', 'en', 'of', 'met',
+            'tot', 'aan', 'naar', 'dan', 'als', 'nog', 'ook', 'maar', 'wel', 'niet', 'meer',
+            'start', 'vanaf', 'mogelijk', 'maximaal', 'minimaal', 'ongeveer', 'circa', 'max', 'min'];
+        $label = preg_replace('/\b(' . implode('|', $fillerWords) . ')\b/', '', $label);
+        // Strip leading/trailing punctuation and whitespace
+        $label = preg_replace('/^[\s\-\:\|\*\#\>\(\)\'\"\.\/\,]+|[\s\-\:\|\*\#\>\(\)\'\"\.\/\,]+$/', '', $label);
+        $label = preg_replace('/\s+/', ' ', trim($label));
+
+        // Must contain at least one alphabetic word of 3+ characters
+        if (!preg_match('/[a-zA-Z\x{00C0}-\x{024F}]{3,}/u', $label)) return null;
+
+        // Too short after cleanup = not meaningful
+        if (mb_strlen($label) < 3) return null;
+
+        return $label;
     }
 
     /**
