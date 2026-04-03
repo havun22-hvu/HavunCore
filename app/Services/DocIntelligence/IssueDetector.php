@@ -20,6 +20,7 @@ class IssueDetector
      */
     protected array $sharedFilePatterns = [
         '.claude/commands/',
+        '.claude/archive/',
         '_structure/',
         'CLAUDE.md',
     ];
@@ -28,7 +29,7 @@ class IssueDetector
      * File types to exclude from duplicate detection (code has structural similarity, not content duplicates)
      */
     protected array $skipDuplicateTypes = [
-        'model', 'controller', 'middleware', 'command', 'migration', 'config', 'route', 'support', 'code', 'structure',
+        'model', 'controller', 'middleware', 'command', 'migration', 'config', 'route', 'support', 'code', 'structure', 'service',
     ];
 
     public function __construct(DocIndexer $indexer)
@@ -140,7 +141,15 @@ class IssueDetector
     }
 
     /**
-     * Detect outdated documents
+     * File types to skip for outdated detection (stable code doesn't need regular updates)
+     */
+    protected array $skipOutdatedTypes = [
+        'model', 'controller', 'middleware', 'command', 'migration',
+        'config', 'route', 'support', 'code', 'structure', 'service',
+    ];
+
+    /**
+     * Detect outdated documents (only .md files — code files are stable by nature)
      */
     public function detectOutdated(?string $project = null): int
     {
@@ -155,6 +164,11 @@ class IssueDetector
         $issuesFound = 0;
 
         foreach ($documents as $doc) {
+            // Skip code files — they are stable by nature and don't need regular updates
+            if (in_array($doc->file_type, $this->skipOutdatedTypes)) {
+                continue;
+            }
+
             // Skip if already has open issue
             $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_OUTDATED)
                 ->where('status', DocIssue::STATUS_OPEN)

@@ -50,6 +50,8 @@ class DocIndexer
         'public/hot',
         '.idea',
         '.vscode',
+        'offline',
+        'staging',
     ];
 
     /**
