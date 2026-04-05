@@ -162,6 +162,35 @@ Coaches kunnen via het portal hun judoka's beheren. Configureerbaar per toernooi
 - IJF B-1/4 finale nog NIET geimplementeerd (alleen B-1/2 + Brons)
 - Docs: `laravel/docs/2-FEATURES/ELIMINATIE/`
 
+## Reverb WebSockets (Broadcasting)
+
+**Supervisor processen:**
+
+| Omgeving | Poort | Extern | Process |
+|----------|-------|--------|---------|
+| Production | 8080 | 443 via nginx `/app` | `reverb` |
+| Staging | 8081 | 443 via nginx `/app` | `reverb-staging` |
+
+**Kanalen:**
+
+| Kanaal | Event | Luisteraar |
+|--------|-------|-----------|
+| `scoreboard-display.{toernooiId}.{matId}` | ScoreboardEvent | LCD scherm |
+| `scoreboard.{toernooiId}.{matId}` | ScoreboardAssignment | Bediening-app |
+| `mat.{toernooiId}.{matId}` + `toernooi.{id}` | MatUpdate | Jurytafel, publiek |
+| `toernooi.{toernooiId}` | MatHeartbeat | Publiek PWA |
+| `chat.{toernooiId}.{rol}[.{matId}]` | NewChatMessage | Chat deelnemers |
+
+**Safeguards (na outage 5 april 2026):**
+- `php artisan reverb:health --fix` — test config + server + broadcast + circuit breaker
+- `BroadcastConfigValidator` — boot-time validatie, logt CRITICAL bij fouten
+- `ReverbConfigTest` — 9 unit tests voor config correctheid
+- `SafelyBroadcasts` trait — circuit breaker + error logging op WARNING
+- Post-mortem: `laravel/docs/postmortem/2026-04-05-reverb-broadcasting-failure.md`
+
+**KRITIEK:** `allowed_origins` in `config/reverb.php` MOET array zijn (`explode()`). String crasht Reverb v1.7+.
+**KRITIEK:** In Blade views en controllers NOOIT `env()` gebruiken — gebruik `config()` of `parse_url(config('app.url'))`.
+
 ## Chat (Reverb WebSockets)
 
 - Real-time multi-kanaal: `chat.{toernooi_id}.{rol}.{device_id}`
@@ -320,4 +349,4 @@ php artisan config:clear && php artisan cache:clear
 
 ---
 
-*Laatste update: 30 maart 2026*
+*Laatste update: 5 april 2026*

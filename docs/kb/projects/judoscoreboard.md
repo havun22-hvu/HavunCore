@@ -96,6 +96,16 @@ Alleen 2: match einde (timer=0) en osaekomi einde (W+W of I bij 20s)
 | HelpScreen | Bediening uitleg, scoring regels |
 | AboutScreen | Versie, ontwikkelaar, contact |
 
+## Reverb verbinding (kritiek)
+
+De scoreboard API (`POST /api/scoreboard/auth`) retourneert Reverb config aan de app.
+Het LCD display (`scoreboard-live.blade.php`) haalt config uit `config('app.url')`.
+
+**NOOIT `env()` gebruiken in controllers of Blade views** — retourneert `null` na `config:cache`.
+
+Troubleshooting: `HavunCore/docs/kb/runbooks/reverb-troubleshoot.md`
+Safeguards: `HavunCore/docs/kb/decisions/reverb-safeguards-2026-04-05.md`
+
 ## Documentatie
 
 | Document | Locatie |
@@ -104,6 +114,8 @@ Alleen 2: match einde (timer=0) en osaekomi einde (W+W of I bij 20s)
 | Feature spec | `JudoToernooi/laravel/docs/2-FEATURES/SCOREBORD-APP.md` |
 | Expo setup | `HavunCore/docs/kb/runbooks/expo-android-app-setup.md` |
 | Geen polling | `HavunCore/docs/kb/decisions/geen-polling.md` |
+| Reverb pattern | `HavunCore/docs/kb/patterns/reverb-laravel.md` |
+| Reverb troubleshoot | `HavunCore/docs/kb/runbooks/reverb-troubleshoot.md` |
 
 ## Development
 
@@ -134,4 +146,4 @@ Android Studio emulator (Pixel 7, API 34). App API gebruikt `10.0.2.2:8007` om l
 
 ---
 
-*Laatste update: 22 maart 2026*
+*Laatste update: 5 april 2026*
