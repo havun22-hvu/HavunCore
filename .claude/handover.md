@@ -2,7 +2,31 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 31 maart 2026 — biometric fix + auth v5.0 passwordless
+## Laatste Sessie: 06 april 2026 — test coverage + doc issues + chromecast
+
+### Wat is gedaan:
+- **Doc Intelligence issues** — 117 HavunCore issues opgelost (2 duplicaten verwijderd, 3 false positives geignored, 109 stale docs resolved)
+- **JudoToernooi Chromecast** — CSP fix (`www.gstatic.com` in SecurityHeaders.php), CHROMECAST.md docs, deployed op staging
+- **Falende tests gefixed** — HavunAdmin (24), Herdenkingsportaal (1), SafeHavun (1), Infosyst (1)
+- **Test coverage uitgebreid** — 487 → 1.171 tests (+684) over 7 Laravel projecten
+- **PCOV geïnstalleerd** — eerste echte coverage-meting: 0-32% (te veel mocks)
+- **Verbeterplan VP-02** — alle doelen naar 80%, actuele PCOV percentages toegevoegd
+
+### Openstaande items:
+- [ ] **Coverage naar 80%** — mocks vervangen door integratietests
+- [ ] **HavunAdmin coverage** — PhpParser crash fixen
+- [ ] **Chromecast** — Cast Developer Console app registreren (serienummer: 26111HFDD5F9AN)
+- [ ] **4 bugs gevonden:** HavunVet WorkLocation + Owner type, Infosyst enums, HavunAdmin fresh()
+- [ ] **Studieplanner + JudoScoreBoard** — Jest config nodig voor React Native
+
+### Belangrijke context:
+- PCOV: `C:/laragon/bin/php/php-8.2.29-Win32-vs16-x64/ext/php_pcov.dll`
+- Coverage: `php artisan test --coverage` (NIET met --without-tty)
+- Alle coverage doelen opgehoogd naar 80% minimum
+
+---
+
+## Vorige Sessie: 31 maart 2026 — biometric fix + auth v5.0 passwordless
 
 ### Wat is gedaan:
 - **JT biometric login fix** (root cause gevonden + deployed prod+staging):
