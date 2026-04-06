@@ -110,12 +110,24 @@ AutoFix schrijft naar een `hotfix/autofix-[timestamp]` branch + automatische PR,
 
 **Coverage-doelen (verscherpt na Claude-review):**
 
-| Project | Was (v1.0) | Was (Gemini) | Wordt (v2.0) | Kritieke logica | Deadline |
-|---------|------------|--------------|--------------|-----------------|----------|
-| JudoToernooi | 60% | 75% | **75% totaal / 80% business** | Poule-indeling, gewichtscheck, scoring | 31 mei 2026 |
-| Herdenkingsportaal | 50% | 60% | **60% totaal / 80% business** | Betalingen, memorial CRUD, publieke views | 30 juni 2026 |
-| HavunCore | 40% | 50% | **50% totaal / 80% business** | AI Proxy, Task Queue, AutoFix | 30 juni 2026 |
-| Overige | 30% | 40% | **40% totaal** | — | Q3 2026 |
+| Project | Was (v1.0) | Was (Gemini) | Wordt (v2.0) | Actueel (06-04-2026) | Kritieke logica | Deadline |
+|---------|------------|--------------|--------------|----------------------|-----------------|----------|
+| JudoToernooi | 60% | 75% | **75% totaal / 80% business** | 419 tests / 970 assertions ✅ | Poule-indeling, gewichtscheck, scoring | 31 mei 2026 |
+| Herdenkingsportaal | 50% | 60% | **60% totaal / 80% business** | 208 tests / 366 assertions ✅ | Betalingen, memorial CRUD, publieke views | 30 juni 2026 |
+| HavunCore | 40% | 50% | **50% totaal / 80% business** | 151 tests / 321 assertions ✅ | AI Proxy, Task Queue, Vault, Auth | 30 juni 2026 |
+| HavunAdmin | 30% | 40% | **40% totaal** | 163 tests / 362 assertions ✅ | Invoices, BTW, Tenant isolatie | Q3 2026 |
+| HavunVet | 30% | 40% | **40% totaal** | 99 tests / 137 assertions ✅ | Models, Services, Routes | Q3 2026 |
+| SafeHavun | 30% | 40% | **40% totaal** | 67 tests / 100 assertions ✅ | Models, Portfolio, MarketSignal | Q3 2026 |
+| Infosyst | 30% | 40% | **40% totaal** | 64 tests / 113 assertions ✅ | Models, WikiLink, Routes | Q3 2026 |
+| Studieplanner | 30% | 40% | **40% totaal** | 0 tests (React Native, geen jest) | — | Q3 2026 |
+| JudoScoreBoard | 30% | 40% | **40% totaal** | 0 tests (React Native, geen jest) | — | Q3 2026 |
+| HavunClub | 30% | 40% | **40% totaal** | 0 tests (alleen docs, geen app code) | — | Q3 2026 |
+
+**Bugs gevonden door test coverage uitbreiding (06-04-2026):**
+- HavunVet: `TreatmentForm` verwijst naar verwijderd `WorkLocation` model
+- HavunVet: `Owner::treatments()` declareert `HasMany` maar retourneert `HasManyThrough`
+- Infosyst: Source enum types in migrations matchen niet met model code
+- HavunAdmin: `TransactionMatchingService::findAndLinkDuplicates()` crasht op `->fresh()` call op base Collection
 
 **Acceptatiecriteria:**
 - [ ] Push naar main/master faalt als tests niet slagen
@@ -414,7 +426,7 @@ Juli 2026
 | ID | Actie | Status | Prioriteit | Deadline | Bron |
 |----|-------|--------|------------|----------|------|
 | VP-01 | AutoFix Branch-Model + Dry-Run | DONE | Kritiek | 30-04-2026 | Gemini + Claude |
-| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS (JT:15%, HP:3%) | Kritiek | 31-05-2026 | Gemini + Claude |
+| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS (JT:419t, HC:151t, HP:208t, HA:163t, HVet:99t, SH:67t, INF:64t) | Kritiek | 31-05-2026 | Gemini + Claude |
 | VP-03 | Context-Injectie | TODO | Medium | 30-06-2026 | Gemini |
 | VP-04 | Dependency & Security Audit | DOCS KLAAR | Medium | 30-04-2026 | Gemini + Claude |
 | VP-05 | Integrity Uitbreiden | DONE | Medium | 31-05-2026 | Gemini |
