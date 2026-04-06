@@ -112,16 +112,18 @@ AutoFix schrijft naar een `hotfix/autofix-[timestamp]` branch + automatische PR,
 
 | Project | Was (v1.0) | Was (Gemini) | Wordt (v2.0) | Actueel (06-04-2026) | Kritieke logica | Deadline |
 |---------|------------|--------------|--------------|----------------------|-----------------|----------|
-| JudoToernooi | 60% | 75% | **80% totaal / 80% business** | 419 tests / 970 assertions ✅ | Poule-indeling, gewichtscheck, scoring | 31 mei 2026 |
-| Herdenkingsportaal | 50% | 60% | **80% totaal / 80% business** | 208 tests / 366 assertions ✅ | Betalingen, memorial CRUD, publieke views | 30 juni 2026 |
-| HavunCore | 40% | 50% | **80% totaal / 80% business** | 151 tests / 321 assertions ✅ | AI Proxy, Task Queue, Vault, Auth | 30 juni 2026 |
-| HavunAdmin | 30% | 40% | **80% totaal** | 163 tests / 362 assertions ✅ | Invoices, BTW, Tenant isolatie | 30 juni 2026 |
-| HavunVet | 30% | 40% | **80% totaal** | 99 tests / 137 assertions ✅ | Models, Services, Routes | 30 juni 2026 |
-| SafeHavun | 30% | 40% | **80% totaal** | 67 tests / 100 assertions ✅ | Models, Portfolio, MarketSignal | 30 juni 2026 |
-| Infosyst | 30% | 40% | **80% totaal** | 64 tests / 113 assertions ✅ | Models, WikiLink, Routes | 30 juni 2026 |
-| Studieplanner | 30% | 40% | **80% totaal** | 0 tests (React Native, geen jest) | — | 30 juni 2026 |
-| JudoScoreBoard | 30% | 40% | **80% totaal** | 0 tests (React Native, geen jest) | — | 30 juni 2026 |
-| HavunClub | 30% | 40% | **80% totaal** | 0 tests (alleen docs, geen app code) | — | 30 juni 2026 |
+| JudoToernooi | 60% | 75% | **80%** | 419 tests / 970 assertions — **17.4% coverage** | Poule-indeling, gewichtscheck, scoring | 31 mei 2026 |
+| Herdenkingsportaal | 50% | 60% | **80%** | 208 tests / 366 assertions — **9.7% coverage** | Betalingen, memorial CRUD, publieke views | 30 juni 2026 |
+| HavunCore | 40% | 50% | **80%** | 151 tests / 321 assertions — **0.0% coverage** (tests gebruiken mocks) | AI Proxy, Task Queue, Vault, Auth | 30 juni 2026 |
+| HavunAdmin | 30% | 40% | **80%** | 163 tests / 362 assertions — coverage rapport crasht (PhpParser) | Invoices, BTW, Tenant isolatie | 30 juni 2026 |
+| HavunVet | 30% | 40% | **80%** | 99 tests / 137 assertions — **32.6% coverage** | Models, Services, Routes | 30 juni 2026 |
+| SafeHavun | 30% | 40% | **80%** | 67 tests / 100 assertions — **26.0% coverage** | Models, Portfolio, MarketSignal | 30 juni 2026 |
+| Infosyst | 30% | 40% | **80%** | 64 tests / 113 assertions — **6.9% coverage** | Models, WikiLink, Routes | 30 juni 2026 |
+| Studieplanner | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | 30 juni 2026 |
+| JudoScoreBoard | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | 30 juni 2026 |
+| HavunClub | 30% | 40% | **80%** | 0 tests (alleen docs, geen app code) | — | 30 juni 2026 |
+
+> **Meting 06-04-2026 (PCOV):** Coverage is laag ondanks veel tests doordat tests mocks/fakes gebruiken. Volgende stap: minder mocks, meer integratietests die echte service-code aanroepen.
 
 **Bugs gevonden door test coverage uitbreiding (06-04-2026):**
 - HavunVet: `TreatmentForm` verwijst naar verwijderd `WorkLocation` model
