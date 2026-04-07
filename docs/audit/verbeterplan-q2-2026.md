@@ -114,7 +114,7 @@ AutoFix schrijft naar een `hotfix/autofix-[timestamp]` branch + automatische PR,
 |---------|------------|--------------|--------------|----------------------|-----------------|----------|
 | JudoToernooi | 60% | 75% | **80%** | 419 tests / 970 assertions — **17.4% coverage** | Poule-indeling, gewichtscheck, scoring | 31 mei 2026 |
 | Herdenkingsportaal | 50% | 60% | **80%** | 208 tests / 366 assertions — **9.7% coverage** | Betalingen, memorial CRUD, publieke views | 30 juni 2026 |
-| HavunCore | 40% | 50% | **80%** | 151 tests / 321 assertions — **0.0% coverage** (tests gebruiken mocks) | AI Proxy, Task Queue, Vault, Auth | 30 juni 2026 |
+| HavunCore | 40% | 50% | **80%** | 473 tests / 1225 assertions — **87.4% coverage** (PCOV) | AI Proxy, Task Queue, Vault, Auth | 30 juni 2026 |
 | HavunAdmin | 30% | 40% | **80%** | 163 tests / 362 assertions — coverage rapport crasht (PhpParser) | Invoices, BTW, Tenant isolatie | 30 juni 2026 |
 | HavunVet | 30% | 40% | **80%** | 99 tests / 137 assertions — **32.6% coverage** | Models, Services, Routes | 30 juni 2026 |
 | SafeHavun | 30% | 40% | **80%** | 67 tests / 100 assertions — **26.0% coverage** | Models, Portfolio, MarketSignal | 30 juni 2026 |
@@ -123,7 +123,7 @@ AutoFix schrijft naar een `hotfix/autofix-[timestamp]` branch + automatische PR,
 | JudoScoreBoard | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | 30 juni 2026 |
 | HavunClub | 30% | 40% | **80%** | 0 tests (alleen docs, geen app code) | — | 30 juni 2026 |
 
-> **Meting 06-04-2026 (PCOV):** Coverage is laag ondanks veel tests doordat tests mocks/fakes gebruiken. Volgende stap: minder mocks, meer integratietests die echte service-code aanroepen.
+> **Meting 07-04-2026 (PCOV):** HavunCore coverage van 0% → 87.4% (473 tests, 1225 assertions). Integratietests voor alle controllers + services. CI workflow draait met PCOV coverage check (min 40%, wordt verhoogd naarmate andere projecten volgen).
 
 **Bugs gevonden door test coverage uitbreiding (06-04-2026):**
 - HavunVet: `TreatmentForm` verwijst naar verwijderd `WorkLocation` model
@@ -428,9 +428,9 @@ Juli 2026
 | ID | Actie | Status | Prioriteit | Deadline | Bron |
 |----|-------|--------|------------|----------|------|
 | VP-01 | AutoFix Branch-Model + Dry-Run | DONE | Kritiek | 30-04-2026 | Gemini + Claude |
-| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS (JT:419t, HC:151t, HP:208t, HA:163t, HVet:99t, SH:67t, INF:64t) | Kritiek | 31-05-2026 | Gemini + Claude |
+| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS (JT:419t, **HC:473t/87.4%**, HP:208t, HA:163t, HVet:99t, SH:67t, INF:64t) | Kritiek | 31-05-2026 | Gemini + Claude |
 | VP-03 | Context-Injectie | TODO | Medium | 30-06-2026 | Gemini |
-| VP-04 | Dependency & Security Audit | DOCS KLAAR | Medium | 30-04-2026 | Gemini + Claude |
+| VP-04 | Dependency & Security Audit | DONE (CI + /start) | Medium | 30-04-2026 | Gemini + Claude |
 | VP-05 | Integrity Uitbreiden | DONE | Medium | 31-05-2026 | Gemini |
 | VP-06 | Protocolmoeheid | DONE | Medium | 30-04-2026 | Gemini |
 | VP-07 | Emergency Runbook | DONE | Kritiek | 30-04-2026 | Claude |
