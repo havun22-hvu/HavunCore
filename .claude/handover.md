@@ -2,7 +2,31 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 06 april 2026 — test coverage + doc issues + chromecast
+## Laatste Sessie: 07 april 2026 — CV HavunCore + capabilities overzicht
+
+### Wat is gedaan:
+- **CV HavunCore aangemaakt** — `docs/cv-havuncore.md`: compleet overzicht van alle capabilities, vaardigheden, systemen, beperkingen en referenties
+- **Discussie audit capabilities** — geanalyseerd of Claude+HavunCore een audit-functie ("execute complex, sensitive, high-impact audits") kan vervullen
+- **Conclusie:** geschikt als senior audit-assistent, niet als onafhankelijk auditor (geen verantwoordelijkheid, geen interviews, geen fysieke inspectie)
+
+### Openstaande items:
+- [ ] **Coverage naar 80%** — mocks vervangen door integratietests
+- [ ] **HavunAdmin coverage** — PhpParser crash fixen
+- [ ] **Chromecast** — Cast Developer Console app registreren (serienummer: 26111HFDD5F9AN)
+- [ ] **4 bugs gevonden:** HavunVet WorkLocation + Owner type, Infosyst enums, HavunAdmin fresh()
+- [ ] **Studieplanner + JudoScoreBoard** — Jest config nodig voor React Native
+- [ ] **Auth v5.0** — passwordless migratie naar alle projecten
+- [ ] **iDEAL → iDEAL | Wero** — teksten aanpassen (verplicht, te laat)
+- [ ] **GitGuardian incident** resolven via dashboard
+- [ ] **Henk-quote in CV** — gebruiker wil deze mogelijk aanpassen
+
+### Belangrijke context:
+- CV staat in `docs/cv-havuncore.md` (NIET in docs/kb/, bewust apart)
+- 29 doc issues open (voornamelijk duplicaten in webapp/audit docs)
+
+---
+
+## Vorige Sessie: 06 april 2026 — test coverage + doc issues + chromecast
 
 ### Wat is gedaan:
 - **Doc Intelligence issues** — 117 HavunCore issues opgelost (2 duplicaten verwijderd, 3 false positives geignored, 109 stale docs resolved)
