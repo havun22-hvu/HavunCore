@@ -15,12 +15,18 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache
+          mkdir -p storage/framework/{sessions,views,cache}
+          mkdir -p storage/logs
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.2'
           extensions: mbstring, sqlite3, pdo_sqlite
-          coverage: xdebug
+          coverage: pcov
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
