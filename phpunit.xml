@@ -17,6 +17,10 @@
         <include>
             <directory>app</directory>
         </include>
+        <exclude>
+            <directory>app/Providers</directory>
+            <file>app/Http/Kernel.php</file>
+        </exclude>
     </source>
     <php>
         <env name="APP_ENV" value="testing"/>
