@@ -33,6 +33,8 @@ jobs:
           cp .env.example .env 2>/dev/null || touch .env
           echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
           echo "BROADCAST_CONNECTION=null" >> .env
+          echo "CACHE_STORE=array" >> .env
+          echo "CACHE_DRIVER=array" >> .env
 
       - name: Cache Composer dependencies
         uses: actions/cache@v4
@@ -48,6 +50,12 @@ jobs:
         run: |
           cp .env .env.testing
           php artisan key:generate --env=testing --force
+          echo "DB_CONNECTION=sqlite" >> .env.testing
+          echo "DB_DATABASE=:memory:" >> .env.testing
+          echo "CACHE_STORE=array" >> .env.testing
+          echo "CACHE_DRIVER=array" >> .env.testing
+          echo "QUEUE_CONNECTION=sync" >> .env.testing
+          echo "SESSION_DRIVER=array" >> .env.testing
 
       - name: Security audit (composer)
         run: composer audit --format=plain
