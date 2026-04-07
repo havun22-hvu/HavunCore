@@ -33,25 +33,40 @@
 
 ## 2. LEES-DENK-DOE-DOCUMENTEER
 
-### LEES (Hierarchisch!)
+### LEES (KB-first!)
 
-**Lees in deze volgorde, stop wanneer je genoeg weet:**
+**Bij ELKE taak: zoek EERST in de KB, dan pas code lezen.**
 
 ```
-Niveau 1: ALTIJD lezen (elke sessie)
+Niveau 1: ALTIJD (elke sessie)
 ├── CLAUDE.md van het project (regels, context)
 │
-Niveau 2: Bij specifieke taak
+Niveau 2: Bij specifieke taak (VERPLICHT)
+├── KB zoeken: cd D:\GitHub\HavunCore && php artisan docs:search "[onderwerp]"
+├── Gebruik --type filter: --type=service / --type=docs / --type=controller
 ├── .claude/context.md (project details)
-├── Relevante code voor de taak
 │
 Niveau 3: Bij onduidelijkheid
 ├── docs/ van het project
-├── HavunCore/docs/kb/ (gedeelde kennis)
 │
 Niveau 4: Bij nieuwe patronen/systemen
-└── HavunCore/docs/kb/patterns/ of /runbooks/
+└── KB zoeken: docs:search "[patroon]" --type=docs
 ```
+
+### Bronvermelding (VERPLICHT na KB search)
+
+Na elke `docs:search` MOET je de bron vermelden aan de gebruiker:
+
+```
+"Volgens [bestandsnaam]: [citaat/samenvatting]"
+```
+
+Als de KB geen resultaat geeft:
+```
+"KB bevat geen informatie over [onderwerp]. Zal ik dit documenteren?"
+```
+
+**NOOIT** een antwoord geven over features/configuratie zonder KB te raadplegen.
 
 **Principe:** Lees alleen wat RELEVANT is voor de taak. Niet alles - projecten zijn te groot.
 

@@ -43,15 +43,30 @@
 > **Volledige uitleg:** `docs/kb/runbooks/claude-werkwijze.md`
 
 **Bij ELKE taak:**
-1. **LEES** - Hiërarchisch: CLAUDE.md → relevante code/docs voor de taak (zie `docs/kb/runbooks/claude-werkwijze.md`)
+1. **LEES** - Hiërarchisch: CLAUDE.md → KB zoeken → relevante code
 2. **DENK** - Analyseer, begrijp, stel vragen bij twijfel
 3. **DOE** - Pas dan uitvoeren, rustig, geen haast
 4. **DOCUMENTEER** - Sla nieuwe kennis op in de juiste plek (project vs HavunCore)
 
+### KB Automatisch Raadplegen (VERPLICHT)
+
+Bij ELKE vraag over features, betalingen, auth, deployment, of configuratie:
+```bash
+cd D:\GitHub\HavunCore && php artisan docs:search "[onderwerp]"
+# Gebruik --type voor gerichte resultaten:
+# --type=service   → alleen services
+# --type=docs      → alleen MD docs
+# --type=controller → alleen controllers
+# --type=model     → alleen models
+```
+
+Na elke KB search: vermeld de bron → "Volgens [bestand]: [citaat]"
+Als de KB geen resultaat geeft: meld dit → "KB bevat geen info over [X]. Documenteren?"
+
 **Kernregels:**
 - Kwaliteit boven snelheid - liever 1x goed dan 3x fout
 - Bij twijfel: VRAAG en WACHT op antwoord
-- Nooit aannemen, altijd verifiëren
+- Nooit aannemen, altijd verifiëren — ZOEK EERST in KB
 - Als gebruiker iets herhaalt: direct opslaan in docs
 
 ### Bescherming bestaande code (Kritiek!)

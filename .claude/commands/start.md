@@ -78,17 +78,21 @@ Lees deze bestanden in volgorde en bevestig aan de gebruiker:
 **NIET** de volledige werkwijze-doc laden. Gebruik de KB on-demand:
 
 ```bash
-# Zoek alleen wanneer je iets moet weten:
+# Zoek ALTIJD in de KB voordat je code leest of schrijft:
 cd D:\GitHub\HavunCore && php artisan docs:search "zoekterm"
 
-# Voorbeelden:
-php artisan docs:search "beschermingslagen"
-php artisan docs:search "autofix configuratie"
-php artisan docs:search "mollie betaling checkout"
+# Gebruik --type voor gerichte resultaten:
+php artisan docs:search "mollie betaling" --type=service    # alleen services
+php artisan docs:search "login auth" --type=controller       # alleen controllers
+php artisan docs:search "memorial lifecycle" --type=docs     # alleen MD docs
+php artisan docs:search "poule indeling" --type=model        # alleen models
 ```
 
+**Na elke KB search:** vermeld de bron → "Volgens [bestand]: [citaat]"
+**Geen resultaat?** Meld: "KB bevat geen info over [X]. Documenteren?"
+
 **De 5 Onschendbare Regels (uit je hoofd kennen):**
-1. NOOIT code schrijven zonder docs te lezen
+1. NOOIT code schrijven zonder KB te raadplegen
 2. NOOIT features/UI-elementen verwijderen zonder instructie
 3. NOOIT credentials/keys/env aanraken
 4. ALTIJD tests draaien voor én na wijzigingen
