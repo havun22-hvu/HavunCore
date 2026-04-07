@@ -28,6 +28,12 @@ jobs:
           extensions: mbstring, sqlite3, pdo_sqlite
           coverage: pcov
 
+      - name: Create .env before composer install
+        run: |
+          cp .env.example .env 2>/dev/null || touch .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "BROADCAST_CONNECTION=null" >> .env
+
       - name: Cache Composer dependencies
         uses: actions/cache@v4
         with:
@@ -40,9 +46,8 @@ jobs:
 
       - name: Create .env.testing
         run: |
-          cp .env.example .env.testing 2>/dev/null || true
+          cp .env .env.testing
           php artisan key:generate --env=testing --force
-          echo "BROADCAST_CONNECTION=null" >> .env.testing
 
       - name: Security audit (composer)
         run: composer audit --format=plain
