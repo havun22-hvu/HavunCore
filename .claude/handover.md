@@ -2,73 +2,113 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 07 april 2026 (avond) — Coverage check + plan
+## Laatste Sessie: 08 april 2026 — Coverage boost alle projecten (VP-02)
 
 ### Wat is gedaan:
-- **Sessie was kort** — tokens op, alleen status bekeken
-- **Coverage status vastgelegd** voor morgen
 
-### HavunCore Coverage Status (snapshot):
+**HavunCore** ✅ GEHAALD
+- 473 → **536 tests** (+63)
+- Method coverage 70.3% → **82.4%** (doel 80% ✅)
+- Statement coverage 87.4% → **93.6%** (doel 90% ✅)
+- 15 nieuwe testbestanden
+- Fix: `byPriority()` scope MySQL FIELD() → CASE WHEN (SQLite-compatible)
+- Gecommit en gepusht
 
-| Metric | Waarde | Doel |
-|--------|--------|------|
-| Tests | 473 | - |
-| Statement coverage | 87.4% (2901/3319) | 90% |
-| Method coverage | 70.3% (192/273) | 80% |
-| Bestanden | 41 | - |
-| Ongedekte methods | ~81 | <55 |
+**Herdenkingsportaal** — agent klaar, verbeterd maar nog niet op doel
+- 313 → **643 tests** (+330)
+- Method coverage 14.4% → **23.4%** (+111 methods)
+- 16 nieuwe testbestanden (4023 regels)
+- Factory fixes: UserFactory (access_level), MemorialFactory (package_type)
+- Falende test gefixt (UserModelExtendedTest)
+- Gecommit en gepusht
 
-### Plan voor morgen (8 april 2026 avond):
+**Infosyst** — agent klaar, verbeterd maar nog niet op doel
+- 391 → **534 tests** (+143)
+- Method coverage 56.7% → **65.0%** (+34 methods)
+- Statement coverage 64.0% → **71.9%**
+- 21 nieuwe testbestanden
+- Gecommit en gepusht
 
-**Doel:** Method coverage 70.3% → 80%+ en statement coverage 87.4% → 90%+
+**JudoToernooi** — agent was nog bezig, ONBEKEND of afgerond
+- Had 557 tests, 18.6% method coverage
+- 19 falende tests moesten eerst gefixt
+- Agent liep toen tokens op waren — CHECK OF ER EEN COMMIT IS:
+  ```
+  cd D:/GitHub/JudoToernooi && git log --oneline -5
+  ```
 
-**Stappen:**
-1. **Parse `coverage.xml`** — vind welke classes de laagste method coverage hebben
-2. **Prioriteer:** Services > Controllers > Commands (meeste business logic)
-3. **Schrijf tests** voor de ~27 ongedekte methods die nodig zijn voor 80%
-4. **Draai coverage** — `php artisan test --coverage` met PCOV
-5. **Update VP-02** in verbeterplan met nieuwe percentages
+**HavunAdmin** — agent was nog bezig, ONBEKEND of afgerond
+- Had 163 tests, PhpParser crash bij coverage
+- Agent moest eerst crash fixen, dan tests schrijven
+- CHECK OF ER EEN COMMIT IS:
+  ```
+  cd D:/GitHub/HavunAdmin && git log --oneline -5
+  ```
 
-**Belangrijk:**
-- PCOV dll: `C:/laragon/bin/php/php-8.2.29-Win32-vs16-x64/ext/php_pcov.dll`
-- Coverage command: `php artisan test --coverage` (NIET `--without-tty`)
-- `coverage.xml` wordt gegenereerd voor detail-analyse
+### Coverage Overzicht (na deze sessie):
 
-### Openstaande items:
-- [ ] **HavunCore coverage naar 80% method / 90% statement** ← MORGEN
-- [ ] **HavunAdmin coverage** — PhpParser crash fixen
-- [ ] **Chromecast** — Cast Developer Console app registreren (serienummer: 26111HFDD5F9AN)
-- [ ] **4 bugs gevonden:** HavunVet WorkLocation + Owner type, Infosyst enums, HavunAdmin fresh()
-- [ ] **Studieplanner + JudoScoreBoard** — Jest config nodig voor React Native
-- [ ] **Auth v5.0** — passwordless migratie naar alle projecten
-- [ ] **iDEAL → iDEAL | Wero** — teksten aanpassen (verplicht, te laat)
-- [ ] **GitGuardian incident** resolven via dashboard
+| Project | Tests | Methods | Statements | Doel 80% |
+|---------|-------|---------|------------|----------|
+| HavunCore | 536 | **82.4%** | **93.6%** | ✅ GEHAALD |
+| Herdenkingsportaal | 643 | **23.4%** | ? | ❌ 56.6% te gaan |
+| Infosyst | 534 | **65.0%** | **71.9%** | ❌ 15% te gaan |
+| JudoToernooi | 557+ | **18.6%+** | **19.9%+** | ❌ Check agent |
+| HavunAdmin | 163+ | **?** | **?** | ❌ Check agent |
+| HavunVet | 99 | ? | ? | ❌ Niet gestart |
+| SafeHavun | 67 | ? | ? | ❌ Niet gestart |
+
+### Plan voor volgende sessie:
+
+**Stap 1: Check onafgeronde agents**
+```bash
+cd D:/GitHub/JudoToernooi && git log --oneline -3
+cd D:/GitHub/HavunAdmin && git log --oneline -3
+```
+Kijk of de agents hun werk hebben afgerond en gecommit.
+
+**Stap 2: Prioriteit per project**
+
+1. **Infosyst** (dichtst bij doel: 65% → 80%)
+   - Nog ~60 methods nodig
+   - Focus: protected/private methods indirect testen, ImportController, Console commands
+   - Statement coverage al 72% — bijna daar
+
+2. **Herdenkingsportaal** (grootste gap: 23.4% → 80%)
+   - Nog ~693 methods nodig
+   - Focus: PaymentController (31), ArweaveService (22+18+14), PasskeyController (16)
+   - Memorial model + controller al gedeeltelijk gedekt
+
+3. **JudoToernooi** (18.6% → 80%)
+   - Nog ~887 methods nodig
+   - Focus: Controllers (485 uncovered methods), Services met 0% coverage
+   - Eerst: check of 19 failing tests gefixt zijn
+
+4. **HavunAdmin** (onbekend → 80%)
+   - Eerst: check of PhpParser crash opgelost is
+   - Dan: coverage meten en tests schrijven
+
+5. **HavunVet + SafeHavun** (niet gestart)
+   - Analyse draaien + tests schrijven
+
+**Stap 3: PCOV tips**
+- PCOV directory MOET expliciet gezet worden:
+  ```
+  php -d pcov.enabled=1 -d pcov.directory=[project]/app vendor/bin/phpunit --coverage-clover=coverage.xml
+  ```
+- `php artisan test --coverage` toont 0% als pcov.directory niet gezet is
+- Coverage check script: zie coverage_check.py pattern in deze handover
+
+**Stap 4: Update verbeterplan**
+- VP-02 status updaten met nieuwe percentages in `docs/audit/verbeterplan-q2-2026.md`
+
+### Openstaande items (niet-coverage):
+- [ ] Chromecast — Cast Developer Console app registreren
+- [ ] 4 bugs: HavunVet WorkLocation + Owner type, Infosyst enums, HavunAdmin fresh()
+- [ ] Auth v5.0 — passwordless migratie
+- [ ] iDEAL → iDEAL | Wero teksten aanpassen
+- [ ] GitGuardian incident resolven
 
 ### Belangrijke context:
-- CV staat in `docs/cv-havuncore.md`
-- 29 doc issues open (voornamelijk duplicaten + stale docs)
-- VP-02 status: IN PROGRESS (HC:473t/87.4%)
-
----
-
-## Vorige Sessie: 07 april 2026 — CV HavunCore + capabilities overzicht
-
-### Wat is gedaan:
-- **CV HavunCore aangemaakt** — `docs/cv-havuncore.md`: compleet overzicht van alle capabilities
-- **Discussie audit capabilities** — geschikt als senior audit-assistent, niet als onafhankelijk auditor
-
----
-
-## Vorige Sessie: 06 april 2026 — test coverage + doc issues + chromecast
-
-### Wat is gedaan:
-- **Doc Intelligence issues** — 117 HavunCore issues opgelost
-- **JudoToernooi Chromecast** — CSP fix, CHROMECAST.md docs, deployed op staging
-- **Falende tests gefixed** — HavunAdmin (24), Herdenkingsportaal (1), SafeHavun (1), Infosyst (1)
-- **Test coverage uitgebreid** — 487 → 1.171 tests (+684) over 7 Laravel projecten
-- **PCOV geïnstalleerd** — eerste echte coverage-meting
-- **Verbeterplan VP-02** — alle doelen naar 80%, actuele PCOV percentages toegevoegd
-
-### Belangrijke context:
-- PCOV: `C:/laragon/bin/php/php-8.2.29-Win32-vs16-x64/ext/php_pcov.dll`
-- Coverage: `php artisan test --coverage` (NIET met --without-tty)
+- VP-02 deadline: 31 mei 2026
+- Gebruiker heeft Max-abonnement (rate limit, geen token-kosten)
+- 29 doc issues open in HavunCore (lage prio)
