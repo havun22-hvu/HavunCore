@@ -57,7 +57,7 @@ class ClaudeTask extends Model
 
     public function scopeByPriority(Builder $query): Builder
     {
-        return $query->orderByRaw("FIELD(priority, 'urgent', 'high', 'normal', 'low')");
+        return $query->orderByRaw("CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'normal' THEN 3 WHEN 'low' THEN 4 ELSE 5 END");
     }
 
     /**
