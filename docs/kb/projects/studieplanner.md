@@ -4,7 +4,7 @@
 **API:** https://api.studieplanner.havun.nl
 **Type:** Expo React Native (frontend) + Laravel 12 API (backend)
 **Business model:** Freemium (gratis planning, premium €1/jaar via bunq.me/Havun + XRP)
-**Huidige versie:** v1.0.4 (versionCode 102)
+**Huidige versie:** v1.0.5 (versionCode 105)
 
 > **Waarom Expo i.p.v. PWA:** Alarms en timer/stopwatch werken onbetrouwbaar in PWA (achtergrond, notificaties).
 > **Waarom geen Play Store:** 100% eigen distributie via APK downloads op eigen server. 0% commissie.
@@ -178,7 +178,8 @@ src/
 - Geen Google Play Store — eigen server, 0% commissie
 - APK locatie: `/var/www/studieplanner/production/public/downloads/studieplanner-latest.apk`
 - Versie check: `GET /api/app/version` → `{ version, versionCode, downloadUrl, forceUpdate }`
-- Build via EAS Build (Expo Application Services): `eas build --platform android --profile production`
+- Lokale build (voorkeur): `export JAVA_HOME="C:/Program Files/Android/Android Studio/jbr" && cd android && ./gradlew assembleRelease`
+- Cloud build (alternatief, free tier wachtrij): `eas build --platform android --profile production`
 
 ### Twee update-kanalen
 
@@ -259,16 +260,82 @@ php artisan serve --port=8003
 - Admin user: `henkvu@gmail.com` (is_admin=true)
 - Features: user overzicht, premium toggle, gebruiker verwijderen
 
+## Testing
+
+**Status:** 223 tests, 20 suites, 0 failures, 82.8% line coverage (8 april 2026)
+
+### Test Stack
+| Tool | Doel |
+|------|------|
+| Jest 29 + jest-expo | Test runner (Expo-compatible) |
+| @testing-library/react-native | Component/screen render tests |
+| @testing-library/jest-native | Extra matchers |
+| react-test-renderer 19.1.0 | Peer dependency voor Testing Library |
+
+### Structuur
+```
+src/__tests__/flows.test.ts   # Functionele flow tests (11 kritieke flows, 31 tests)
+src/utils/__tests__/           # Pure function tests (colors, formatters, fuzzyMatch, generateId, planning)
+src/services/__tests__/        # Service tests met mocks (api, storage, alarmService, biometrics, backgroundTimer, backup, dailySummary, pushNotifications, updateChecker, logger)
+src/constants/__tests__/       # Config + theme tests
+src/hooks/__tests__/           # useDebouncedCallback
+src/screens/__tests__/         # Screen smoke tests (7 screens)
+```
+
+### Commando's
+```bash
+npm test                    # Alle tests draaien
+npm run test:coverage       # Met coverage rapport
+npm run test:watch          # Watch mode (development)
+```
+
+### Functionele flow tests (kritiek)
+De belangrijkste tests zitten in `src/__tests__/flows.test.ts`:
+
+| Flow | Wat wordt getest |
+|------|------------------|
+| Magic link login | request → verify → token opslaan → authenticated requests |
+| Free tier vakken limiet | Max 3 vakken/schooljaar, blokkeer bij overschrijding |
+| Free tier taken limiet | Max 2 taken/vak, premium bypass |
+| Sessie plannen | Taak → sessies genereren → shelf → agenda (drag/drop) |
+| Timer + StudyLog | Start/stop, logs accumulatie, server sync |
+| Premium check | isPremium + expiry datum, legacy snake_case normalisatie |
+| Data sync veiligheid | Lokaal behouden bij lege server, server prioriteit bij data |
+| Schooljaar filtering | Vakken + sessies filteren op actief schooljaar |
+| Auto-planning | Studietijd verdelen tot toetsdatum, leersnelheid gebruiken |
+| Duplicate detectie | Fuzzy match op vaknamen (typo's, variaties) |
+| Statistieken | Voortgang berekenen, studietijd sommeren |
+
+### Mocking strategie
+- **Native modules** (AsyncStorage, SecureStore, expo-notifications, expo-local-authentication, expo-background-fetch, expo-task-manager) gemockt in `jest.setup.js`
+- **API calls** via `global.fetch` mock per test
+- **Navigation** gemockt via `@react-navigation/native`
+- **Reanimated** via `react-native-reanimated/mock`
+- **Store contexts** gemockt voor screen smoke tests, echt getest in flows
+
+### Coverage
+| Laag | Lines | Threshold |
+|------|-------|-----------|
+| Utils | 97.6% | - |
+| Constants | 93.3% | - |
+| Hooks | 100% | - |
+| Services | 64.8% | - |
+| **Totaal (business logic)** | **82.8%** | **80% enforced** |
+
+Screens, components, store en navigation zijn uitgesloten van coverage (UI-layer, beter via E2E).
+
 ## Bekende Issues
 
-- Geen bekende issues (21 maart 2026)
+- Geen bekende issues (8 april 2026)
 
 ## Openstaand
 
 - [ ] bunq.me betaling end-to-end testen
 - [ ] XRP betaling end-to-end testen
 - [ ] Magic link login testen op production APK
+- [ ] Component tests uitbreiden (WeekView zoom, SessionBlock)
+- [ ] Screen smoke tests toevoegen
 
 ---
 
-*Laatste update: 21 maart 2026*
+*Laatste update: 8 april 2026*
