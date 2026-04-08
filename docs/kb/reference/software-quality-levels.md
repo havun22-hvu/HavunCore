@@ -69,10 +69,21 @@
 | **Regression test** | Voorkomt dat opgeloste bugs terugkeren | "Bug #123 mag niet meer optreden" |
 
 **Coverage:** Percentage van je code dat door tests wordt geraakt.
-- 0-20% = gevaarlijk
-- 40-60% = goed
-- 60-80% = professioneel
-- 80%+ = enterprise
+
+| Coverage | Niveau | Wie doet dit |
+|----------|--------|-------------|
+| 0-20% | Gevaarlijk | Hobbyisten |
+| 20-40% | Basis | Startups |
+| 40-60% | Goed | Kleine bedrijven |
+| 60-80% | Professioneel | Middelgrote bedrijven |
+| 80-90% | Enterprise | Banken, SaaS platforms |
+| 90%+ | Mission-critical | Luchtvaart, medisch, fintech |
+
+**Havun status (8 april 2026):**
+- HavunCore: 92.7% methods, 98.4% lines (mission-critical)
+- Infosyst: 83.3% (enterprise)
+- Herdenkingsportaal: 47.5% (goed, in progress)
+- JudoToernooi: 18.6% (basis, nog te doen)
 
 **Tools:** PHPUnit (Laravel), Jest (JavaScript), pytest (Python)
 
