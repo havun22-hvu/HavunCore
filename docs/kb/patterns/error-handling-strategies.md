@@ -121,6 +121,77 @@ Is het JOUW code?
    └─ Dienst vaak down → Circuit breaker + fallback
 ```
 
+## Havun Implementatie
+
+Alle patterns zijn geïmplementeerd in de Havun projecten:
+
+### Custom Exception Hiërarchie (JudoToernooi)
+```
+Exception
+└── JudoToernooiException (base — met userMessage + context)
+    ├── MollieException        (error codes 1001-1005)
+    ├── ImportException         (row-level tracking)
+    └── ExternalServiceException (timeout, connection, process)
+```
+
+### Circuit Breaker (JudoToernooi + Herdenkingsportaal)
+```
+CLOSED (normaal) → 3 failures → OPEN (block calls, 30 sec)
+                                    → HALF_OPEN (test call)
+                                    → success → CLOSED
+```
+Gebruikt bij: Mollie API, Reverb WebSocket broadcasts
+
+### SafelyBroadcasts (JudoToernooi)
+3-laags bescherming voor Reverb/WebSocket:
+1. Circuit Breaker → fail-fast na 3 failures
+2. Try-catch → exceptions worden gelogd
+3. Log throttling → max 1 logmelding per minuut per event
+
+### Result Object Pattern
+```php
+$result = Result::success($data);   // of Result::failure('fout')
+if ($result->isSuccess()) { ... }
+return $result->toResponse();       // JSON met success/error
+```
+
+### Guard Clauses
+Early return i.p.v. geneste if-statements. Null-safe operator (`?->`) voor chains.
+
+### Error Notification Service
+Kritieke errors automatisch naar HavunCore API (fire-and-forget of sync).
+
+### Rate Limiting
+| Endpoint type | Limiet |
+|---|---|
+| API | 60/min |
+| Public | 30/min |
+| Forms | 10/min |
+| Login | 5/min |
+| Webhooks | 100/min |
+
+### Health Check Endpoints
+- `/health` — basis (database, disk, cache)
+- `/health/detailed` — uitgebreid (response times, drivers, config)
+
+### Volledig overzicht
+Zie: `D:\GitHub\JudoToernooi\laravel\docs\3-DEVELOPMENT\STABILITY.md` (728 regels, 11 secties)
+
+## Combinatie met Test Coverage
+
+| Bescherming | Wat | Coverage |
+|---|---|---|
+| Tests | Voorkom fouten in eigen code | 80-98% |
+| Exception hiërarchie | Categoriseer fouten | Alle externe calls |
+| Circuit breaker | Voorkom cascade failures | Mollie, Reverb |
+| Fallback | Alternatief bij falen | Ollama → TF-IDF |
+| Rate limiting | Bescherm tegen overbelasting | Alle API endpoints |
+| Health checks | Detecteer problemen vroeg | Continu monitoring |
+| AutoFix | Herstel fouten automatisch | 24/7 productie |
+| Audit trail | Wie deed wat wanneer | Alle kritieke acties |
+
+**Samen met 80-98% test coverage vormt dit een enterprise-grade beveiligingslaag.**
+
 ---
 
 *Laatst bijgewerkt: 8 april 2026*
