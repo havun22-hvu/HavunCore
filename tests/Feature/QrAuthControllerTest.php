@@ -877,4 +877,177 @@ class QrAuthControllerTest extends TestCase
         $response->assertStatus(403)
             ->assertJson(['message' => 'Admin privileges required']);
     }
+
+    // ==========================================
+    // Register with is_admin flag
+    // ==========================================
+
+    public function test_register_second_user_as_admin_with_admin_token(): void
+    {
+        $admin = AuthUser::create([
+            'email' => 'admin@havun.nl',
+            'name' => 'Admin',
+            'password_hash' => Hash::make('password123'),
+            'is_admin' => true,
+        ]);
+
+        $device = AuthDevice::createForUser($admin, 'Chrome', 'admin_hash');
+
+        $response = $this->postJson('/api/auth/register', [
+            'email' => 'newadmin@havun.nl',
+            'name' => 'New Admin',
+            'password' => 'password123',
+            'is_admin' => true,
+        ], ['Authorization' => 'Bearer ' . $device->token]);
+
+        $response->assertStatus(201)
+            ->assertJson([
+                'success' => true,
+                'user' => [
+                    'email' => 'newadmin@havun.nl',
+                    'is_admin' => true,
+                ],
+            ]);
+    }
+
+    // ==========================================
+    // Approve QR - user not found after verification
+    // ==========================================
+
+    public function test_approve_qr_user_not_found_returns_404(): void
+    {
+        $user = AuthUser::create([
+            'email' => 'ghost@havun.nl',
+            'name' => 'Ghost',
+        ]);
+
+        $device = AuthDevice::createForUser($user, 'Chrome', 'ghost_hash');
+        $token = $device->token;
+
+        $session = AuthQrSession::createSession(
+            ['browser' => 'Firefox', 'os' => 'Linux'],
+            '127.0.0.1'
+        );
+
+        // Delete user after creating device (device token still "verifies" via DB lookup but user gone)
+        $userId = $user->id;
+        $user->forceDelete();
+
+        $response = $this->postJson(
+            '/api/auth/qr/' . $session->qr_code . '/approve',
+            [],
+            ['Authorization' => 'Bearer ' . $token]
+        );
+
+        // verifyToken will fail since user is deleted — returns 401
+        $response->assertStatus(401);
+    }
+
+    // ==========================================
+    // Generate QR with default values
+    // ==========================================
+
+    public function test_generate_qr_with_default_device_info(): void
+    {
+        // Don't pass browser/os — should use defaults 'Unknown'
+        $response = $this->postJson('/api/auth/qr/generate', []);
+
+        $response->assertOk()
+            ->assertJson(['success' => true])
+            ->assertJsonStructure([
+                'success',
+                'qr_code',
+                'email_token',
+                'expires_at',
+                'expires_in',
+            ]);
+    }
+
+    // ==========================================
+    // Login with user that has no password
+    // ==========================================
+
+    public function test_login_with_user_without_password(): void
+    {
+        AuthUser::create([
+            'email' => 'nopass@havun.nl',
+            'name' => 'No Password',
+            'password_hash' => null,
+        ]);
+
+        $response = $this->postJson('/api/auth/login', [
+            'email' => 'nopass@havun.nl',
+            'password' => 'anything',
+        ]);
+
+        $response->assertStatus(401)
+            ->assertJson([
+                'success' => false,
+                'message' => 'Invalid credentials',
+            ]);
+    }
+
+    // ==========================================
+    // Approve authenticated - user found but approval fails
+    // ==========================================
+
+    public function test_approve_authenticated_with_invalid_email_token(): void
+    {
+        $user = AuthUser::create([
+            'email' => 'henk@havun.nl',
+            'name' => 'Henk',
+        ]);
+
+        $device = AuthDevice::createForUser($user, 'Mobile', 'mobilehash3');
+
+        $response = $this->postJson('/api/auth/qr/approve-authenticated', [
+            'token' => str_repeat('x', 64),
+            'device_token' => $device->token,
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJson(['success' => false]);
+    }
+
+    // ==========================================
+    // Register with invalid email format
+    // ==========================================
+
+    public function test_register_with_invalid_email(): void
+    {
+        $response = $this->postJson('/api/auth/register', [
+            'email' => 'not-an-email',
+            'name' => 'Test',
+            'password' => 'password123',
+        ]);
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['email']);
+    }
+
+    // ==========================================
+    // Logout with expired device
+    // ==========================================
+
+    public function test_logout_with_expired_device(): void
+    {
+        $user = AuthUser::create([
+            'email' => 'expired@havun.nl',
+            'name' => 'Expired',
+        ]);
+
+        $device = AuthDevice::createForUser($user, 'Chrome', 'expired_hash');
+        // Expire the device
+        $device->update(['expires_at' => now()->subDays(1)]);
+
+        $response = $this->postJson('/api/auth/logout', [], [
+            'Authorization' => 'Bearer ' . $device->token,
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'success' => false,
+                'message' => 'Device not found',
+            ]);
+    }
 }

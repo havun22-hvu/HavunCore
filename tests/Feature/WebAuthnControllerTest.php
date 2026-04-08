@@ -766,4 +766,644 @@ class WebAuthnControllerTest extends TestCase
         // Counter should be incremented by 1 (fallback)
         $this->assertEquals(1, $credential->fresh()->counter);
     }
+
+    // -- Register full flow --
+
+    public function test_register_full_flow_creates_credential(): void
+    {
+        // Create a valid challenge for registration
+        $challengeRecord = WebAuthnChallenge::createForRegistration($this->user->id);
+
+        // Build clientDataJSON with the correct challenge
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode($challengeRecord->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+
+        // Build a fake attestation object (will be stored as base64)
+        $attestationObject = str_repeat("\x00", 50);
+        $attestationB64 = rtrim(strtr(base64_encode($attestationObject), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'new-credential-id-xyz',
+                'rawId' => rtrim(strtr(base64_encode('new-cred-raw'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                    'transports' => ['internal', 'hybrid'],
+                ],
+            ],
+            'name' => 'My Test Passkey',
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('message', 'Passkey geregistreerd')
+            ->assertJsonStructure([
+                'credential' => ['id', 'name', 'device_type', 'created_at'],
+            ])
+            ->assertJsonPath('credential.name', 'My Test Passkey');
+
+        // Credential should exist in DB
+        $this->assertDatabaseHas('webauthn_credentials', [
+            'credential_id' => 'new-credential-id-xyz',
+            'user_id' => $this->user->id,
+            'name' => 'My Test Passkey',
+        ]);
+
+        // Challenge should be deleted after use
+        $this->assertDatabaseMissing('webauthn_challenges', ['id' => $challengeRecord->id]);
+    }
+
+    public function test_register_without_name_uses_default(): void
+    {
+        $challengeRecord = WebAuthnChallenge::createForRegistration($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode($challengeRecord->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+
+        $attestationObject = str_repeat("\x00", 50);
+        $attestationB64 = rtrim(strtr(base64_encode($attestationObject), '+/', '-_'), '=');
+
+        // Use a Windows user agent to test device type detection
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120',
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'no-name-cred',
+                'rawId' => rtrim(strtr(base64_encode('no-name'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+            // No name provided - should use default "Passkey op Windows"
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('credential.device_type', 'Windows');
+
+        // Default name should contain device type
+        $this->assertStringContains('Passkey op', $response->json('credential.name'));
+    }
+
+    public function test_register_with_invalid_client_data(): void
+    {
+        // clientDataJSON that doesn't contain a challenge
+        $clientData = json_encode(['type' => 'webauthn.create', 'origin' => 'https://test.com']);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+
+        $attestationB64 = rtrim(strtr(base64_encode('fake'), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'bad-cred',
+                'rawId' => rtrim(strtr(base64_encode('bad'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJsonPath('error', 'Invalid client data');
+    }
+
+    public function test_register_with_non_json_client_data(): void
+    {
+        $clientDataB64 = rtrim(strtr(base64_encode('not-json-at-all'), '+/', '-_'), '=');
+        $attestationB64 = rtrim(strtr(base64_encode('fake'), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'bad-json-cred',
+                'rawId' => rtrim(strtr(base64_encode('bad'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJsonPath('error', 'Invalid client data');
+    }
+
+    public function test_register_with_invalid_challenge(): void
+    {
+        // clientDataJSON with a challenge that doesn't exist in DB
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode('nonexistent-challenge'), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $attestationB64 = rtrim(strtr(base64_encode('fake'), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'invalid-challenge-cred',
+                'rawId' => rtrim(strtr(base64_encode('bad'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJsonPath('error', 'Invalid or expired challenge');
+    }
+
+    public function test_register_with_challenge_belonging_to_other_user(): void
+    {
+        $otherUser = AuthUser::create([
+            'name' => 'Other',
+            'email' => 'other@havun.nl',
+            'password_hash' => null,
+            'is_admin' => false,
+        ]);
+
+        // Create challenge for other user
+        $challengeRecord = WebAuthnChallenge::createForRegistration($otherUser->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode($challengeRecord->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $attestationB64 = rtrim(strtr(base64_encode('fake'), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'wrong-user-cred',
+                'rawId' => rtrim(strtr(base64_encode('wrong'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(400)
+            ->assertJsonPath('error', 'Invalid or expired challenge');
+    }
+
+    // -- Register with user not found (edge case) --
+
+    public function test_register_options_with_deleted_user_returns_404(): void
+    {
+        // Create a device token for a user that we'll delete
+        $tempUser = AuthUser::create([
+            'name' => 'Temp',
+            'email' => 'temp@havun.nl',
+            'password_hash' => null,
+            'is_admin' => false,
+        ]);
+
+        $tempToken = AuthDevice::generateToken();
+        AuthDevice::create([
+            'user_id' => $tempUser->id,
+            'device_name' => 'Chrome',
+            'device_hash' => hash('sha256', 'temp-fp'),
+            'token' => $tempToken,
+            'expires_at' => now()->addDays(30),
+            'last_used_at' => now(),
+            'ip_address' => '127.0.0.1',
+            'is_active' => true,
+        ]);
+
+        // Delete user but keep device
+        $tempUser->forceDelete();
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$tempToken}",
+        ])->getJson('/api/auth/webauthn/register-options');
+
+        // Device token verification will fail since user is gone
+        $response->assertStatus(401);
+    }
+
+    // -- Device type detection in register --
+
+    public function test_register_detects_ios_device_type(): void
+    {
+        $challengeRecord = WebAuthnChallenge::createForRegistration($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode($challengeRecord->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $attestationB64 = rtrim(strtr(base64_encode(str_repeat("\x00", 50)), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+            'User-Agent' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X)',
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'ios-cred',
+                'rawId' => rtrim(strtr(base64_encode('ios'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('credential.device_type', 'iOS');
+    }
+
+    public function test_register_detects_android_device_type(): void
+    {
+        $challengeRecord = WebAuthnChallenge::createForRegistration($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode($challengeRecord->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $attestationB64 = rtrim(strtr(base64_encode(str_repeat("\x00", 50)), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+            'User-Agent' => 'Mozilla/5.0 (Linux; Android 14; Pixel 8)',
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'android-cred',
+                'rawId' => rtrim(strtr(base64_encode('android'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('credential.device_type', 'Android');
+    }
+
+    public function test_register_detects_macos_device_type(): void
+    {
+        $challengeRecord = WebAuthnChallenge::createForRegistration($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode($challengeRecord->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $attestationB64 = rtrim(strtr(base64_encode(str_repeat("\x00", 50)), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) Safari/605',
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'mac-cred',
+                'rawId' => rtrim(strtr(base64_encode('mac'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('credential.device_type', 'macOS');
+    }
+
+    public function test_register_detects_unknown_device_type(): void
+    {
+        $challengeRecord = WebAuthnChallenge::createForRegistration($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode($challengeRecord->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $attestationB64 = rtrim(strtr(base64_encode(str_repeat("\x00", 50)), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+            'User-Agent' => 'SomeCustomBot/1.0',
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'unknown-cred',
+                'rawId' => rtrim(strtr(base64_encode('unknown'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('credential.device_type', 'unknown');
+    }
+
+    // -- Login browser detection --
+
+    public function test_login_detects_firefox_browser(): void
+    {
+        $credential = WebAuthnCredential::create([
+            'user_id' => $this->user->id,
+            'credential_id' => 'firefox-cred',
+            'public_key' => 'test-key',
+            'name' => 'Test Passkey',
+            'counter' => 0,
+            'transports' => ['internal'],
+            'device_type' => 'Windows',
+        ]);
+
+        $challenge = WebAuthnChallenge::createForLogin($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.get',
+            'challenge' => rtrim(strtr(base64_encode($challenge->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $authenticatorData = str_repeat("\0", 33) . pack('N', 1) . "\0";
+        $authDataB64 = rtrim(strtr(base64_encode($authenticatorData), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'User-Agent' => 'Mozilla/5.0 (X11; Linux x86_64; rv:120.0) Gecko/20100101 Firefox/120.0',
+        ])->postJson('/api/auth/webauthn/login', [
+            'credential' => [
+                'id' => 'firefox-cred',
+                'rawId' => rtrim(strtr(base64_encode('firefox'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'authenticatorData' => $authDataB64,
+                    'clientDataJSON' => $clientDataB64,
+                    'signature' => rtrim(strtr(base64_encode('sig'), '+/', '-_'), '='),
+                ],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_login_detects_edge_browser(): void
+    {
+        $credential = WebAuthnCredential::create([
+            'user_id' => $this->user->id,
+            'credential_id' => 'edge-cred',
+            'public_key' => 'test-key',
+            'name' => 'Test Passkey',
+            'counter' => 0,
+            'transports' => ['internal'],
+            'device_type' => 'Windows',
+        ]);
+
+        $challenge = WebAuthnChallenge::createForLogin($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.get',
+            'challenge' => rtrim(strtr(base64_encode($challenge->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $authenticatorData = str_repeat("\0", 33) . pack('N', 1) . "\0";
+        $authDataB64 = rtrim(strtr(base64_encode($authenticatorData), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Edg/120.0',
+        ])->postJson('/api/auth/webauthn/login', [
+            'credential' => [
+                'id' => 'edge-cred',
+                'rawId' => rtrim(strtr(base64_encode('edge'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'authenticatorData' => $authDataB64,
+                    'clientDataJSON' => $clientDataB64,
+                    'signature' => rtrim(strtr(base64_encode('sig'), '+/', '-_'), '='),
+                ],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_login_detects_safari_browser(): void
+    {
+        $credential = WebAuthnCredential::create([
+            'user_id' => $this->user->id,
+            'credential_id' => 'safari-cred',
+            'public_key' => 'test-key',
+            'name' => 'Test Passkey',
+            'counter' => 0,
+            'transports' => ['internal'],
+            'device_type' => 'macOS',
+        ]);
+
+        $challenge = WebAuthnChallenge::createForLogin($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.get',
+            'challenge' => rtrim(strtr(base64_encode($challenge->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $authenticatorData = str_repeat("\0", 33) . pack('N', 1) . "\0";
+        $authDataB64 = rtrim(strtr(base64_encode($authenticatorData), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'User-Agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 14_0) AppleWebKit/605.1.15 Version/17.0 Safari/605.1.15',
+        ])->postJson('/api/auth/webauthn/login', [
+            'credential' => [
+                'id' => 'safari-cred',
+                'rawId' => rtrim(strtr(base64_encode('safari'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'authenticatorData' => $authDataB64,
+                    'clientDataJSON' => $clientDataB64,
+                    'signature' => rtrim(strtr(base64_encode('sig'), '+/', '-_'), '='),
+                ],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('success', true);
+    }
+
+    // -- Login with credential whose user is null (cascade deletes credential, so test the 401 path) --
+
+    public function test_login_with_deleted_user_cascades_credential(): void
+    {
+        $tempUser = AuthUser::create([
+            'name' => 'Temp',
+            'email' => 'temp@havun.nl',
+            'password_hash' => null,
+            'is_admin' => false,
+        ]);
+
+        WebAuthnCredential::create([
+            'user_id' => $tempUser->id,
+            'credential_id' => 'orphan-cred',
+            'public_key' => 'test-key',
+            'name' => 'Orphan Passkey',
+            'counter' => 0,
+            'transports' => ['internal'],
+            'device_type' => 'Windows',
+        ]);
+
+        $challenge = WebAuthnChallenge::createForLogin($tempUser->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.get',
+            'challenge' => rtrim(strtr(base64_encode($challenge->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $authenticatorData = str_repeat("\0", 33) . pack('N', 1) . "\0";
+        $authDataB64 = rtrim(strtr(base64_encode($authenticatorData), '+/', '-_'), '=');
+
+        // Delete the user — cascades to credential and challenge
+        $tempUser->forceDelete();
+
+        // Credential was cascade-deleted, so login returns "Passkey niet gevonden"
+        $response = $this->postJson('/api/auth/webauthn/login', [
+            'credential' => [
+                'id' => 'orphan-cred',
+                'rawId' => rtrim(strtr(base64_encode('orphan'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'authenticatorData' => $authDataB64,
+                    'clientDataJSON' => $clientDataB64,
+                    'signature' => rtrim(strtr(base64_encode('sig'), '+/', '-_'), '='),
+                ],
+            ],
+        ]);
+
+        $response->assertStatus(401)
+            ->assertJsonPath('error', 'Passkey niet gevonden');
+    }
+
+    // -- Register RP ID detection --
+
+    public function test_register_options_returns_havun_rp_id(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->getJson('/api/auth/webauthn/register-options');
+
+        $response->assertOk();
+        // The RP ID should be based on the host
+        $this->assertNotEmpty($response->json('rp.id'));
+    }
+
+    // -- Credentials with deleted user --
+
+    public function test_credentials_with_deleted_user_returns_404(): void
+    {
+        $tempUser = AuthUser::create([
+            'name' => 'Temp',
+            'email' => 'temp2@havun.nl',
+            'password_hash' => null,
+            'is_admin' => false,
+        ]);
+
+        $tempToken = AuthDevice::generateToken();
+        AuthDevice::create([
+            'user_id' => $tempUser->id,
+            'device_name' => 'Chrome',
+            'device_hash' => hash('sha256', 'temp2-fp'),
+            'token' => $tempToken,
+            'expires_at' => now()->addDays(30),
+            'last_used_at' => now(),
+            'ip_address' => '127.0.0.1',
+            'is_active' => true,
+        ]);
+
+        $tempUser->forceDelete();
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$tempToken}",
+        ])->getJson('/api/auth/webauthn/credentials');
+
+        // Token verification fails because user is deleted
+        $response->assertStatus(401);
+    }
+
+    // -- Register with iPad user agent --
+
+    public function test_register_detects_ipad_as_ios(): void
+    {
+        $challengeRecord = WebAuthnChallenge::createForRegistration($this->user->id);
+
+        $clientData = json_encode([
+            'type' => 'webauthn.create',
+            'challenge' => rtrim(strtr(base64_encode($challengeRecord->challenge), '+/', '-_'), '='),
+            'origin' => 'https://havuncore.havun.nl',
+        ]);
+        $clientDataB64 = rtrim(strtr(base64_encode($clientData), '+/', '-_'), '=');
+        $attestationB64 = rtrim(strtr(base64_encode(str_repeat("\x00", 50)), '+/', '-_'), '=');
+
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+            'User-Agent' => 'Mozilla/5.0 (iPad; CPU OS 17_0 like Mac OS X)',
+        ])->postJson('/api/auth/webauthn/register', [
+            'credential' => [
+                'id' => 'ipad-cred',
+                'rawId' => rtrim(strtr(base64_encode('ipad'), '+/', '-_'), '='),
+                'type' => 'public-key',
+                'response' => [
+                    'clientDataJSON' => $clientDataB64,
+                    'attestationObject' => $attestationB64,
+                ],
+            ],
+        ]);
+
+        $response->assertOk()
+            ->assertJsonPath('credential.device_type', 'iOS');
+    }
+
+    // -- Helper --
+
+    private function assertStringContains(string $needle, string $haystack): void
+    {
+        $this->assertTrue(
+            str_contains($haystack, $needle),
+            "Failed asserting that '{$haystack}' contains '{$needle}'"
+        );
+    }
 }

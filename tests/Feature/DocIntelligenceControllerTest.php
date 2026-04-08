@@ -302,6 +302,177 @@ class DocIntelligenceControllerTest extends TestCase
             ->assertJsonPath('success', false);
     }
 
+    // -- Health edge cases --
+
+    public function test_health_with_no_files_shows_degraded(): void
+    {
+        Http::fake([
+            '127.0.0.1:11434/*' => Http::response(['models' => []], 200),
+        ]);
+
+        // No files indexed — should show degraded status
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/health');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('status', 'degraded')
+            ->assertJsonPath('indexed_files', 0);
+    }
+
+    public function test_health_with_ollama_down(): void
+    {
+        Http::fake([
+            '127.0.0.1:11434/*' => Http::response('Connection refused', 500),
+        ]);
+
+        $this->createEmbedding('havuncore', 'docs/test.md', 'Content', 50, 'nomic-embed-text');
+
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/health');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('ollama_available', false);
+    }
+
+    public function test_health_shows_embedding_breakdown(): void
+    {
+        Http::fake([
+            '127.0.0.1:11434/*' => Http::response(['models' => []], 200),
+        ]);
+
+        $this->createEmbedding('havuncore', 'docs/a.md', 'Neural doc', 100, 'nomic-embed-text');
+        $this->createEmbedding('havuncore', 'docs/b.md', 'TF-IDF doc', 80, 'tfidf-fallback');
+
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/health');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('neural_embeddings', 1)
+            ->assertJsonPath('tfidf_embeddings', 1)
+            ->assertJsonPath('indexed_files', 2);
+    }
+
+    // -- Search edge cases --
+
+    public function test_search_with_type_filter(): void
+    {
+        $indexer = Mockery::mock(DocIndexer::class);
+        $indexer->shouldReceive('search')
+            ->with('auth', null, 5, 'controller')
+            ->once()
+            ->andReturn([]);
+
+        $this->app->instance(DocIndexer::class, $indexer);
+
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/search?q=auth&type=controller');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true);
+    }
+
+    public function test_search_with_query_alias(): void
+    {
+        $indexer = Mockery::mock(DocIndexer::class);
+        $indexer->shouldReceive('search')
+            ->with('deployment', null, 5, null)
+            ->once()
+            ->andReturn([]);
+
+        $this->app->instance(DocIndexer::class, $indexer);
+
+        // Use 'query' instead of 'q'
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/search?query=deployment');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('query', 'deployment');
+    }
+
+    public function test_search_with_invalid_token(): void
+    {
+        $response = $this->withToken('wrong-token')
+            ->getJson('/api/docs/search?q=test');
+
+        $response->assertStatus(401);
+    }
+
+    // -- Authentication edge cases --
+
+    public function test_auth_with_no_configured_token_returns_401(): void
+    {
+        config(['services.doc_intelligence.api_token' => null]);
+
+        $response = $this->withToken('any-token')
+            ->getJson('/api/docs/stats');
+
+        $response->assertStatus(401);
+    }
+
+    // -- Stats edge cases --
+
+    public function test_stats_with_no_data(): void
+    {
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/stats');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('total_files', 0)
+            ->assertJsonPath('total_issues', 0);
+    }
+
+    public function test_stats_with_issues_across_projects(): void
+    {
+        $this->createIssue('havuncore', 'outdated', 'high', 'open');
+        $this->createIssue('havunadmin', 'missing', 'medium', 'open');
+        $this->createIssue('havunadmin', 'duplicate', 'low', 'open');
+
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/stats');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('total_issues', 3);
+
+        $issuesByProject = $response->json('issues_by_project');
+        $this->assertEquals(1, $issuesByProject['havuncore']);
+        $this->assertEquals(2, $issuesByProject['havunadmin']);
+    }
+
+    // -- Issues edge cases --
+
+    public function test_issues_with_no_open_issues(): void
+    {
+        $this->createIssue('havuncore', 'outdated', 'high', 'resolved');
+
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/issues');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('count', 0);
+    }
+
+    public function test_issues_ordered_by_severity(): void
+    {
+        $this->createIssue('havuncore', 'low-prio', 'low', 'open');
+        $this->createIssue('havuncore', 'high-prio', 'high', 'open');
+        $this->createIssue('havuncore', 'med-prio', 'medium', 'open');
+
+        $response = $this->withToken($this->token)
+            ->getJson('/api/docs/issues');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('count', 3);
+
+        $issues = $response->json('issues');
+        $this->assertEquals('high', $issues[0]['severity']);
+        $this->assertEquals('medium', $issues[1]['severity']);
+        $this->assertEquals('low', $issues[2]['severity']);
+    }
+
     // -- Helpers --
 
     private function createEmbedding(

@@ -216,4 +216,125 @@ class DeviceControllerTest extends TestCase
             ->assertJsonPath('success', false)
             ->assertJsonPath('message', 'Authentication required');
     }
+
+    // -- Destroy edge cases --
+
+    public function test_destroy_without_auth_returns_401(): void
+    {
+        $response = $this->deleteJson('/api/auth/devices/1');
+
+        $response->assertStatus(401)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Authentication required');
+    }
+
+    public function test_destroy_nonexistent_device_returns_404(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->deleteJson('/api/auth/devices/99999');
+
+        $response->assertStatus(404)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Device not found');
+    }
+
+    public function test_destroy_with_invalid_token_returns_401(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer invalid_token_value',
+        ])->deleteJson('/api/auth/devices/1');
+
+        $response->assertStatus(401)
+            ->assertJsonPath('success', false);
+    }
+
+    // -- Revoke All edge cases --
+
+    public function test_revoke_all_without_auth_returns_401(): void
+    {
+        $response = $this->postJson('/api/auth/devices/revoke-all');
+
+        $response->assertStatus(401)
+            ->assertJsonPath('success', false)
+            ->assertJsonPath('message', 'Authentication required');
+    }
+
+    public function test_revoke_all_with_no_other_devices(): void
+    {
+        // Only the current device exists
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->postJson('/api/auth/devices/revoke-all');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('revoked_count', 0);
+
+        // Current device should still be active
+        $this->assertTrue($this->device->fresh()->is_active);
+    }
+
+    public function test_revoke_all_with_invalid_token_returns_401(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer invalid_token_here',
+        ])->postJson('/api/auth/devices/revoke-all');
+
+        $response->assertStatus(401)
+            ->assertJsonPath('success', false);
+    }
+
+    // -- Logs edge cases --
+
+    public function test_logs_with_invalid_token_returns_401(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer bad_token_value',
+        ])->getJson('/api/auth/logs');
+
+        $response->assertStatus(401)
+            ->assertJsonPath('success', false);
+    }
+
+    public function test_logs_with_high_limit_is_capped(): void
+    {
+        // Create 5 log entries
+        for ($i = 0; $i < 5; $i++) {
+            AuthAccessLog::log('login', $this->user->id, 'Device ' . $i, '127.0.0.1');
+        }
+
+        // Request with limit > 100, should be capped to 100
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->getJson('/api/auth/logs?limit=500');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            // All 5 logs should be returned (capped at 100, but only 5 exist)
+            ->assertJsonCount(5, 'logs');
+    }
+
+    public function test_logs_with_empty_result(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization' => "Bearer {$this->token}",
+        ])->getJson('/api/auth/logs');
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonCount(0, 'logs');
+    }
+
+    // -- Index edge cases --
+
+    public function test_index_with_invalid_token_returns_401(): void
+    {
+        $response = $this->withHeaders([
+            'Authorization' => 'Bearer some_invalid_token',
+        ])->getJson('/api/auth/devices');
+
+        $response->assertStatus(401)
+            ->assertJsonPath('success', false);
+    }
 }
