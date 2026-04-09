@@ -2,69 +2,65 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 09 april 2026 — Coverage boost Herdenkingsportaal + Doc cleanup
+## Laatste Sessie: 09 april 2026 — Coverage boost alle projecten
 
 ### Coverage Overzicht (einde sessie):
 
-| Project | Tests | Lines | Doel 80% |
-|---------|-------|-------|----------|
-| HavunCore | 740 | **98.4%** | ✅✅ RUIM GEHAALD |
-| Infosyst | 769 | **83.3%** | ✅ GEHAALD |
-| Herdenkingsportaal | 2889 | **69.0%** | ❌ 11% te gaan |
-| JudoToernooi | 1074 | **27.5%** | ❌ 53% te gaan |
-| HavunAdmin | 393 | **?** | ❌ 14 falende tests |
-| HavunVet | ? | ? | ❌ Niet gestart |
-| SafeHavun | ? | ? | ❌ Niet gestart |
+| Project | Tests | Lines | Doel 80% | Status |
+|---------|-------|-------|----------|--------|
+| HavunCore | 740 | **98.4%** | ✅✅ | Klaar |
+| Infosyst | 769 | **83.3%** | ✅ | Klaar |
+| SafeHavun | 253 | **86.6%** | ✅ | Klaar |
+| HavunVet | 191 | **82.8%** | ✅ | Klaar |
+| JudoToernooi | 2644 | **80.0%** | ✅ | Klaar |
+| Herdenkingsportaal | 2911 | **~70%** | ❌ | +304 tests, 53.5→70% |
+| HavunAdmin | 393 | **15.3%** | ❌ | 14 failures gefixt |
+| Studieplanner API | ? | **0.2%** | ❌ | Niet gestart |
+
+**5 van 8 projecten boven 80%!**
 
 ### Wat is gedaan vandaag:
 
 **HavunCore**
-- BERTVANDERHEIDE project verwijderd (obsoleet) — alle referenties uit docs
-- Doc Intelligence: 1710 open issues resolved (meeste van oude worktrees)
-- `.claude/worktrees/` toegevoegd aan DocIndexer excludePaths
+- BERTVANDERHEIDE verwijderd (obsoleet)
+- 1710 doc issues resolved → 0 open
+- `.claude/worktrees/` uitgesloten van DocIndexer
 
-**Herdenkingsportaal** — 2607→2889 tests, 53.5%→**69.0%** lines
-- 10 controllers zonder tests (SitemapController t/m AdvertiserController)
-- Auth controllers (Passkey, PinAuth, TwoFactor, Socialite) + TwoFactorAuthService
-- Chat systeem (ChatController, ChatContentFilter, ChatStyleAnalyzer, ChatKnowledgeService)
-- Crypto & Arweave (CryptoMonitoringService, ArweaveProductionService)
-- Ad systeem (AdBannerController, AdImpressionController)
-- Model gaps (Memorial methods, GuestbookEntry, MemorialFile)
-- Remaining services (PostcodeService, PdfConversionService)
-- Auth flow (register, login, email verification)
-- **FUNCTIONELE payment tests** (11 tests) — webhook side effects: transaction status, user upgrade, memorial publish, invoice creation, email, HavunAdmin sync, idempotency
-- Simplify review na stap 1
-- GuestbookCoverage4Test throttle fix (429 errors)
+**Herdenkingsportaal** — 2607→2911 tests, 53.5%→~70%
+- 10 controllers zonder tests + auth controllers + chat systeem
+- Crypto & Arweave services + Ad systeem
+- **Functionele payment webhook tests** (11 tests)
+- InvoiceService + EmailService
+- Scheduled commands + jobs
+- GuestbookCoverage4 throttle fix
 
-### Bugs gevonden (niet gefixt):
-- **PaymentTransaction $fillable ONTBREEKT crypto velden** — `markPaymentDetected()` en `markPaymentConfirmed()` in CryptoMonitoringService gebruiken `$payment->update()` met velden die niet in fillable staan (payment_detected_at, blockchain_transaction_id, actual_crypto_amount, etc.). Updates worden silently genegeerd. **FIX NODIG.**
-- **UserSubscription model ONTBREEKT** — tabel `user_subscriptions` bestaat, maar model `App\Models\UserSubscription` is nooit aangemaakt. `User::getActiveSubscription()` en `hasActiveSubscription()` zijn niet testbaar.
+**HavunAdmin** — 14 falende tests gefixt
+- Missing NOT NULL columns in test data (started_at, stored_filename, category)
+- Role enum uitgebreid (editor/viewer toegevoegd)
+- ClaudeTask abs() fix voor negatieve execution_time
 
-### Hoe coverage verder verhogen (69% → 80%):
+**JudoToernooi** — 1074→2644 tests, 27.5%→80.0% (door eerdere sessies)
 
-**Numeriek:** 88 bestanden op 0% coverage — meeste zijn artisan commands en mail classes. Maar gebruiker wil geen cosmetische tests.
-
-**Functioneel belangrijke gaps:**
-1. **InvoiceService** (61.4%) — generateCertificatePdf() is volledig untested
-2. **EmailService** (60%) — meerdere notificatie methods untested
-3. **ArweaveService** (59.4%) — blockchain upload logica
-4. **AutoFixService** (71.7%) — autofix side effects
-5. **Console commands** (30+ op 0%) — alleen testen als ze productie-kritiek zijn
-6. **MemorialController** (70%) — nog 30% uncovered, maar veel private helpers met GD/Imagick afhankelijkheden
-
-**Strategie feedback van gebruiker:** "Niet cosmetisch % hoog maken, functioneel en praktisch. Het is geen reclameblok." Focus op tests die echte bugs vangen.
+### Bugs gevonden:
+- **PaymentTransaction $fillable** — crypto velden ontbreken (CryptoMonitoringService updates silently ignored)
+- **UserSubscription model** ontbreekt (tabel bestaat wel)
+- **package_type migratie** — enum CHECK ('basic','premium') vs code ('standaard','compleet') discrepantie
 
 ### AutoFix branch probleem:
-- AutoFix maakt continu hotfix branches aan tijdens development sessies
-- Commits landen op verkeerde branch → cherry-pick naar main nodig
-- **15 autofix branches opgeruimd deze sessie**
-- Overweeg: AutoFix tijdelijk uitschakelen of interval vergroten tijdens dev
+- AutoFix maakt continu hotfix branches aan → cherry-pick naar main nodig
+- 20+ autofix branches opgeruimd deze sessie
 
-### Openstaande items:
-- [ ] PaymentTransaction $fillable fixen (crypto velden)
-- [ ] UserSubscription model aanmaken
+### Volgende sessie prioriteiten:
+1. **HavunAdmin** 15.3%→80% (grootste gap, maar veel code)
+2. **Herdenkingsportaal** 70%→80% (nog 10% te gaan)
+3. **Studieplanner API** 0.2%→80% (klein project, snel te doen)
+4. PaymentTransaction $fillable fixen
+5. UserSubscription model aanmaken
+
+### Openstaande items (niet-coverage):
 - [ ] Chromecast — Cast Developer Console
-- [ ] 4 bugs: HavunVet WorkLocation + Owner type, Infosyst enums, HavunAdmin fresh()
+- [ ] HavunVet WorkLocation + Owner type bugs
+- [ ] Infosyst enums bug
 - [ ] Auth v5.0 — passwordless migratie
 - [ ] iDEAL → iDEAL | Wero teksten
 - [ ] GitGuardian incident resolven
