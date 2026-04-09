@@ -63,7 +63,7 @@ HavunCore/
 ├── docs/
 │   ├── handover.md
 │   ├── kb/                # Knowledge Base: INDEX.md, OVERZICHT.md, projects-index, patterns, runbooks, reference, decisions, contracts, templates
-│   └── projects/         # HAVUNCORE, HAVUNADMIN, HERDENKINGSPORTAAL, BERTVANDERHEIDE, VPDUPDATE, INDEX
+│   └── projects/         # HAVUNCORE, HAVUNADMIN, HERDENKINGSPORTAAL, VPDUPDATE, INDEX
 ├── public/
 │   └── index.php
 ├── routes/               # api.php, web.php, console.php, channels.php

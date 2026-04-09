@@ -19,8 +19,6 @@ Centrale documentatie voor alle Havun projecten.
 
 | Project | Type | Status | URL |
 |---------|------|--------|-----|
-| [BertvanderHeide](BERTVANDERHEIDE.md) | Uitvaart Website | Setup compleet | bertvanderheide.havun.nl |
-
 ---
 
 ## Server Overzicht
