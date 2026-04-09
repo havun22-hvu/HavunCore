@@ -2,19 +2,19 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 09 april 2026 — Coverage boost Herdenkingsportaal
+## Laatste Sessie: 09 april 2026 — Coverage boost Herdenkingsportaal + Doc cleanup
 
 ### Coverage Overzicht (einde sessie):
 
-| Project | Tests | Methods | Lines | Doel 80% |
-|---------|-------|---------|-------|----------|
-| HavunCore | 740 | **92.7%** | **98.4%** | ✅✅ RUIM GEHAALD |
-| Infosyst | 769 | **83.3%** | **83.3%** | ✅ GEHAALD |
-| Herdenkingsportaal | 2869 | **?** | **68.9%** | ❌ 11% te gaan |
-| JudoToernooi | 1074 | **31.4%** | **27.5%** | ❌ 49% te gaan |
-| HavunAdmin | 393 | **?** | **?** | ❌ 14 falende tests, eerst fixen |
-| HavunVet | ? | ? | ? | ❌ Niet gestart |
-| SafeHavun | ? | ? | ? | ❌ Niet gestart |
+| Project | Tests | Lines | Doel 80% |
+|---------|-------|-------|----------|
+| HavunCore | 740 | **98.4%** | ✅✅ RUIM GEHAALD |
+| Infosyst | 769 | **83.3%** | ✅ GEHAALD |
+| Herdenkingsportaal | 2889 | **69.0%** | ❌ 11% te gaan |
+| JudoToernooi | 1074 | **27.5%** | ❌ 53% te gaan |
+| HavunAdmin | 393 | **?** | ❌ 14 falende tests |
+| HavunVet | ? | ? | ❌ Niet gestart |
+| SafeHavun | ? | ? | ❌ Niet gestart |
 
 ### Wat is gedaan vandaag:
 
@@ -23,43 +23,52 @@
 - Doc Intelligence: 1710 open issues resolved (meeste van oude worktrees)
 - `.claude/worktrees/` toegevoegd aan DocIndexer excludePaths
 
-**Herdenkingsportaal** ✅ — 2607→2869 tests, 53.5%→**68.9%** lines (+15.4pp)
-- Stap 1: 10 controllers zonder tests (80 tests) — Sitemap, Condolence, Version, GuestSession, GuestPhoto, Profile, AdminDocument, Analytics, HelpManagement, Advertiser
-- Stap 2: Auth controllers (84 tests) — Passkey, PinAuth, TwoFactor, TwoFactorChallenge, Socialite + TwoFactorAuthService unit tests
-- Stap 3: Chat systeem (36 tests) — ChatController, ChatContentFilter, ChatStyleAnalyzer, ChatKnowledgeService
-- Stap 4: Crypto & Arweave (22 tests) — CryptoMonitoringService, ArweaveProductionService
-- Stap 5: Ad systeem (16 tests) — AdBannerController, AdImpressionController
-- Stap 6: Model gaps (4 tests) — Memorial getPrivacyOptions, getApprovedGuestPhotos, getPendingGuestPhotos
-- Stap 7-10: Remaining (19 tests) — GuestbookEntry, MemorialFile, PostcodeService, PdfConversionService
-- Simplify review uitgevoerd na stap 1
+**Herdenkingsportaal** — 2607→2889 tests, 53.5%→**69.0%** lines
+- 10 controllers zonder tests (SitemapController t/m AdvertiserController)
+- Auth controllers (Passkey, PinAuth, TwoFactor, Socialite) + TwoFactorAuthService
+- Chat systeem (ChatController, ChatContentFilter, ChatStyleAnalyzer, ChatKnowledgeService)
+- Crypto & Arweave (CryptoMonitoringService, ArweaveProductionService)
+- Ad systeem (AdBannerController, AdImpressionController)
+- Model gaps (Memorial methods, GuestbookEntry, MemorialFile)
+- Remaining services (PostcodeService, PdfConversionService)
+- Auth flow (register, login, email verification)
+- **FUNCTIONELE payment tests** (11 tests) — webhook side effects: transaction status, user upgrade, memorial publish, invoice creation, email, HavunAdmin sync, idempotency
+- Simplify review na stap 1
+- GuestbookCoverage4Test throttle fix (429 errors)
 
-### Bug gevonden (niet gefixt):
-- CryptoMonitoringService: `markPaymentDetected()` en `markPaymentConfirmed()` gebruiken `$payment->update()` met velden die NIET in PaymentTransaction `$fillable` staan (payment_detected_at, blockchain_transaction_id, etc.). Updates worden silently genegeerd. **FIX NODIG:** voeg deze velden toe aan `$fillable` in PaymentTransaction model.
+### Bugs gevonden (niet gefixt):
+- **PaymentTransaction $fillable ONTBREEKT crypto velden** — `markPaymentDetected()` en `markPaymentConfirmed()` in CryptoMonitoringService gebruiken `$payment->update()` met velden die niet in fillable staan (payment_detected_at, blockchain_transaction_id, actual_crypto_amount, etc.). Updates worden silently genegeerd. **FIX NODIG.**
+- **UserSubscription model ONTBREEKT** — tabel `user_subscriptions` bestaat, maar model `App\Models\UserSubscription` is nooit aangemaakt. `User::getActiveSubscription()` en `hasActiveSubscription()` zijn niet testbaar.
 
-### AutoFix branches:
-- AutoFix blijft hotfix branches aanmaken tijdens sessies → commits landen op verkeerde branch
-- Workaround: cherry-pick naar main, verwijder hotfix branches
-- Overweeg: AutoFix tijdelijk uitschakelen tijdens development sessies
+### Hoe coverage verder verhogen (69% → 80%):
 
-### Plan voor vervolg (Herdenkingsportaal 68.9% → 80%):
-- MemorialController verdieping (797 uncovered stmts, nu 69.9%) — grootste resterende gap
-- ImageCompressionService (149 uncovered) — needs GD/Imagick mocking
-- MemorialHtmlGenerator (121 uncovered)
-- Services verdieping: EnvironmentService, ArweaveServiceFactory, BankStatementParser
+**Numeriek:** 88 bestanden op 0% coverage — meeste zijn artisan commands en mail classes. Maar gebruiker wil geen cosmetische tests.
 
-### Bekende issues:
-- HavunAdmin: 14 falende tests (niet aangepakt deze sessie)
-- JudoToernooi: 7 coverage testbestanden verwijderd (failures)
-- UserSubscription model ontbreekt (tabel bestaat wel) — getActiveSubscription/hasActiveSubscription niet testbaar
+**Functioneel belangrijke gaps:**
+1. **InvoiceService** (61.4%) — generateCertificatePdf() is volledig untested
+2. **EmailService** (60%) — meerdere notificatie methods untested
+3. **ArweaveService** (59.4%) — blockchain upload logica
+4. **AutoFixService** (71.7%) — autofix side effects
+5. **Console commands** (30+ op 0%) — alleen testen als ze productie-kritiek zijn
+6. **MemorialController** (70%) — nog 30% uncovered, maar veel private helpers met GD/Imagick afhankelijkheden
 
-### Openstaande items (niet-coverage):
-- [ ] Chromecast — Cast Developer Console app registreren
+**Strategie feedback van gebruiker:** "Niet cosmetisch % hoog maken, functioneel en praktisch. Het is geen reclameblok." Focus op tests die echte bugs vangen.
+
+### AutoFix branch probleem:
+- AutoFix maakt continu hotfix branches aan tijdens development sessies
+- Commits landen op verkeerde branch → cherry-pick naar main nodig
+- **15 autofix branches opgeruimd deze sessie**
+- Overweeg: AutoFix tijdelijk uitschakelen of interval vergroten tijdens dev
+
+### Openstaande items:
+- [ ] PaymentTransaction $fillable fixen (crypto velden)
+- [ ] UserSubscription model aanmaken
+- [ ] Chromecast — Cast Developer Console
 - [ ] 4 bugs: HavunVet WorkLocation + Owner type, Infosyst enums, HavunAdmin fresh()
 - [ ] Auth v5.0 — passwordless migratie
-- [ ] iDEAL → iDEAL | Wero teksten aanpassen
+- [ ] iDEAL → iDEAL | Wero teksten
 - [ ] GitGuardian incident resolven
-- [ ] PaymentTransaction $fillable fixen (crypto velden)
 
 ### Belangrijke context:
 - VP-02 deadline: 31 mei 2026
-- Doc issues: 0 open (alle resolved)
+- Doc issues: 0 open
