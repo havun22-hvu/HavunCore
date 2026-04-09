@@ -2,12 +2,7 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 08 april 2026 — Coverage boost VP-02
-
-### PCOV Configuratie (OPGELOST)
-- `pcov.directory=D:/GitHub` staat in `C:\laragon\bin\php\php-8.2.29-Win32-vs16-x64\php.ini`
-- Coverage werkt ZONDER `-d` flag voor ALLE projecten
-- Gewoon: `vendor/bin/phpunit --coverage-text`
+## Laatste Sessie: 09 april 2026 — Coverage boost Herdenkingsportaal
 
 ### Coverage Overzicht (einde sessie):
 
@@ -15,7 +10,7 @@
 |---------|-------|---------|-------|----------|
 | HavunCore | 740 | **92.7%** | **98.4%** | ✅✅ RUIM GEHAALD |
 | Infosyst | 769 | **83.3%** | **83.3%** | ✅ GEHAALD |
-| Herdenkingsportaal | 2218 | **50.9%** | **53.5%** | ❌ 29% te gaan |
+| Herdenkingsportaal | 2869 | **?** | **68.9%** | ❌ 11% te gaan |
 | JudoToernooi | 1074 | **31.4%** | **27.5%** | ❌ 49% te gaan |
 | HavunAdmin | 393 | **?** | **?** | ❌ 14 falende tests, eerst fixen |
 | HavunVet | ? | ? | ? | ❌ Niet gestart |
@@ -23,42 +18,39 @@
 
 ### Wat is gedaan vandaag:
 
-**HavunCore** ✅✅ — 536→740 tests, 82.4%→**92.7%** methods, 93.6%→**98.4%** lines
-**Infosyst** ✅ — 534→769 tests, 65.0%→**83.3%** methods
-**Herdenkingsportaal** — 643→2218 tests, 23.5%→**50.9%** methods
-- Dead code cleanup: 10 bestanden + 5 methods verwijderd (-1569 regels)
-- Simplify analyse gedaan — MemorialController (4691 regels) is bottleneck
-- Coverage vlakt af door private helpers die GD/Imagick vereisen
+**HavunCore**
+- BERTVANDERHEIDE project verwijderd (obsoleet) — alle referenties uit docs
+- Doc Intelligence: 1710 open issues resolved (meeste van oude worktrees)
+- `.claude/worktrees/` toegevoegd aan DocIndexer excludePaths
 
-**JudoToernooi** — 700→1074 tests, 23.9%→**31.4%** methods
-- 7 testbestanden verwijderd wegens failures (TODO: fixen)
-- Laravel zit in `laravel/` subdirectory (niet root)
+**Herdenkingsportaal** ✅ — 2607→2869 tests, 53.5%→**68.9%** lines (+15.4pp)
+- Stap 1: 10 controllers zonder tests (80 tests) — Sitemap, Condolence, Version, GuestSession, GuestPhoto, Profile, AdminDocument, Analytics, HelpManagement, Advertiser
+- Stap 2: Auth controllers (84 tests) — Passkey, PinAuth, TwoFactor, TwoFactorChallenge, Socialite + TwoFactorAuthService unit tests
+- Stap 3: Chat systeem (36 tests) — ChatController, ChatContentFilter, ChatStyleAnalyzer, ChatKnowledgeService
+- Stap 4: Crypto & Arweave (22 tests) — CryptoMonitoringService, ArweaveProductionService
+- Stap 5: Ad systeem (16 tests) — AdBannerController, AdImpressionController
+- Stap 6: Model gaps (4 tests) — Memorial getPrivacyOptions, getApprovedGuestPhotos, getPendingGuestPhotos
+- Stap 7-10: Remaining (19 tests) — GuestbookEntry, MemorialFile, PostcodeService, PdfConversionService
+- Simplify review uitgevoerd na stap 1
 
-### Plan voor vervolg:
+### Bug gevonden (niet gefixt):
+- CryptoMonitoringService: `markPaymentDetected()` en `markPaymentConfirmed()` gebruiken `$payment->update()` met velden die NIET in PaymentTransaction `$fillable` staan (payment_detected_at, blockchain_transaction_id, etc.). Updates worden silently genegeerd. **FIX NODIG:** voeg deze velden toe aan `$fillable` in PaymentTransaction model.
 
-**Prioriteit 1: Herdenkingsportaal** (50.9% → 80%)
-- Nog ~340 methods nodig
-- MemorialController is 76 methods, 16 covered — private helpers (watermark/IPTC) vereisen GD
-- AdminController 72 methods, 39 covered — meer admin route tests
-- Overweeg: meer dead code removal (simplify analyse al gedaan)
+### AutoFix branches:
+- AutoFix blijft hotfix branches aanmaken tijdens sessies → commits landen op verkeerde branch
+- Workaround: cherry-pick naar main, verwijder hotfix branches
+- Overweeg: AutoFix tijdelijk uitschakelen tijdens development sessies
 
-**Prioriteit 2: JudoToernooi** (31.4% → 80%)
-- Nog ~702 methods nodig
-- 7 verwijderde coverage testbestanden fixen en opnieuw toevoegen
-- Grootste gaps: MatController(35), BlokMatVerdelingService(29), BlokController(26)
-- Pad: `D:/GitHub/JudoToernooi/laravel/`
-
-**Prioriteit 3: HavunAdmin** (onbekend → 80%)
-- 14 falende tests (13 errors, 1 failure) — eerst fixen
-- Dan coverage meten en tests schrijven
-
-**Prioriteit 4: HavunVet + SafeHavun** (niet gestart)
+### Plan voor vervolg (Herdenkingsportaal 68.9% → 80%):
+- MemorialController verdieping (797 uncovered stmts, nu 69.9%) — grootste resterende gap
+- ImageCompressionService (149 uncovered) — needs GD/Imagick mocking
+- MemorialHtmlGenerator (121 uncovered)
+- Services verdieping: EnvironmentService, ArweaveServiceFactory, BankStatementParser
 
 ### Bekende issues:
-- HavunAdmin: 14 falende tests in `ClaudeTaskModelTest.php` e.a.
+- HavunAdmin: 14 falende tests (niet aangepakt deze sessie)
 - JudoToernooi: 7 coverage testbestanden verwijderd (failures)
-- Herdenkingsportaal: AutoFix maakt steeds hotfix branches → merge naar main nodig na commit
-- Herdenkingsportaal: `WikiLinkService::autoLinkTerms()` bug op lijn 84 (PREG_OFFSET_CAPTURE ontbreekt)
+- UserSubscription model ontbreekt (tabel bestaat wel) — getActiveSubscription/hasActiveSubscription niet testbaar
 
 ### Openstaande items (niet-coverage):
 - [ ] Chromecast — Cast Developer Console app registreren
@@ -66,7 +58,8 @@
 - [ ] Auth v5.0 — passwordless migratie
 - [ ] iDEAL → iDEAL | Wero teksten aanpassen
 - [ ] GitGuardian incident resolven
+- [ ] PaymentTransaction $fillable fixen (crypto velden)
 
 ### Belangrijke context:
 - VP-02 deadline: 31 mei 2026
-- 29 doc issues open in HavunCore (lage prio)
+- Doc issues: 0 open (alle resolved)
