@@ -52,6 +52,7 @@ class DocIndexer
         '.vscode',
         'offline',
         'staging',
+        '.claude/worktrees',
     ];
 
     /**
