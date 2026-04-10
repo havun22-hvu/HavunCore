@@ -2,49 +2,62 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Laatste Sessie: 09 april 2026 — Massive coverage boost alle projecten
+## Laatste Sessie: 09-10 april 2026 — Record coverage sessie
 
 ### Coverage Overzicht (einde sessie):
 
-| Project | Tests voor | Tests na | Coverage | Doel 80% |
-|---------|-----------|---------|----------|----------|
+| Project | Tests voor | Tests na | Coverage | Doel 82.5% |
+|---------|-----------|---------|----------|------------|
 | HavunCore | 740 | 740 | **98.4%** | ✅✅ |
-| SafeHavun | 253 | 253 | **86.6%** | ✅ |
 | Studieplanner API | ~0 | **275** | **88.4%** | ✅ (was 0.2%) |
+| SafeHavun | 253 | 253 | **86.6%** | ✅ |
 | Infosyst | 769 | 769 | **83.3%** | ✅ |
 | HavunVet | 191 | 191 | **82.8%** | ✅ |
-| JudoToernooi | 2644 | 2644 | **80.0%** | ✅ |
-| Herdenkingsportaal | 2607 | **2911** | **~70%** | ❌ 10% te gaan |
-| HavunAdmin | 393(14❌) | **824** | **~50%** | ❌ 30% te gaan |
+| JudoToernooi | 2644 | 2644 | **80.0%** | ❌ 2.5% te gaan |
+| Herdenkingsportaal | 2607 | **~3700** | **80.5%** | ❌ 2% te gaan |
+| HavunAdmin | 393(14❌) | **~1260** | **~60%** | ❌ 22% te gaan |
 
-**7 van 8 projecten boven 80%!** (of failures gefixt)
+**5 van 8 projecten op 82.5%+!**
 
-### Vandaag geschreven tests:
+### Tests geschreven vandaag: ~2300+
 
-| Project | Nieuwe tests | Wat |
-|---------|-------------|-----|
-| Herdenkingsportaal | +304 | Controllers, auth, chat, crypto, ads, payment webhooks, invoices, scheduled tasks |
-| HavunAdmin | +431 | Controller CRUD (4 batches), service tests (PDF, bank, payments), 14 failures gefixt |
-| Studieplanner API | +275 | Alle API endpoints, models, services (0→88%) |
-| **Totaal** | **+1010** | |
+| Project | Nieuwe tests | Highlights |
+|---------|-------------|------------|
+| Herdenkingsportaal | ~1100 | Controllers, auth, chat, crypto, ads, payment webhooks, invoices, scheduled tasks, commands, essential business logic |
+| HavunAdmin | ~870 | Controllers CRUD (7 batches), services (5 batches), models (152), 14 failures gefixt |
+| Studieplanner API | 275 | Alle API endpoints (0→88%) |
 
-### Bugs gevonden:
+### Bugs gevonden en gefixt:
+- **ClaudeTask::scopeByPriority** (HavunAdmin) — MySQL FIELD() → CASE WHEN voor SQLite
+- **ClaudeTask execution_time** (HavunAdmin) — negatieve waarde door Carbon → abs()
+- **AiChatService** (HavunAdmin) — heredoc null coalesce parse error
+- **User migration** (HavunAdmin) — role enum miste editor/viewer
+
+### Bugs gevonden (niet gefixt):
 - **PaymentTransaction $fillable** (Herdenkingsportaal) — crypto velden ontbreken
 - **UserSubscription model** (Herdenkingsportaal) — tabel bestaat, model niet
 - **package_type migratie** (Herdenkingsportaal) — enum vs string discrepantie
-- **ClaudeTask::scopeByPriority** (HavunAdmin) — MySQL FIELD() niet SQLite-compatibel → gefixt
-- **ClaudeTask execution_time** (HavunAdmin) — negatieve waarde door Carbon → abs() fix
+- **TaxExportService** (HavunAdmin) — Eloquent Collection.merge() met stdClass faalt
 
 ### Doc Intelligence:
 - 1710 issues resolved → 0 open
-- BERTVANDERHEIDE verwijderd (obsoleet)
+- BERTVANDERHEIDE verwijderd
 - `.claude/worktrees/` uitgesloten van scanner
 
+### Coverage plafonds:
+- **Herdenkingsportaal 80.5%** — resterende code vereist Imagick, echte Arweave API, Git operaties
+- **HavunAdmin ~60%** — traag door tenant DB setup, nog veel controllers/services uncovered
+
 ### Volgende sessie prioriteiten:
-1. **HavunAdmin** 50%→80% — meer controller + service tests nodig
-2. **Herdenkingsportaal** 70%→80% — MemorialController verdieping, services
-3. PaymentTransaction $fillable fixen
-4. UserSubscription model aanmaken
+1. **HavunAdmin** ~60%→82.5% — nog ~2200 lines nodig
+2. **Herdenkingsportaal** 80.5%→82.5% — mock Arweave/Bunq APIs met Http::fake()
+3. **JudoToernooi** 80.0%→82.5% — klein gat
+4. PaymentTransaction $fillable fixen
+5. UserSubscription model aanmaken
+
+### AutoFix:
+- Maakt continu hotfix branches aan → 100+ opgeruimd deze sessie
+- Overweeg: AutoFix interval vergroten of uitschakelen tijdens development
 
 ### Openstaande items (niet-coverage):
 - [ ] Chromecast — Cast Developer Console
@@ -57,4 +70,3 @@
 ### Belangrijke context:
 - VP-02 deadline: 31 mei 2026
 - Doc issues: 0 open
-- AutoFix maakt continu hotfix branches aan → cherry-pick workflow nodig
