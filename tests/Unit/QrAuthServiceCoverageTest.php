@@ -33,7 +33,7 @@ class QrAuthServiceCoverageTest extends TestCase
         Mail::fake();
 
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -44,7 +44,7 @@ class QrAuthServiceCoverageTest extends TestCase
 
         $result = $this->service->sendLoginEmail(
             $session->qr_code,
-            'henk@havun.nl',
+            'havun22@gmail.com',
             'https://example.com/approve',
             'TestApp'
         );
@@ -64,7 +64,7 @@ class QrAuthServiceCoverageTest extends TestCase
 
         $result = $this->service->sendLoginEmail(
             $session->qr_code,
-            'henk@havun.nl',
+            'havun22@gmail.com',
             'https://example.com/approve'
         );
 
@@ -94,7 +94,7 @@ class QrAuthServiceCoverageTest extends TestCase
         Mail::fake();
 
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -106,7 +106,7 @@ class QrAuthServiceCoverageTest extends TestCase
         // No site_name passed — should default to 'Havun'
         $result = $this->service->sendLoginEmail(
             $session->qr_code,
-            'henk@havun.nl',
+            'havun22@gmail.com',
             'https://example.com/approve'
         );
 
@@ -120,7 +120,7 @@ class QrAuthServiceCoverageTest extends TestCase
     public function test_approve_via_email_token_success(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -129,7 +129,7 @@ class QrAuthServiceCoverageTest extends TestCase
             '10.0.0.1'
         );
 
-        $token = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $token = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
         $result = $this->service->approveViaEmailToken($token, '10.0.0.2');
 
@@ -167,7 +167,7 @@ class QrAuthServiceCoverageTest extends TestCase
     public function test_approve_via_email_token_reactivates_existing_device(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -189,7 +189,7 @@ class QrAuthServiceCoverageTest extends TestCase
             'is_active' => true,
         ]);
 
-        $token = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $token = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
         $result = $this->service->approveViaEmailToken($token, '10.0.0.2');
 
@@ -207,7 +207,7 @@ class QrAuthServiceCoverageTest extends TestCase
     public function test_approve_via_qr_scan_success(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -216,9 +216,9 @@ class QrAuthServiceCoverageTest extends TestCase
             '10.0.0.1'
         );
 
-        $token = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $token = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
-        $result = $this->service->approveViaQrScan($token, 'henk@havun.nl', '10.0.0.2');
+        $result = $this->service->approveViaQrScan($token, 'havun22@gmail.com', '10.0.0.2');
 
         $this->assertTrue($result['success']);
         $this->assertEquals('Login approved', $result['message']);
@@ -229,7 +229,7 @@ class QrAuthServiceCoverageTest extends TestCase
 
     public function test_approve_via_qr_scan_invalid_token(): void
     {
-        $result = $this->service->approveViaQrScan(str_repeat('y', 64), 'henk@havun.nl');
+        $result = $this->service->approveViaQrScan(str_repeat('y', 64), 'havun22@gmail.com');
 
         $this->assertFalse($result['success']);
         $this->assertEquals('Ongeldige of verlopen sessie', $result['message']);
@@ -253,7 +253,7 @@ class QrAuthServiceCoverageTest extends TestCase
     public function test_approve_via_qr_scan_reactivates_existing_device(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -275,9 +275,9 @@ class QrAuthServiceCoverageTest extends TestCase
             'is_active' => true,
         ]);
 
-        $token = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $token = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
-        $result = $this->service->approveViaQrScan($token, 'henk@havun.nl', '10.0.0.2');
+        $result = $this->service->approveViaQrScan($token, 'havun22@gmail.com', '10.0.0.2');
 
         $this->assertTrue($result['success']);
         $refreshed = $existingDevice->fresh();
@@ -293,13 +293,13 @@ class QrAuthServiceCoverageTest extends TestCase
     {
         // loginWithPassword uses formatDeviceName internally
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
             'password_hash' => Hash::make('secret123'),
         ]);
 
         $result = $this->service->loginWithPassword(
-            'henk@havun.nl',
+            'havun22@gmail.com',
             'secret123',
             ['browser' => 'Safari', 'os' => 'macOS'],
             '10.0.0.1'
@@ -315,13 +315,13 @@ class QrAuthServiceCoverageTest extends TestCase
     public function test_format_device_name_with_empty_device_info(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
             'password_hash' => Hash::make('secret123'),
         ]);
 
         $result = $this->service->loginWithPassword(
-            'henk@havun.nl',
+            'havun22@gmail.com',
             'secret123',
             [], // Empty device info
             '10.0.0.1'
@@ -364,7 +364,7 @@ class QrAuthServiceCoverageTest extends TestCase
     public function test_approve_qr_session_reactivates_existing_device(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -406,7 +406,7 @@ class QrAuthServiceCoverageTest extends TestCase
     public function test_check_qr_status_approved_includes_device_token(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -424,6 +424,6 @@ class QrAuthServiceCoverageTest extends TestCase
         $this->assertArrayHasKey('device_token', $result);
         $this->assertArrayHasKey('user', $result);
         $this->assertEquals('Henk', $result['user']['name']);
-        $this->assertEquals('henk@havun.nl', $result['user']['email']);
+        $this->assertEquals('havun22@gmail.com', $result['user']['email']);
     }
 }

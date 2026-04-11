@@ -138,13 +138,13 @@ class QrAuthControllerTest extends TestCase
     public function test_login_with_correct_credentials(): void
     {
         AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
             'password_hash' => Hash::make(self::TEST_PW),
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'password' => self::TEST_PW,
             'browser' => 'Chrome',
             'os' => 'Windows',
@@ -154,7 +154,7 @@ class QrAuthControllerTest extends TestCase
             ->assertJson([
                 'success' => true,
                 'user' => [
-                    'email' => 'henk@havun.nl',
+                    'email' => 'havun22@gmail.com',
                     'name' => 'Henk',
                 ],
             ])
@@ -164,13 +164,13 @@ class QrAuthControllerTest extends TestCase
     public function test_login_with_wrong_password(): void
     {
         AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
             'password_hash' => Hash::make(self::TEST_PW),
         ]);
 
         $response = $this->postJson('/api/auth/login', [
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'password' => self::WRONG_PW,
         ]);
 
@@ -264,7 +264,7 @@ class QrAuthControllerTest extends TestCase
     public function test_verify_with_valid_token_returns_user(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
             'is_admin' => true,
         ]);
@@ -281,7 +281,7 @@ class QrAuthControllerTest extends TestCase
                 'user' => [
                     'id' => $user->id,
                     'name' => 'Henk',
-                    'email' => 'henk@havun.nl',
+                    'email' => 'havun22@gmail.com',
                     'is_admin' => true,
                 ],
             ]);
@@ -315,7 +315,7 @@ class QrAuthControllerTest extends TestCase
     public function test_logout_revokes_device(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -352,7 +352,7 @@ class QrAuthControllerTest extends TestCase
     public function test_approve_email_with_valid_token(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -361,7 +361,7 @@ class QrAuthControllerTest extends TestCase
             '127.0.0.1'
         );
 
-        $token = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $token = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
         $response = $this->postJson('/api/auth/email/approve', [
             'token' => $token,
@@ -404,7 +404,7 @@ class QrAuthControllerTest extends TestCase
         Mail::fake();
 
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -414,7 +414,7 @@ class QrAuthControllerTest extends TestCase
         );
 
         $response = $this->postJson('/api/auth/qr/' . $session->qr_code . '/send-email', [
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'callback_url' => 'https://example.com/approve',
             'site_name' => 'TestApp',
         ]);
@@ -428,7 +428,7 @@ class QrAuthControllerTest extends TestCase
         // Mail::send() with raw closure is captured by MailFake
         // Verify the session got an email set
         $fresh = $session->fresh();
-        $this->assertEquals('henk@havun.nl', $fresh->email);
+        $this->assertEquals('havun22@gmail.com', $fresh->email);
     }
 
     public function test_send_email_with_nonexistent_user(): void
@@ -477,7 +477,7 @@ class QrAuthControllerTest extends TestCase
     public function test_approve_qr_with_valid_device_token(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -510,7 +510,7 @@ class QrAuthControllerTest extends TestCase
     public function test_approve_from_app_with_valid_data(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -519,11 +519,11 @@ class QrAuthControllerTest extends TestCase
             '127.0.0.1'
         );
 
-        $token = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $token = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
         $response = $this->postJson('/api/auth/qr/approve-from-app', [
             'token' => $token,
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
         ]);
 
         $response->assertOk()
@@ -580,7 +580,7 @@ class QrAuthControllerTest extends TestCase
     public function test_approve_authenticated_with_valid_device_token(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -591,7 +591,7 @@ class QrAuthControllerTest extends TestCase
             '127.0.0.1'
         );
 
-        $emailToken = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $emailToken = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
         $response = $this->postJson('/api/auth/qr/approve-authenticated', [
             'token' => $emailToken,
@@ -609,7 +609,7 @@ class QrAuthControllerTest extends TestCase
     public function test_approve_authenticated_with_invalid_device_token(): void
     {
         $session = AuthQrSession::createSession();
-        $emailToken = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $emailToken = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
         $response = $this->postJson('/api/auth/qr/approve-authenticated', [
             'token' => $emailToken,
@@ -662,7 +662,7 @@ class QrAuthControllerTest extends TestCase
     public function test_approve_authenticated_with_expired_email_token(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -673,7 +673,7 @@ class QrAuthControllerTest extends TestCase
             '127.0.0.1'
         );
 
-        $emailToken = $session->setEmail('henk@havun.nl', 'https://example.com/approve');
+        $emailToken = $session->setEmail('havun22@gmail.com', 'https://example.com/approve');
 
         // Expire the session
         $session->update(['expires_at' => now()->subMinutes(1)]);
@@ -710,7 +710,7 @@ class QrAuthControllerTest extends TestCase
     public function test_check_qr_status_returns_approved_with_device_token(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -792,7 +792,7 @@ class QrAuthControllerTest extends TestCase
         $session->update(['expires_at' => now()->subMinutes(1)]);
 
         $response = $this->postJson('/api/auth/qr/' . $session->qr_code . '/send-email', [
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'callback_url' => 'https://example.com/approve',
         ]);
 
@@ -808,7 +808,7 @@ class QrAuthControllerTest extends TestCase
         Mail::fake();
 
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
@@ -819,7 +819,7 @@ class QrAuthControllerTest extends TestCase
 
         // Don't pass site_name — should default to 'Havun'
         $response = $this->postJson('/api/auth/qr/' . $session->qr_code . '/send-email', [
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'callback_url' => 'https://example.com/approve',
         ]);
 
@@ -994,7 +994,7 @@ class QrAuthControllerTest extends TestCase
     public function test_approve_authenticated_with_invalid_email_token(): void
     {
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 

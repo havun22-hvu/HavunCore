@@ -121,7 +121,7 @@ class AuthApproveControllerTest extends TestCase
 
         // Create user
         $user = AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
             'password_hash' => Hash::make('password123'),
             'is_admin' => true,
@@ -138,7 +138,7 @@ class AuthApproveControllerTest extends TestCase
 
         $response = $this->post('/approve', [
             'token' => $token,
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
         ]);
 
         $response->assertStatus(200);

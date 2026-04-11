@@ -57,11 +57,11 @@ class AuthTest extends TestCase
     public function test_user_find_by_email(): void
     {
         AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
         ]);
 
-        $this->assertNotNull(AuthUser::findByEmail('henk@havun.nl'));
+        $this->assertNotNull(AuthUser::findByEmail('havun22@gmail.com'));
         $this->assertNull(AuthUser::findByEmail('nobody@havun.nl'));
     }
 
@@ -383,13 +383,13 @@ class AuthTest extends TestCase
         $service = new QrAuthService();
 
         AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
             'password_hash' => Hash::make('secret123'),
         ]);
 
         $result = $service->loginWithPassword(
-            'henk@havun.nl',
+            'havun22@gmail.com',
             'secret123',
             ['browser' => 'Chrome'],
             '10.0.0.1'
@@ -405,12 +405,12 @@ class AuthTest extends TestCase
         $service = new QrAuthService();
 
         AuthUser::create([
-            'email' => 'henk@havun.nl',
+            'email' => 'havun22@gmail.com',
             'name' => 'Henk',
             'password_hash' => Hash::make('correct'),
         ]);
 
-        $result = $service->loginWithPassword('henk@havun.nl', 'wrong');
+        $result = $service->loginWithPassword('havun22@gmail.com', 'wrong');
 
         $this->assertFalse($result['success']);
         $this->assertEquals('Invalid credentials', $result['message']);
