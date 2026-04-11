@@ -6,7 +6,7 @@
 **Volgende review:** Q3 2026 (juli 2026)
 **Reviewcyclus:** Elk kwartaal
 **Organisatie:** Havun (KvK: 98516000)
-**Opgesteld door:** Henk van Ess, eigenaar & lead developer
+**Opgesteld door:** Henk van Unen, eigenaar & lead developer
 
 ### Reviewgeschiedenis
 
@@ -682,7 +682,7 @@ ALTIJD VEREIST:
 
 Voor vragen over dit document of de beschreven werkwijze:
 
-- **Eigenaar:** Henk van Ess
+- **Eigenaar:** Henk van Unen
 - **Organisatie:** Havun
 - **KvK:** 98516000
 

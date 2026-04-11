@@ -184,7 +184,7 @@ flowchart TB
         RC[Claude Code Mobile App<br/>QR code scan<br/>stuur commando's vanuit telefoon]
     end
 
-    Dev([Ontwikkelaar<br/>Henk van Ess]) --> Start
+    Dev([Ontwikkelaar<br/>Henk van Unen]) --> Start
     Dev -.gebruikt onderweg.-> RC
     RC -.stuurt naar PC sessie.-> Start
 
@@ -212,7 +212,7 @@ flowchart TB
     style Monitor fill:#fed7aa
     style Staging fill:#fef9c3
     style Production fill:#d1fae5
-    style AFRollback fill:#fee2e2
+    style AFRollback fill:#fee2e2 
     style Dev fill:#dbeafe
     style ClientReq fill:#fef9c3
 ```
@@ -233,7 +233,7 @@ De klant ziet direct dat onderhoud niet "vanzelf goed blijft gaan" — het verei
 
 ```mermaid
 flowchart TB
-    subgraph Dev[Ontwikkelaar Henk van Ess]
+    subgraph Dev[Ontwikkelaar Henk van Unen]
         D1[VS Code + Claude Code]
         D2[/start - /end - /kb - /md - /update]
     end

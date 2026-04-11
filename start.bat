@@ -133,7 +133,7 @@ echo.
 
 REM === GIT CONFIG ===
 git config --global user.name "havun22-hvu"
-git config --global user.email "henk@havun.nl"
+git config --global user.email "havun22@gmail.com"
 if exist "%DRIVE%\git-credentials" (
     git config --global credential.helper "store --file=%DRIVE%/git-credentials"
     echo [OK] Git: credentials op USB

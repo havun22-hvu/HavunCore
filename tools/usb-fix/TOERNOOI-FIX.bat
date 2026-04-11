@@ -9,7 +9,7 @@ set PATH=%USB%\tools\php;%USB%\tools\git\cmd;%USB%\tools\git\usr\bin;%USB%\tools
 
 REM Git credentials automatisch instellen
 git config --global user.name "havun22-hvu"
-git config --global user.email "henk@havun.nl"
+git config --global user.email "havun22@gmail.com"
 git config --global credential.helper "store --file=%USB%\tools\git-credentials"
 
 REM VS Code settings klaarzetten (CMD als default terminal)

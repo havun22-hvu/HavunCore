@@ -100,7 +100,7 @@ if exist "%DRIVE%\credentials.vault" (
 
 REM === GIT CONFIGURATIE ===
 git config --global user.name "havun22-hvu"
-git config --global user.email "henk@havun.nl"
+git config --global user.email "havun22@gmail.com"
 git config --global credential.helper "store --file=%DRIVE%\tools\git-credentials"
 if exist "%DRIVE%\tools\git-credentials" (
     echo [OK] GitHub: automatisch ingelogd

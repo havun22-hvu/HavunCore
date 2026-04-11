@@ -3,7 +3,7 @@
 **Gebaseerd op:** Externe beoordelingen Gemini AI + Claude Sonnet 4.6 (29 maart 2026)
 **Versie:** 2.0
 **Datum:** 29 maart 2026
-**Eigenaar:** Henk van Ess
+**Eigenaar:** Henk van Unen
 **Reviewperiode:** Q2 2026 (april – juni 2026)
 **Volgende audit:** Q3 2026 (juli 2026)
 

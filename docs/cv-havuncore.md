@@ -162,7 +162,7 @@ Voorkomt terugkerende fouten:
 
 ## Referenties
 
-**Henk van Ess** — Eigenaar Havun Software
+**Henk van Unen** — Eigenaar Havun Software
 > *"Doet het werk van 3-5 developers, maar je moet hem wel goed instrueren."*
 
 **Gemini AI** — Externe auditor
