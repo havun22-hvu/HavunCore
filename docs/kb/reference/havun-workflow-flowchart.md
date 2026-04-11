@@ -6,7 +6,230 @@
 
 ---
 
-## 0. Het Hele Ecosysteem
+## 0A. Complete Workflow voor Klantpresentaties
+
+Dit ene diagram toont het hele traject: **intake → ontwikkeling → oplevering → nazorg**.
+Perfect om aan klanten te laten zien.
+
+```mermaid
+flowchart TB
+    subgraph Context[Context bij elke stap]
+        Rules[[Werk Rules<br/>5 Onschendbare Regels<br/>CLAUDE.md per project<br/>Sessielimit 2-3 uur]]
+        CoreLib[(HavunCore Bibliotheek<br/>patterns runbooks<br/>decisions reference<br/>projects templates)]
+        Ollama[[Ollama lokaal<br/>nomic-embed-text<br/>768-dim vectors<br/>TF-IDF fallback]]
+    end
+
+    Client([Klant met idee]) --> Intake[INTAKEGESPREK<br/>wensen + eisen<br/>budget + planning<br/>KvK compliance check]
+    Intake --> Analyse[Analyse fase<br/>scope bepalen<br/>bestaande patterns zoeken<br/>SaaS mindset check]
+    Analyse -.zoekt in.-> CoreLib
+    Analyse --> Offer[Offerte + plan<br/>schatting uren<br/>opleverfases]
+    Offer --> ClientOk{Klant akkoord?}
+    ClientOk -->|Nee| Intake
+    ClientOk -->|Ja| Setup[Project setup<br/>GitHub repo<br/>CLAUDE.md template<br/>.claude/ structuur<br/>CI pipeline<br/>integrity.json]
+    Setup -.gebruikt template.-> CoreLib
+
+    Setup --> Start([/start sessie<br/>Git pull + Security audit])
+
+    Start --> LeesDocs[Stap 1: LEES<br/>CLAUDE.md + context.md<br/>rules.md]
+    LeesDocs -.leest.-> Rules
+    LeesDocs --> KB1[(KB zoeken<br/>normen + standaarden)]
+    KB1 -.zoekt via.-> Ollama
+    KB1 -.haalt uit.-> CoreLib
+    KB1 --> Classify{Groot of<br/>klein?}
+
+    Classify -->|Smallwork<br/>typo/bug/refactor| Small[Log in smallwork.md<br/>direct fix]
+    Classify -->|Groot<br/>feature/UI/business| DocsFirst[DOCS-FIRST]
+
+    DocsFirst --> KB2[(KB zoeken<br/>bestaande docs)]
+    KB2 -.zoekt via.-> Ollama
+    KB2 -.haalt uit.-> CoreLib
+    KB2 --> Report[Meld gebruiker:<br/>wat staat er + bronvermelding<br/>inconsistenties + gaten]
+    Report --> Wait[Wacht op akkoord]
+    Wait --> UpdateDocs[Update MD docs EERST<br/>plan vastleggen]
+    UpdateDocs --> Denk
+
+    Small --> Denk[Stap 2: DENK<br/>SaaS-mindset<br/>welke patterns<br/>gevolgen<br/>vragen stellen]
+    Denk -.volgt.-> Rules
+
+    Denk --> TestsBefore[Stap 3a: Tests VOOR<br/>php artisan test<br/>baseline meting]
+    TestsBefore --> BaseOK{Baseline<br/>groen?}
+    BaseOK -->|Nee| FixBase[Fix bestaande fouten]
+    FixBase --> TestsBefore
+    BaseOK -->|Ja| Code
+
+    Code[Stap 3b: DOE<br/>Code schrijven atomair<br/>IDE syntax check<br/>geen haast]
+    Code -.volgt.-> Rules
+    Code --> KB3[(KB zoeken<br/>hoe anderen dit deden)]
+    KB3 -.zoekt via.-> Ollama
+    KB3 -.haalt uit.-> CoreLib
+
+    KB3 --> Safety{Input type?}
+    Safety -->|User input| FormReq[Form Request<br/>validation<br/>CSRF<br/>Policy authz]
+    Safety -->|Externe API| ExtCall[Try-catch + timeout<br/>Custom exception<br/>Circuit breaker<br/>Retry + Fallback]
+    Safety -->|Database| DBSafe[Eloquent ORM<br/>Transactions<br/>Guard clauses<br/>Parameter binding]
+    Safety -->|Blade view| ViewSafe[Auto-escape<br/>CSRF token<br/>Security headers]
+    Safety -->|Intern| Clean[Gewone code]
+
+    FormReq --> WriteTests
+    ExtCall --> WriteTests
+    DBSafe --> WriteTests
+    ViewSafe --> WriteTests
+    Clean --> WriteTests
+
+    WriteTests[Schrijf tests<br/>Unit + Feature<br/>Guard + Smoke<br/>Regression bij bug]
+    WriteTests --> TestsAfter[Stap 4: TEST NA<br/>php artisan test<br/>coverage 80 procent]
+
+    TestsAfter --> Coverage{Coverage<br/>haalt norm?}
+    Coverage -->|Nee| WriteTests
+    Coverage -->|Ja| Green{Alles groen?}
+
+    Green -->|Nee| Code
+    Green -->|Ja| Document[Stap 5: DOCUMENTEER<br/>project specifiek = .claude/<br/>herbruikbaar = HavunCore/kb/<br/>beslissing = decisions/]
+    Document -.vult.-> CoreLib
+
+    Document --> Integrity[.integrity.json check<br/>shadow file validatie]
+    Integrity --> End([/end])
+
+    End --> ReviewSW[Review smallwork.md<br/>naar permanente docs?]
+    ReviewSW --> UpdateHand[Update handover.md<br/>context volgende sessie]
+    UpdateHand --> LinterGate[Linter-Gate VERPLICHT<br/>tests + integrity<br/>regression bij bug]
+    LinterGate --> LGOk{Alles groen?}
+    LGOk -->|Nee| Code
+    LGOk -->|Ja| Commit[Git commit atomair<br/>beschrijvend in Engels]
+
+    Commit --> PostHook[Post-commit hook]
+    PostHook --> KBUpdate[(KB auto-update<br/>delta indexing)]
+    KBUpdate -.indexeert via.-> Ollama
+    KBUpdate -.vult.-> CoreLib
+    PostHook --> Push[git push naar GitHub]
+
+    Push --> CI[GitHub Actions CI]
+    CI --> CI1[composer install]
+    CI1 --> CI2[SQLite test DB]
+    CI2 --> CI3[php artisan migrate]
+    CI3 --> CI4[php artisan test<br/>met coverage]
+    CI4 --> CI5[composer audit<br/>security]
+    CI5 --> CI6[Integrity check]
+    CI6 --> CIOk{CI groen?}
+
+    CIOk -->|Nee| FixCI[Fix lokaal + push opnieuw]
+    FixCI --> Code
+    CIOk -->|Ja| IsPublic{Publieke app?}
+
+    IsPublic -->|Nee<br/>HavunCore| DirectProd[Direct productie<br/>git pull + cache clear]
+    IsPublic -->|Ja<br/>HP/JT/HA/SP/HC| Staging[Deploy STAGING<br/>git pull + migrate<br/>cache clear + build]
+
+    Staging --> TestStaging{Staging OK?}
+    TestStaging -->|Nee| Code
+    TestStaging -->|Ja| WaitPeriod{Grote<br/>wijziging?}
+    WaitPeriod -->|Ja| Wait24[Wacht 24 uur<br/>users testen]
+    WaitPeriod -->|Nee| Wait1[Wacht minimaal 1 uur]
+
+    Wait24 --> ApprovalUser[Klant keurt goed]
+    Wait1 --> ApprovalUser
+    ApprovalUser --> Production[Deploy PRODUCTION<br/>git pull + migrate force<br/>cache clear]
+
+    DirectProd --> Live
+    Production --> Live([LIVE<br/>Oplevering aan klant])
+
+    Live --> HandoverClient[Klant overdracht<br/>handleiding<br/>admin toegang<br/>contact noodlijn]
+    HandoverClient --> Nazorg[NAZORG 24-7]
+
+    subgraph NazorgBlok[Nazorg - continue kwaliteitsbewaking]
+        Monitor[StatusView dashboard<br/>nginx php-fpm mysql<br/>PM2 + API + AI + KB]
+        HealthCheck[Health endpoints<br/>elke minuut gecheckt]
+        BackupsDaily[Backups automatisch<br/>hot 5min<br/>daily 03:00<br/>Hetzner offsite 7 jaar]
+        SSLMon[SSL certificaten<br/>auto-renewal Certbot]
+        SecAudit[Security audits<br/>composer audit dagelijks<br/>npm audit dagelijks]
+        DepUpdate[Dependency updates<br/>Dependabot PRs]
+        KBCron[KB auto-indexering<br/>08:03 + 20:07 lokaal<br/>6u cron server]
+    end
+
+    Nazorg --> Monitor
+    Nazorg --> HealthCheck
+    Nazorg --> BackupsDaily
+    Nazorg --> SSLMon
+    Nazorg --> SecAudit
+    Nazorg --> DepUpdate
+    Nazorg --> KBCron
+
+    Monitor --> ErrorDetect{Production<br/>error 500?}
+    ErrorDetect -->|Nee| Monitor
+    ErrorDetect -->|Ja| AutoFix[AutoFix service]
+
+    AutoFix --> AFChecks[shouldProcess checks:<br/>rate limit 1/uur/error<br/>excluded exceptions<br/>protected files<br/>24h rollback check<br/>project file only]
+    AFChecks --> AFAI[Claude AI analyse<br/>via HavunCore AI Proxy]
+    AFAI --> AFType{Response type?}
+
+    AFType -->|NOTIFY_ONLY| AFNotify[Alleen melding<br/>geen code fix]
+    AFType -->|FIX| AFApply[Backup origineel<br/>Apply FILE/OLD/NEW]
+    AFApply --> AFSyntax[php -l syntax check]
+    AFSyntax --> AFSynOk{Syntax OK?}
+    AFSynOk -->|Nee| AFRollback[Auto-rollback<br/>restore backup]
+    AFSynOk -->|Ja| AFBranch[Hotfix branch<br/>hotfix/autofix-xxx]
+    AFBranch --> AFCommit[git commit + push]
+    AFCommit --> AFPR[GitHub PR via REST API]
+    AFPR --> ClaudePR[Claude PR review<br/>CI failure monitoring]
+    ClaudePR --> AdminUI[Admin UI /admin/autofix<br/>geen email spam]
+
+    AFNotify --> AdminUI
+    AFRollback --> AdminUI
+    AdminUI --> Monitor
+
+    Nazorg --> ClientReq{Klant vraagt<br/>wijziging of<br/>nieuwe feature?}
+    ClientReq -->|Ja| Intake
+    ClientReq -->|Nee| Monitor
+
+    subgraph Remote[Claude Remote Control /rc]
+        RC[Claude Code Mobile App<br/>QR code scan<br/>stuur commando's vanuit telefoon]
+    end
+
+    Dev([Ontwikkelaar<br/>Henk van Ess]) --> Start
+    Dev -.gebruikt onderweg.-> RC
+    RC -.stuurt naar PC sessie.-> Start
+
+    style Client fill:#fef9c3
+    style Intake fill:#fef9c3
+    style Offer fill:#fef9c3
+    style ClientOk fill:#fef9c3
+    style Setup fill:#fef9c3
+    style Start fill:#dbeafe
+    style Classify fill:#fef3c7
+    style Safety fill:#fef3c7
+    style Live fill:#d1fae5
+    style HandoverClient fill:#d1fae5
+    style Nazorg fill:#fed7aa
+    style NazorgBlok fill:#fff7ed
+    style Rules fill:#fee2e2,stroke:#dc2626,stroke-width:3px
+    style CoreLib fill:#fae8ff,stroke:#a855f7,stroke-width:3px
+    style Ollama fill:#fff7ed,stroke:#fb923c,stroke-width:3px
+    style KB1 fill:#f3e8ff
+    style KB2 fill:#f3e8ff
+    style KB3 fill:#f3e8ff
+    style KBUpdate fill:#f3e8ff
+    style AutoFix fill:#fed7aa
+    style CI fill:#e0e7ff
+    style Monitor fill:#fed7aa
+    style Staging fill:#fef9c3
+    style Production fill:#d1fae5
+    style AFRollback fill:#fee2e2
+    style Dev fill:#dbeafe
+    style ClientReq fill:#fef9c3
+```
+
+**Wat toont deze flowchart aan klanten?**
+
+1. **Gele blokken (intake)** — Hoe we het project starten: gesprek, analyse, offerte, akkoord, setup
+2. **Blauw/paars/oranje (ontwikkeling)** — De complete build flow met alle kwaliteitscontroles
+3. **Groen (oplevering)** — LIVE + klantoverdracht met handleiding en noodlijn
+4. **Oranje blok (nazorg)** — 7 ondersteunende systemen die 24/7 actief blijven
+5. **Feedback loop** — Elke nieuwe klantwens gaat terug naar intake
+
+De klant ziet direct dat onderhoud niet "vanzelf goed blijft gaan" — het vereist actieve monitoring, backups, security audits en AutoFix.
+
+---
+
+## 0B. Het Hele Ecosysteem
 
 ```mermaid
 flowchart TB
