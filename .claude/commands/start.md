@@ -103,6 +103,7 @@ Bij ELKE code wijziging gelden deze normen uit `docs/kb/reference/havun-quality-
 - **Policies** voor autorisatie
 - **Audit log** voor kritieke acties
 - **CSRF + Security headers** standaard actief
+- **CSP nonce** op ALLE nieuwe inline `<script>` tags (`<script @nonce>`)
 - **Docs-first** — plan in MD voor code
 
 **Lees vóór elke feature/refactor:**

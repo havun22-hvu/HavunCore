@@ -159,6 +159,26 @@ DB::select("SELECT * FROM users WHERE email = '$email'"); // ❌
 
 **Norm:** Blade auto-escaping (`{{ $var }}`). Gebruik `{!! !!}` ALLEEN voor vertrouwde HTML.
 
+### CSP Nonce (VERPLICHT bij nieuwe code)
+
+**Norm:** Alle NIEUWE inline `<script>` tags MOETEN een nonce attribuut krijgen.
+
+```php
+// GOED — nieuwe scripts altijd met @nonce
+<script @nonce>
+    // jouw code
+</script>
+
+// FOUT — geen nonce
+<script>
+    // jouw code
+</script>
+```
+
+**Waarom:** CSP `unsafe-inline` is een beveiligingsrisico. Met nonce kan een hacker geen eigen scripts injecteren. Wanneer alle scripts nonce hebben → `unsafe-inline` verwijderen uit CSP → SecurityHeaders A+ score.
+
+**Bestaande code:** Stap voor stap omzetten bij aanraking. Niet alles tegelijk.
+
 ---
 
 ## 3. Rate Limiting
