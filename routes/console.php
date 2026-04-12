@@ -7,3 +7,8 @@ use Illuminate\Support\Facades\Schedule;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote')->hourly();
+
+// Observability: aggregate metrics hourly, cleanup daily
+Schedule::command('observability:aggregate --period=hourly')->hourly();
+Schedule::command('observability:aggregate --period=daily')->dailyAt('00:15');
+Schedule::command('observability:cleanup')->dailyAt('03:00');

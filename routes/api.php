@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\ClaudeTaskController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\DocIntelligenceController;
 use App\Http\Controllers\Api\MCPMessageController;
+use App\Http\Controllers\Api\ObservabilityController;
 use App\Http\Controllers\Api\QrAuthController;
 use App\Http\Controllers\Api\StudySessionController;
 use App\Http\Controllers\Api\VaultController;
@@ -146,6 +147,16 @@ Route::prefix('studieplanner')->group(function () {
     // Get Reverb connection credentials for frontend
     Route::get('/reverb/credentials', [StudySessionController::class, 'credentials'])
         ->name('api.studieplanner.reverb.credentials');
+});
+
+// Observability API - Monitoring dashboard endpoints
+Route::prefix('observability')->group(function () {
+    Route::get('/dashboard', [ObservabilityController::class, 'dashboard'])->name('api.observability.dashboard');
+    Route::get('/requests', [ObservabilityController::class, 'requests'])->name('api.observability.requests');
+    Route::get('/errors', [ObservabilityController::class, 'errors'])->name('api.observability.errors');
+    Route::get('/slow-queries', [ObservabilityController::class, 'slowQueries'])->name('api.observability.slow-queries');
+    Route::get('/system', [ObservabilityController::class, 'system'])->name('api.observability.system');
+    Route::get('/metrics', [ObservabilityController::class, 'metrics'])->name('api.observability.metrics');
 });
 
 // Doc Intelligence API - Search and manage documentation across all projects
