@@ -17,59 +17,30 @@ class AggregateMetricsCommand extends Command
     {
         $period = $this->option('period');
 
-        if ($period === 'hourly') {
-            $this->aggregateHourly();
-        } elseif ($period === 'daily') {
-            $this->aggregateDaily();
-        } else {
+        if (! in_array($period, ['hourly', 'daily'])) {
             $this->error("Invalid period: {$period}");
 
             return self::FAILURE;
         }
 
+        $this->aggregate($period);
+
         return self::SUCCESS;
     }
 
-    protected function aggregateHourly(): void
+    protected function aggregate(string $period): void
     {
-        $periodStart = now()->subHour()->startOfHour();
-        $periodEnd = $periodStart->copy()->endOfHour();
+        $periodStart = $period === 'hourly'
+            ? now()->subHour()->startOfHour()
+            : now()->subDay()->startOfDay();
 
-        $this->info("Aggregating hourly metrics for {$periodStart->toDateTimeString()}");
+        $periodEnd = $period === 'hourly'
+            ? $periodStart->copy()->endOfHour()
+            : $periodStart->copy()->endOfDay();
 
-        $metrics = RequestMetric::whereBetween('created_at', [$periodStart, $periodEnd])
-            ->get();
+        $this->info("Aggregating {$period} metrics for {$periodStart->toDateTimeString()}");
 
-        if ($metrics->isEmpty()) {
-            $this->info('No metrics to aggregate.');
-
-            return;
-        }
-
-        // Group by path
-        $grouped = $metrics->groupBy('path');
-
-        $count = 0;
-        foreach ($grouped as $path => $pathMetrics) {
-            $this->upsertAggregation('hourly', $periodStart, $path, $pathMetrics);
-            $count++;
-        }
-
-        // Global aggregate (all paths combined)
-        $this->upsertAggregation('hourly', $periodStart, null, $metrics);
-
-        $this->info("Aggregated {$count} endpoints + 1 global for {$periodStart->format('Y-m-d H:00')}");
-    }
-
-    protected function aggregateDaily(): void
-    {
-        $periodStart = now()->subDay()->startOfDay();
-        $periodEnd = $periodStart->copy()->endOfDay();
-
-        $this->info("Aggregating daily metrics for {$periodStart->toDateString()}");
-
-        $metrics = RequestMetric::whereBetween('created_at', [$periodStart, $periodEnd])
-            ->get();
+        $metrics = RequestMetric::whereBetween('created_at', [$periodStart, $periodEnd])->get();
 
         if ($metrics->isEmpty()) {
             $this->info('No metrics to aggregate.');
@@ -81,13 +52,13 @@ class AggregateMetricsCommand extends Command
 
         $count = 0;
         foreach ($grouped as $path => $pathMetrics) {
-            $this->upsertAggregation('daily', $periodStart, $path, $pathMetrics);
+            $this->upsertAggregation($period, $periodStart, $path, $pathMetrics);
             $count++;
         }
 
-        $this->upsertAggregation('daily', $periodStart, null, $metrics);
+        $this->upsertAggregation($period, $periodStart, null, $metrics);
 
-        $this->info("Aggregated {$count} endpoints + 1 global for {$periodStart->toDateString()}");
+        $this->info("Aggregated {$count} endpoints + 1 global for {$periodStart->toDateTimeString()}");
     }
 
     /**

@@ -29,7 +29,7 @@ class ObservabilityController extends Controller
      */
     public function dashboard(Request $request): JsonResponse
     {
-        if (! $this->authorize($request)) {
+        if (! $this->checkToken($request)) {
             return $this->unauthorized();
         }
 
@@ -46,7 +46,7 @@ class ObservabilityController extends Controller
      */
     public function requests(Request $request): JsonResponse
     {
-        if (! $this->authorize($request)) {
+        if (! $this->checkToken($request)) {
             return $this->unauthorized();
         }
 
@@ -67,7 +67,7 @@ class ObservabilityController extends Controller
      */
     public function errors(Request $request): JsonResponse
     {
-        if (! $this->authorize($request)) {
+        if (! $this->checkToken($request)) {
             return $this->unauthorized();
         }
 
@@ -88,7 +88,7 @@ class ObservabilityController extends Controller
      */
     public function slowQueries(Request $request): JsonResponse
     {
-        if (! $this->authorize($request)) {
+        if (! $this->checkToken($request)) {
             return $this->unauthorized();
         }
 
@@ -109,7 +109,7 @@ class ObservabilityController extends Controller
      */
     public function system(Request $request): JsonResponse
     {
-        if (! $this->authorize($request)) {
+        if (! $this->checkToken($request)) {
             return $this->unauthorized();
         }
 
@@ -126,7 +126,7 @@ class ObservabilityController extends Controller
      */
     public function metrics(Request $request): JsonResponse
     {
-        if (! $this->authorize($request)) {
+        if (! $this->checkToken($request)) {
             return $this->unauthorized();
         }
 
@@ -145,7 +145,7 @@ class ObservabilityController extends Controller
     /**
      * Check bearer token authorization.
      */
-    protected function authorize(Request $request): bool
+    protected function checkToken(Request $request): bool
     {
         $token = config('observability.admin_token');
 

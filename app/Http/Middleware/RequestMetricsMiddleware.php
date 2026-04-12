@@ -10,6 +10,19 @@ use Symfony\Component\HttpFoundation\Response;
 
 class RequestMetricsMiddleware
 {
+    protected bool $enabled;
+
+    protected float $samplingRate;
+
+    protected array $excludedPaths;
+
+    public function __construct()
+    {
+        $this->enabled = config('observability.enabled', true);
+        $this->samplingRate = (float) config('observability.sampling_rate', 1.0);
+        $this->excludedPaths = config('observability.excluded_paths', []);
+    }
+
     public function handle(Request $request, Closure $next): Response
     {
         $startTime = microtime(true);
@@ -47,19 +60,16 @@ class RequestMetricsMiddleware
      */
     protected function shouldLog(Request $request): bool
     {
-        if (! config('observability.enabled', true)) {
+        if (! $this->enabled) {
             return false;
         }
 
-        // Sampling rate check
-        $rate = config('observability.sampling_rate', 1.0);
-        if ($rate < 1.0 && mt_rand(1, 10000) / 10000 > $rate) {
+        if ($this->samplingRate < 1.0 && mt_rand(1, 10000) / 10000 > $this->samplingRate) {
             return false;
         }
 
-        // Excluded paths check
         $path = $request->path();
-        foreach (config('observability.excluded_paths', []) as $excluded) {
+        foreach ($this->excludedPaths as $excluded) {
             if (Str::is($excluded, $path)) {
                 return false;
             }

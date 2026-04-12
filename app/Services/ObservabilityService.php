@@ -22,24 +22,24 @@ class ObservabilityService
     public function getDashboard(): array
     {
         $now = now();
+        $oneHourAgo = $now->copy()->subHour();
+        $oneDayAgo = $now->copy()->subDay();
 
-        // Request stats
-        $lastHour = RequestMetric::where('created_at', '>=', $now->copy()->subHour());
-        $last24h = RequestMetric::where('created_at', '>=', $now->copy()->subDay());
+        $requestStats = RequestMetric::where('created_at', '>=', $oneDayAgo)
+            ->selectRaw("COUNT(*) as total_24h")
+            ->selectRaw("SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as total_1h", [$oneHourAgo])
+            ->selectRaw("SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as errors_24h")
+            ->selectRaw("SUM(CASE WHEN status_code >= 400 AND created_at >= ? THEN 1 ELSE 0 END) as errors_1h", [$oneHourAgo])
+            ->selectRaw("AVG(CASE WHEN created_at >= ? THEN response_time_ms END) as avg_time_1h", [$oneHourAgo])
+            ->first();
 
-        $requestsLastHour = $lastHour->count();
-        $requestsLast24h = $last24h->count();
+        $requestsLastHour = (int) $requestStats->total_1h;
+        $requestsLast24h = (int) $requestStats->total_24h;
+        $errorsLastHour = (int) $requestStats->errors_1h;
+        $errorsLast24h = (int) $requestStats->errors_24h;
+        $avgResponseTime = $requestStats->avg_time_1h;
 
-        $errorsLastHour = RequestMetric::where('created_at', '>=', $now->copy()->subHour())
-            ->where('status_code', '>=', 400)->count();
-        $errorsLast24h = RequestMetric::where('created_at', '>=', $now->copy()->subDay())
-            ->where('status_code', '>=', 400)->count();
-
-        $avgResponseTime = RequestMetric::where('created_at', '>=', $now->copy()->subHour())
-            ->avg('response_time_ms');
-
-        // Top 5 slowest endpoints (last hour)
-        $slowestEndpoints = RequestMetric::where('created_at', '>=', $now->copy()->subHour())
+        $slowestEndpoints = RequestMetric::where('created_at', '>=', $oneHourAgo)
             ->select('path')
             ->selectRaw('AVG(response_time_ms) as avg_time')
             ->selectRaw('COUNT(*) as request_count')
@@ -48,13 +48,15 @@ class ObservabilityService
             ->limit(5)
             ->get();
 
-        // Recent errors
-        $recentErrorCount = ErrorLog::where('created_at', '>=', $now->copy()->subDay())->count();
-        $criticalErrors = ErrorLog::where('created_at', '>=', $now->copy()->subDay())
-            ->where('severity', 'critical')->count();
+        $errorStats = ErrorLog::where('created_at', '>=', $oneDayAgo)
+            ->selectRaw("COUNT(*) as total")
+            ->selectRaw("SUM(CASE WHEN severity = 'critical' THEN 1 ELSE 0 END) as critical")
+            ->first();
 
-        // Slow queries
-        $slowQueryCount = SlowQuery::where('created_at', '>=', $now->copy()->subDay())->count();
+        $recentErrorCount = (int) $errorStats->total;
+        $criticalErrors = (int) $errorStats->critical;
+
+        $slowQueryCount = SlowQuery::where('created_at', '>=', $oneDayAgo)->count();
 
         return [
             'requests' => [
