@@ -79,11 +79,18 @@
 | 80-90% | Enterprise | Banken, SaaS platforms |
 | 90%+ | Mission-critical | Luchtvaart, medisch, fintech |
 
-**Havun status (8 april 2026):**
-- HavunCore: 92.7% methods, 98.4% lines (mission-critical)
-- Infosyst: 83.3% (enterprise)
-- Herdenkingsportaal: 47.5% (goed, in progress)
-- JudoToernooi: 18.6% (basis, nog te doen)
+**Havun status (12 april 2026):**
+- HavunCore: 98.4% (mission-critical)
+- SafeHavun: 95.9% (mission-critical)
+- Studieplanner API: 94.1% (mission-critical)
+- JudoScoreBoard: 93.4% (mission-critical)
+- Infosyst: 92.0% (enterprise)
+- HavunVet: 90.9% (enterprise)
+- HavunAdmin: 90.2% (enterprise)
+- JudoToernooi: 89.6% (enterprise)
+- Herdenkingsportaal: 83.6% (enterprise)
+- Studieplanner: 82.7% (enterprise)
+- **Gemiddeld: ~91% — alle 10 projecten boven 82.5%**
 
 **Tools:** PHPUnit (Laravel), Jest (JavaScript), pytest (Python)
 
@@ -265,24 +272,27 @@ Push naar GitHub
 ## Jouw Roadmap
 
 ```
-Niveau 1-6: ✅ BEREIKT
+Niveau 1-6: ✅ BEREIKT (enterprise coverage, auto-herstel, docs-first)
     │
     ▼
 Niveau 7: Observability (VOLGENDE STAP)
     │
-    ├── StatusView uitbreiden (eigen dashboard)
-    ├── Responstijd monitoring
-    ├── Error tracking met context
-    └── Alerting bij problemen
+    ├── Responstijd monitoring per endpoint
+    ├── Error tracking met volledige context
+    ├── Database query performance (slow queries)
+    ├── Uptime monitoring met alerts
+    └── Dashboard met real-time metrics
     │
     ▼
-Niveau 8: Chaos Engineering (TOEKOMST)
+Niveau 8: Chaos Engineering (DAARNA)
     │
-    ├── Staging chaos tests
-    ├── AutoFix stress test
-    └── Fallback validatie
+    ├── Staging chaos tests (server uitval, DB vertraging)
+    ├── AutoFix stress test (veel errors tegelijk)
+    ├── Payment fallback validatie (Mollie down → wat gebeurt er?)
+    ├── Offline→online sync stress (JudoToernooi)
+    └── Arweave netwerk uitval (Herdenkingsportaal)
 ```
 
 ---
 
-*Laatst bijgewerkt: 7 april 2026*
+*Laatst bijgewerkt: 12 april 2026*
