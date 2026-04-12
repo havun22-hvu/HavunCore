@@ -143,6 +143,27 @@ class ObservabilityController extends Controller
     }
 
     /**
+     * Performance baseline
+     *
+     * GET /api/observability/baseline?date=2026-04-12
+     */
+    public function baseline(Request $request): JsonResponse
+    {
+        if (! $this->checkToken($request)) {
+            return $this->unauthorized();
+        }
+
+        $date = $request->input('date', now()->subDay()->toDateString());
+        $data = cache()->get("performance_baseline:{$date}");
+
+        return response()->json([
+            'success' => true,
+            'date' => $date,
+            'data' => $data,
+        ]);
+    }
+
+    /**
      * Check bearer token authorization.
      */
     protected function checkToken(Request $request): bool

@@ -174,6 +174,7 @@ Route::prefix('observability')->group(function () {
     Route::get('/slow-queries', [ObservabilityController::class, 'slowQueries'])->name('api.observability.slow-queries');
     Route::get('/system', [ObservabilityController::class, 'system'])->name('api.observability.system');
     Route::get('/metrics', [ObservabilityController::class, 'metrics'])->name('api.observability.metrics');
+    Route::get('/baseline', [ObservabilityController::class, 'baseline'])->name('api.observability.baseline');
 });
 
 // Doc Intelligence API - Search and manage documentation across all projects
