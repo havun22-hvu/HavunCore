@@ -15,7 +15,7 @@
 | 5 | Docs-First | Documentatie stuurt de code | ✅ Actief |
 | 6 | Auto-Herstel | Automatische foutdetectie en reparatie | ✅ Actief |
 | 7 | Observability | Monitoring, alerting, performance tracking | ✅ Actief |
-| 8 | Chaos Engineering | Bewust dingen kapot maken om zwaktes te vinden | Gepland |
+| 8 | Chaos Engineering | Bewust dingen kapot maken om zwaktes te vinden | ✅ Actief |
 | 9 | Formal Verification | Wiskundig bewijzen dat code correct is | Niet nodig |
 
 ---
@@ -285,13 +285,13 @@ Niveau 7: ✅ BEREIKT (12 april 2026)
     └── ✅ Multi-project: alle 6 Laravel apps → centraal in HavunCore
     │
     ▼
-Niveau 8: Chaos Engineering (VOLGENDE STAP)
+Niveau 8: ✅ BEREIKT (12 april 2026)
     │
-    ├── Staging chaos tests (server uitval, DB vertraging)
-    ├── AutoFix stress test (veel errors tegelijk)
-    ├── Payment fallback validatie (Mollie down → wat gebeurt er?)
-    ├── Offline→online sync stress (JudoToernooi)
-    └── Arweave netwerk uitval (Herdenkingsportaal)
+    ├── ✅ 5 chaos experimenten (health-deep, endpoint-probe, error-flood, db-slow, api-timeout)
+    ├── ✅ Circuit breaker voor Claude API (auto-recovery)
+    ├── ✅ Deep health endpoint (/api/health/deep)
+    ├── ✅ Error flood deduplicatie gevalideerd
+    └── ✅ Alle 6 projecten endpoint-probe: PASS
 ```
 
 ---
