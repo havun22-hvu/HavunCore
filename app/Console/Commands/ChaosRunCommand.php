@@ -2,12 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ChaosResult;
 use App\Services\Chaos\Experiments\ApiTimeoutExperiment;
 use App\Services\Chaos\Experiments\DatabaseSlowExperiment;
 use App\Services\Chaos\Experiments\EndpointProbeExperiment;
 use App\Services\Chaos\Experiments\ErrorFloodExperiment;
 use App\Services\Chaos\Experiments\HealthDeepExperiment;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Mail;
 
 class ChaosRunCommand extends Command
 {
@@ -64,7 +66,9 @@ class ChaosRunCommand extends Command
 
         $report = $experiment->execute();
 
+        $this->storeResult($name, $report);
         $this->renderReport($report);
+        $this->alertOnFailure($name, $report);
 
         return self::SUCCESS;
     }
@@ -75,6 +79,7 @@ class ChaosRunCommand extends Command
         $this->newLine();
 
         $allResults = [];
+        $failures = [];
 
         foreach ($this->experiments as $name => $class) {
             $experiment = app($class);
@@ -83,8 +88,13 @@ class ChaosRunCommand extends Command
             $report = $experiment->execute();
             $allResults[$name] = $report;
 
+            $this->storeResult($name, $report);
             $this->renderReport($report);
             $this->newLine();
+
+            if (($report['results']['status'] ?? '') === 'fail') {
+                $failures[$name] = $report;
+            }
         }
 
         // Summary
@@ -100,7 +110,97 @@ class ChaosRunCommand extends Command
             $this->line("  [{$icon}] {$name} ({$report['duration_ms']}ms)");
         }
 
+        if (! empty($failures)) {
+            $this->alertOnBatchFailure($failures);
+        }
+
         return self::SUCCESS;
+    }
+
+    /**
+     * Store experiment result to database.
+     */
+    protected function storeResult(string $name, array $report): void
+    {
+        try {
+            ChaosResult::create([
+                'experiment' => $name,
+                'status' => $report['results']['status'] ?? 'error',
+                'duration_ms' => $report['duration_ms'],
+                'checks' => $report['results']['checks'] ?? null,
+                'created_at' => now(),
+            ]);
+        } catch (\Throwable) {
+        }
+    }
+
+    /**
+     * Send alert email when a single experiment fails.
+     */
+    protected function alertOnFailure(string $name, array $report): void
+    {
+        $status = $report['results']['status'] ?? '';
+        if ($status !== 'fail') {
+            return;
+        }
+
+        $this->sendAlert("Chaos FAIL: {$name}", $this->formatAlertBody([$name => $report]));
+    }
+
+    /**
+     * Send alert email for batch failures.
+     */
+    protected function alertOnBatchFailure(array $failures): void
+    {
+        $names = implode(', ', array_keys($failures));
+        $this->sendAlert("Chaos FAIL: {$names}", $this->formatAlertBody($failures));
+    }
+
+    /**
+     * Send alert email.
+     */
+    protected function sendAlert(string $subject, string $body): void
+    {
+        $to = config('chaos.alert_email', env('MAIL_FROM_ADDRESS'));
+        if (empty($to)) {
+            return;
+        }
+
+        try {
+            Mail::raw($body, function ($message) use ($to, $subject) {
+                $message->to($to)->subject("[HavunCore] {$subject}");
+            });
+            $this->warn("Alert email sent to {$to}");
+        } catch (\Throwable $e) {
+            $this->error("Failed to send alert: {$e->getMessage()}");
+        }
+    }
+
+    /**
+     * Format alert email body.
+     */
+    protected function formatAlertBody(array $failures): string
+    {
+        $lines = ["Chaos Engineering Alert — " . now()->toDateTimeString(), ""];
+
+        foreach ($failures as $name => $report) {
+            $lines[] = "EXPERIMENT: {$name}";
+            $lines[] = "STATUS: " . strtoupper($report['results']['status'] ?? 'unknown');
+            $lines[] = "DURATION: {$report['duration_ms']}ms";
+
+            if (isset($report['results']['checks'])) {
+                foreach ($report['results']['checks'] as $check => $detail) {
+                    $status = strtoupper($detail['status'] ?? '??');
+                    $lines[] = "  [{$status}] {$check}: " . ($detail['message'] ?? '');
+                }
+            }
+            $lines[] = "";
+        }
+
+        $lines[] = "Server: " . gethostname();
+        $lines[] = "URL: https://havuncore.havun.nl";
+
+        return implode("\n", $lines);
     }
 
     protected function renderReport(array $report): void

@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ChaosResult;
 use App\Models\ErrorLog;
 use App\Models\MetricsAggregated;
 use App\Models\RequestMetric;
@@ -29,6 +30,7 @@ class CleanupMetricsCommand extends Command
             'error_logs' => ErrorLog::where('created_at', '<', $rawCutoff)->delete(),
             'slow_queries' => SlowQuery::where('created_at', '<', $rawCutoff)->delete(),
             'metrics_aggregated' => MetricsAggregated::where('period_start', '<', $aggregatedCutoff)->delete(),
+            'chaos_results' => ChaosResult::where('created_at', '<', $rawCutoff)->delete(),
         ];
 
         foreach ($deleted as $table => $count) {
