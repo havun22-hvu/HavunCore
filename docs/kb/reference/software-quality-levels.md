@@ -14,7 +14,7 @@
 | 4 | CI/CD | Automatische tests bij elke push | ✅ Actief |
 | 5 | Docs-First | Documentatie stuurt de code | ✅ Actief |
 | 6 | Auto-Herstel | Automatische foutdetectie en reparatie | ✅ Actief |
-| 7 | Observability | Monitoring, alerting, performance tracking | Deels |
+| 7 | Observability | Monitoring, alerting, performance tracking | ✅ Actief |
 | 8 | Chaos Engineering | Bewust dingen kapot maken om zwaktes te vinden | Gepland |
 | 9 | Formal Verification | Wiskundig bewijzen dat code correct is | Niet nodig |
 
@@ -275,16 +275,17 @@ Push naar GitHub
 Niveau 1-6: ✅ BEREIKT (enterprise coverage, auto-herstel, docs-first)
     │
     ▼
-Niveau 7: Observability (VOLGENDE STAP)
+Niveau 7: ✅ BEREIKT (12 april 2026)
     │
-    ├── Responstijd monitoring per endpoint
-    ├── Error tracking met volledige context
-    ├── Database query performance (slow queries)
-    ├── Uptime monitoring met alerts
-    └── Dashboard met real-time metrics
+    ├── ✅ Responstijd monitoring per endpoint (RequestMetrics middleware)
+    ├── ✅ Error tracking met volledige context (ErrorLog + dedup)
+    ├── ✅ Database query performance (slow queries > 100ms)
+    ├── ✅ Uptime monitoring met alerts (server-side health check)
+    ├── ✅ Dashboard met real-time metrics (6 API endpoints)
+    └── ✅ Multi-project: alle 6 Laravel apps → centraal in HavunCore
     │
     ▼
-Niveau 8: Chaos Engineering (DAARNA)
+Niveau 8: Chaos Engineering (VOLGENDE STAP)
     │
     ├── Staging chaos tests (server uitval, DB vertraging)
     ├── AutoFix stress test (veel errors tegelijk)
