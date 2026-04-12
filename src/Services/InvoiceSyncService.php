@@ -12,8 +12,8 @@ class InvoiceSyncService
     private MemorialReferenceService $memorialService;
 
     public function __construct(
-        string $apiUrl,
-        string $apiToken,
+        ?string $apiUrl,
+        ?string $apiToken,
         MemorialReferenceService $memorialService = null
     ) {
         $this->client = new Client([
