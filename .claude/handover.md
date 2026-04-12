@@ -2,106 +2,63 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Sessie: 09-12 april 2026 — Enterprise quality: coverage + security + refactoring
+## Sessie: 12 april 2026 — CI fixes, controller splits, coverage tests, doc cleanup
 
-### Coverage Eindstand (alle projecten 82.5%+):
+### Doc Intelligence Cleanup:
+- 1038 issues → 0 open
+- 1005 worktree-spookissues (verwijderde `.claude/worktrees/agent-a3e628e0/`) bulk-resolved
+- 33 echte issues: broken links (false positives), duplicaten (verwachte overlap), outdated (reviewed)
+- Build artifact verwijderd: `webapp/frontend/dist/ICONS-README.md`
 
-| Project | Start | Eind | Tests |
-|---------|-------|------|-------|
-| HavunCore | 98.4% | **98.4%** | 740 |
-| SafeHavun | 86.6% | **95.9%** | 302 |
-| Studieplanner API | 0.2% | **94.1%** | 311 |
-| Infosyst | 83.3% | **92.0%** | 834 |
-| HavunVet | 82.8% | **90.9%** | 276 |
-| HavunAdmin | 15.3% | **90.2%** | 3180 |
-| JudoToernooi | 80.0% | **89.6%** | 3215 |
-| Herdenkingsportaal | 53.5% | **83.56%** | 5154 |
-| **TOTAAL** | | | **14.012** |
+### CI Workflow Fixes:
+| Project | Fix | Status |
+|---------|-----|--------|
+| Herdenkingsportaal | `imagick` extension + HavunCore symlink checkout | CI draait, 341 pre-existing failures (niet onze code) |
+| JudoToernooi | Python 3.11 + OR-Tools + storage/framework dirs | CI draait |
 
-### Security Fixes (kritieke issues opgelost):
+### Nieuwe Tests (58 tests):
+| Project | Testbestand | Tests | Dekt |
+|---------|-------------|-------|------|
+| Herdenkingsportaal | PdfConversionServiceTest | 9 | Imagick happy path (CI), non-Imagick path (lokaal) |
+| Herdenkingsportaal | ArweaveServiceRealModeTest | 25 | Non-mock paths: wallet balance, tx status, network, upload |
+| Herdenkingsportaal | ArweaveCryptoSigningTest | 8 | RSA-PSS signing, deep hash, large data |
+| JudoToernooi | PythonSolverCITest | 8 | callPythonSolver() happy path met echte Python+ortools |
+| JudoToernooi | StripeProviderCoverageTest | 8 | createPayment, getPlatformPayment, handleOAuth, getAccount |
 
-| Fix | Project | Impact |
-|-----|---------|--------|
-| PIN systeem verwijderd | JudoToernooi | Brute-force risico weg |
-| Webhook idempotency | Beide | Geen dubbele betalingen |
-| Webhook signatures | JudoToernooi | Geen fake webhooks |
-| Payment DB::transaction() | Herdenkingsportaal | Atomaire betalingsverwerking |
-| unserialize() → HMAC | Herdenkingsportaal | RCE risico weg |
-| .env whitelist + backup | Beide | Geen admin panel injectie |
-| CSP unsafe-eval scoped | Herdenkingsportaal | Alleen op Fabric.js routes |
-| AutoFix sandbox | JudoToernooi | Geen git pollution in tests |
+### Controller Splits (JudoToernooi):
 
-### Refactoring Resultaten:
+#### PubliekController (995 → 653)
+| Nieuw | Regels | Methods |
+|-------|--------|---------|
+| PubliekResultatenController | 339 | organisatorResultaten, getClubRanking, getClubResultaten, exportUitslagen, exportDanpunten |
+| PubliekWegingController | 109 | scanQR, registreerGewicht |
 
-#### Herdenkingsportaal — Controller + Model splits
+#### PouleController (960 → 220)
+| Nieuw | Regels | Methods |
+|-------|--------|---------|
+| PouleGeneratieController | 190 | genereer, verifieer |
+| PouleJudokaController | 340 | zoekMatch, verplaatsJudokaApi, uitschrijvenJudoka |
 
-| Component | Was | Nu |
-|-----------|-----|-----|
-| MemorialController | 4602 | **716** (8 controllers + 1 trait) |
-| AdminController | 2503 | **1286** (5 Admin/ controllers) |
-| PaymentController | 1505 | **1318** (+ PaymentEPCController) |
-| Memorial model | 1874 | **622** (+ 6 traits in Concerns/) |
+#### ToernooiController (922 → 426)
+| Nieuw | Regels | Methods |
+|-------|--------|---------|
+| ToernooiInstellingenController | 192 | updateWachtwoorden, updateBloktijden, updateBetalingInstellingen, updatePortaalInstellingen, updateLocalServerIps, detectMyIp, heropenVoorbereiding |
+| ToernooiAfsluitenController | 178 | afsluiten, bevestigAfsluiten, heropenen |
+| AdminDashboardController | 109 | index (sitebeheerder dashboard) |
+| OrganisatorDashboardController | 68 | dashboard, redirect, organisatorDashboard |
 
-Nieuwe controllers: MemorialUploadController, MemorialMonumentController, MemorialPublishController, MemorialCondolenceController, MemorialContentController, MemorialExportController, MemorialDisplayController, MemorialTemplateController, PaymentEPCController, AdminReviewsController, AdminSecurityController, AdminBlockchainController, AdminPaymentsController, AdminConfigController
-
-Nieuwe traits: HasMemorialPrivacy, HasMemorialState, HasArweave, HasMemorialPhotos, HasMemorialGuestbook, HasMemorialPackages, HandlesMemorialImages
-
-#### JudoToernooi — Service + Controller splits
-
-| Component | Was | Nu |
-|-----------|-----|-----|
-| EliminatieService | 1570 | **786** (+ 3 helpers) |
-| BlokMatVerdelingService | 1044 | **882** (+ 2 helpers) |
-| PouleIndelingService | 979 | **587** (+ 4 helpers) |
-| AutoFixService | 962 | **775** (+ GitOperations) |
-| BlokController | 1313 | **447** (+ 2 controllers) |
-| PouleController | 1307 | **960** (+ 1 controller) |
-| WedstrijddagController | 1090 | **819** (+ 1 controller) |
-| MatController | 1047 | **654** (+ 2 controllers) |
-
-### Performance Fix:
-
-**TenantComposer + TenantMiddleware cache** (HavunAdmin)
-- `Schema::connection('central')->hasTable()` werd op ELKE view render aangeroepen
-- In single-tenant mode = exception per call = 20+ exceptions per request
-- **51x sneller** na caching (425s → 8s voor 91 tests)
-
-### Bug Fixes:
-
-| Bug | Project | Status |
-|-----|---------|--------|
-| PaymentTransaction $fillable crypto | Herdenkingsportaal | ✅ Gefixt |
-| UserSubscription model ontbreekt | Herdenkingsportaal | ✅ Aangemaakt |
-| package_type enum→string migratie | Herdenkingsportaal | ✅ Migratie |
-| TaxExportService merge() | HavunAdmin | ✅ toBase() |
-| ChatContentFilter all-caps dead code | Herdenkingsportaal | ✅ Verplaatst vóór lowercase |
-| Photo storage memory leak | Herdenkingsportaal | ✅ DB aggregate |
-| Monument race condition | Herdenkingsportaal | ✅ Cache::lock |
-| ClaudeTask::scopeByPriority MySQL | HavunAdmin | ✅ CASE WHEN |
-| AiChatService heredoc parse | HavunAdmin | ✅ Variable extractie |
-| 14 HavunAdmin unit test failures | HavunAdmin | ✅ Missing columns |
-| 7 JudoToernooi obsolete tests | JudoToernooi | ✅ Skipped |
-| AutoFix git pollution in tests | JudoToernooi | ✅ Sandbox guard |
-| Sync data loss (last-write-wins) | JudoToernooi | ✅ Conflict detection |
-| N+1 queries PubliekController | JudoToernooi | ✅ Eager loading + cache |
-
-### Generic catch → specific exception types:
-
-Verwerkt in: PaymentController, ArweaveService, ArweaveProductionService, ArweaveCrypto, InvoiceService, HavunAdminSyncService, XrpPriceService, PostcodeService, AdminController, Memorial Display/Export/Template controllers
-
-### Doc Intelligence:
-- 1710 issues resolved → 0 open
-- BERTVANDERHEIDE project verwijderd
-- `.claude/worktrees/` uitgesloten van scanner
+### Generic Catches → Specific Types (Herdenkingsportaal):
+- 12 Console commands gefixed: `\Exception` → `QueryException`, `RuntimeException`, `TransportExceptionInterface`
+- Bestanden: VerifyBankPayments, ProcessScheduledBlockchainUploads, CloseExpiredMemorials, TestArweave*, ReadJpgMetadata, SendExpirationWarnings, RenamePhotos, TestCondolence, MigrateMonumentJpgToPrivate
 
 ### Openstaande items:
-- [ ] Herdenkingsportaal → 90% (blocked door Imagick/Arweave)
-- [ ] JudoToernooi → 90% (blocked door Python solver/Stripe)
+- [ ] Herdenkingsportaal CI: 341 pre-existing test failures in CI-omgeving (waarschijnlijk DB/storage gerelateerd)
+- [ ] JudoToernooi CI: storage framework dirs fix net gepusht, resultaat afwachten
+- [ ] Herdenkingsportaal coverage → 90% (blocked door Imagick — nu CI fix, afwachten)
+- [ ] JudoToernooi coverage → 90% (blocked door Python — nu CI fix, afwachten)
 - [ ] Memorial model nog 622 regels — meer traits mogelijk
-- [ ] Remaining fat files: PubliekController (995), PouleController (960), ToernooiController (922)
-- [ ] 40+ remaining generic catches in Console commands
-- [ ] Chromecast — Cast Developer Console
-- [ ] Auth v5.0 — passwordless migratie
+- [ ] Chromecast — Cast Developer Console (geparkeerd)
+- [ ] Auth v5.0 — passwordless migratie (toekomst)
 - [ ] iDEAL → iDEAL | Wero teksten
 
-### VP-02 deadline: 31 mei 2026 — **Coverage doel BEHAALD** ✓
+### VP-02 deadline: 31 mei 2026 — Coverage doel BEHAALD ✓
