@@ -48,29 +48,35 @@ class AggregateMetricsCommand extends Command
             return;
         }
 
-        $grouped = $metrics->groupBy('path');
+        // Group by project, then by path within each project
+        $byProject = $metrics->groupBy('project');
+        $totalEndpoints = 0;
 
-        $count = 0;
-        foreach ($grouped as $path => $pathMetrics) {
-            $this->upsertAggregation($period, $periodStart, $path, $pathMetrics);
-            $count++;
+        foreach ($byProject as $project => $projectMetrics) {
+            $grouped = $projectMetrics->groupBy('path');
+
+            foreach ($grouped as $path => $pathMetrics) {
+                $this->upsertAggregation($period, $periodStart, $project, $path, $pathMetrics);
+                $totalEndpoints++;
+            }
+
+            $this->upsertAggregation($period, $periodStart, $project, null, $projectMetrics);
         }
 
-        $this->upsertAggregation($period, $periodStart, null, $metrics);
-
-        $this->info("Aggregated {$count} endpoints + 1 global for {$periodStart->toDateTimeString()}");
+        $this->info("Aggregated {$totalEndpoints} endpoints across " . $byProject->count() . " projects");
     }
 
     /**
      * Upsert an aggregation row.
      */
-    protected function upsertAggregation(string $period, $periodStart, ?string $path, $metrics): void
+    protected function upsertAggregation(string $period, $periodStart, string $project, ?string $path, $metrics): void
     {
         $responseTimes = $metrics->pluck('response_time_ms')->sort()->values();
         $count = $responseTimes->count();
 
         MetricsAggregated::updateOrCreate(
             [
+                'project' => $project,
                 'period' => $period,
                 'period_start' => $periodStart,
                 'path' => $path,

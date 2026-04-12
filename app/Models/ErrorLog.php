@@ -16,6 +16,7 @@ class ErrorLog extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'project',
         'exception_class',
         'message',
         'file',
@@ -65,6 +66,7 @@ class ErrorLog extends Model
             }
 
             static::create([
+                'project' => config('observability.project', 'havuncore'),
                 'exception_class' => get_class($e),
                 'message' => mb_substr($e->getMessage(), 0, 65535),
                 'file' => $e->getFile(),

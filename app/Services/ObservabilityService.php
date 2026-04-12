@@ -19,13 +19,14 @@ class ObservabilityService
     /**
      * Get dashboard summary.
      */
-    public function getDashboard(): array
+    public function getDashboard(?string $project = null): array
     {
         $now = now();
         $oneHourAgo = $now->copy()->subHour();
         $oneDayAgo = $now->copy()->subDay();
 
         $requestStats = RequestMetric::where('created_at', '>=', $oneDayAgo)
+            ->when($project, fn ($q) => $q->where('project', $project))
             ->selectRaw("COUNT(*) as total_24h")
             ->selectRaw("SUM(CASE WHEN created_at >= ? THEN 1 ELSE 0 END) as total_1h", [$oneHourAgo])
             ->selectRaw("SUM(CASE WHEN status_code >= 400 THEN 1 ELSE 0 END) as errors_24h")
@@ -40,6 +41,7 @@ class ObservabilityService
         $avgResponseTime = $requestStats->avg_time_1h;
 
         $slowestEndpoints = RequestMetric::where('created_at', '>=', $oneHourAgo)
+            ->when($project, fn ($q) => $q->where('project', $project))
             ->select('path')
             ->selectRaw('AVG(response_time_ms) as avg_time')
             ->selectRaw('COUNT(*) as request_count')
@@ -49,6 +51,7 @@ class ObservabilityService
             ->get();
 
         $errorStats = ErrorLog::where('created_at', '>=', $oneDayAgo)
+            ->when($project, fn ($q) => $q->where('project', $project))
             ->selectRaw("COUNT(*) as total")
             ->selectRaw("SUM(CASE WHEN severity = 'critical' THEN 1 ELSE 0 END) as critical")
             ->first();
@@ -56,7 +59,9 @@ class ObservabilityService
         $recentErrorCount = (int) $errorStats->total;
         $criticalErrors = (int) $errorStats->critical;
 
-        $slowQueryCount = SlowQuery::where('created_at', '>=', $oneDayAgo)->count();
+        $slowQueryCount = SlowQuery::where('created_at', '>=', $oneDayAgo)
+            ->when($project, fn ($q) => $q->where('project', $project))
+            ->count();
 
         return [
             'requests' => [
@@ -91,6 +96,9 @@ class ObservabilityService
     {
         $query = RequestMetric::query()->orderByDesc('created_at');
 
+        if (! empty($filters['project'])) {
+            $query->forProject($filters['project']);
+        }
         if (! empty($filters['path'])) {
             $query->where('path', 'like', '%' . $filters['path'] . '%');
         }
@@ -117,6 +125,9 @@ class ObservabilityService
     {
         $query = ErrorLog::query()->orderByDesc('last_occurred_at');
 
+        if (! empty($filters['project'])) {
+            $query->where('project', $filters['project']);
+        }
         if (! empty($filters['severity'])) {
             $query->forSeverity($filters['severity']);
         }
@@ -134,6 +145,9 @@ class ObservabilityService
     {
         $query = SlowQuery::query()->orderByDesc('created_at');
 
+        if (! empty($filters['project'])) {
+            $query->where('project', $filters['project']);
+        }
         if (! empty($filters['min_time'])) {
             $query->slowerThan((float) $filters['min_time']);
         }

@@ -14,6 +14,7 @@ class MetricsAggregated extends Model
     protected $table = 'metrics_aggregated';
 
     protected $fillable = [
+        'project',
         'period',
         'period_start',
         'path',

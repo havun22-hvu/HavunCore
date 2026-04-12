@@ -37,6 +37,7 @@ class RequestMetricsMiddleware
             $responseTimeMs = (int) round((microtime(true) - $startTime) * 1000);
 
             RequestMetric::create([
+                'project' => config('observability.project', 'havuncore'),
                 'method' => $request->method(),
                 'path' => $request->path(),
                 'route_name' => $request->route()?->getName(),

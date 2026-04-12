@@ -41,6 +41,7 @@ class ObservabilityServiceProvider extends ServiceProvider
 
             try {
                 SlowQuery::create([
+                    'project' => config('observability.project', 'havuncore'),
                     'query' => $this->replaceBindings($query),
                     'time_ms' => $query->time,
                     'connection' => $query->connectionName,

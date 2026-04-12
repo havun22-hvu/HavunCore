@@ -35,7 +35,7 @@ class ObservabilityController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $this->observability->getDashboard(),
+            'data' => $this->observability->getDashboard($request->input('project')),
         ]);
     }
 
@@ -51,7 +51,7 @@ class ObservabilityController extends Controller
         }
 
         $data = $this->observability->getRequests($request->only([
-            'path', 'status_code', 'tenant', 'method', 'errors_only', 'per_page',
+            'project', 'path', 'status_code', 'tenant', 'method', 'errors_only', 'per_page',
         ]));
 
         return response()->json([
@@ -72,7 +72,7 @@ class ObservabilityController extends Controller
         }
 
         $data = $this->observability->getErrors($request->only([
-            'severity', 'exception_class', 'per_page',
+            'project', 'severity', 'exception_class', 'per_page',
         ]));
 
         return response()->json([
@@ -93,7 +93,7 @@ class ObservabilityController extends Controller
         }
 
         $data = $this->observability->getSlowQueries($request->only([
-            'min_time', 'per_page',
+            'project', 'min_time', 'per_page',
         ]));
 
         return response()->json([

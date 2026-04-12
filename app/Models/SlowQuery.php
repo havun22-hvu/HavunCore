@@ -16,6 +16,7 @@ class SlowQuery extends Model
     protected $table = 'slow_queries';
 
     protected $fillable = [
+        'project',
         'query',
         'time_ms',
         'connection',

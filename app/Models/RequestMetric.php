@@ -14,6 +14,7 @@ class RequestMetric extends Model
     public $timestamps = false;
 
     protected $fillable = [
+        'project',
         'method',
         'path',
         'route_name',
@@ -71,5 +72,13 @@ class RequestMetric extends Model
     public function scopeForTenant($query, string $tenant)
     {
         return $query->where('tenant', $tenant);
+    }
+
+    /**
+     * Scope by project
+     */
+    public function scopeForProject($query, string $project)
+    {
+        return $query->where('project', $project);
     }
 }
