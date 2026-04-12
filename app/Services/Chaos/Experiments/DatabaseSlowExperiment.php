@@ -74,8 +74,8 @@ class DatabaseSlowExperiment extends ChaosExperiment
         // Table sizes
         $tableSizes = $this->measure(function () {
             return DB::select("
-                SELECT table_name, table_rows,
-                       ROUND((data_length + index_length) / 1024 / 1024, 2) as size_mb
+                SELECT table_name as tbl_name, table_rows as tbl_rows,
+                       ROUND((data_length + index_length) / 1024 / 1024, 2) as tbl_size_mb
                 FROM information_schema.TABLES
                 WHERE table_schema = ?
                 AND table_name IN ('request_metrics', 'error_logs', 'slow_queries', 'metrics_aggregated')
@@ -85,9 +85,9 @@ class DatabaseSlowExperiment extends ChaosExperiment
 
         if (! $tableSizes['error'] && $tableSizes['result']) {
             foreach ($tableSizes['result'] as $table) {
-                $checks["table_{$table->table_name}"] = [
+                $checks["table_{$table->tbl_name}"] = [
                     'status' => 'pass',
-                    'message' => "{$table->table_rows} rows, {$table->size_mb}MB",
+                    'message' => "{$table->tbl_rows} rows, {$table->tbl_size_mb}MB",
                 ];
             }
         }
