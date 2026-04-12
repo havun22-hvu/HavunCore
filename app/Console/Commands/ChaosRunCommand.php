@@ -9,7 +9,6 @@ use App\Services\Chaos\Experiments\EndpointProbeExperiment;
 use App\Services\Chaos\Experiments\ErrorFloodExperiment;
 use App\Services\Chaos\Experiments\HealthDeepExperiment;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Mail;
 
 class ChaosRunCommand extends Command
 {
@@ -135,72 +134,24 @@ class ChaosRunCommand extends Command
     }
 
     /**
-     * Send alert email when a single experiment fails.
+     * Log alert when a single experiment fails (visible in dashboard).
      */
     protected function alertOnFailure(string $name, array $report): void
     {
-        $status = $report['results']['status'] ?? '';
-        if ($status !== 'fail') {
+        if (($report['results']['status'] ?? '') !== 'fail') {
             return;
         }
 
-        $this->sendAlert("Chaos FAIL: {$name}", $this->formatAlertBody([$name => $report]));
+        $this->warn("ALERT: {$name} FAILED — check HavunAdmin > Monitoring");
     }
 
     /**
-     * Send alert email for batch failures.
+     * Log alert for batch failures.
      */
     protected function alertOnBatchFailure(array $failures): void
     {
         $names = implode(', ', array_keys($failures));
-        $this->sendAlert("Chaos FAIL: {$names}", $this->formatAlertBody($failures));
-    }
-
-    /**
-     * Send alert email.
-     */
-    protected function sendAlert(string $subject, string $body): void
-    {
-        $to = config('chaos.alert_email', env('MAIL_FROM_ADDRESS'));
-        if (empty($to)) {
-            return;
-        }
-
-        try {
-            Mail::raw($body, function ($message) use ($to, $subject) {
-                $message->to($to)->subject("[HavunCore] {$subject}");
-            });
-            $this->warn("Alert email sent to {$to}");
-        } catch (\Throwable $e) {
-            $this->error("Failed to send alert: {$e->getMessage()}");
-        }
-    }
-
-    /**
-     * Format alert email body.
-     */
-    protected function formatAlertBody(array $failures): string
-    {
-        $lines = ["Chaos Engineering Alert — " . now()->toDateTimeString(), ""];
-
-        foreach ($failures as $name => $report) {
-            $lines[] = "EXPERIMENT: {$name}";
-            $lines[] = "STATUS: " . strtoupper($report['results']['status'] ?? 'unknown');
-            $lines[] = "DURATION: {$report['duration_ms']}ms";
-
-            if (isset($report['results']['checks'])) {
-                foreach ($report['results']['checks'] as $check => $detail) {
-                    $status = strtoupper($detail['status'] ?? '??');
-                    $lines[] = "  [{$status}] {$check}: " . ($detail['message'] ?? '');
-                }
-            }
-            $lines[] = "";
-        }
-
-        $lines[] = "Server: " . gethostname();
-        $lines[] = "URL: https://havuncore.havun.nl";
-
-        return implode("\n", $lines);
+        $this->warn("ALERT: {$names} FAILED — check HavunAdmin > Monitoring");
     }
 
     protected function renderReport(array $report): void

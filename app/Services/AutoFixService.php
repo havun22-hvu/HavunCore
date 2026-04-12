@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\AutofixProposal;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 
 /**
  * Central AutoFix Service
@@ -176,29 +175,11 @@ class AutoFixService
 
     protected function sendNotification(AutofixProposal $proposal): void
     {
-        $to = config('chaos.alert_email');
-        if (empty($to)) {
-            return;
-        }
-
-        try {
-            $status = strtoupper($proposal->status);
-            $body = "AutoFix {$status} — {$proposal->project}\n\n";
-            $body .= "Exception: {$proposal->exception_class}\n";
-            $body .= "Message: " . mb_substr($proposal->message, 0, 200) . "\n";
-            $body .= "File: {$proposal->file}:{$proposal->line}\n";
-            $body .= "Risk: {$proposal->risk_level}\n";
-            $body .= "Source: {$proposal->source}\n";
-            $body .= "Time: {$proposal->updated_at}\n";
-
-            if ($proposal->result_message) {
-                $body .= "\nResult: {$proposal->result_message}\n";
-            }
-
-            Mail::raw($body, function ($msg) use ($to, $proposal, $status) {
-                $msg->to($to)->subject("[AutoFix] {$status}: {$proposal->project} — {$proposal->exception_class}");
-            });
-        } catch (\Throwable) {
-        }
+        // Notifications are visible in HavunAdmin dashboard (observability/autofix)
+        Log::info("AutoFix [{$proposal->status}]: {$proposal->project} — {$proposal->exception_class}", [
+            'proposal_id' => $proposal->id,
+            'risk' => $proposal->risk_level,
+            'source' => $proposal->source,
+        ]);
     }
 }

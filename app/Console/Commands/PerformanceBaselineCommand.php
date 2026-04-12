@@ -5,7 +5,7 @@ namespace App\Console\Commands;
 use App\Models\RequestMetric;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Log;
 
 class PerformanceBaselineCommand extends Command
 {
@@ -121,20 +121,10 @@ class PerformanceBaselineCommand extends Command
 
     protected function sendRegressionAlert(mixed $date, array $regressions): void
     {
-        $to = config('chaos.alert_email');
-        if (empty($to)) {
-            return;
-        }
-
-        try {
-            $body = "Performance Regression Alert — {$date->toDateString()}\n\n";
-            $body .= implode("\n", $regressions);
-            $body .= "\n\nServer: " . gethostname();
-
-            Mail::raw($body, function ($message) use ($to) {
-                $message->to($to)->subject('[HavunCore] Performance Regression Detected');
-            });
-        } catch (\Throwable) {
-        }
+        // Regressions are visible in HavunAdmin dashboard via /api/observability/baseline
+        Log::warning('Performance regression detected', [
+            'date' => $date->toDateString(),
+            'regressions' => $regressions,
+        ]);
     }
 }
