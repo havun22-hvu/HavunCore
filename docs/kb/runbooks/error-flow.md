@@ -12,19 +12,21 @@ Error optreedt in app
     ├─── 1. Laravel Exception Handler
     │        └── Logt naar lokaal: storage/logs/laravel.log
     │
-    ├─── 2. Observability (NIEUW — april 2026)
+    ├─── 2. Observability (alle 7 projecten)
     │        └── Stuurt naar HavunCore DB: error_logs tabel
     │        └── Deduplicatie via fingerprint (class+file+line)
     │        └── Infra-errors gefilterd (EADDRINUSE, ECONNREFUSED, etc.)
     │
-    ├─── 3. AutoFix (alleen JudoToernooi + Herdenkingsportaal)
-    │        └── AI analyseert error + past automatisch code fix toe
-    │        └── Max 2 pogingen per error, rate limit 60 min
-    │        └── Git commit + push bij succesvolle fix
+    ├─── 3. AutoFix (JudoToernooi + Herdenkingsportaal)
+    │        ├── PRIMAIR: HavunCore centraal (/api/autofix/analyze)
+    │        │     └── AI analyseert + proposal opgeslagen (audit trail)
+    │        │     └── Fix teruggestuurd → lokaal toegepast → resultaat gerapporteerd
+    │        └── FALLBACK: Lokale AutoFix (als HavunCore onbereikbaar)
+    │              └── Zelfde flow, achteraf gerapporteerd aan HavunCore
     │
-    └─── 4. Health Check (elke 5 min)
-             └── Bash script checkt of apps bereikbaar zijn
-             └── Email alert bij downtime
+    └─── 4. Health Check + Chaos Probes
+             ├── Bash script elke 5 min (uptime check + email alert)
+             └── Chaos probes elk uur (health-deep + endpoint-probe)
 ```
 
 ---
@@ -54,16 +56,39 @@ Error optreedt in app
 
 **Actieve projecten:** HavunCore, HavunAdmin, Herdenkingsportaal, Infosyst, SafeHavun, JudoToernooi, Studieplanner API
 
-### 3. AutoFix — Automatische reparatie
+### 3. AutoFix — Automatische reparatie (centraal + fallback)
+
+```
+Error in JudoToernooi of Herdenkingsportaal
+    │
+    ├── Stap 1: Probeer HavunCore centraal
+    │   POST /api/autofix/analyze
+    │   ├── Succesvol → HavunCore slaat proposal op (audit trail)
+    │   │                → Stuurt fix terug naar project
+    │   │                → Project past fix lokaal toe
+    │   │                → Project rapporteert resultaat: POST /api/autofix/report
+    │   │
+    │   └── Mislukt (timeout/onbereikbaar)
+    │       └── Fallback naar lokale AutoFix (bestaande flow)
+    │           → Project rapporteert achteraf: POST /api/autofix/fallback
+    │
+    └── Altijd: audit trail in HavunCore (centraal of fallback)
+```
 
 | Wat | Detail |
 |-----|--------|
 | Actief op | JudoToernooi + Herdenkingsportaal |
-| Hoe | Error → HavunCore AI Proxy → Claude analyseert → code fix → `php -l` check → git commit |
+| Primair | HavunCore centraal: `POST /api/autofix/analyze` |
+| Fallback | Lokale AutoFixService als HavunCore onbereikbaar |
+| Audit trail | Tabel `autofix_proposals` in HavunCore (centraal) |
+| Bron tracking | `source` kolom: `central` of `local_fallback` |
 | Limieten | Max 2 pogingen per error, 60 min cooldown per uniek error |
-| Veiligheid | Alleen project-bestanden, `isProjectFile()` check |
-| Notificatie | Email bij success + failure |
-| Excluded | Infra-errors (EADDRINUSE, ECONNREFUSED, etc.) |
+| Veiligheid | Alleen project-bestanden, `isProjectFile()` check, risk assessment |
+| Risk levels | `low` (auto-apply), `medium`/`high` (dry-run, notify only) |
+| Notificatie | Email bij success, failure en dry-run |
+| API overzicht | `GET /api/autofix/proposals?project=judotoernooi` |
+
+**Certificering:** Alle fixes (centraal én lokaal) worden vastgelegd in HavunCore's `autofix_proposals` tabel met project, timestamp, risk level, en bron (central/local_fallback). Dit biedt een compleet audit trail voor kwaliteitsbeoordeling.
 
 ### 4. Server Health Check
 
