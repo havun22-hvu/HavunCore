@@ -2,63 +2,65 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Sessie: 12 april 2026 — CI fixes, controller splits, coverage tests, doc cleanup
+## Sessie: 12-13 april 2026 — CI groen, controller splits, coverage 82.2%, doc cleanup
 
-### Doc Intelligence Cleanup:
-- 1038 issues → 0 open
-- 1005 worktree-spookissues (verwijderde `.claude/worktrees/agent-a3e628e0/`) bulk-resolved
-- 33 echte issues: broken links (false positives), duplicaten (verwachte overlap), outdated (reviewed)
-- Build artifact verwijderd: `webapp/frontend/dist/ICONS-README.md`
+### Resultaten deze sessie:
 
-### CI Workflow Fixes:
-| Project | Fix | Status |
-|---------|-----|--------|
-| Herdenkingsportaal | `imagick` extension + HavunCore symlink checkout | CI draait, 341 pre-existing failures (niet onze code) |
-| JudoToernooi | Python 3.11 + OR-Tools + storage/framework dirs | CI draait |
+**CI: beide projecten GROEN**
+- Herdenkingsportaal: 5361 tests, 0 failures, 82.2% coverage
+- JudoToernooi: 3258 tests, 0 failures, CI groen
 
-### Nieuwe Tests (58 tests):
-| Project | Testbestand | Tests | Dekt |
-|---------|-------------|-------|------|
-| Herdenkingsportaal | PdfConversionServiceTest | 9 | Imagick happy path (CI), non-Imagick path (lokaal) |
-| Herdenkingsportaal | ArweaveServiceRealModeTest | 25 | Non-mock paths: wallet balance, tx status, network, upload |
-| Herdenkingsportaal | ArweaveCryptoSigningTest | 8 | RSA-PSS signing, deep hash, large data |
-| JudoToernooi | PythonSolverCITest | 8 | callPythonSolver() happy path met echte Python+ortools |
-| JudoToernooi | StripeProviderCoverageTest | 8 | createPayment, getPlatformPayment, handleOAuth, getAccount |
+**Wat is gedaan:**
+- Doc Intelligence: 1038 issues → 0 open
+- CI workflows werkend: Imagick+Ghostscript, Python+OR-Tools, withoutVite, HavunCore symlink
+- 220+ nieuwe tests geschreven (Arweave, PDF, Python solver, Stripe, AdminPayments, MemorialConcerns, Export/Condolence)
+- 3 JudoToernooi fat controllers → 11 controllers
+- Memorial model: 3 nieuwe traits (622→385 regels)
+- 12 generic catches → specific exception types
+- iDEAL → iDEAL | Wero teksten (beide projecten)
+- Security: 8 → 1 kwetsbaarheid (firebase/php-jwt low, blocked door socialite)
+- ArweaveService coverage: 18% → 86%
 
-### Controller Splits (JudoToernooi):
+### Openstaande items — VOLGENDE SESSIE:
 
-#### PubliekController (995 → 653)
-| Nieuw | Regels | Methods |
-|-------|--------|---------|
-| PubliekResultatenController | 339 | organisatorResultaten, getClubRanking, getClubResultaten, exportUitslagen, exportDanpunten |
-| PubliekWegingController | 109 | scanQR, registreerGewicht |
+#### 1. Coverage 82.2% → 90% (Herdenkingsportaal)
+**1304 regels nodig.** Coverage gap analyse beschikbaar als CI artifact.
 
-#### PouleController (960 → 220)
-| Nieuw | Regels | Methods |
-|-------|--------|---------|
-| PouleGeneratieController | 190 | genereer, verifieer |
-| PouleJudokaController | 340 | zoekMatch, verplaatsJudokaApi, uitschrijvenJudoka |
+**Stap 1: Split deze 5 bestanden naar <400 regels:**
 
-#### ToernooiController (922 → 426)
-| Nieuw | Regels | Methods |
-|-------|--------|---------|
-| ToernooiInstellingenController | 192 | updateWachtwoorden, updateBloktijden, updateBetalingInstellingen, updatePortaalInstellingen, updateLocalServerIps, detectMyIp, heropenVoorbereiding |
-| ToernooiAfsluitenController | 178 | afsluiten, bevestigAfsluiten, heropenen |
-| AdminDashboardController | 109 | index (sitebeheerder dashboard) |
-| OrganisatorDashboardController | 68 | dashboard, redirect, organisatorDashboard |
+| File | Regels | Gap | Splitvoorstel |
+|------|--------|-----|---------------|
+| MemorialUploadController | 1318 | 306 | foto/PDF/monument image uploads apart |
+| PaymentController | 1318 | 157 | checkout/webhook/invoice apart |
+| AdminController | 1286 | 115 | users/memorials/stats apart |
+| AutoFixService | 1088 | 141 | analyse/repair/git apart |
+| MemorialMonumentController | 757 | 104 | template/custom/preview apart |
 
-### Generic Catches → Specific Types (Herdenkingsportaal):
-- 12 Console commands gefixed: `\Exception` → `QueryException`, `RuntimeException`, `TransportExceptionInterface`
-- Bestanden: VerifyBankPayments, ProcessScheduledBlockchainUploads, CloseExpiredMemorials, TestArweave*, ReadJpgMetadata, SendExpirationWarnings, RenamePhotos, TestCondolence, MigrateMonumentJpgToPrivate
+**Stap 2: Tests schrijven voor de gesplitste bestanden**
 
-### Openstaande items:
-- [ ] Herdenkingsportaal CI: 341 pre-existing test failures in CI-omgeving (waarschijnlijk DB/storage gerelateerd)
-- [ ] JudoToernooi CI: storage framework dirs fix net gepusht, resultaat afwachten
-- [ ] Herdenkingsportaal coverage → 90% (blocked door Imagick — nu CI fix, afwachten)
-- [ ] JudoToernooi coverage → 90% (blocked door Python — nu CI fix, afwachten)
-- [ ] Memorial model nog 622 regels — meer traits mogelijk
+**Stap 3: Resterende kleine gaten (test only):**
+
+| File | Gap | Actie |
+|------|-----|-------|
+| HealthController | 99 | 0% coverage, simpele test |
+| ArweaveProductionService | 91 | Http::fake tests |
+| AdminPaymentsController | 117 | Meer edge cases |
+| MemorialPublishController | 76 | Route tests |
+| ProcessMemorialUpload job | 76 | Job dispatch tests |
+
+#### 2. Bestandsgrootte norm: max 400 regels
+- Claude AI werkt optimaal onder 400 regels per bestand
+- Boven 800 regels: features verdwijnen, edits raken verkeerde plek
+- Boven 1000 regels: "DO NOT REMOVE" comments nodig als bescherming
+- Alle bestanden >400 regels inventariseren en plannen voor split
+
+#### 3. Overig
+- [ ] firebase/php-jwt v6→v7 (blocked door laravel/socialite ^6.4)
 - [ ] Chromecast — Cast Developer Console (geparkeerd)
 - [ ] Auth v5.0 — passwordless migratie (toekomst)
-- [ ] iDEAL → iDEAL | Wero teksten
 
-### VP-02 deadline: 31 mei 2026 — Coverage doel BEHAALD ✓
+### Coverage gap analyse (CI artifact)
+De coverage.xml is beschikbaar als GitHub Actions artifact op de laatste groene run.
+Gebruik: `gh run download <ID> -n coverage-xml` om te downloaden.
+
+### VP-02 deadline: 31 mei 2026 — Coverage 82.2%, doel 90%
