@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\AIProxyController;
+use App\Http\Controllers\Api\AutoFixController;
 use App\Http\Controllers\Api\ClaudeTaskController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\DocIntelligenceController;
@@ -164,6 +165,14 @@ Route::prefix('studieplanner')->group(function () {
     // Get Reverb connection credentials for frontend
     Route::get('/reverb/credentials', [StudySessionController::class, 'credentials'])
         ->name('api.studieplanner.reverb.credentials');
+});
+
+// AutoFix API - Central error analysis and fix proposals
+Route::prefix('autofix')->group(function () {
+    Route::post('/analyze', [AutoFixController::class, 'analyze'])->name('api.autofix.analyze');
+    Route::post('/report', [AutoFixController::class, 'report'])->name('api.autofix.report');
+    Route::post('/fallback', [AutoFixController::class, 'fallback'])->name('api.autofix.fallback');
+    Route::get('/proposals', [AutoFixController::class, 'proposals'])->name('api.autofix.proposals');
 });
 
 // Observability API - Monitoring dashboard endpoints

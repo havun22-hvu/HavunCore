@@ -1,0 +1,204 @@
+<?php
+
+namespace App\Services;
+
+use App\Models\AutofixProposal;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
+
+/**
+ * Central AutoFix Service
+ *
+ * Analyzes errors from any project and generates fix proposals.
+ * The actual fix application happens in the project itself (local executor).
+ */
+class AutoFixService
+{
+    protected AIProxyService $aiProxy;
+
+    public function __construct(AIProxyService $aiProxy)
+    {
+        $this->aiProxy = $aiProxy;
+    }
+
+    /**
+     * Analyze an error and generate a fix proposal.
+     */
+    public function analyze(array $errorData): ?AutofixProposal
+    {
+        $project = $errorData['project'];
+        $exceptionClass = $errorData['exception_class'];
+        $message = $errorData['message'];
+        $file = $errorData['file'] ?? null;
+        $line = $errorData['line'] ?? null;
+        $trace = $errorData['trace'] ?? '';
+        $context = $errorData['context'] ?? [];
+
+        // Rate limit check
+        if (AutofixProposal::isRateLimited($project, $exceptionClass, $file, $line)) {
+            return null;
+        }
+
+        // Build prompt for AI analysis
+        $prompt = $this->buildPrompt($project, $exceptionClass, $message, $file, $line, $trace, $context);
+
+        try {
+            $result = $this->aiProxy->chat(
+                tenant: 'havuncore',
+                message: $prompt,
+                systemPrompt: $this->getSystemPrompt(),
+                maxTokens: 2048
+            );
+
+            $fixProposal = $result['response'] ?? '';
+            $riskLevel = $this->assessRisk($fixProposal);
+
+            $proposal = AutofixProposal::create([
+                'project' => $project,
+                'exception_class' => $exceptionClass,
+                'message' => mb_substr($message, 0, 65535),
+                'file' => $file,
+                'line' => $line,
+                'fix_proposal' => $fixProposal,
+                'status' => 'pending',
+                'risk_level' => $riskLevel,
+                'source' => 'central',
+                'context' => $context,
+            ]);
+
+            Log::info("AutoFix: proposal created for {$project}", [
+                'proposal_id' => $proposal->id,
+                'risk' => $riskLevel,
+            ]);
+
+            return $proposal;
+
+        } catch (\Throwable $e) {
+            Log::error("AutoFix: analysis failed for {$project}", [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    /**
+     * Report the result of applying a fix.
+     */
+    public function reportResult(int $proposalId, string $status, ?string $resultMessage = null): void
+    {
+        $proposal = AutofixProposal::find($proposalId);
+        if (! $proposal) {
+            return;
+        }
+
+        $proposal->update([
+            'status' => $status,
+            'result_message' => $resultMessage,
+        ]);
+
+        $this->sendNotification($proposal);
+    }
+
+    /**
+     * Record a local fallback fix (when HavunCore was unreachable).
+     */
+    public function recordFallback(array $data): AutofixProposal
+    {
+        return AutofixProposal::create([
+            'project' => $data['project'],
+            'exception_class' => $data['exception_class'],
+            'message' => mb_substr($data['message'] ?? '', 0, 65535),
+            'file' => $data['file'] ?? null,
+            'line' => $data['line'] ?? null,
+            'fix_proposal' => $data['fix_proposal'] ?? null,
+            'status' => $data['status'] ?? 'applied',
+            'risk_level' => $data['risk_level'] ?? 'unknown',
+            'result_message' => $data['result_message'] ?? 'Applied via local fallback',
+            'source' => 'local_fallback',
+            'context' => $data['context'] ?? null,
+        ]);
+    }
+
+    protected function buildPrompt(string $project, string $class, string $message, ?string $file, ?int $line, string $trace, array $context): string
+    {
+        $prompt = "Analyseer deze productie-error en geef een fix.\n\n";
+        $prompt .= "Project: {$project}\n";
+        $prompt .= "Exception: {$class}\n";
+        $prompt .= "Message: {$message}\n";
+
+        if ($file) {
+            $prompt .= "File: {$file}\n";
+        }
+        if ($line) {
+            $prompt .= "Line: {$line}\n";
+        }
+        if ($trace) {
+            $prompt .= "\nStack trace (eerste 2000 tekens):\n" . mb_substr($trace, 0, 2000) . "\n";
+        }
+        if (! empty($context)) {
+            $prompt .= "\nContext: " . json_encode($context, JSON_PRETTY_PRINT) . "\n";
+        }
+
+        $prompt .= "\nGeef je antwoord in dit format:\n";
+        $prompt .= "RISK: low|medium|high\n";
+        $prompt .= "FILE: pad/naar/bestand.php\n";
+        $prompt .= "FIX:\n```php\n// de fix code\n```\n";
+        $prompt .= "UITLEG: korte uitleg van de oorzaak en fix\n";
+
+        return $prompt;
+    }
+
+    protected function getSystemPrompt(): string
+    {
+        return 'Je bent een ervaren Laravel developer die productie-errors analyseert en fixes voorstelt. '
+            . 'Geef alleen fixes voor duidelijke bugs, geen refactoring. '
+            . 'Wees conservatief: liever geen fix dan een riskante fix. '
+            . 'Markeer risk level: low (typo, null check), medium (logica wijziging), high (database/auth/betaling).';
+    }
+
+    protected function assessRisk(string $proposal): string
+    {
+        if (preg_match('/RISK:\s*(low|medium|high)/i', $proposal, $matches)) {
+            return strtolower($matches[1]);
+        }
+
+        // Heuristic fallback
+        $highRiskPatterns = ['migration', 'database', 'payment', 'auth', 'password', 'token', 'DELETE', 'DROP'];
+        foreach ($highRiskPatterns as $pattern) {
+            if (stripos($proposal, $pattern) !== false) {
+                return 'high';
+            }
+        }
+
+        return 'medium';
+    }
+
+    protected function sendNotification(AutofixProposal $proposal): void
+    {
+        $to = config('chaos.alert_email');
+        if (empty($to)) {
+            return;
+        }
+
+        try {
+            $status = strtoupper($proposal->status);
+            $body = "AutoFix {$status} — {$proposal->project}\n\n";
+            $body .= "Exception: {$proposal->exception_class}\n";
+            $body .= "Message: " . mb_substr($proposal->message, 0, 200) . "\n";
+            $body .= "File: {$proposal->file}:{$proposal->line}\n";
+            $body .= "Risk: {$proposal->risk_level}\n";
+            $body .= "Source: {$proposal->source}\n";
+            $body .= "Time: {$proposal->updated_at}\n";
+
+            if ($proposal->result_message) {
+                $body .= "\nResult: {$proposal->result_message}\n";
+            }
+
+            Mail::raw($body, function ($msg) use ($to, $proposal, $status) {
+                $msg->to($to)->subject("[AutoFix] {$status}: {$proposal->project} — {$proposal->exception_class}");
+            });
+        } catch (\Throwable) {
+        }
+    }
+}
