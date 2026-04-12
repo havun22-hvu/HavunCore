@@ -18,11 +18,13 @@ class AIProxyService
     protected string $apiKey;
     protected string $model;
     protected string $apiUrl = 'https://api.anthropic.com/v1/messages';
+    protected CircuitBreaker $circuitBreaker;
 
     public function __construct()
     {
         $this->apiKey = config('services.claude.api_key', '');
         $this->model = config('services.claude.model', 'claude-3-haiku-20240307');
+        $this->circuitBreaker = new CircuitBreaker('claude_api');
     }
 
     /**
@@ -36,6 +38,11 @@ class AIProxyService
         int $maxTokens = 1024
     ): array {
         $startTime = microtime(true);
+
+        // Circuit breaker check
+        if (! $this->circuitBreaker->isAvailable()) {
+            throw new \Exception('Claude API circuit breaker is open — service temporarily unavailable');
+        }
 
         // Build system prompt
         $system = $systemPrompt ?? $this->getDefaultSystemPrompt($tenant);
@@ -64,6 +71,7 @@ class AIProxyService
         ]);
 
         if (!$response->successful()) {
+            $this->circuitBreaker->recordFailure();
             Log::error('AI Proxy: Claude API error', [
                 'tenant' => $tenant,
                 'status' => $response->status(),
@@ -72,6 +80,7 @@ class AIProxyService
             throw new \Exception('Claude API error: ' . $response->status());
         }
 
+        $this->circuitBreaker->recordSuccess();
         $data = $response->json();
         $text = $data['content'][0]['text'] ?? '';
         $usage = $data['usage'] ?? [];

@@ -21,6 +21,23 @@ Route::get('/health', function () {
     ]);
 });
 
+Route::get('/health/deep', function () {
+    $experiment = app(\App\Services\Chaos\Experiments\HealthDeepExperiment::class);
+    $report = $experiment->execute();
+
+    $statusCode = match ($report['results']['status'] ?? 'fail') {
+        'pass' => 200,
+        'warn' => 200,
+        default => 503,
+    };
+
+    return response()->json([
+        'status' => $report['results']['status'] ?? 'unknown',
+        'checks' => $report['results']['checks'] ?? [],
+        'duration_ms' => $report['duration_ms'],
+    ], $statusCode);
+});
+
 Route::get('/version', function () {
     return response()->json([
         'app' => 'HavunCore',
