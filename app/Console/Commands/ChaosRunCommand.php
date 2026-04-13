@@ -4,10 +4,14 @@ namespace App\Console\Commands;
 
 use App\Models\ChaosResult;
 use App\Services\Chaos\Experiments\ApiTimeoutExperiment;
+use App\Services\Chaos\Experiments\BackupIntegrityExperiment;
 use App\Services\Chaos\Experiments\DatabaseSlowExperiment;
+use App\Services\Chaos\Experiments\DiskPressureExperiment;
+use App\Services\Chaos\Experiments\DnsResolutionExperiment;
 use App\Services\Chaos\Experiments\EndpointProbeExperiment;
 use App\Services\Chaos\Experiments\ErrorFloodExperiment;
 use App\Services\Chaos\Experiments\HealthDeepExperiment;
+use App\Services\Chaos\Experiments\PaymentProviderExperiment;
 use Illuminate\Console\Command;
 
 class ChaosRunCommand extends Command
@@ -24,6 +28,10 @@ class ChaosRunCommand extends Command
         'error-flood' => ErrorFloodExperiment::class,
         'db-slow' => DatabaseSlowExperiment::class,
         'api-timeout' => ApiTimeoutExperiment::class,
+        'disk-pressure' => DiskPressureExperiment::class,
+        'payment-provider' => PaymentProviderExperiment::class,
+        'dns-resolution' => DnsResolutionExperiment::class,
+        'backup-integrity' => BackupIntegrityExperiment::class,
     ];
 
     public function handle(): int
