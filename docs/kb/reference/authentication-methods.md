@@ -71,9 +71,10 @@ Alle projecten gebruiken dezelfde methodes. Geen uitzonderingen.
 - Server-side: challenge genereren + response valideren
 
 ### QR Login
-- Server genereert QR code met uniek token
+- Server genereert QR code met uniek token (verloopt na 60 seconden, auto-refresh)
 - Smartphone scant QR → bevestigt login
-- Desktop pollt status → bij goedkeuring: JWT token
+- Desktop ontvangt goedkeuring via **WebSocket** (GEEN polling) → JWT token
+- Zie `docs/kb/decisions/geen-polling.md` — NOOIT polling voor QR status
 
 ### Magic Link
 - Server genereert eenmalig token (verloopt na 15 min)
