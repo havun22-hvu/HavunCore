@@ -80,23 +80,57 @@ Zie **`docs/kb/runbooks/op-reis-workflow.md`** voor de volledige op-reis werkwij
 
 ### CSP Test: Content Security Policy (-20 punten bij failure)
 
-**Wat Mozilla checkt:**
-- `unsafe-inline` of `data:` in `script-src` → FAIL
-- Brede bronnen zoals `https:` in `object-src` of `script-src` → FAIL
-- `object-src` of `script-src` niet gezet → FAIL
-- CDN domeinen zonder `https://` prefix → FAIL (telt als "overly broad")
-- `unsafe-eval` in `script-src` (tenzij route-specifiek) → FAIL
+Mozilla checkt 6 afzonderlijke sub-tests. Elke FAIL = -20 punten (niet cumulatief).
 
-**Verplichte CSP regels voor elk project:**
+#### 1. Blocks inline JavaScript (`unsafe-inline` in script-src)
+- `unsafe-inline` in script-src → FAIL
+- **Fix:** Gebruik nonces (`'nonce-{$nonce}'`), NOOIT `unsafe-inline`
+- **Status alle projecten:** OK (geen unsafe-inline in script-src)
+
+#### 2. Blocks eval() (`unsafe-eval` in script-src)
+- `unsafe-eval` in script-src → FAIL
+- **Oorzaak:** Alpine.js (gebundeld via Vite) gebruikt `new Function()` voor expressies
+- **Structurele fix:** Migreer naar `@alpinejs/csp` package (geen eval nodig)
+- **Tijdelijke workaround:** Accepteer -20 voor projecten met Alpine.js via Vite
+- **Status:** HP + JT hebben unsafe-eval (Alpine via Vite). HA, IS, SH niet.
+
+#### 3. Blocks inline styles (`unsafe-inline` in style-src)
+- `unsafe-inline` in style-src → FAIL
+- **Oorzaak:** Inline `style=""` attributen op HTML elementen
+- **Structurele fix:** Refactor alle `style=""` naar CSS utility classes (Tailwind)
+- **Aantallen:** HP=279, JT=182, HA=90, IS=20, SH=8 inline style attributen
+- **Status:** ALLE projecten hebben unsafe-inline in style-src
+
+#### 4. Deny by default (`default-src 'none'`)
+- `default-src` is niet `'none'` → FAIL
+- **Fix:** `default-src 'none'` + elk resource type expliciet toestaan
+- **Status alle projecten:** OK
+
+#### 5. Restricts `<base>` tag (`base-uri`)
+- `base-uri` ontbreekt of is te breed → FAIL
+- **Fix:** `base-uri 'self'`
+- **Status alle projecten:** OK
+
+#### 6. Restricts form submissions (`form-action`)
+- `form-action` ontbreekt of is te breed → FAIL
+- **Fix:** `form-action 'self'`
+- **Status alle projecten:** OK
+
+#### Extra checks (niet in sub-tests maar WEL in score):
+- `object-src` niet op `'none'` → FAIL
+- CDN domeinen zonder `https://` prefix → "overly broad"
+- Brede bronnen (`https:`) in script-src → FAIL
+
+**Verplichte CSP template voor elk project:**
 ```
-default-src 'none'                          # Deny by default
-script-src 'self' 'nonce-{$nonce}'         # Alleen nonce, NOOIT unsafe-inline
-style-src 'self' 'nonce-{$nonce}' 'unsafe-inline'  # unsafe-inline alleen voor style="" attributen
-object-src 'none'                           # Blokkeer plugins
-base-uri 'self'                             # Voorkom base tag injection
-form-action 'self'                          # Formulieren alleen naar eigen domein
-frame-ancestors 'none'                      # Geen iframes
-manifest-src 'self'                         # PWA manifest
+default-src 'none'
+script-src 'self' 'nonce-{$nonce}' https://specifieke-cdn.com
+style-src 'self' 'nonce-{$nonce}' https://fonts.googleapis.com
+object-src 'none'
+base-uri 'self'
+form-action 'self'
+frame-ancestors 'none'
+manifest-src 'self'
 ```
 
 **CDN domeinen altijd met `https://` prefix:**
@@ -105,14 +139,10 @@ manifest-src 'self'                         # PWA manifest
 // GOED:  https://cdn.jsdelivr.net
 ```
 
-**`unsafe-eval` alleen route-specifiek:**
-```php
-// FOUT:  altijd 'unsafe-eval' in script-src
-// GOED:  alleen op routes die het echt nodig hebben (bijv. Fabric.js)
-$unsafeEval = $this->routeNeedsUnsafeEval($request) ? " 'unsafe-eval'" : '';
-```
-
 ### SRI Test: Subresource Integrity (-5 punten bij failure)
+
+Mozilla scant de HTML en zoekt `integrity=` op alle `<script src="https://...">` tags.
+Als er ook maar 1 extern script ZONDER integrity is → FAIL.
 
 **Verplicht voor alle externe CDN scripts:**
 ```html
@@ -127,39 +157,41 @@ $unsafeEval = $this->routeNeedsUnsafeEval($request) ? " 'unsafe-eval'" : '';
 - `integrity="sha384-..."` attribuut
 - `crossorigin="anonymous"` attribuut
 - `@nonce` attribuut
-- Dynamische scripts (Google Analytics, Tailwind CDN): alleen `@nonce`, geen SRI
+
+**Dynamische scripts (Google Analytics):**
+- CDN versie kan geen SRI krijgen (Google update zonder versienummer)
+- **Structurele fix:** Self-host het script + SRI (zie Herdenkingsportaal `gtag:refresh`)
+- Tailwind CDN: geen SRI mogelijk, maar Tailwind CDN hoort niet in productie
 
 ### X-Content-Type-Options Test (-5 punten bij failure)
 
 **Vereist:** Header exact `X-Content-Type-Options: nosniff` — precies 1x.
 
 **Veelgemaakte fout:** Dubbele header door nginx EN Laravel middleware tegelijk.
-- nginx `add_header X-Content-Type-Options "nosniff"` + Laravel `$response->headers->set(...)` = 2x nosniff
+- nginx `add_header X-Content-Type-Options "nosniff"` + Laravel middleware = 2x nosniff
 - Mozilla leest dit als "cannot be recognized"
 
 **Structurele regel:** Security headers staan in **Laravel middleware, NIET in nginx**.
 Nginx mag alleen `Cache-Control` headers zetten op static assets.
 Uitzondering: apps zonder Laravel middleware (havuncore, vpdupdate) gebruiken nginx headers.
 
-### SRI Test: Extra (-5 punten bij ontbrekende SRI)
+### Openstaande verbeterpunten (structureel)
 
-Mozilla scant de HTML response en zoekt `integrity=` op alle `<script src="https://...">` tags.
-Als er ook maar 1 externe script ZONDER integrity is → FAIL.
+| Probleem | Projecten | Fix | Complexiteit |
+|----------|-----------|-----|:------------:|
+| `unsafe-eval` in script-src | HP, JT | Migreer naar `@alpinejs/csp` | HOOG |
+| `unsafe-inline` in style-src | ALLE | Refactor `style=""` → CSS classes | HOOG |
+| Tailwind CDN in productie | IS, SH | Bundel via Vite | MEDIUM |
 
-**Let op Google Analytics:** `<script async src="https://www.googletagmanager.com/...">` kan geen SRI krijgen (dynamisch). Mozilla telt dit WEL mee als extern script. Enige oplossing: GA via server-side of accepteer de -5.
+### Status per Project (2026-04-13, gedeployed + geverifieerd)
 
-### Status per Project (2026-04-13, gedeployed)
-
-| Project | default-src | script-src | object-src | SRI | X-Content-Type | Status |
-|---------|:-----------:|:----------:|:----------:|:---:|:--------------:|:------:|
-| Herdenkingsportaal | 'none' | nonce-only | 'none' | OK* | 1x nosniff | OK |
-| HavunAdmin | 'none' | nonce-only | 'none' | OK | 1x nosniff | OK |
-| Infosyst | 'none' | nonce-only | 'none' | OK | 1x nosniff | OK |
-| SafeHavun | 'none' | nonce-only | 'none' | OK | 1x nosniff | OK |
-| JudoToernooi | 'none' | unsafe-eval** | 'none' | OK | 1x nosniff | Deels |
-
-\* GA4 script kan geen SRI krijgen (dynamisch)
-\** Alpine.js via Vite vereist unsafe-eval — migratie naar @alpinejs/csp nodig
+| Project | default-src | unsafe-eval | unsafe-inline style | SRI | X-Content-Type |
+|---------|:-----------:|:-----------:|:-------------------:|:---:|:--------------:|
+| Herdenkingsportaal | 'none' | JA (Alpine) | JA (279x style=) | OK | OK |
+| HavunAdmin | 'none' | nee | JA (90x style=) | OK | OK |
+| Infosyst | 'none' | nee | JA (20x style=) | OK | OK |
+| SafeHavun | 'none' | nee | JA (8x style=) | OK | OK |
+| JudoToernooi | 'none' | JA (Alpine) | JA (182x style=) | OK | OK |
 
 ## Aandachtspunten
 
