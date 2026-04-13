@@ -21,22 +21,8 @@ class DocIntelligenceControllerTest extends TestCase
         parent::setUp();
 
         config([
-            'database.connections.doc_intelligence.database' => ':memory:',
             'services.doc_intelligence.api_token' => $this->token,
         ]);
-
-        // Purge cached connection so it reconnects with :memory:
-        \Illuminate\Support\Facades\DB::purge('doc_intelligence');
-
-        // Run migrations on the fresh in-memory DB
-        $schema = \Illuminate\Support\Facades\Schema::connection('doc_intelligence');
-        if (! $schema->hasTable('doc_embeddings')) {
-            $this->artisan('migrate', [
-                '--database' => 'doc_intelligence',
-                '--path' => 'database/migrations',
-                '--realpath' => false,
-            ]);
-        }
 
         // Clean slate between tests
         DocEmbedding::query()->delete();

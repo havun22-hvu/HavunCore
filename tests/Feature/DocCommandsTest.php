@@ -8,9 +8,7 @@ use App\Models\DocIntelligence\DocRelation;
 use App\Services\DocIntelligence\DocIndexer;
 use App\Services\DocIntelligence\IssueDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 class DocCommandsTest extends TestCase
@@ -20,21 +18,6 @@ class DocCommandsTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-
-        config([
-            'database.connections.doc_intelligence.database' => ':memory:',
-        ]);
-
-        DB::purge('doc_intelligence');
-
-        $schema = Schema::connection('doc_intelligence');
-        if (! $schema->hasTable('doc_embeddings')) {
-            $this->artisan('migrate', [
-                '--database' => 'doc_intelligence',
-                '--path' => 'database/migrations',
-                '--realpath' => false,
-            ]);
-        }
 
         DocEmbedding::query()->delete();
         DocIssue::query()->delete();
