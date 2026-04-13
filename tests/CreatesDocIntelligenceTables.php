@@ -12,7 +12,13 @@ trait CreatesDocIntelligenceTables
 {
     protected function setUpDocIntelligenceTables(): void
     {
-        config(['database.connections.doc_intelligence.database' => ':memory:']);
+        // Use a temp file instead of :memory: to avoid connection issues in CI.
+        $dbPath = sys_get_temp_dir() . '/doc_intelligence_test_' . getmypid() . '.sqlite';
+        if (! file_exists($dbPath)) {
+            touch($dbPath);
+        }
+
+        config(['database.connections.doc_intelligence.database' => $dbPath]);
         DB::purge('doc_intelligence');
 
         $db = DB::connection('doc_intelligence');
@@ -67,5 +73,10 @@ trait CreatesDocIntelligenceTables
             migration VARCHAR(255) NOT NULL,
             batch INTEGER NOT NULL
         )');
+
+        // Clean tables for fresh test state
+        $db->statement('DELETE FROM doc_embeddings');
+        $db->statement('DELETE FROM doc_issues');
+        $db->statement('DELETE FROM doc_relations');
     }
 }

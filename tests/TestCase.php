@@ -11,7 +11,8 @@ abstract class TestCase extends BaseTestCase
     {
         $app = parent::createApplication();
 
-        // Use in-memory SQLite for the doc_intelligence connection during tests
+        // Use in-memory SQLite for the doc_intelligence connection during tests.
+        // The CreatesDocIntelligenceTables trait overrides this to a temp file for doc-tests.
         $app['config']->set('database.connections.doc_intelligence.database', ':memory:');
 
         return $app;
