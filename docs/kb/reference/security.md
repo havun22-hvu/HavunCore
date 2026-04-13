@@ -183,15 +183,15 @@ Uitzondering: apps zonder Laravel middleware (havuncore, vpdupdate) gebruiken ng
 | `unsafe-inline` in style-src | ALLE | Refactor `style=""` → CSS classes | HOOG |
 | Tailwind CDN in productie | IS, SH | Bundel via Vite | MEDIUM |
 
-### Status per Project (2026-04-13, gedeployed + geverifieerd)
+### Status per Project (2026-04-14, gedeployed + geverifieerd)
 
 | Project | default-src | unsafe-eval | unsafe-inline style | SRI | X-Content-Type |
 |---------|:-----------:|:-----------:|:-------------------:|:---:|:--------------:|
-| Herdenkingsportaal | 'none' | JA (Alpine) | JA (279x style=) | OK | OK |
-| HavunAdmin | 'none' | nee | JA (90x style=) | OK | OK |
-| Infosyst | 'none' | nee | JA (20x style=) | OK | OK |
-| SafeHavun | 'none' | nee | JA (8x style=) | OK | OK |
-| JudoToernooi | 'none' | JA (Alpine) | JA (182x style=) | OK | OK |
+| Herdenkingsportaal | 'none' | JA (Alpine) | VERWIJDERD | OK (self-hosted GA4) | OK |
+| HavunAdmin | 'none' | nee | VERWIJDERD | OK | OK |
+| Infosyst | 'none' | nee | VERWIJDERD | OK | OK |
+| SafeHavun | 'none' | nee | VERWIJDERD | OK | OK |
+| JudoToernooi | 'none' | JA (Alpine) | VERWIJDERD | OK | OK |
 
 ## Aandachtspunten
 
