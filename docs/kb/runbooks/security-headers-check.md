@@ -1,63 +1,131 @@
-# Runbook: Security Headers Check
+# Runbook: Security Headers & Mozilla Observatory
 
-> **Bron:** Externe audit Q1 2026 (VP-04)
-> **Frequentie:** Kwartaallijks
-> **Geldt voor:** Alle publieke apps
+> **Frequentie:** Bij elke deploy + kwartaallijkse volledige check
+> **Geldt voor:** Alle publieke webapps
+> **Test URL:** https://observatory.mozilla.org
 
-## Vereiste Headers
+## Waar staan security headers?
 
-| Header | Waarde | Waarom |
-|--------|--------|--------|
-| `Strict-Transport-Security` | `max-age=31536000; includeSubDomains` | Forceert HTTPS |
-| `X-Content-Type-Options` | `nosniff` | Voorkomt MIME-type sniffing |
-| `X-Frame-Options` | `DENY` of `SAMEORIGIN` | Voorkomt clickjacking |
-| `Referrer-Policy` | `strict-origin-when-cross-origin` | Beperkt referrer-lekkage |
-| `Content-Security-Policy` | Per app configureren | Voorkomt XSS |
-| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` | Beperkt browser APIs |
+**In Laravel SecurityHeaders middleware** — NIET in nginx.
 
-## Check uitvoeren
-
-### Snelle check per app:
-```bash
-curl -sI https://herdenkingsportaal.nl | grep -iE "strict-transport|x-content-type|x-frame|referrer-policy|content-security|permissions-policy"
+```
+app/Http/Middleware/SecurityHeaders.php  → alle security headers
+bootstrap/app.php                        → middleware registratie
 ```
 
-### Alle publieke apps checken:
+Nginx mag ALLEEN `Cache-Control` headers zetten op static assets.
+Dubbele headers (nginx + Laravel) veroorzaken test failures.
+
+## Snelle check na deploy
+
 ```bash
-for url in herdenkingsportaal.nl judotoernooi.havun.nl havuncore.havun.nl havunadmin.havun.nl; do
-  echo "=== $url ==="
-  curl -sI "https://$url" | grep -iE "strict-transport|x-content-type|x-frame|referrer-policy|content-security|permissions-policy"
+for domain in herdenkingsportaal.nl havunadmin.havun.nl infosyst.havun.nl safehavun.havun.nl judotournament.org; do
+  echo "=== $domain ==="
+  curl -skI "https://$domain" | grep -ic "x-content-type" | xargs -I{} echo "X-Content-Type-Options count: {}"
+  curl -skI "https://$domain" | grep -i "content-security-policy" | sed 's/; /;\n/g' | grep -E "default-src|script-src|object-src|base-uri|form-action"
   echo ""
 done
 ```
 
-## Nginx configuratie
+## Mozilla Observatory CSP Sub-tests (6 stuks, elk -20 bij failure)
 
-Voeg toe aan elke server block in nginx:
+### 1. Blocks inline JavaScript
+- **Check:** Geen `unsafe-inline` in `script-src`
+- **Fix:** Gebruik `'nonce-{$nonce}'` voor alle `<script>` tags
+- **Blade:** `<script @nonce>` voor inline, `<script src="..." @nonce>` voor extern
 
-```nginx
-# Security headers
-add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
-add_header X-Content-Type-Options "nosniff" always;
-add_header X-Frame-Options "SAMEORIGIN" always;
-add_header Referrer-Policy "strict-origin-when-cross-origin" always;
-add_header Permissions-Policy "camera=(), microphone=(), geolocation=()" always;
+### 2. Blocks eval()
+- **Check:** Geen `unsafe-eval` in `script-src`
+- **Oorzaak:** Alpine.js (via Vite) gebruikt `new Function()` voor expressies
+- **Fix:** Migreer naar `@alpinejs/csp` package:
+  ```bash
+  npm install @alpinejs/csp
+  ```
+  ```js
+  // app.js — VOOR:
+  import Alpine from 'alpinejs';
+  // app.js — NA:
+  import Alpine from '@alpinejs/csp';
+  ```
+  Let op: inline x-data objecten (`x-data="{ open: false }"`) moeten worden
+  geregistreerd via `Alpine.data('naam', () => ({ open: false }))`.
+  Function-call x-data (`x-data="myComponent()"`) werkt al.
+
+### 3. Blocks inline styles
+- **Check:** Geen `unsafe-inline` in `style-src`
+- **Oorzaak:** Inline `style=""` attributen op HTML elementen
+- **Fix:** Refactor `style=""` naar Tailwind CSS utility classes
+- **Voorbeeld:**
+  ```html
+  <!-- VOOR: -->
+  <div style="display: none;">
+  <!-- NA: -->
+  <div class="hidden">
+  ```
+
+### 4. Deny by default
+- **Check:** `default-src 'none'`
+- **Fix:** Eerste directive in CSP, daarna elk type expliciet
+
+### 5. Restricts base tag
+- **Check:** `base-uri 'self'` aanwezig
+- **Fix:** Toevoegen aan CSP directives
+
+### 6. Restricts form submissions
+- **Check:** `form-action 'self'` aanwezig
+- **Fix:** Toevoegen aan CSP directives
+
+## SRI (Subresource Integrity) Test (-5 bij failure)
+
+Elk extern `<script src="https://...">` MOET een `integrity` attribuut hebben.
+
+```html
+<script src="https://cdn.example.com/lib@1.2.3/lib.min.js"
+        integrity="sha384-HASH"
+        crossorigin="anonymous"
+        @nonce></script>
 ```
 
-**Let op:** Content-Security-Policy moet per app worden geconfigureerd (afhankelijk van externe scripts, CDNs, etc.)
-
-## OWASP ZAP Scan (jaarlijks)
-
-**Tool:** OWASP ZAP (gratis, open source)
-**Prioriteit:** Herdenkingsportaal (publiek verkeer + betalingen)
-
+**Hash genereren:**
 ```bash
-# Docker-based scan:
-docker run -t ghcr.io/zaproxy/zaproxy:stable zap-baseline.py -t https://herdenkingsportaal.nl
+curl -skL "https://cdn.example.com/lib@1.2.3/lib.min.js" | \
+  openssl dgst -sha384 -binary | openssl base64 -A
 ```
 
-Resultaten opslaan in `docs/audit/owasp-scan-[datum].md`
+**Google Analytics:** Self-host via `php artisan gtag:refresh` (zie Herdenkingsportaal).
+
+## X-Content-Type-Options Test (-5 bij failure)
+
+Header moet exact 1x voorkomen als `nosniff`.
+Dubbel = "cannot be recognized" = FAIL.
+
+**Check:** `curl -skI https://domain | grep -c "X-Content-Type"` moet `1` zijn.
+
+## Verplichte CSP template voor nieuwe projecten
+
+```php
+$csp = implode('; ', [
+    "default-src 'none'",
+    "script-src 'self' 'nonce-{$nonce}' https://specifieke-cdns...",
+    "style-src 'self' 'nonce-{$nonce}' https://fonts.googleapis.com",
+    "img-src 'self' data: https: blob:",
+    "font-src 'self' https://fonts.gstatic.com data:",
+    "connect-src 'self' https://specifieke-apis...",
+    "form-action 'self'",
+    "frame-ancestors 'none'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "manifest-src 'self'",
+    "upgrade-insecure-requests",
+]);
+```
+
+**Regels:**
+- CDN domeinen altijd met `https://` prefix
+- Geen `unsafe-inline` in script-src (gebruik nonces)
+- Geen `unsafe-eval` tenzij Alpine.js via Vite (migreer naar @alpinejs/csp)
+- `<style>` tags: `<style @nonce>`, `<script>` tags: `<script @nonce>`
 
 ---
 
-*Aangemaakt: 29 maart 2026 — VP-04*
+*Bijgewerkt: 13 april 2026*
