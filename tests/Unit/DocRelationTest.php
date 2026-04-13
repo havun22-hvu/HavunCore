@@ -5,11 +5,19 @@ namespace Tests\Unit;
 use App\Models\DocIntelligence\DocRelation;
 use App\Models\DocIntelligence\DocEmbedding;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocRelationTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpDocIntelligenceTables();
+    }
 
     public function test_get_type_label_references(): void
     {

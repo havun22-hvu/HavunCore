@@ -10,10 +10,12 @@ use App\Services\DocIntelligence\IssueDetector;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocIntelligenceServiceTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
 
     private DocIndexer $indexer;
@@ -22,6 +24,7 @@ class DocIntelligenceServiceTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDocIntelligenceTables();
 
         DocEmbedding::query()->delete();
         DocIssue::query()->delete();

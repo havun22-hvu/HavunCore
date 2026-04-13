@@ -9,10 +9,12 @@ use App\Services\DocIntelligence\DocIndexer;
 use App\Services\DocIntelligence\StructureIndexer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class StructureIndexerTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
 
     private StructureIndexer $structureIndexer;
@@ -22,6 +24,7 @@ class StructureIndexerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDocIntelligenceTables();
 
         DocEmbedding::query()->delete();
         DocIssue::query()->delete();

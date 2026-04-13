@@ -4,11 +4,19 @@ namespace Tests\Unit;
 
 use App\Models\DocIntelligence\DocIssue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocIssueTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpDocIntelligenceTables();
+    }
 
     public function test_resolve_marks_as_resolved(): void
     {

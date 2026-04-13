@@ -8,10 +8,12 @@ use App\Services\DocIntelligence\DocIndexer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Mockery;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocIntelligenceControllerTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
 
     private string $token = 'test-token-abc123';
@@ -19,6 +21,7 @@ class DocIntelligenceControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDocIntelligenceTables();
 
         config([
             'services.doc_intelligence.api_token' => $this->token,

@@ -9,15 +9,18 @@ use App\Services\DocIntelligence\DocIndexer;
 use App\Services\DocIntelligence\IssueDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocCommandsTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDocIntelligenceTables();
 
         DocEmbedding::query()->delete();
         DocIssue::query()->delete();

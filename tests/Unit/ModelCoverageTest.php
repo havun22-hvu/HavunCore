@@ -8,11 +8,19 @@ use App\Models\AuthDevice;
 use App\Models\DocIntelligence\DocEmbedding;
 use App\Models\DocIntelligence\DocIssue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class ModelCoverageTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpDocIntelligenceTables();
+    }
 
     // ===================================================================
     // AIUsageLog — allTenantsStats with different periods

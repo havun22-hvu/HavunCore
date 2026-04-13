@@ -8,10 +8,12 @@ use App\Models\DocIntelligence\DocRelation;
 use App\Services\DocIntelligence\DocIndexer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocIndexerCoverageTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
 
     private DocIndexer $indexer;
@@ -20,6 +22,7 @@ class DocIndexerCoverageTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDocIntelligenceTables();
 
         DocEmbedding::query()->delete();
         DocIssue::query()->delete();

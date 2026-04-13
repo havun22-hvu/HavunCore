@@ -5,11 +5,19 @@ namespace Tests\Unit;
 use App\Models\DocIntelligence\DocEmbedding;
 use App\Models\DocIntelligence\DocIssue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocEmbeddingExtendedTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpDocIntelligenceTables();
+    }
 
     public function test_issues_relationship_returns_matching_issues(): void
     {

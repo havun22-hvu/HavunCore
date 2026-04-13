@@ -6,15 +6,18 @@ use App\Models\DocIntelligence\DocEmbedding;
 use App\Models\DocIntelligence\DocIssue;
 use App\Models\DocIntelligence\DocRelation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocEmbeddingTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDocIntelligenceTables();
 
         DocEmbedding::query()->delete();
         DocIssue::query()->delete();

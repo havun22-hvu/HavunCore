@@ -7,15 +7,18 @@ use App\Services\DocIntelligence\IssueDetector;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Mockery;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocIssuesCommandTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
+        $this->setUpDocIntelligenceTables();
 
         DocIssue::query()->delete();
 

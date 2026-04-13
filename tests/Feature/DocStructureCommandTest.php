@@ -3,11 +3,19 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
 class DocStructureCommandTest extends TestCase
 {
+    use CreatesDocIntelligenceTables;
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->setUpDocIntelligenceTables();
+    }
 
     public function test_structure_all_projects(): void
     {
