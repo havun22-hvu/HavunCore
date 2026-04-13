@@ -69,6 +69,18 @@ Als de KB geen resultaat geeft: meld dit → "KB bevat geen info over [X]. Docum
 - Nooit aannemen, altijd verifiëren — ZOEK EERST in KB
 - Als gebruiker iets herhaalt: direct opslaan in docs
 
+### Security Headers & CSP (Kritiek!)
+
+> **Volledige uitleg:** `docs/kb/runbooks/security-headers-check.md`
+
+**Bij ELKE wijziging aan views/scripts:**
+- `<script>` tags: ALTIJD `@nonce` attribuut
+- `<style>` tags: ALTIJD `@nonce` attribuut
+- NOOIT `style=""` inline attributen — gebruik Tailwind CSS classes
+- Externe CDN scripts: ALTIJD `integrity` + `crossorigin="anonymous"` + `@nonce`
+- Externe CDN URLs: ALTIJD exacte versie pinnen + `https://` prefix
+- Alpine.js: gebruik `@alpinejs/csp` (NIET standaard alpinejs)
+
 ### Bescherming bestaande code (Kritiek!)
 
 > **Volledige uitleg:** `docs/kb/runbooks/claude-werkwijze.md` (sectie 4)

@@ -86,7 +86,40 @@ crontab -e
 * * * * * cd /var/www/{project}/production && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-## 9. Project docs aanmaken
+## 9. Security Headers (VERPLICHT — dag 1)
+
+**Kopieer SecurityHeaders middleware:**
+```bash
+cp /path/to/HavunCore/stubs/SecurityHeaders.php app/Http/Middleware/SecurityHeaders.php
+```
+
+**Registreer in bootstrap/app.php:**
+```php
+->withMiddleware(function (Middleware $middleware) {
+    $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+})
+```
+
+**Registreer @nonce Blade directive in AppServiceProvider::boot():**
+```php
+Blade::directive('nonce', function () {
+    return '<?php echo "nonce=\"" . app("csp-nonce") . "\""; ?>';
+});
+```
+
+**Regels:**
+- Alle `<script>` tags: `<script @nonce>` of `<script src="..." @nonce>`
+- Alle `<style>` tags: `<style @nonce>`
+- GEEN `style=""` inline attributen — gebruik Tailwind CSS classes
+- Externe CDN scripts: altijd `integrity="sha384-..."` + `crossorigin="anonymous"` + `@nonce`
+- GEEN security headers in nginx (alleen Laravel middleware)
+- Alpine.js: gebruik `@alpinejs/csp` package (niet standaard alpinejs)
+
+**Verificatie:** Test met https://observatory.mozilla.org na eerste deploy.
+
+Zie `docs/kb/runbooks/security-headers-check.md` voor volledige checklist.
+
+## 10. Project docs aanmaken
 
 Maak in het project:
 ```
