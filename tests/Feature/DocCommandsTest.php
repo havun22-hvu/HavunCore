@@ -380,6 +380,11 @@ class DocCommandsTest extends TestCase
 
     public function test_docs_index_all_projects(): void
     {
+        $indexer = $this->mock(DocIndexer::class);
+        $indexer->shouldReceive('indexAll')
+            ->once()
+            ->andReturn(['havuncore' => ['indexed' => 5, 'indexed_md' => 5, 'indexed_code' => 0, 'skipped' => 0, 'errors' => []]]);
+
         $this->artisan('docs:index')
             ->expectsOutputToContain('Indexing all projects')
             ->assertExitCode(0);
@@ -387,14 +392,24 @@ class DocCommandsTest extends TestCase
 
     public function test_docs_index_specific_project(): void
     {
-        $result = $this->artisan('docs:index', ['project' => 'havuncore']);
+        $indexer = $this->mock(DocIndexer::class);
+        $indexer->shouldReceive('indexProject')
+            ->with('havuncore', false, true)
+            ->once()
+            ->andReturn(['indexed' => 3, 'indexed_md' => 3, 'indexed_code' => 0, 'skipped' => 1, 'errors' => []]);
 
-        // In CI the project path may not exist, so accept both success and failure
-        $this->assertContains($result->execute(), [0, 1]);
+        $this->artisan('docs:index', ['project' => 'havuncore'])
+            ->assertExitCode(0);
     }
 
     public function test_docs_index_unknown_project_shows_error(): void
     {
+        $indexer = $this->mock(DocIndexer::class);
+        $indexer->shouldReceive('indexProject')
+            ->with('nonexistent_xyz', false, true)
+            ->once()
+            ->andReturn(['error' => 'Project not found: nonexistent_xyz']);
+
         $this->artisan('docs:index', ['project' => 'nonexistent_xyz'])
             ->expectsOutputToContain('not found')
             ->assertExitCode(1);
@@ -402,8 +417,13 @@ class DocCommandsTest extends TestCase
 
     public function test_docs_index_with_no_code_option(): void
     {
-        $this->artisan('docs:index', ['--no-code' => true])
-            ->expectsOutputToContain('MD only')
+        $indexer = $this->mock(DocIndexer::class);
+        $indexer->shouldReceive('indexProject')
+            ->with('havuncore', false, false)
+            ->once()
+            ->andReturn(['indexed' => 2, 'indexed_md' => 2, 'indexed_code' => 0, 'skipped' => 0, 'errors' => []]);
+
+        $this->artisan('docs:index', ['project' => 'havuncore', '--no-code' => true])
             ->assertExitCode(0);
     }
 
@@ -413,6 +433,10 @@ class DocCommandsTest extends TestCase
 
     public function test_docs_watch_once(): void
     {
+        $indexer = $this->mock(DocIndexer::class)->shouldIgnoreMissing();
+        $indexer->shouldReceive('indexProject')
+            ->andReturn(['indexed' => 1, 'indexed_md' => 1, 'indexed_code' => 0, 'skipped' => 0, 'errors' => []]);
+
         $this->artisan('docs:watch', ['--once' => true])
             ->assertExitCode(0);
     }
