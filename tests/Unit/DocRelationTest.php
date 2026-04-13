@@ -6,8 +6,10 @@ use App\Models\DocIntelligence\DocRelation;
 use App\Models\DocIntelligence\DocEmbedding;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\CreatesDocIntelligenceTables;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('doc-intelligence')]
 class DocRelationTest extends TestCase
 {
     use CreatesDocIntelligenceTables;

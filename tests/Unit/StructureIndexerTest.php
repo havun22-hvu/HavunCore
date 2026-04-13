@@ -10,8 +10,10 @@ use App\Services\DocIntelligence\StructureIndexer;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Tests\CreatesDocIntelligenceTables;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('doc-intelligence')]
 class StructureIndexerTest extends TestCase
 {
     use CreatesDocIntelligenceTables;

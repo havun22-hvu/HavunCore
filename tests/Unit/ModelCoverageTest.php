@@ -9,8 +9,10 @@ use App\Models\DocIntelligence\DocEmbedding;
 use App\Models\DocIntelligence\DocIssue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\CreatesDocIntelligenceTables;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('doc-intelligence')]
 class ModelCoverageTest extends TestCase
 {
     use CreatesDocIntelligenceTables;

@@ -7,8 +7,10 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Mockery;
 use Tests\CreatesDocIntelligenceTables;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('doc-intelligence')]
 class DocStructureCommandTest extends TestCase
 {
     use CreatesDocIntelligenceTables;

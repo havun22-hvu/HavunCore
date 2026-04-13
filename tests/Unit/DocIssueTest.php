@@ -5,8 +5,10 @@ namespace Tests\Unit;
 use App\Models\DocIntelligence\DocIssue;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\CreatesDocIntelligenceTables;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\TestCase;
 
+#[Group('doc-intelligence')]
 class DocIssueTest extends TestCase
 {
     use CreatesDocIntelligenceTables;
