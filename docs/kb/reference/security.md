@@ -129,15 +129,37 @@ $unsafeEval = $this->routeNeedsUnsafeEval($request) ? " 'unsafe-eval'" : '';
 - `@nonce` attribuut
 - Dynamische scripts (Google Analytics, Tailwind CDN): alleen `@nonce`, geen SRI
 
-### Status per Project (2026-04-13)
+### X-Content-Type-Options Test (-5 punten bij failure)
 
-| Project | default-src | script-src | object-src | SRI | Status |
-|---------|:-----------:|:----------:|:----------:|:---:|:------:|
-| Herdenkingsportaal | 'none' | nonce-only | 'none' | OK | OK |
-| HavunAdmin | 'none' | nonce-only | 'none' | OK | OK |
-| Infosyst | 'none' | nonce-only | 'none' | OK | OK |
-| SafeHavun | 'none' | nonce-only | 'none' | OK | OK |
-| JudoToernooi | 'none' | unsafe-eval! | MISSING | Partial | FIXEN |
+**Vereist:** Header exact `X-Content-Type-Options: nosniff` — precies 1x.
+
+**Veelgemaakte fout:** Dubbele header door nginx EN Laravel middleware tegelijk.
+- nginx `add_header X-Content-Type-Options "nosniff"` + Laravel `$response->headers->set(...)` = 2x nosniff
+- Mozilla leest dit als "cannot be recognized"
+
+**Structurele regel:** Security headers staan in **Laravel middleware, NIET in nginx**.
+Nginx mag alleen `Cache-Control` headers zetten op static assets.
+Uitzondering: apps zonder Laravel middleware (havuncore, vpdupdate) gebruiken nginx headers.
+
+### SRI Test: Extra (-5 punten bij ontbrekende SRI)
+
+Mozilla scant de HTML response en zoekt `integrity=` op alle `<script src="https://...">` tags.
+Als er ook maar 1 externe script ZONDER integrity is → FAIL.
+
+**Let op Google Analytics:** `<script async src="https://www.googletagmanager.com/...">` kan geen SRI krijgen (dynamisch). Mozilla telt dit WEL mee als extern script. Enige oplossing: GA via server-side of accepteer de -5.
+
+### Status per Project (2026-04-13, gedeployed)
+
+| Project | default-src | script-src | object-src | SRI | X-Content-Type | Status |
+|---------|:-----------:|:----------:|:----------:|:---:|:--------------:|:------:|
+| Herdenkingsportaal | 'none' | nonce-only | 'none' | OK* | 1x nosniff | OK |
+| HavunAdmin | 'none' | nonce-only | 'none' | OK | 1x nosniff | OK |
+| Infosyst | 'none' | nonce-only | 'none' | OK | 1x nosniff | OK |
+| SafeHavun | 'none' | nonce-only | 'none' | OK | 1x nosniff | OK |
+| JudoToernooi | 'none' | unsafe-eval** | 'none' | OK | 1x nosniff | Deels |
+
+\* GA4 script kan geen SRI krijgen (dynamisch)
+\** Alpine.js via Vite vereist unsafe-eval — migratie naar @alpinejs/csp nodig
 
 ## Aandachtspunten
 
