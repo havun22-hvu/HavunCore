@@ -101,6 +101,37 @@ Dubbel = "cannot be recognized" = FAIL.
 
 **Check:** `curl -skI https://domain | grep -c "X-Content-Type"` moet `1` zijn.
 
+## Permissions-Policy
+
+Blokkeert browser-features per origin. Standaard alles dicht, **open alleen wat nodig is**.
+
+```php
+// Standaard (geen camera/mic/geo nodig):
+$response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
+
+// Met camera (bijv. QR scanner):
+$response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=(self)');
+```
+
+**Per project:**
+
+| Project | camera | Reden |
+|---------|--------|-------|
+| HavunAdmin | `(self)` | QR scanner login op `/scan` |
+| Overige | `()` | Niet nodig |
+
+**Let op:** `camera=()` blokkeert `getUserMedia()` volledig — ook voor eigen domein.
+
+## media-src in CSP
+
+Als een project camera/video/audio gebruikt, moet `media-src` in de CSP staan:
+
+```php
+"media-src 'self' blob:",  // voor camera stream (getUserMedia)
+```
+
+Zonder `media-src` valt het terug op `default-src 'none'` → camera-stream geblokkeerd.
+
 ## Verplichte CSP template voor nieuwe projecten
 
 ```php
