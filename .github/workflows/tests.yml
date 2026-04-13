@@ -63,7 +63,7 @@ jobs:
         continue-on-error: false
 
       - name: Run tests
-        run: php vendor/bin/phpunit --colors=always
+        run: php -d pcov.enabled=0 vendor/bin/phpunit --colors=always --no-coverage
 
       - name: Generate coverage report
         run: php -d pcov.directory=app -d pcov.exclude="~vendor~" vendor/bin/phpunit --coverage-clover=coverage.xml --testsuite=Unit
