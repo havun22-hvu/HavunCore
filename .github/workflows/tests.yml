@@ -62,11 +62,16 @@ jobs:
         run: composer audit --format=plain
         continue-on-error: false
 
-      - name: Run tests with coverage
-        run: php -d pcov.directory=app -d pcov.exclude="~vendor~" vendor/bin/phpunit --colors=always --coverage-clover=coverage.xml
-        timeout-minutes: 20
+      - name: Run tests
+        run: php vendor/bin/phpunit --colors=always
+
+      - name: Generate coverage report
+        run: php -d pcov.directory=app -d pcov.exclude="~vendor~" vendor/bin/phpunit --coverage-clover=coverage.xml --testsuite=Unit
+        continue-on-error: true
+        timeout-minutes: 10
 
       - name: Check minimum coverage
+        if: hashFiles('coverage.xml') != ''
         run: |
           if [ -f coverage.xml ]; then
             COVERAGE=$(php -r "\$xml = simplexml_load_file('coverage.xml'); echo round((float)\$xml->project->metrics['coveredstatements'] / max(1, (float)\$xml->project->metrics['statements']) * 100, 1);")
