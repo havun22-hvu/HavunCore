@@ -23,37 +23,22 @@ abstract class TestCase extends BaseTestCase
     {
         parent::setUp();
 
-        // Run doc_intelligence migrations on the in-memory DB when tables are missing.
-        // This replaces per-test artisan migrate calls that hang in CI.
-        if (
-            in_array(\Illuminate\Foundation\Testing\RefreshDatabase::class, class_uses_recursive($this))
-            && ! Schema::connection('doc_intelligence')->hasTable('doc_embeddings')
-        ) {
-            $this->artisan('migrate', [
-                '--database' => 'doc_intelligence',
-                '--path' => 'database/migrations/2026_01_04_000001_create_doc_embeddings_table.php',
-                '--realpath' => false,
-            ]);
-            $this->artisan('migrate', [
-                '--database' => 'doc_intelligence',
-                '--path' => 'database/migrations/2026_01_04_000002_create_doc_issues_table.php',
-                '--realpath' => false,
-            ]);
-            $this->artisan('migrate', [
-                '--database' => 'doc_intelligence',
-                '--path' => 'database/migrations/2026_01_04_000003_create_doc_relations_table.php',
-                '--realpath' => false,
-            ]);
-            $this->artisan('migrate', [
-                '--database' => 'doc_intelligence',
-                '--path' => 'database/migrations/2026_03_11_000001_add_embedding_model_to_doc_embeddings.php',
-                '--realpath' => false,
-            ]);
-            $this->artisan('migrate', [
-                '--database' => 'doc_intelligence',
-                '--path' => 'database/migrations/2026_03_17_000001_add_file_type_to_doc_embeddings.php',
-                '--realpath' => false,
-            ]);
+        // Create doc_intelligence tables when missing (in-memory SQLite resets between tests).
+        // Run only the doc-specific migrations, not ALL migrations on this connection.
+        if (! Schema::connection('doc_intelligence')->hasTable('doc_embeddings')) {
+            foreach ([
+                '2026_01_04_000001_create_doc_embeddings_table.php',
+                '2026_01_04_000002_create_doc_issues_table.php',
+                '2026_01_04_000003_create_doc_relations_table.php',
+                '2026_03_11_000001_add_embedding_model_to_doc_embeddings.php',
+                '2026_03_17_000001_add_file_type_to_doc_embeddings.php',
+            ] as $migration) {
+                $this->artisan('migrate', [
+                    '--database' => 'doc_intelligence',
+                    '--path' => "database/migrations/{$migration}",
+                    '--realpath' => false,
+                ]);
+            }
         }
     }
 
