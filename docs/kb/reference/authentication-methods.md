@@ -6,14 +6,20 @@
 
 ## Registratie
 
-**Enige methode:** Magic Link via e-mail.
+**Primair:** Magic Link via e-mail.
 
 1. Gebruiker vult e-mailadres in
 2. Systeem stuurt magic link naar e-mail
 3. Gebruiker klikt link → account aangemaakt + ingelogd
 4. Na eerste login: keuze om wachtwoord in te stellen en/of biometric te registreren
 
-Geen wachtwoord nodig bij registratie. Geen gebruikersnaam. E-mail = identiteit.
+**Fallback (als e-mail service niet beschikbaar):** Registratie met e-mail + wachtwoord.
+
+1. Frontend detecteert dat magic link niet beschikbaar is
+2. Gebruiker vult e-mailadres + wachtwoord in
+3. Account direct aangemaakt + ingelogd
+
+E-mail = identiteit. Geen gebruikersnaam.
 
 ## Login Methodes
 
