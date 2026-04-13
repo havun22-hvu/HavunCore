@@ -2,42 +2,61 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Sessie: 13 april 2026 — Doc Intelligence cleanup
+## Sessie: 13 april 2026 — Veel gedaan, les geleerd
 
-### Resultaten deze sessie:
+### Wat goed ging:
+- HavunCore CI: timeout opgelost (PHPUnit 11 auto-coverage + doc-intelligence group exclude) → 34 seconden
+- phpseclib CVE fix
+- 891 coverage tests (83.4% → 85.9%)
+- 13 chaos experimenten (was 5)
+- SRI hashes op alle externe scripts
+- /mpc command in alle 16 projecten
+- Deploy key voor webapp repo werkt
+- Infrastructuur doc geschreven
+- Geen-polling beslissing bijgewerkt
 
-**Doc Intelligence issues: 1035 → 200 opgelost:**
-- 1002 worktree-artefacten bulk-resolved (lege `.claude/worktrees/` dirs van oude agents)
-- 2 Mermaid flowchart false positives resolved (havun-workflow-flowchart.md)
-- `werkwijze-v2.0-2026-03-29.md` verwijderd (exacte kopie van `werkwijze-beoordeling-derden.md`)
-- `webapp/FIXES-APPLIED.md` geconsolideerd in `webapp/CODE-REVIEW.md` (Chat Reliability Fix sectie behouden)
-- 3 passkey/token/qr-login issues resolved (bestanden bestaan niet meer)
-- 1 crypto/mollie payments false positive resolved (aparte patterns, correct zo)
-- Cross-link toegevoegd: reverb decision → runbook
+### Wat FOUT ging (LESSEN):
+- Login page, QR scanner, nginx routing: code direct op production getest zonder lokaal testen
+- Geen tests geschreven voor webapp (Node.js + React)
+- Service worker update flow kapot
+- Meerdere hotfixes nodig op production
+- **Les: ALTIJD /mpc volgen. NOOIT losse code schrijven en deployen.**
 
 ### Openstaande items — VOLGENDE SESSIE:
 
-#### 1. Resterende 200 doc issues (voornamelijk "verouderd")
-- Herdenkingsportaal: 42 issues (5 HIGH: 1 prijsinconsistentie, 4 verouderde docs)
-- HavunAdmin: 45 verouderde docs
-- HavunCore: 23 verouderde docs
-- Overige projecten: ~90 verouderde docs
-- Per project oppakken bij volgende sessie in dat project
+#### 1. Webapp login page GOED doen (via /mpc)
+- Docs staan klaar: `webapp/docs/LOGIN-REDESIGN.md` + `webapp/docs/LOGIN-IMPLEMENTATION-PLAN.md`
+- Code is geschreven maar NIET lokaal getest
+- Service worker update flow werkt niet
+- QR scanner op smartphone: camera opent niet in PWA
+- **Eerst:** VPDUpdate docs/code lezen als referentie
+- **Eerst:** Test framework opzetten (Vitest + Jest)
+- **Eerst:** Lokaal testen voordat er iets gedeployed wordt
 
-#### 2. HavunAdmin Observability UI
-- Chaos resultaten toevoegen aan observability pagina
-- "Project Status" sectie fixen (data ophalen werkt niet, ververs knop doet niets)
+#### 2. Webapp test setup
+- 0 tests nu — moet opgezet worden
+- Vitest voor React frontend
+- Jest of Vitest voor Node.js backend
+- CI workflow aanmaken
 
-#### 3. Coverage 85.9% → 90% (Herdenkingsportaal)
-- 691 statements nodig — zit in exception handlers/catch blocks
+#### 3. Service Worker / PWA update
+- Update wordt niet geïnstalleerd
+- Referentie: VPDUpdate heeft werkende SW update flow
+- Documenteren + fixen via /mpc
 
-#### 4. JudoToernooi Alpine CSP build migratie
-- unsafe-eval nodig door Alpine.js standaard build
-- Migratie naar @alpinejs/csp = apart project
+#### 4. Nginx routing documentatie
+- Gedocumenteerd in `webapp/docs/INFRASTRUCTURE.md`
+- Elke wijziging EERST in docs, dan pas nginx
 
-#### 5. Overig
-- [ ] firebase/php-jwt v6→v7 (blocked door laravel/socialite ^6.4)
-- [ ] Arweave testnet werkt niet (geen test tokens beschikbaar)
-- [ ] doc-intelligence tests in CI (306 tests lokaal-only, future: aparte CI job)
+#### 5. Overige items (uit vorige sessie)
+- Coverage 85.9% → 90% (Herdenkingsportaal)
+- HavunAdmin Observability UI (chaos resultaten)
+- JudoToernooi Alpine CSP build migratie
+- doc-intelligence tests in CI (306 tests lokaal-only)
+- firebase/php-jwt v6→v7
 
-### VP-02 deadline: 31 mei 2026 — Coverage 85.9%, doel 90%
+### KRITIEKE WERKWIJZE
+- **ALTIJD /mpc:** MD docs → Plan → Code
+- **NOOIT code op production testen**
+- **NOOIT deployen zonder lokaal testen**
+- **NOOIT code schrijven zonder tests**
