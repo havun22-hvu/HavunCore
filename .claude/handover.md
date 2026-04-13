@@ -15,6 +15,12 @@
 - Infrastructuur doc geschreven
 - Geen-polling beslissing bijgewerkt
 
+### Einde sessie fixes:
+- Doc Intelligence: 835 issues opgelost (1002 worktree-artefacten, duplicaten geconsolideerd)
+- HavunAdmin time entry modal: x-cloak CSS, default uren=4, project selector, button tekst
+- HavunAdmin QR scanner: camera geblokkeerd door Permissions-Policy camera=() → camera=(self) + media-src
+- Security runbook: Permissions-Policy + media-src guidance toegevoegd
+
 ### Wat FOUT ging (LESSEN):
 - Login page, QR scanner, nginx routing: code direct op production getest zonder lokaal testen
 - Geen tests geschreven voor webapp (Node.js + React)
