@@ -24,12 +24,16 @@ Geen wachtwoord nodig bij registratie. Geen gebruikersnaam. E-mail = identiteit.
 | 1 | **Biometric** (fingerprint/face via WebAuthn) | Als geregistreerd |
 | 2 | **Wachtwoord** | Altijd beschikbaar als fallback |
 
+**NIET tonen op smartphone:** QR code. Heeft geen zin — je scant een QR code met je smartphone om in te loggen op een ander scherm, niet op dezelfde smartphone.
+
 ### Desktop (browser)
 
 | Prioriteit | Methode | Wanneer |
 |-----------|---------|---------|
 | 1 | **QR code** scannen met smartphone | Altijd |
 | 2 | **Wachtwoord** | Altijd beschikbaar als fallback |
+
+**NIET tonen op desktop:** Biometric. Desktop browsers ondersteunen WebAuthn maar de UX is slecht (Windows Hello popup, niet iedereen heeft het). Biometric is voor smartphones.
 
 ### Gedrag
 
