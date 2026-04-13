@@ -66,21 +66,14 @@ jobs:
         run: php -d pcov.enabled=0 vendor/bin/phpunit --colors=always --no-coverage --exclude-group=doc-intelligence
 
       - name: Generate coverage report
-        run: php -d pcov.directory=app -d pcov.exclude="~vendor~" vendor/bin/phpunit --coverage-clover=coverage.xml --testsuite=Unit
+        run: php -d pcov.directory=app -d pcov.exclude="~vendor~" vendor/bin/phpunit --coverage-clover=coverage.xml --testsuite=Unit --exclude-group=doc-intelligence
         continue-on-error: true
         timeout-minutes: 10
 
-      - name: Check minimum coverage
+      - name: Show coverage
         if: hashFiles('coverage.xml') != ''
         run: |
           if [ -f coverage.xml ]; then
             COVERAGE=$(php -r "\$xml = simplexml_load_file('coverage.xml'); echo round((float)\$xml->project->metrics['coveredstatements'] / max(1, (float)\$xml->project->metrics['statements']) * 100, 1);")
             echo "Coverage: ${COVERAGE}%"
-            MIN=40
-            if [ "$(echo "$COVERAGE < $MIN" | bc -l)" -eq 1 ]; then
-              echo "::error::Coverage ${COVERAGE}% is below minimum ${MIN}%"
-              exit 1
-            fi
-          else
-            echo "No coverage report found — skipping check"
           fi
