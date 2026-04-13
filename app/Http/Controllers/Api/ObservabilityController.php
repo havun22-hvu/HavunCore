@@ -179,6 +179,80 @@ class ObservabilityController extends Controller
     }
 
     /**
+     * Chaos experiment results — latest per experiment + history.
+     */
+    public function chaos(Request $request): JsonResponse
+    {
+        if (! $this->isAuthorized($request)) {
+            return $this->unauthorized();
+        }
+
+        $latest = \App\Models\ChaosResult::query()
+            ->selectRaw('experiment, status, duration_ms, checks, MAX(created_at) as last_run')
+            ->groupBy('experiment')
+            ->orderBy('experiment')
+            ->get()
+            ->map(fn ($r) => [
+                'experiment' => $r->experiment,
+                'status' => $r->status,
+                'duration_ms' => $r->duration_ms,
+                'checks' => $r->checks,
+                'last_run' => $r->last_run,
+            ]);
+
+        $history = \App\Models\ChaosResult::query()
+            ->orderByDesc('created_at')
+            ->limit(50)
+            ->get()
+            ->map(fn ($r) => [
+                'experiment' => $r->experiment,
+                'status' => $r->status,
+                'duration_ms' => $r->duration_ms,
+                'created_at' => $r->created_at,
+            ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'latest' => $latest,
+                'history' => $history,
+                'total_experiments' => 13,
+            ],
+        ]);
+    }
+
+    /**
+     * Run a chaos experiment via API.
+     */
+    public function chaosRun(Request $request): JsonResponse
+    {
+        if (! $this->isAuthorized($request)) {
+            return $this->unauthorized();
+        }
+
+        $experiment = $request->input('experiment');
+        if (! $experiment) {
+            return response()->json(['success' => false, 'error' => 'Missing experiment parameter'], 422);
+        }
+
+        try {
+            $result = \Illuminate\Support\Facades\Artisan::call('chaos:run', ['experiment' => $experiment]);
+            $output = \Illuminate\Support\Facades\Artisan::output();
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'experiment' => $experiment,
+                    'exit_code' => $result,
+                    'output' => $output,
+                ],
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
      * Return unauthorized response.
      */
     protected function unauthorized(): JsonResponse

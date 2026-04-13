@@ -184,6 +184,8 @@ Route::prefix('observability')->group(function () {
     Route::get('/system', [ObservabilityController::class, 'system'])->name('api.observability.system');
     Route::get('/metrics', [ObservabilityController::class, 'metrics'])->name('api.observability.metrics');
     Route::get('/baseline', [ObservabilityController::class, 'baseline'])->name('api.observability.baseline');
+    Route::get('/chaos', [ObservabilityController::class, 'chaos'])->name('api.observability.chaos');
+    Route::post('/chaos/run', [ObservabilityController::class, 'chaosRun'])->name('api.observability.chaos.run');
 });
 
 // Doc Intelligence API - Search and manage documentation across all projects
