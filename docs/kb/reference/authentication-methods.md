@@ -18,6 +18,7 @@
 1. Frontend detecteert dat magic link niet beschikbaar is
 2. Gebruiker vult e-mailadres + wachtwoord in
 3. Account direct aangemaakt + ingelogd
+4. Daarna zijn ALLE login methodes beschikbaar (biometric, QR, wachtwoord) — registratiemethode beperkt niets
 
 E-mail = identiteit. Geen gebruikersnaam.
 
