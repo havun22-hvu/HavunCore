@@ -73,6 +73,72 @@ Zie **`docs/kb/runbooks/op-reis-workflow.md`** voor de volledige op-reis werkwij
 | 2025-11-23 | Alle | SSH key aangemaakt door Claude zonder toestemming (ADR-003) | Opgelost |
 | 2026-02-18 | HavunClub | Echt wachtwoord in seeder gecommit (a4a19d0) | Wachtwoord moet gewijzigd worden |
 
+## Mozilla Observatory — CSP Vereisten (VERPLICHT)
+
+> Test URL: https://observatory.mozilla.org
+> Elk webproject MOET deze tests halen bij elke deploy.
+
+### CSP Test: Content Security Policy (-20 punten bij failure)
+
+**Wat Mozilla checkt:**
+- `unsafe-inline` of `data:` in `script-src` → FAIL
+- Brede bronnen zoals `https:` in `object-src` of `script-src` → FAIL
+- `object-src` of `script-src` niet gezet → FAIL
+- CDN domeinen zonder `https://` prefix → FAIL (telt als "overly broad")
+- `unsafe-eval` in `script-src` (tenzij route-specifiek) → FAIL
+
+**Verplichte CSP regels voor elk project:**
+```
+default-src 'none'                          # Deny by default
+script-src 'self' 'nonce-{$nonce}'         # Alleen nonce, NOOIT unsafe-inline
+style-src 'self' 'nonce-{$nonce}' 'unsafe-inline'  # unsafe-inline alleen voor style="" attributen
+object-src 'none'                           # Blokkeer plugins
+base-uri 'self'                             # Voorkom base tag injection
+form-action 'self'                          # Formulieren alleen naar eigen domein
+frame-ancestors 'none'                      # Geen iframes
+manifest-src 'self'                         # PWA manifest
+```
+
+**CDN domeinen altijd met `https://` prefix:**
+```php
+// FOUT:  cdn.jsdelivr.net
+// GOED:  https://cdn.jsdelivr.net
+```
+
+**`unsafe-eval` alleen route-specifiek:**
+```php
+// FOUT:  altijd 'unsafe-eval' in script-src
+// GOED:  alleen op routes die het echt nodig hebben (bijv. Fabric.js)
+$unsafeEval = $this->routeNeedsUnsafeEval($request) ? " 'unsafe-eval'" : '';
+```
+
+### SRI Test: Subresource Integrity (-5 punten bij failure)
+
+**Verplicht voor alle externe CDN scripts:**
+```html
+<script src="https://cdn.example.com/lib@1.2.3/lib.min.js"
+        integrity="sha384-HASH"
+        crossorigin="anonymous"
+        @nonce></script>
+```
+
+**Checklist:**
+- Exacte versie pinnen (NIET `@3.x.x` of ongepin)
+- `integrity="sha384-..."` attribuut
+- `crossorigin="anonymous"` attribuut
+- `@nonce` attribuut
+- Dynamische scripts (Google Analytics, Tailwind CDN): alleen `@nonce`, geen SRI
+
+### Status per Project (2026-04-13)
+
+| Project | default-src | script-src | object-src | SRI | Status |
+|---------|:-----------:|:----------:|:----------:|:---:|:------:|
+| Herdenkingsportaal | 'none' | nonce-only | 'none' | OK | OK |
+| HavunAdmin | 'none' | nonce-only | 'none' | OK | OK |
+| Infosyst | 'none' | nonce-only | 'none' | OK | OK |
+| SafeHavun | 'none' | nonce-only | 'none' | OK | OK |
+| JudoToernooi | 'none' | unsafe-eval! | MISSING | Partial | FIXEN |
+
 ## Aandachtspunten
 
 1. **Repos NOOIT public maken** - git history bevat oude credentials
