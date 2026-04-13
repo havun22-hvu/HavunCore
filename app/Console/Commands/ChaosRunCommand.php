@@ -5,12 +5,16 @@ namespace App\Console\Commands;
 use App\Models\ChaosResult;
 use App\Services\Chaos\Experiments\ApiTimeoutExperiment;
 use App\Services\Chaos\Experiments\BackupIntegrityExperiment;
+use App\Services\Chaos\Experiments\CacheCorruptionExperiment;
+use App\Services\Chaos\Experiments\DatabaseDisconnectExperiment;
 use App\Services\Chaos\Experiments\DatabaseSlowExperiment;
 use App\Services\Chaos\Experiments\DiskPressureExperiment;
 use App\Services\Chaos\Experiments\DnsResolutionExperiment;
 use App\Services\Chaos\Experiments\EndpointProbeExperiment;
 use App\Services\Chaos\Experiments\ErrorFloodExperiment;
 use App\Services\Chaos\Experiments\HealthDeepExperiment;
+use App\Services\Chaos\Experiments\LatencyInjectionExperiment;
+use App\Services\Chaos\Experiments\MemoryPressureExperiment;
 use App\Services\Chaos\Experiments\PaymentProviderExperiment;
 use Illuminate\Console\Command;
 
@@ -32,6 +36,10 @@ class ChaosRunCommand extends Command
         'payment-provider' => PaymentProviderExperiment::class,
         'dns-resolution' => DnsResolutionExperiment::class,
         'backup-integrity' => BackupIntegrityExperiment::class,
+        'db-disconnect' => DatabaseDisconnectExperiment::class,
+        'latency-injection' => LatencyInjectionExperiment::class,
+        'cache-corruption' => CacheCorruptionExperiment::class,
+        'memory-pressure' => MemoryPressureExperiment::class,
     ];
 
     public function handle(): int
