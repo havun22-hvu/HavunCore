@@ -65,6 +65,10 @@ Met deze safeguards:
 - JudoToernooi (geimplementeerd)
 - Elk toekomstig project dat Reverb gebruikt
 
+## Gerelateerd
+
+- Troubleshooting: [`docs/kb/runbooks/reverb-troubleshoot.md`](../runbooks/reverb-troubleshoot.md)
+
 ---
 
 *Beslissing vastgelegd: 5 april 2026*
