@@ -35,3 +35,5 @@ database/doc_intelligence.sqlite
 
 # Webapp is een aparte git repo (D:\GitHub\HavunCore\webapp)
 /webapp/
+coverage.xml
+.cache_ggshield
