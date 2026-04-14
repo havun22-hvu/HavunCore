@@ -1,3 +1,5 @@
+{{-- VEROUDERD — Gebruik docs/kb/patterns/universal-login-screen.md als basis voor nieuwe implementaties --}}
+{{-- Dit bestand is een oud voorbeeld en wordt NIET meer 1-op-1 gekopieerd naar projecten --}}
 <!DOCTYPE html>
 <html lang="nl">
 <head>
