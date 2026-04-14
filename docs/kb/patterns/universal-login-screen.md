@@ -9,13 +9,15 @@
 
 Elk Havun project bouwt zijn eigen login/registratie scherm. Dit document beschrijft de **standaard layout, flows en componenten** die elk project moet implementeren. Kleuren en branding zijn per project aanpasbaar.
 
-### Drie schermen
+### Eén flow, geen tabs
 
-| Scherm | Functie | Primaire methode |
-|--------|---------|-----------------|
-| **Login** | Bestaande gebruiker inloggen | Desktop: QR / Mobiel: biometric / Herstel: magic link |
-| **Registratie** | Nieuw account aanmaken | Magic link via email |
-| **Herstel** | Nieuw apparaat, biometric kwijt | Magic link via email |
+Er zijn geen aparte "login" en "registratie" schermen. Het systeem bepaalt zelf wat nodig is op basis van het emailadres. De gebruiker hoeft niet te kiezen.
+
+| Situatie | Wat het systeem doet |
+|----------|---------------------|
+| **Biometric beschikbaar** (terugkerende gebruiker) | Toon biometric knop als primaire login |
+| **Email bestaat** (nieuw apparaat) | Stuur magic link → inloggen → biometric koppelen |
+| **Email bestaat niet** (nieuwe gebruiker) | Toon naam veld → account aanmaken via magic link |
 
 ---
 
@@ -33,21 +35,20 @@ Elk Havun project bouwt zijn eigen login/registratie scherm. Dit document beschr
 |           |     [App logo / naam]      |           |
 |           |     [Ondertitel]           |           |
 |           |                            |           |
-|           |     [Login/Register tabs]  |           |
-|           |                            |           |
 |           |     [Form velden]          |           |
+|           |     (dynamisch per stap)   |           |
 |           |                            |           |
 |           |     [Primaire actie knop]  |           |
 |           |                            |           |
-|           |     [Alternatieve login]   |           |
-|           |                            |           |
-|           |     [Links onderaan]       |           |
+|           |     [Secundaire opties]    |           |
 |           |                            |           |
 |           +----------------------------+           |
 |                max-width: 400px                    |
 |                                                    |
 +--------------------------------------------------+
 ```
+
+**Geen tabs.** Het formulier past zich dynamisch aan op basis van de backend response.
 
 ### Kleuren (per project aanpasbaar)
 
@@ -115,40 +116,14 @@ label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spa
 
 ---
 
-## 2. Login Scherm
+## 2. Email-First Flow (geen tabs)
 
-### Desktop (browser)
+De gebruiker hoeft niet te kiezen tussen "inloggen" of "registreren". Het systeem bepaalt dit automatisch op basis van het emailadres.
 
-```
-+----------------------------+
-|       [App naam]           |
-|     [Ondertitel]           |
-|                            |
-|  [ Login ]  [ Registreren ]|  <-- tabs
-|                            |
-|  Scan met je telefoon      |
-|  +--------------------+    |
-|  |                    |    |
-|  |     [QR CODE]      |    |
-|  |                    |    |
-|  +--------------------+    |
-|  Geldig nog 0:58           |
-|                            |
-|  -------- OF --------      |
-|                            |
-|  Nieuw apparaat?           |
-|  [Stuur mij een login link]|  <-- magic link herstel
-+----------------------------+
-```
+### Stap 1: Biometric check (mobiel)
 
-**Gedrag:**
-- QR code auto-refresh elke 60 seconden
-- QR status via **WebSocket** (GEEN polling) — zie `decisions/geen-polling.md`
-- Magic link als herstel optie (nieuw apparaat, QR niet beschikbaar)
+Als biometric beschikbaar is (terugkerende gebruiker op dit apparaat):
 
-### Mobiel (smartphone/native app)
-
-**Scenario A: Terugkerende gebruiker (biometric beschikbaar)**
 ```
 +----------------------------+
 |       [App naam]           |
@@ -156,84 +131,30 @@ label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spa
 |                            |
 |  [Inloggen met biometric]  |  <-- grote primaire knop
 |                            |
-|  Nieuw apparaat?           |
-|  Stuur mij een login link  |  <-- subtiele link
-|                            |
-|  Nog geen account?         |
-|  Registreren               |
+|  Ander account of          |
+|  nieuw apparaat?           |  <-- subtiele link → stap 2
 +----------------------------+
 ```
 
-**Scenario B: Nieuw apparaat (geen biometric)**
+### Stap 2: Email invoeren
+
+Geen biometric, of gebruiker kiest "ander account":
+
 ```
 +----------------------------+
 |       [App naam]           |
 |     [Ondertitel]           |
 |                            |
-|  [ Login ]  [ Registreren ]|  <-- tabs
-|                            |
 |  E-mailadres               |
 |  [____________________]    |
 |                            |
-|  [Stuur mij een login link]|  <-- magic link
-|                            |
+|  [       Verder      ]     |  <-- stuurt email naar backend
 +----------------------------+
 ```
 
-**Gedrag:**
-- **GEEN QR code tonen** — heeft geen zin op mobiel
-- **GEEN wachtwoord** — biometric + magic link dekt alles
-- Biometric = primaire login methode, prominent tonen
-- Magic link = alleen voor herstel (nieuw apparaat, biometric kwijt)
-- Biometric label: "Inloggen met Face ID" / "Inloggen met vingerafdruk" (device-dependent)
+### Stap 3a: Email bestaat → Magic link (login)
 
-### Device detectie
-
-```javascript
-// Simpele check — geen externe library nodig
-const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-// Op basis hiervan:
-// - Desktop: toon QR sectie, verberg biometric
-// - Mobiel: toon biometric, verberg QR
-```
-
----
-
-## 3. Registratie Scherm
-
-Magic link is de primaire registratiemethode.
-
-```
-+----------------------------+
-|       [App naam]           |
-|     Maak een account       |
-|                            |
-|  [ Login ]  [ Registreren ]|  <-- tabs, "Registreren" actief
-|                            |
-|  Naam                      |
-|  [____________________]    |
-|                            |
-|  E-mailadres               |
-|  [____________________]    |
-|                            |
-|  [PROJECT-SPECIFIEKE       |  <-- optioneel: extra velden
-|   VELDEN HIER]             |     per project (organisatie, rol, etc.)
-|                            |
-|  [ Account aanmaken  ]     |  <-- stuurt magic link
-|                            |
-+----------------------------+
-```
-
-**Flow:**
-1. Gebruiker vult naam + email in (+ optionele project-specifieke velden)
-2. Systeem stuurt magic link naar email
-3. Gebruiker klikt link -> account aangemaakt + ingelogd
-4. Na eerste login: optioneel wachtwoord instellen en/of biometric registreren
-
-**GEEN wachtwoord veld bij registratie.** Wachtwoord instellen is optioneel na eerste login.
-
-### "Magic link verstuurd" scherm
+Backend herkent het emailadres → stuurt magic link:
 
 ```
 +----------------------------+
@@ -251,83 +172,96 @@ Magic link is de primaire registratiemethode.
 |                            |
 |  [Opnieuw versturen]       |  <-- rate limited: 3 per 10 min
 |                            |
-|  Terug naar login          |
+|  Ander emailadres          |  <-- terug naar stap 2
 +----------------------------+
 ```
 
----
+Na klik op link → ingelogd → biometric koppelen op nieuw apparaat.
 
-## 4. Herstel Scherm (nieuw apparaat / biometric kwijt)
+### Stap 3b: Email bestaat niet → Registratie velden tonen
 
-Gebruikt dezelfde magic link flow als registratie.
+Backend meldt `needs_registration: true` → toon extra velden:
+
+```
++----------------------------+
+|       [App naam]           |
+|     Maak een account       |
+|                            |
+|  E-mailadres               |
+|  [naam@voorbeeld.nl    ]   |  <-- al ingevuld vanuit stap 2
+|                            |
+|  Naam                      |
+|  [____________________]    |
+|                            |
+|  [PROJECT-SPECIFIEKE       |  <-- optioneel per project
+|   VELDEN HIER]             |     (organisatie, rol, etc.)
+|                            |
+|  [ Account aanmaken  ]     |  <-- stuurt magic link
++----------------------------+
+```
+
+Na klik op link → account actief → biometric koppelen.
+
+### Desktop variant
+
+Desktop volgt dezelfde email-first flow, maar toont ook QR code:
 
 ```
 +----------------------------+
 |       [App naam]           |
 |                            |
-|  Inloggen op nieuw         |
-|  apparaat                  |
+|  Scan met je telefoon      |
+|  +--------------------+    |
+|  |     [QR CODE]      |    |
+|  +--------------------+    |
+|  Geldig nog 0:58           |
+|                            |
+|  -------- OF --------      |
 |                            |
 |  E-mailadres               |
 |  [____________________]    |
-|                            |
-|  [ Stuur login link  ]     |
-|                            |
-|  Terug naar login          |
+|  [       Verder      ]     |  <-- email-first flow
 +----------------------------+
 ```
 
-**Flow:**
-1. Gebruiker vult email in
-2. Systeem stuurt magic link (type `login`)
-3. Gebruiker klikt link -> direct ingelogd
-4. Prompt: "Koppel biometric op dit apparaat"
+QR status via **WebSocket** (GEEN polling) — zie `decisions/geen-polling.md`.
 
-**Security:** Altijd success tonen, nooit "email niet gevonden" (email enumeration prevention).
+### Device detectie
+
+```javascript
+// Simpele check — geen externe library nodig
+const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+// Op basis hiervan:
+// - Desktop: toon QR + email-first flow
+// - Mobiel: toon biometric (als beschikbaar) + email-first flow
+// - GEEN QR op mobiel, GEEN biometric op desktop
+```
+
+### Backend contract
+
+Eén endpoint voor zowel login als registratie:
+
+```
+POST /api/auth/magic-link
+Body: { email: string, name?: string, role?: string }
+
+Response (email bestaat):
+  200 { message: "Magic link verstuurd naar ..." }
+
+Response (email bestaat niet, geen naam):
+  422 { message: "Account niet gevonden", needs_registration: true }
+
+Response (email bestaat niet, met naam):
+  200 { message: "Magic link verstuurd naar ..." }
+  (account wordt aangemaakt + magic link verstuurd)
+```
+
+**Security:** Bij bestaande email altijd success tonen (email enumeration prevention).
 
 ---
 
-## 5. Componenten
-
-### Tabs (Login / Registreren)
-
-```html
-<div class="auth-tabs">
-  <button class="auth-tab active">Login</button>
-  <button class="auth-tab">Registreren</button>
-</div>
-```
-
-```css
-.auth-tabs {
-  display: flex;
-  background: var(--color-surface);
-  border-radius: var(--radius-md);
-  padding: 4px;
-  max-width: 320px;
-  margin: 0 auto var(--spacing-xl);
-}
-
-.auth-tab {
-  flex: 1;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: none;
-  background: transparent;
-  border-radius: 6px;
-  color: var(--color-text-secondary);
-  font-size: 14px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.auth-tab.active {
-  background: var(--color-bg);
-  color: var(--color-primary);
-  font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-```
+## 3. Componenten
 
 ### Input velden
 
@@ -435,7 +369,7 @@ Gebruikt dezelfde magic link flow als registratie.
 
 ---
 
-## 6. Security Checklist
+## 4. Security Checklist
 
 Bij elke implementatie controleren:
 
@@ -453,52 +387,55 @@ Bij elke implementatie controleren:
 
 ---
 
-## 7. Implementatie per Stack
+## 5. Implementatie per Stack
 
 ### Laravel (Blade)
 
 Gebruik de patterns uit `magic-link-auth.md` voor de backend.
-Views in `resources/views/auth/`:
-- `login.blade.php`
-- `register.blade.php`
-- `forgot-password.blade.php`
-- `magic-link-sent.blade.php`
-- `reset-password.blade.php`
+Eén view met dynamisch formulier:
+- `auth.blade.php` — email-first flow (stap 2 → 3a/3b)
+- `magic-link-sent.blade.php` — bevestigingsscherm
 
 CSP: `<style @nonce>`, `<script @nonce>`, geen `style=""` attributen.
+Desktop: QR sectie toevoegen boven het email formulier.
 
 ### Node.js (plain HTML)
 
-Aparte HTML bestanden: `login.html`, `register.html`.
+Eén `login.html` met JavaScript die de stappen afhandelt.
 Gebruik `fetch()` voor API calls. QR via server-side image generation of client-side library met SRI.
 
 ### React Native (Expo)
 
-Enkele `AuthScreen` met tabs. Zie Studieplanner als referentie-implementatie.
-Biometric via `expo-local-authentication` of `react-native-webauthn`.
+Enkele `AuthScreen` met email-first flow. Zie Studieplanner als referentie-implementatie.
+Biometric via `expo-local-authentication`.
 
 ---
 
-## 8. Flow Samenvatting
+## 6. Flow Samenvatting
 
 ```
-REGISTRATIE:
-  Naam + Email  -->  Magic link email  -->  Klik link  -->  Account actief
-                                                        -->  Biometric koppelen (verplicht)
-
-LOGIN (mobiel/native app):
+MOBIEL — TERUGKERENDE GEBRUIKER:
   Biometric (fingerprint/face)  -->  Ingelogd
-  OF (nieuw apparaat):
-  Email  -->  Magic link  -->  Klik link  -->  Ingelogd  -->  Biometric koppelen
 
-LOGIN (desktop):
+MOBIEL — NIEUW APPARAAT (email bestaat):
+  Email invoeren  -->  Backend: 200  -->  Magic link  -->  Klik  -->  Ingelogd
+                                                                  -->  Biometric koppelen
+
+MOBIEL — NIEUWE GEBRUIKER (email bestaat niet):
+  Email invoeren  -->  Backend: 422 (needs_registration)
+                  -->  Naam + extra velden invullen
+                  -->  Backend: 200  -->  Magic link  -->  Klik  -->  Account actief
+                                                                  -->  Biometric koppelen
+
+DESKTOP — QR (terugkerend):
   QR scannen met telefoon  -->  WebSocket bevestiging  -->  Ingelogd
-  OF (nieuw apparaat):
-  Email  -->  Magic link  -->  Klik link  -->  Ingelogd
 
-HERSTEL (biometric kwijt / nieuw apparaat):
-  Email  -->  Magic link  -->  Klik link  -->  Ingelogd  -->  Biometric opnieuw koppelen
+DESKTOP — EMAIL-FIRST (nieuw apparaat):
+  Zelfde flow als mobiel (zonder biometric stap)
 ```
+
+**Kernprincipe:** De gebruiker kiest nooit tussen "login" of "registreren".
+Het systeem bepaalt automatisch wat nodig is op basis van het emailadres.
 
 ---
 

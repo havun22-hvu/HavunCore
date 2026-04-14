@@ -4,23 +4,21 @@
 > **Datum:** 13 april 2026
 > **Laatst bijgewerkt:** 14 april 2026
 
-## Registratie
+## Email-First Flow (geen tabs)
 
-**Primair:** Magic Link via e-mail.
+Er zijn **geen aparte login/registratie schermen**. Eén flow, het systeem bepaalt wat nodig is:
 
-1. Gebruiker vult e-mailadres in
-2. Systeem stuurt magic link naar e-mail
-3. Gebruiker klikt link → account aangemaakt + ingelogd
-4. Na eerste login: keuze om wachtwoord in te stellen en/of biometric te registreren
+1. Gebruiker vult e-mailadres in → "Verder"
+2. Backend checkt of email bestaat:
+   - **Ja:** stuurt magic link → gebruiker klikt → ingelogd → biometric koppelen (nieuw apparaat)
+   - **Nee:** frontend toont extra velden (naam, evt. project-specifiek) → account aanmaken via magic link
+3. Na eerste login op een apparaat: biometric koppelen (verplicht op mobiel)
 
-**Fallback (als e-mail service niet beschikbaar):** Registratie met e-mail + wachtwoord.
+E-mail = identiteit. Geen gebruikersnaam. Geen login/register tabs.
 
-1. Frontend detecteert dat magic link niet beschikbaar is
-2. Gebruiker vult e-mailadres + wachtwoord in
-3. Account direct aangemaakt + ingelogd
-4. Daarna zijn ALLE login methodes beschikbaar (biometric, QR, wachtwoord) — registratiemethode beperkt niets
-
-E-mail = identiteit. Geen gebruikersnaam.
+**Backend contract:** Eén endpoint `POST /api/auth/magic-link`
+- `{ email }` → 200 (bestaand) of 422 `{ needs_registration: true }` (nieuw)
+- `{ email, name, role }` → 200 (account aangemaakt + magic link verstuurd)
 
 ## Login Methodes
 
@@ -45,9 +43,8 @@ E-mail = identiteit. Geen gebruikersnaam.
 
 ### Gedrag
 
-- **Laatste methode onthouden** — sla op welke methode de gebruiker laatst gebruikte (localStorage)
-- Bij opnieuw openen: toon die methode als primair
-- **Altijd alternatief bieden** — link "Andere inlogmethode" onderaan
+- **Biometric onthouden** — als biometric beschikbaar + gekoppeld, toon als primaire login
+- **Altijd alternatief bieden** — link "Ander account of nieuw apparaat?" voor email-first flow
 - Na succesvolle login: redirect naar vorige pagina of dashboard
 
 ## NIET gebruiken

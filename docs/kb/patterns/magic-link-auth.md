@@ -1,16 +1,18 @@
 # Magic Link Authentication Pattern (Laravel)
 
 > **Status:** Standaard voor alle Havun projecten
-> **Laatste update:** 17 maart 2026
+> **Laatste update:** 14 april 2026
 > **Gebruikt in:** Studieplanner (referentie), Herdenkingsportaal, JudoToernooi
 
 ## Overzicht
 
 Magic links worden gebruikt voor:
 1. **Registratie** — nieuwe gebruiker voert email in, ontvangt link, account wordt aangemaakt
-2. **Wachtwoord vergeten** — bestaande gebruiker ontvangt link om wachtwoord te resetten
+2. **Herstel** — bestaande gebruiker op nieuw apparaat, ontvangt link om in te loggen
 
-Geen wachtwoord nodig bij registratie. Gebruiker stelt optioneel een wachtwoord in NA eerste login.
+**Email-first flow:** Eén endpoint voor zowel login als registratie. Backend bepaalt op basis van het emailadres of het een bestaande of nieuwe gebruiker is. Geen aparte login/registratie schermen. Zie `patterns/universal-login-screen.md`.
+
+Geen wachtwoord nodig. Biometric + magic link dekt alle scenario's.
 
 ## Database
 
