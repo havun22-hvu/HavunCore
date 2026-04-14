@@ -240,7 +240,7 @@ const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
 ### Backend contract
 
-Eén endpoint voor zowel login als registratie:
+Twee endpoints:
 
 ```
 POST /api/auth/magic-link
@@ -257,7 +257,29 @@ Response (email bestaat niet, met naam):
   (account wordt aangemaakt + magic link verstuurd)
 ```
 
-**Security:** Bij bestaande email altijd success tonen (email enumeration prevention).
+```
+POST /api/auth/device-login
+Body: { email: string }
+
+Gebruik: na succesvolle client-side biometric verificatie.
+Direct token uitgeven voor bestaande accounts.
+
+Response (email bestaat):
+  200 { user: {...}, token: "1|abc..." }
+
+Response (email bestaat niet):
+  404 { message: "Account niet gevonden." }
+
+Rate limit: 3/min per IP
+```
+
+**Flow op nieuw apparaat:**
+1. Email invoeren → eerst checken of account bestaat (magic-link endpoint zonder naam)
+2. Account bestaat + biometric beschikbaar → biometric prompt → device-login → ingelogd
+3. Account bestaat + GEEN biometric → magic link flow (fallback)
+4. Account bestaat niet → toon registratie velden
+
+**Security:** Device-login vertrouwt client-side biometric check. Acceptabel voor apps zonder financiële/medische data. Rate limiting voorkomt brute force.
 
 ---
 
@@ -414,12 +436,16 @@ Biometric via `expo-local-authentication`.
 ## 6. Flow Samenvatting
 
 ```
-MOBIEL — TERUGKERENDE GEBRUIKER:
-  Biometric (fingerprint/face)  -->  Ingelogd
+MOBIEL — TERUGKERENDE GEBRUIKER (zelfde apparaat):
+  Biometric (fingerprint/face)  -->  Token uit SecureStore  -->  Ingelogd
 
-MOBIEL — NIEUW APPARAAT (email bestaat):
+MOBIEL — NIEUW APPARAAT (email bestaat + biometric beschikbaar):
+  Email invoeren  -->  Backend: 200 (account bestaat)
+                  -->  Biometric prompt  -->  POST /api/auth/device-login
+                  -->  Token ontvangen  -->  Ingelogd + biometric koppelen
+
+MOBIEL — NIEUW APPARAAT (email bestaat, GEEN biometric):
   Email invoeren  -->  Backend: 200  -->  Magic link  -->  Klik  -->  Ingelogd
-                                                                  -->  Biometric koppelen
 
 MOBIEL — NIEUWE GEBRUIKER (email bestaat niet):
   Email invoeren  -->  Backend: 422 (needs_registration)
@@ -434,8 +460,11 @@ DESKTOP — EMAIL-FIRST (nieuw apparaat):
   Zelfde flow als mobiel (zonder biometric stap)
 ```
 
-**Kernprincipe:** De gebruiker kiest nooit tussen "login" of "registreren".
-Het systeem bepaalt automatisch wat nodig is op basis van het emailadres.
+**Kernprincipes:**
+- De gebruiker kiest nooit tussen "login" of "registreren" — het systeem detecteert automatisch
+- Magic link alleen voor: registratie + apparaten zonder biometric
+- Biometric is de primaire login op alle apparaten met biometric hardware
+- Na registratie (magic link): ELKE volgende login is biometric (ook op nieuwe apparaten)
 
 ---
 
