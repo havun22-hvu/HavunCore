@@ -13,9 +13,9 @@ Elk Havun project bouwt zijn eigen login/registratie scherm. Dit document beschr
 
 | Scherm | Functie | Primaire methode |
 |--------|---------|-----------------|
-| **Login** | Bestaande gebruiker inloggen | Desktop: QR + wachtwoord / Mobiel: biometric + wachtwoord |
+| **Login** | Bestaande gebruiker inloggen | Desktop: QR / Mobiel: biometric / Herstel: magic link |
 | **Registratie** | Nieuw account aanmaken | Magic link via email |
-| **Wachtwoord vergeten** | Wachtwoord resetten | Magic link via email |
+| **Herstel** | Nieuw apparaat, biometric kwijt | Magic link via email |
 
 ---
 
@@ -126,16 +126,6 @@ label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spa
 |                            |
 |  [ Login ]  [ Registreren ]|  <-- tabs
 |                            |
-|  E-mailadres               |
-|  [____________________]    |
-|                            |
-|  Wachtwoord                |
-|  [____________________]    |
-|                            |
-|  [     Inloggen      ]     |  <-- primary button
-|                            |
-|  -------- OF --------      |
-|                            |
 |  Scan met je telefoon      |
 |  +--------------------+    |
 |  |                    |    |
@@ -144,42 +134,57 @@ label { font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spa
 |  +--------------------+    |
 |  Geldig nog 0:58           |
 |                            |
-|  Wachtwoord vergeten?      |
+|  -------- OF --------      |
+|                            |
+|  Nieuw apparaat?           |
+|  [Stuur mij een login link]|  <-- magic link herstel
 +----------------------------+
 ```
 
 **Gedrag:**
 - QR code auto-refresh elke 60 seconden
 - QR status via **WebSocket** (GEEN polling) — zie `decisions/geen-polling.md`
-- Wachtwoord = altijd beschikbaar als fallback
-- "Wachtwoord vergeten?" link onderaan
+- Magic link als herstel optie (nieuw apparaat, QR niet beschikbaar)
 
-### Mobiel (smartphone/PWA)
+### Mobiel (smartphone/native app)
 
+**Scenario A: Terugkerende gebruiker (biometric beschikbaar)**
+```
++----------------------------+
+|       [App naam]           |
+|     Welkom terug!          |
+|                            |
+|  [Inloggen met biometric]  |  <-- grote primaire knop
+|                            |
+|  Nieuw apparaat?           |
+|  Stuur mij een login link  |  <-- subtiele link
+|                            |
+|  Nog geen account?         |
+|  Registreren               |
++----------------------------+
+```
+
+**Scenario B: Nieuw apparaat (geen biometric)**
 ```
 +----------------------------+
 |       [App naam]           |
 |     [Ondertitel]           |
 |                            |
-|  [ Login ]  [ Registreren ]|
+|  [ Login ]  [ Registreren ]|  <-- tabs
 |                            |
 |  E-mailadres               |
 |  [____________________]    |
 |                            |
-|  Wachtwoord                |
-|  [____________________]    |
+|  [Stuur mij een login link]|  <-- magic link
 |                            |
-|  [     Inloggen      ]     |
-|                            |
-|  [Inloggen met biometric]  |  <-- als beschikbaar
-|                            |
-|  Wachtwoord vergeten?      |
 +----------------------------+
 ```
 
 **Gedrag:**
 - **GEEN QR code tonen** — heeft geen zin op mobiel
-- Biometric knop alleen tonen als `biometricsAvailable && biometricsEnabled`
+- **GEEN wachtwoord** — biometric + magic link dekt alles
+- Biometric = primaire login methode, prominent tonen
+- Magic link = alleen voor herstel (nieuw apparaat, biometric kwijt)
 - Biometric label: "Inloggen met Face ID" / "Inloggen met vingerafdruk" (device-dependent)
 
 ### Device detectie
@@ -252,20 +257,21 @@ Magic link is de primaire registratiemethode.
 
 ---
 
-## 4. Wachtwoord Vergeten Scherm
+## 4. Herstel Scherm (nieuw apparaat / biometric kwijt)
 
-Gebruikt dezelfde magic link flow.
+Gebruikt dezelfde magic link flow als registratie.
 
 ```
 +----------------------------+
 |       [App naam]           |
 |                            |
-|  Wachtwoord vergeten       |
+|  Inloggen op nieuw         |
+|  apparaat                  |
 |                            |
 |  E-mailadres               |
 |  [____________________]    |
 |                            |
-|  [ Reset link versturen ]  |
+|  [ Stuur login link  ]     |
 |                            |
 |  Terug naar login          |
 +----------------------------+
@@ -273,9 +279,9 @@ Gebruikt dezelfde magic link flow.
 
 **Flow:**
 1. Gebruiker vult email in
-2. Systeem stuurt magic link (type `password_reset`)
-3. Gebruiker klikt link -> wachtwoord reset formulier
-4. Nieuw wachtwoord instellen -> ingelogd
+2. Systeem stuurt magic link (type `login`)
+3. Gebruiker klikt link -> direct ingelogd
+4. Prompt: "Koppel biometric op dit apparaat"
 
 **Security:** Altijd success tonen, nooit "email niet gevonden" (email enumeration prevention).
 
@@ -439,12 +445,11 @@ Bij elke implementatie controleren:
 - [ ] **Rate limiting** op login, registratie en magic link endpoints
 - [ ] **Email enumeration prevention** — altijd success tonen bij magic link
 - [ ] **Magic link tokens:** 64 tekens, 15 min geldig, single-use
-- [ ] **Wachtwoord hashing:** bcrypt (Laravel default)
 - [ ] **Session:** `session()->save()` na login (NIET `regenerate()`)
 - [ ] **QR status:** via WebSocket (GEEN polling)
 - [ ] **HTTPS** verplicht in productie (WebAuthn + magic links vereisen dit)
 - [ ] **Externe scripts:** SRI hash + `crossorigin="anonymous"`
-- [ ] **Geen wachtwoord als primaire methode promoten** — altijd fallback
+- [ ] **Geen wachtwoord velden** — biometric + magic link dekt alles
 
 ---
 
@@ -479,21 +484,20 @@ Biometric via `expo-local-authentication` of `react-native-webauthn`.
 ```
 REGISTRATIE:
   Naam + Email  -->  Magic link email  -->  Klik link  -->  Account actief
-                                                        -->  Optioneel: wachtwoord instellen
-                                                        -->  Optioneel: biometric registreren
+                                                        -->  Biometric koppelen (verplicht)
+
+LOGIN (mobiel/native app):
+  Biometric (fingerprint/face)  -->  Ingelogd
+  OF (nieuw apparaat):
+  Email  -->  Magic link  -->  Klik link  -->  Ingelogd  -->  Biometric koppelen
 
 LOGIN (desktop):
-  Email + Wachtwoord  -->  Ingelogd
-  OF
   QR scannen met telefoon  -->  WebSocket bevestiging  -->  Ingelogd
+  OF (nieuw apparaat):
+  Email  -->  Magic link  -->  Klik link  -->  Ingelogd
 
-LOGIN (mobiel):
-  Email + Wachtwoord  -->  Ingelogd
-  OF
-  Biometric (fingerprint/face)  -->  Ingelogd
-
-WACHTWOORD VERGETEN:
-  Email  -->  Magic link email  -->  Klik link  -->  Nieuw wachtwoord instellen  -->  Ingelogd
+HERSTEL (biometric kwijt / nieuw apparaat):
+  Email  -->  Magic link  -->  Klik link  -->  Ingelogd  -->  Biometric opnieuw koppelen
 ```
 
 ---
