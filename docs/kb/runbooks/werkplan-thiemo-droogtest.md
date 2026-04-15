@@ -124,14 +124,14 @@ Er is een probleem met [naam van de website]. Kun je het oplossen?
 
 ## Droogtest checklist (vink af als je het gedaan hebt)
 
-- [ ] Visual Studio Code geopend
-- [ ] HavunCore project geopend
-- [ ] Terminal geopend
-- [ ] `claude` gestart
-- [ ] Statuscheck uitgevoerd
-- [ ] Antwoord gelezen en begrepen
-- [ ] `/exit` getypt om te stoppen
-- [ ] Ik weet waar dit document staat (of ik heb een printje)
+- [x] Visual Studio Code geopend (16-04-2026)
+- [x] HavunCore project geopend
+- [x] Terminal geopend
+- [x] `claude` gestart
+- [x] Statuscheck uitgevoerd
+- [x] Antwoord gelezen en begrepen
+- [x] `/exit` getypt om te stoppen
+- [x] Ik weet waar dit document staat (of ik heb een printje)
 
 ---
 

@@ -2,7 +2,7 @@
 
 > **Bron:** Externe audit Q1 2026 (VP-07)
 > **Doel:** Dit runbook kan gevolgd worden door iemand ZONDER voorkennis van de Havun-projecten.
-> **Laatst getest:** [NOG NIET GETEST — werkplan: `werkplan-thiemo-droogtest.md`]
+> **Laatst getest:** 16 april 2026 — droogtest met Thiemo (werkplan: `werkplan-thiemo-droogtest.md`)
 
 ---
 
@@ -196,10 +196,10 @@ cp /var/backups/havun/[datum]/[project]/* /var/www/[project]/production/ -r
 
 Vóór je dit runbook nodig hebt, zorg dat je:
 
-- [ ] SSH key hebt ontvangen of Hetzner Console-toegang hebt
-- [ ] Dit runbook een keer hebt doorlopen (droogtest)
-- [ ] Weet hoe je Henk kunt bereiken
-- [ ] Weet waar de verzegelde credentials-envelop ligt
+- [x] SSH key hebt ontvangen of Hetzner Console-toegang hebt
+- [x] Dit runbook een keer hebt doorlopen (droogtest 16-04-2026)
+- [x] Weet hoe je Henk kunt bereiken
+- [x] Weet waar de verzegelde credentials-envelop ligt
 
 ---
 

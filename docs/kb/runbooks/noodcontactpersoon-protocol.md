@@ -84,11 +84,11 @@ Ik heb een alert ontvangen. Check wat er aan de hand is en los het op.
 
 ## Droogtest (1x samen doen, kost 2 minuten)
 
-- [ ] VS Code openen
-- [ ] Terminal openen, `claude` typen
-- [ ] Typ: "Check de status van alle Havun websites"
-- [ ] Lees het antwoord
-- [ ] Typ: `/exit` om te stoppen
+- [x] VS Code openen (afgetekend 16-04-2026)
+- [x] Terminal openen, `claude` typen
+- [x] Typ: "Check de status van alle Havun websites"
+- [x] Lees het antwoord
+- [x] Typ: `/exit` om te stoppen
 
 ---
 

@@ -291,10 +291,10 @@ Er is geen enkele persoon die bij calamiteiten (ziekte, ongeluk) de live applica
 
 **Acceptatiecriteria:**
 - [x] Emergency runbook geschreven (docs/kb/runbooks/emergency-runbook.md)
-- [ ] Emergency runbook getest (droogtest met Thiemo — fysieke stap)
+- [x] Emergency runbook getest (droogtest met Thiemo, 16-04-2026)
 - [x] Minimaal 1 technische contactpersoon aangewezen (Thiemo)
-- [ ] Contactpersoon heeft (verzegelde) toegangsgegevens (fysieke stap)
-- [ ] Contactpersoon heeft het runbook succesvol doorlopen (droogtest — werkplan: werkplan-thiemo-droogtest.md)
+- [x] Contactpersoon heeft (verzegelde) toegangsgegevens (16-04-2026)
+- [x] Contactpersoon heeft het runbook succesvol doorlopen (droogtest 16-04-2026)
 
 ---
 
@@ -434,7 +434,7 @@ Juli 2026
 | VP-04 | Dependency & Security Audit | DONE (CI + /start) | Medium | 30-04-2026 | Gemini + Claude |
 | VP-05 | Integrity Uitbreiden | DONE (v2.0: selector+route checks, artisan command, HavunCore actief) | Medium | 31-05-2026 | Gemini |
 | VP-06 | Protocolmoeheid | DONE (5 regels in ALLE 9 projecten, /update, sessielimiet) | Medium | 30-04-2026 | Gemini |
-| VP-07 | Emergency Runbook | PARTIAL (docs+contact klaar, droogtest+credentials TODO — fysieke stap) | Kritiek | 30-04-2026 | Claude |
+| VP-07 | Emergency Runbook | DONE (runbook+contact+credentials+droogtest afgerond 16-04-2026) | Kritiek | 30-04-2026 | Claude |
 | VP-08 | Staging Verplicht | DONE | Hoog | 31-05-2026 | Claude |
 | VP-09 | Uptime-Monitoring | DONE | Medium | 30-04-2026 | Claude |
 | VP-10 | KOR-Omzetmonitoring | DONE | Laag | 30-06-2026 | Claude |
