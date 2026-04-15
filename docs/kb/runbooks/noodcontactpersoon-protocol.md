@@ -1,4 +1,4 @@
-# Noodprotocol — Thiemo
+# Noodprotocol — Thiemo & Mawin
 
 > **Doel:** Als Henk langere tijd niet bereikbaar is, zorgen dat de systemen blijven draaien.
 > **Realiteit:** Henk kan overal ter wereld inloggen (laptop, telefoon, Claude). Dit protocol is alleen voor het scenario dat Henk echt niet kan (ziekenhuis, etc.).

@@ -11,9 +11,10 @@
 | Rol | Naam | Telefoon | Email |
 |-----|------|----------|-------|
 | Eigenaar | Henk van Unen | 06-25058214 | havun22@gmail.com |
-| Backup contact | Zoon van Henk | [bekend bij beiden] | [bekend bij beiden] |
+| Backup contact | Thiemo (zoon) | [bekend bij beiden] | [bekend bij beiden] |
+| Backup contact | Mawin (zoon) | [bekend bij beiden] | [bekend bij beiden] |
 
-> **Protocol:** Zoon volgt `docs/kb/runbooks/werkplan-thiemo-droogtest.md` (stap-voor-stap, geschreven voor 15-jarige). Technisch detail: `noodcontactpersoon-protocol.md`.
+> **Protocol:** Thiemo of Mawin volgt `docs/kb/runbooks/werkplan-thiemo-droogtest.md` (stap-voor-stap, geschreven zonder technische voorkennis). Flow: VS Code → Claude → `/start` → `/rc` (link naar papa via WhatsApp) → servercheck + autofix.
 
 ---
 
