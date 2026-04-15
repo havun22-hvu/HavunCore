@@ -130,4 +130,4 @@ php artisan integrity:check --json
 
 ---
 
-*Laatst bijgewerkt: 29 maart 2026*
+*Laatst bijgewerkt: 15 april 2026 — v2.0 schema (selector + route checks)*

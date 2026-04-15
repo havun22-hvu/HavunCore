@@ -2,7 +2,7 @@
 
 > **Bron:** Externe audit Q1 2026 (VP-07)
 > **Doel:** Dit runbook kan gevolgd worden door iemand ZONDER voorkennis van de Havun-projecten.
-> **Laatst getest:** [NOG NIET GETEST — plan droogtest met contactpersoon]
+> **Laatst getest:** [NOG NIET GETEST — werkplan: `werkplan-thiemo-droogtest.md`]
 
 ---
 
@@ -13,7 +13,7 @@
 | Eigenaar | Henk van Unen | 06-25058214 | havun22@gmail.com |
 | Backup contact | Zoon van Henk | [bekend bij beiden] | [bekend bij beiden] |
 
-> **Protocol:** Zoon volgt `docs/kb/runbooks/noodcontactpersoon-protocol.md` — opent VS Code, start Claude Code, en volgt stap-voor-stap instructies. Geen technische voorkennis nodig.
+> **Protocol:** Zoon volgt `docs/kb/runbooks/werkplan-thiemo-droogtest.md` (stap-voor-stap, geschreven voor 15-jarige). Technisch detail: `noodcontactpersoon-protocol.md`.
 
 ---
 
@@ -204,4 +204,4 @@ Vóór je dit runbook nodig hebt, zorg dat je:
 ---
 
 *Aangemaakt: 29 maart 2026 — VP-07*
-*Laatst bijgewerkt: 29 maart 2026*
+*Laatst bijgewerkt: 15 april 2026 — werkplan droogtest toegevoegd*
