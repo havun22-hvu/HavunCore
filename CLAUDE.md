@@ -36,6 +36,16 @@
 3. ✅ Maak een implementatieplan
 4. ❌ Alleen het UITVOEREN van code in andere projecten → switch naar dat project
 
+## De 5 Onschendbare Regels
+
+```
+1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
+2. NOOIT features/UI-elementen verwijderen zonder instructie
+3. NOOIT credentials/keys/env aanraken
+4. ALTIJD tests draaien voor én na wijzigingen (coverage >80%)
+5. ALTIJD toestemming vragen bij grote wijzigingen
+```
+
 ## Rules (ALWAYS follow)
 
 ### LEES-DENK-DOE-DOCUMENTEER (Kritiek!)

@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "2.0",
+  "project": "havuncore",
+  "updated": "2026-04-15",
+  "checks": [
+    {
+      "file": "routes/api.php",
+      "description": "Kritieke API endpoints moeten bestaan",
+      "must_contain": [
+        "AIProxyController",
+        "AutoFixController",
+        "VaultController",
+        "ClaudeTaskController",
+        "/health"
+      ]
+    },
+    {
+      "file": "routes/web.php",
+      "description": "Auth approve route moet bestaan",
+      "must_contain": [
+        "AuthApproveController",
+        "auth.approve"
+      ]
+    },
+    {
+      "file": "app/Console/Commands/IntegrityCheckCommand.php",
+      "description": "Integrity check moet selector support hebben (VP-05)",
+      "must_contain": [
+        "must_contain_selector",
+        "must_contain_route",
+        "selectorExists"
+      ]
+    }
+  ]
+}

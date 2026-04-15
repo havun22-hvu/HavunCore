@@ -223,9 +223,9 @@ Geen structureel plan voor dependency updates, security headers, of OWASP-toetsi
 | 5.3 | Route-existence check toevoegen | Code | Medium |
 
 **Acceptatiecriteria:**
-- [ ] `.integrity.json` ondersteunt `must_contain_selector`
-- [ ] Minimaal 1 project heeft CSS/selector checks actief
-- [ ] Integrity-check script bijgewerkt
+- [x] `.integrity.json` ondersteunt `must_contain_selector` (v2.0 schema, 15-04-2026)
+- [x] Minimaal 1 project heeft CSS/selector checks actief (HavunCore, 15-04-2026)
+- [x] Integrity-check script bijgewerkt (artisan command met selector+route+json support, 15-04-2026)
 
 ---
 
@@ -253,9 +253,9 @@ Geen structureel plan voor dependency updates, security headers, of OWASP-toetsi
 ```
 
 **Acceptatiecriteria:**
-- [ ] Sessielimiet gedocumenteerd
-- [ ] `/update` herinnert aan 5 onschendbare regels
-- [ ] Elk project heeft max 5 kernregels bovenaan CLAUDE.md
+- [x] Sessielimiet gedocumenteerd (claude-werkwijze.md + /update command)
+- [x] `/update` herinnert aan 5 onschendbare regels (Stap 0 in update.md)
+- [x] Elk project heeft max 5 kernregels bovenaan CLAUDE.md (15-04-2026, HavunCore toegevoegd)
 
 ---
 
@@ -290,10 +290,11 @@ Er is geen enkele persoon die bij calamiteiten (ziekte, ongeluk) de live applica
 ```
 
 **Acceptatiecriteria:**
-- [ ] Emergency runbook geschreven en getest
-- [ ] Minimaal 1 technische contactpersoon aangewezen
-- [ ] Contactpersoon heeft (verzegelde) toegangsgegevens
-- [ ] Contactpersoon heeft het runbook succesvol doorlopen (droogtest)
+- [x] Emergency runbook geschreven (docs/kb/runbooks/emergency-runbook.md)
+- [ ] Emergency runbook getest (droogtest met Thiemo — fysieke stap)
+- [x] Minimaal 1 technische contactpersoon aangewezen (Thiemo)
+- [ ] Contactpersoon heeft (verzegelde) toegangsgegevens (fysieke stap)
+- [ ] Contactpersoon heeft het runbook succesvol doorlopen (droogtest — werkplan: werkplan-thiemo-droogtest.md)
 
 ---
 
@@ -431,9 +432,9 @@ Juli 2026
 | VP-02 | Test Coverage + Feature Freeze | IN PROGRESS (JT:419t, **HC:473t/87.4%**, HP:208t, HA:163t, HVet:99t, SH:67t, INF:64t) | Kritiek | 31-05-2026 | Gemini + Claude |
 | VP-03 | Context-Injectie | TODO | Medium | 30-06-2026 | Gemini |
 | VP-04 | Dependency & Security Audit | DONE (CI + /start) | Medium | 30-04-2026 | Gemini + Claude |
-| VP-05 | Integrity Uitbreiden | DONE | Medium | 31-05-2026 | Gemini |
-| VP-06 | Protocolmoeheid | DONE | Medium | 30-04-2026 | Gemini |
-| VP-07 | Emergency Runbook | DONE | Kritiek | 30-04-2026 | Claude |
+| VP-05 | Integrity Uitbreiden | DONE (v2.0: selector+route checks, artisan command, HavunCore actief) | Medium | 31-05-2026 | Gemini |
+| VP-06 | Protocolmoeheid | DONE (5 regels in CLAUDE.md, /update, sessielimiet) | Medium | 30-04-2026 | Gemini |
+| VP-07 | Emergency Runbook | PARTIAL (docs+contact klaar, droogtest+credentials TODO — fysieke stap) | Kritiek | 30-04-2026 | Claude |
 | VP-08 | Staging Verplicht | DONE | Hoog | 31-05-2026 | Claude |
 | VP-09 | Uptime-Monitoring | DONE | Medium | 30-04-2026 | Claude |
 | VP-10 | KOR-Omzetmonitoring | DONE | Laag | 30-06-2026 | Claude |
