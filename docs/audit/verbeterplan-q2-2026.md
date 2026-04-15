@@ -429,11 +429,11 @@ Juli 2026
 | ID | Actie | Status | Prioriteit | Deadline | Bron |
 |----|-------|--------|------------|----------|------|
 | VP-01 | AutoFix Branch-Model + Dry-Run | DONE | Kritiek | 30-04-2026 | Gemini + Claude |
-| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS (JT:419t, **HC:473t/87.4%**, HP:208t, HA:163t, HVet:99t, SH:67t, INF:64t) | Kritiek | 31-05-2026 | Gemini + Claude |
+| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS (JT:419t, **HC:795t/2012a**, HP:208t, HA:163t, HVet:99t, SH:67t, INF:64t) | Kritiek | 31-05-2026 | Gemini + Claude |
 | VP-03 | Context-Injectie | TODO | Medium | 30-06-2026 | Gemini |
 | VP-04 | Dependency & Security Audit | DONE (CI + /start) | Medium | 30-04-2026 | Gemini + Claude |
 | VP-05 | Integrity Uitbreiden | DONE (v2.0: selector+route checks, artisan command, HavunCore actief) | Medium | 31-05-2026 | Gemini |
-| VP-06 | Protocolmoeheid | DONE (5 regels in CLAUDE.md, /update, sessielimiet) | Medium | 30-04-2026 | Gemini |
+| VP-06 | Protocolmoeheid | DONE (5 regels in ALLE 9 projecten, /update, sessielimiet) | Medium | 30-04-2026 | Gemini |
 | VP-07 | Emergency Runbook | PARTIAL (docs+contact klaar, droogtest+credentials TODO — fysieke stap) | Kritiek | 30-04-2026 | Claude |
 | VP-08 | Staging Verplicht | DONE | Hoog | 31-05-2026 | Claude |
 | VP-09 | Uptime-Monitoring | DONE | Medium | 30-04-2026 | Claude |
