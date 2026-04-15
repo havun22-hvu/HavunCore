@@ -1,8 +1,8 @@
 # Havun Software Development — Werkwijze & Kwaliteitsborging
 
 **Document:** Ter beoordeling door technische derde partij
-**Versie:** 2.0
-**Datum:** 29 maart 2026
+**Versie:** 3.0
+**Datum:** 16 april 2026
 **Volgende review:** Q3 2026 (juli 2026)
 **Reviewcyclus:** Elk kwartaal
 **Organisatie:** Havun (KvK: 98516000)
@@ -14,7 +14,7 @@
 |--------|-------|----------|-------------|
 | 1.0 | 29-03-2026 | Gemini + Claude Sonnet | Eerste versie, beoordeeld met 7/10 en "robuust voor eenmanszaak" |
 | 2.0 | 29-03-2026 | Gemini (9/10) + Claude (8.5/10) | Alle VP's verwerkt, coverage + CI op alle projecten |
-| | | | |
+| 3.0 | 16-04-2026 | — (ter review) | VP-05/06/07 volledig afgerond, 795 tests HavunCore, integrity v2.0, 9 projecten met 5 regels, emergency droogtest afgerond |
 
 ---
 
@@ -61,6 +61,7 @@ Havun beheert meerdere webapplicaties vanuit een centrale orchestrator:
 | **Studieplanner** | Mobiele app | React Native + Expo | Ja (app) |
 | **SafeHavun** | Beveiligingsplatform | Laravel + Vite | Beperkt |
 | **Infosyst** | Informatiesysteem | Laravel + Vite | Beperkt |
+| **HavunVet** | Dierenarts praktijkbeheer | Laravel 11 + Livewire 3 | Beperkt |
 | **JudoScoreBoard** | Scorebord app | React Native + Expo | Ja (app) |
 
 ### 1.3 AI-tooling in gebruik
@@ -124,7 +125,7 @@ Geintroduceerd na externe audit (VP-06) als kern van alle protocollen:
 5. ALTIJD toestemming vragen bij grote wijzigingen
 ```
 
-Deze regels worden herhaald bij sessiestart en halverwege langere sessies via het `/update` command.
+Deze regels staan bovenaan de `CLAUDE.md` van **alle 9 projecten** (per 16-04-2026) en worden herhaald bij sessiestart en halverwege langere sessies via het `/update` command.
 
 ### 2.4 Sessielimiet
 
@@ -355,21 +356,34 @@ Kritieke UI-elementen worden bewaakt via `.integrity.json` met twee typen checks
 }
 ```
 
-**HTML-selector-matching (`must_contain_selector`) — nieuw in v2.0:**
+**HTML-selector-matching (`must_contain_selector`) — v2.0:**
 ```json
 {
-  "file": "resources/views/payments/options.blade.php",
-  "description": "Payment form must contain submit button",
+  "file": "resources/views/layouts/app.blade.php",
+  "description": "Kritieke UI-elementen moeten aanwezig zijn",
   "must_contain_selector": [
-    {"tag": "form", "attr": "id", "value": "payment-form"},
-    {"tag": "button", "attr": "type", "value": "submit"},
-    {"tag": "input", "attr": "id", "value": "herroeping-akkoord"}
+    "footer.site-footer",
+    "#cookie-banner",
+    "nav.main-navigation",
+    "[data-testid=\"logo\"]"
   ]
 }
 ```
 
-**Status:** Actief in Herdenkingsportaal (7 kritieke views, alle checks groen).
-**Controle:** Bij elke sessie-einde via `node scripts/check-integrity.cjs`.
+Ondersteunde selectors: `#id`, `.class`, `tag.class`, `tag#id`, `[attribute]`, `[attribute="value"]`, bare tags.
+
+**Route-existence (`must_contain_route`) — v2.0:**
+```json
+{
+  "file": "routes/web.php",
+  "description": "Legal routes moeten bestaan",
+  "must_contain_route": ["legal.terms", "legal.privacy"]
+}
+```
+
+**Implementatie:** Laravel artisan command (`php artisan integrity:check`) met `--project` en `--json` opties. 17 geautomatiseerde tests.
+**Status:** Actief in HavunCore (3 checks, alle groen). Schema beschikbaar voor alle projecten.
+**Controle:** Bij elke sessie-einde via `php artisan integrity:check`.
 
 ### 5.3 DO NOT REMOVE comments
 
@@ -410,16 +424,21 @@ De AI controleert deze comments altijd voor wijzigingen aan views en templates.
 
 ### 6.3 Coverage: huidige stand en doelen
 
-| Project | Tests | Huidige coverage (lines) | Doel totaal | Doel business | Prioriteit |
-|---------|-------|--------------------------|-------------|---------------|------------|
-| JudoToernooi | 290 tests, 714 assertions | **15.4%** | 75% | 80% | **Hoog** |
-| Herdenkingsportaal | 39 tests, 94 assertions | **2.9%** | 60% | 80% | **Hoog** |
-| HavunCore | 19 tests, 27 assertions | Meting via CI | 50% | 80% | Medium |
-| Overige | — | — | 40% | — | Bij wijzigingen |
+| Project | Tests | Assertions | Coverage (PCOV) | Doel | Prioriteit |
+|---------|-------|------------|-----------------|------|------------|
+| **HavunCore** | **795** | **2.012** | **87.4%** | 80% | **Gehaald** |
+| JudoToernooi | 419 | 970 | 17.4% | 80% | **Hoog** |
+| Herdenkingsportaal | 208 | 366 | 9.7% | 80% | **Hoog** |
+| HavunAdmin | 163 | 362 | Onbekend (PhpParser crash) | 80% | Medium |
+| HavunVet | 99 | 137 | 32.6% | 80% | Medium |
+| SafeHavun | 67 | 100 | 26.0% | 80% | Medium |
+| Infosyst | 64 | 113 | 6.9% | 80% | Medium |
+| Studieplanner | 0 | 0 | — (React Native) | — | Laag |
+| JudoScoreBoard | 0 | 0 | — (React Native) | — | Laag |
 
-> **Eerlijkheid:** Coverage is gemeten op de server (PCOV). De huidige percentages liggen ver onder de doelen. JudoToernooi heeft de meeste tests maar een grote codebase (17.834 regels). Herdenkingsportaal heeft de laagste coverage ondanks publiek verkeer en betalingen — dit is het meest urgente verbeterpunt.
+> **Eerlijkheid:** HavunCore heeft als eerste project het 80%-doel gehaald (87.4%). De overige Laravel-projecten liggen ver onder de doelen. JudoToernooi en Herdenkingsportaal zijn de meest urgente verbeterpunten door hun publieke verkeer en betalingen. Feature freeze geldt voor JudoToernooi tot 75% coverage bereikt is.
 >
-> **Datum meting:** 29 maart 2026
+> **Datum meting:** 16 april 2026 (HavunCore), 6 april 2026 (overige)
 
 **CI-afdwinging:** GitHub Actions blokkeert een push als het coverage-minimum niet wordt gehaald (HavunCore: 40%, wordt verhoogd per kwartaal).
 
@@ -447,10 +466,13 @@ Geautomatiseerde test-workflow bij elke push en pull request:
 
 | Project | Tests | GitHub Actions | Coverage check |
 |---------|-------|----------------|----------------|
-| HavunCore | 19 tests | Actief | Minimum 40% |
-| Herdenkingsportaal | 39 tests | Actief | Gepland |
-| JudoToernooi | 290 tests | Actief | Gepland |
-| Overige | In ontwikkeling | Gepland | — |
+| HavunCore | 795 tests | Actief | Minimum 40% (87.4% actueel) |
+| JudoToernooi | 419 tests | Actief | Gepland |
+| Herdenkingsportaal | 208 tests | Actief | Gepland |
+| HavunAdmin | 163 tests | Actief | Gepland |
+| HavunVet | 99 tests | Gepland | — |
+| SafeHavun | 67 tests | Gepland | — |
+| Infosyst | 64 tests | Gepland | — |
 
 ---
 
@@ -615,7 +637,7 @@ Een volledig emergency runbook is beschikbaar dat zonder voorkennis gevolgd kan 
 - Backup herstellen
 - Communicatie naar klanten
 
-**Status:** Afgerond. Noodcontactpersoon (Thiemo, zoon) aangewezen met vereenvoudigd protocol. De server draait zelfstandig in een datacenter — de noodcontactpersoon hoeft alleen de lokale PC beschikbaar te houden en kan via Claude Code de status checken en basisherstel uitvoeren. Henk zelf kan overal ter wereld inloggen (laptop, telefoon).
+**Status:** Volledig afgerond en getest (16-04-2026). Twee noodcontactpersonen (Thiemo en Mawin, zoons) aangewezen met vereenvoudigd protocol. Droogtest succesvol doorlopen. Flow: VS Code → Claude → `/start` → `/rc` (remote control link naar papa via WhatsApp) → autonome servercheck + fix. De server draait zelfstandig in een datacenter — de noodcontactpersonen hoeven alleen de lokale PC beschikbaar te houden en kunnen via Claude Code de status checken en basisherstel uitvoeren. Henk zelf kan overal ter wereld inloggen (laptop, telefoon) en via de remote control link meekijken.
 
 ### 9.3 Mobile Apps: Studieplanner & JudoScoreBoard
 
@@ -732,12 +754,12 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | VP | Actie | Status | Bron |
 |----|-------|--------|------|
 | VP-01 | AutoFix branch-model + dry-run | **Afgerond** | Gemini + Claude |
-| VP-02 | Test coverage verhogen (80% business) | In progress | Gemini + Claude |
+| VP-02 | Test coverage verhogen (80% business) | In progress (HavunCore 87.4% gehaald) | Gemini + Claude |
 | VP-03 | Context-injectie optimaliseren | Gepland (juni) | Gemini |
 | VP-04 | Dependency & security audit | **Afgerond** | Gemini + Claude |
-| VP-05 | Integrity check met selectors | **Afgerond** | Gemini |
-| VP-06 | 5 onschendbare regels + sessielimiet | **Afgerond** | Gemini |
-| VP-07 | Emergency runbook + noodcontact (Thiemo) | **Afgerond** | Claude |
+| VP-05 | Integrity check v2.0 (selector + route + artisan command) | **Afgerond** (16-04-2026) | Gemini |
+| VP-06 | 5 onschendbare regels in alle 9 projecten + sessielimiet | **Afgerond** (16-04-2026) | Gemini |
+| VP-07 | Emergency runbook + noodcontact (Thiemo & Mawin) + droogtest | **Afgerond** (16-04-2026) | Claude |
 | VP-08 | Staging verplicht in deploy | **Afgerond** | Claude |
 | VP-09 | Uptime-monitoring (health check) | **Afgerond** | Claude |
 | VP-10 | KOR-omzetmonitoring | **Afgerond** | Claude |
@@ -758,7 +780,7 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | **Dependency-kwetsbaarheden** | Medium | composer/npm audit bij sessiestart + CI (VP-04) | **Nieuw** |
 | **Downtime onopgemerkt** | Medium | Health check cron elke 5 min, e-mail alerts (VP-09) | **Nieuw** |
 | **Kennisdrift tussen sessies** | Medium | Handover docs, memory, git sync | Actief |
-| **Single point of failure** | Hoog | Noodcontactpersoon (Thiemo), emergency protocol, remote toegang (VP-07) | **Opgelost** |
+| **Single point of failure** | Hoog | 2 noodcontactpersonen (Thiemo & Mawin), emergency protocol, remote control, droogtest afgerond (VP-07) | **Opgelost** |
 | **Staging overgeslagen** | Medium | Staging verplicht in deploy-procedure (VP-08) | **Nieuw** |
 | **KOR-drempel overschrijding** | Laag | Kwartaallijkse omzetcheck (VP-10) | **Nieuw** |
 
@@ -865,5 +887,5 @@ ALTIJD VEREIST:
 
 ---
 
-*Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 29 maart 2026.*
-*Versie 2.0 bevat alle verbeteringen uit het verbeterplan VP-01 t/m VP-10, inclusief feedback uit reviews door Gemini (9/10) en Claude Sonnet (8.5/10). Alle 6 Laravel-projecten hebben CI met coverage-check, GitGuardian op alle 8 projecten, integrity checks op 5 projecten, en AutoFix branch-model op productie.*
+*Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 16 april 2026.*
+*Versie 3.0 — 9 van 10 verbeterpunten afgerond (VP-02 in progress). HavunCore: 795 tests, 87.4% coverage. Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
