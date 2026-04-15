@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Symfony\Component\DomCrawler\Crawler;
+use Illuminate\Support\Facades\Route;
 
 class IntegrityCheckCommand extends Command
 {
@@ -74,13 +74,13 @@ class IntegrityCheckCommand extends Command
 
             // must_contain_selector: CSS selector search in HTML files
             if (! empty($check['must_contain_selector'])) {
-                $failures = array_merge($failures, $this->checkSelectors($content, $check['must_contain_selector']));
+                array_push($failures, ...$this->checkSelectors($content, $check['must_contain_selector']));
             }
 
             // must_contain_route: check route names exist
             if (! empty($check['must_contain_route'])) {
                 foreach ($check['must_contain_route'] as $routeName) {
-                    if (! \Illuminate\Support\Facades\Route::has($routeName)) {
+                    if (! Route::has($routeName)) {
                         $failures[] = "route: {$routeName}";
                     }
                 }
