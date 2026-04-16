@@ -14,7 +14,7 @@
 |--------|-------|----------|-------------|
 | 1.0 | 29-03-2026 | Gemini + Claude Sonnet | Eerste versie, beoordeeld met 7/10 en "robuust voor eenmanszaak" |
 | 2.0 | 29-03-2026 | Gemini (9/10) + Claude (8.5/10) | Alle VP's verwerkt, coverage + CI op alle projecten |
-| 3.0 | 16-04-2026 | — (ter review) | VP-05/06/07 volledig afgerond, 795 tests HavunCore, integrity v2.0, 9 projecten met 5 regels, emergency droogtest afgerond |
+| 3.0 | 16-04-2026 | **Gemini (9,8/10)** | *"Overstijgt eenmanszaak-niveau, concurreert met middelgrote softwarehuizen."* Twee adviezen: (1) doc-synchronisatie check bij elke `/end` (VP-12); (2) periodieke noodprotocol-droogtest elke reviewcyclus (VP-13). Schaalbaarheid (9,0) is enige resterende zorg: onderhoudslast 16.000+ tests bij framework-upgrades. |
 
 ---
 
@@ -890,4 +890,4 @@ ALTIJD VEREIST:
 ---
 
 *Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 16 april 2026.*
-*Versie 3.0 — **alle 10 verbeterpunten afgerond** (VP-02 gehaald: Herdenkingsportaal 85,94% — boven verscherpt doel 85% wegens publieke betalingen). HavunCore: 795 tests, 87,4% coverage. Herdenkingsportaal: 6.729 tests, 85,94% coverage (payment-webhook 85,4%, invoice 88,6%, Mollie productie 81,7%). VP-11 (Alpine CSP migratie) als nieuw actiepunt toegevoegd. Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
+*Versie 3.0 — **alle 10 oorspronkelijke verbeterpunten afgerond** (VP-02 gehaald: Herdenkingsportaal 85,94% — boven verscherpt doel 85% wegens publieke betalingen). **Beoordeeld door Gemini AI met 9,8/10**: "overstijgt eenmanszaak-niveau, concurreert met middelgrote softwarehuizen". HavunCore: 795 tests, 87,4% coverage. Herdenkingsportaal: 6.729 tests, 85,94% coverage (payment-webhook 85,4%, invoice 88,6%, Mollie productie 81,7%). Drie nieuwe actiepunten op de roadmap: VP-11 (Alpine CSP), VP-12 (doc-synchronisatie bij /end), VP-13 (kwartaal-droogtest noodprotocol). Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*

@@ -439,6 +439,8 @@ Juli 2026
 | VP-09 | Uptime-Monitoring | DONE | Medium | 30-04-2026 | Claude |
 | VP-10 | KOR-Omzetmonitoring | DONE | Laag | 30-06-2026 | Claude |
 | VP-11 | Alpine.js CSP migratie (Herdenkingsportaal) | TODO — vereist voor Mozilla Observatory; 149 inline directives → `Alpine.data()`; CSP zonder `unsafe-eval` | Medium | 30-06-2026 | Claude |
+| VP-12 | Documentatie-synchronisatie check bij `/end` | TODO — bij elke sessie-einde verifiëren dat geschreven tests 1-op-1 mappen op business rules in MD-files. Voorkomt drift tussen code en docs | Hoog | 31-05-2026 | Gemini (v3.0) |
+| VP-13 | Periodieke noodprotocol-droogtest | TODO — herhaal de droogtest met Thiemo + Mawin elke reviewcyclus (eerstvolgend juli 2026) zodat noodkennis niet verwatert | Medium | 31-07-2026 | Gemini (v3.0) |
 
 ---
 
