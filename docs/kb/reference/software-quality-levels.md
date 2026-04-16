@@ -79,17 +79,7 @@
 | 80-90% | Enterprise | Banken, SaaS platforms |
 | 90%+ | Mission-critical | Luchtvaart, medisch, fintech |
 
-**Havun status (16 april 2026):**
-- SafeHavun: 94,22% (mission-critical)
-- JudoScoreBoard: 93,42% (mission-critical, Jest 12-04)
-- Infosyst: 91,51% (mission-critical)
-- HavunVet: 90,87% (mission-critical)
-- JudoToernooi: 89,84% (enterprise)
-- HavunAdmin: 89,75% (enterprise)
-- HavunCore: 87,4% (enterprise)
-- Studieplanner: 82,67% (enterprise, Jest 12-04)
-- Herdenkingsportaal: 79,05% (bijna enterprise, 1% te gaan)
-- **Gemiddeld: ~88% — 8 van 9 projecten boven 80%**
+**Havun status:** Actuele coverage per project → [`test-coverage-normen.md`](../runbooks/test-coverage-normen.md). Gemiddeld ~88%, 8 van 9 projecten boven 80%-norm.
 
 **Tools:** PHPUnit (Laravel), Jest (JavaScript), pytest (Python)
 

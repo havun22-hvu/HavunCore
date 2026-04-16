@@ -549,14 +549,16 @@ flowchart TD
 
 **Test coverage standaarden:**
 
-| Niveau | Coverage | Havun status (16-04-2026) |
-|--------|----------|---------------------------|
-| Gevaarlijk | 0-20% | - |
-| Basis | 20-40% | - |
-| Goed | 40-60% | - |
-| Professioneel | 60-80% | Herdenkingsportaal (79,05%) |
-| **Enterprise (NORM)** | **80-90%** | Studieplanner 82,67%, HavunCore 87,4%, HavunAdmin 89,75%, JT 89,84% |
-| Mission-critical | 90%+ | HavunVet 90,87%, Infosyst 91,51%, JudoScoreBoard 93,42%, SafeHavun 94,22% |
+| Niveau | Coverage |
+|--------|----------|
+| Gevaarlijk | 0-20% |
+| Basis | 20-40% |
+| Goed | 40-60% |
+| Professioneel | 60-80% |
+| **Enterprise (NORM)** | **80-90%** |
+| Mission-critical | 90%+ |
+
+**Actuele stand per project** → [`test-coverage-normen.md`](../runbooks/test-coverage-normen.md)
 
 ---
 

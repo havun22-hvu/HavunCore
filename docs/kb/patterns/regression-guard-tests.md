@@ -175,19 +175,10 @@ php artisan test --coverage
 php artisan test --coverage --min=60
 ```
 
-### Minimum coverage targets per project (Havun-norm: 80%)
+### Minimum coverage targets
 
-| Project | Huidige coverage (16-04-2026) | CI-drempel | Target |
-|---------|-------------------------------|-----------|--------|
-| SafeHavun | 94,22% | 80% | 95% |
-| JudoScoreBoard | 93,42% | 80% | 95% |
-| Infosyst | 91,51% | 80% | 92% |
-| HavunVet | 90,87% | 80% | 92% |
-| JudoToernooi | 89,84% | 80% | 92% |
-| HavunAdmin | 89,75% | 80% | 92% |
-| HavunCore | 87,4% | 40% (stap-voor-stap verhogen) | 90% |
-| Studieplanner | 82,67% | 80% | 90% |
-| Herdenkingsportaal | 79,05% | 60% (stap-voor-stap verhogen) | 80% (1% te gaan) |
+Havun-norm: **80%** line coverage per project (target 90%+).
+Actuele coverage per project → [`test-coverage-normen.md`](../runbooks/test-coverage-normen.md).
 
 ### VERPLICHT bij elke sessie
 
