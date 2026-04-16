@@ -440,7 +440,7 @@ Juli 2026
 | VP-10 | KOR-Omzetmonitoring | DONE | Laag | 30-06-2026 | Claude |
 | VP-11 | Alpine.js CSP migratie (Herdenkingsportaal) | TODO — vereist voor Mozilla Observatory; 149 inline directives → `Alpine.data()`; CSP zonder `unsafe-eval` | Medium | 30-06-2026 | Claude |
 | VP-12 | Documentatie-synchronisatie check bij `/end` | DONE — `.claude/commands/end.md` heeft nieuwe stap 6 "Doc-Sync Check" met procedure, beslismatrix, anti-pattern + klaar-criteria | Hoog | 31-05-2026 | Gemini (v3.0) |
-| VP-13 | Periodieke noodprotocol-droogtest | TODO — herhaal de droogtest met Thiemo + Mawin elke reviewcyclus (eerstvolgend juli 2026) zodat noodkennis niet verwatert | Medium | 31-07-2026 | Gemini (v3.0) |
+| VP-13 | Periodieke noodprotocol-droogtest | DONE — schema + roster doc, Laravel command + Mailable + Blade view, scheduler, 5 tests; eerste reminder gaat 12-07-2026 automatisch uit | Medium | 31-07-2026 | Gemini (v3.0) |
 | VP-14 | CONTRACTS.md per app | TODO — per app 5-10 onveranderlijke business rules vastleggen los van implementatie. Voorkomt dat AI bij refactor stille degradatie veroorzaakt | Hoog | 30-06-2026 | Claude (v3.0 contra-review) |
 | VP-15 | Formele deploy-bevoegdheden tijdens afwezigheid | TODO — vastleggen wie (Thiemo/Mawin) bevoegd én technisch in staat is om hotfix naar productie te deployen tijdens >1 week afwezigheid van eigenaar. Inclusief credentials-toegang procedure | Hoog | 31-05-2026 | Claude (v3.0 contra-review) |
 | VP-16 | Kwartaalse mutation testing | TODO — Infection PHP introduceren op kritieke pijlers (payment, auth) om te meten of tests werkelijk regressies vangen i.p.v. alleen statements raken | Medium | 30-09-2026 | Claude (v3.0 contra-review) |

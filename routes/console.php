@@ -19,3 +19,6 @@ Schedule::command('observability:baseline')->dailyAt('06:00');
 // Chaos probes: health + endpoint check every hour
 Schedule::command('chaos:run health-deep')->hourly();
 Schedule::command('chaos:run endpoint-probe')->hourly();
+
+// Droogtest reminder: daily check, sends email exactly 7 days before each scheduled dry run (VP-13)
+Schedule::command('droogtest:reminder')->dailyAt('09:00');
