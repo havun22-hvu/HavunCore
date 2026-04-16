@@ -444,7 +444,7 @@ Juli 2026
 | VP-14 | CONTRACTS.md per app | TODO — per app 5-10 onveranderlijke business rules vastleggen los van implementatie. Voorkomt dat AI bij refactor stille degradatie veroorzaakt | Hoog | 30-06-2026 | Claude (v3.0 contra-review) |
 | VP-15 | Formele deploy-bevoegdheden tijdens afwezigheid | TODO — vastleggen wie (Thiemo/Mawin) bevoegd én technisch in staat is om hotfix naar productie te deployen tijdens >1 week afwezigheid van eigenaar. Inclusief credentials-toegang procedure | Hoog | 31-05-2026 | Claude (v3.0 contra-review) |
 | VP-16 | Kwartaalse mutation testing | TODO — Infection PHP introduceren op kritieke pijlers (payment, auth) om te meten of tests werkelijk regressies vangen i.p.v. alleen statements raken | Medium | 30-09-2026 | Claude (v3.0 contra-review) |
-| VP-17 | AI test-repair anti-pattern review-regel | TODO — expliciete CLAUDE.md regel: bij falende test eerst onderzoeken waarom de assertion faalt — NOOIT de assertion aanpassen zonder business-rule herverificatie + expliciete gebruikersgoedkeuring | Hoog | 30-04-2026 | Claude (v3.0 contra-review) |
+| VP-17 | AI test-repair anti-pattern review-regel | DONE — CLAUDE.md regel 6 actief + runbook `docs/kb/runbooks/test-repair-anti-pattern.md` met 3 worked examples (code-bug, verouderde test, verouderde doc) | Hoog | 30-04-2026 | Claude (v3.0 contra-review) |
 
 ---
 
