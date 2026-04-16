@@ -24,7 +24,7 @@
 
 ## Open items (bijgewerkt 16-04-2026)
 
-1. **Herdenkingsportaal** 79,05% → 80%+ (slechts 1% te gaan; meting 13-04 via PCOV)
+1. ~~Herdenkingsportaal coverage~~ — **GEHAALD 85,75%** (meting 15-04 via CI/PCOV), boven verscherpt 85%-doel
 2. **Studieplanner** 82,67% → 90% (React Native/Jest, aparte sessie)
 3. **HavunCore CI-drempel** 40% → stapsgewijs naar 80%
 
