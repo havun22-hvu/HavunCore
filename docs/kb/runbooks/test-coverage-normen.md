@@ -6,6 +6,8 @@
 
 **Alle projecten: minimaal 80% line coverage** (target 90%+).
 
+**Verscherpte norm voor projecten met publieke betalingen: 85%** (Herdenkingsportaal).
+
 ## Huidige Stand (16 april 2026, PCOV + Jest)
 
 | Project | Coverage | Tests | Status |
@@ -18,7 +20,7 @@
 | HavunAdmin | 89,75% | 3.180 | ✅ Enterprise |
 | HavunCore | 87,4% | 795 | ✅ Enterprise |
 | Studieplanner | 82,67% | 223 (Jest 12-04) | ✅ Enterprise |
-| Herdenkingsportaal | 79,05% | 208+ | ⚠️ Bijna norm (1% te gaan) |
+| Herdenkingsportaal | 79,05% | 208+ | ⚠️ Doel **85%** (publieke betalingen) — 5,95% te gaan |
 
 **Totaal:** 9.600+ tests, 17.000+ assertions. 8 van 9 projecten boven 80%.
 

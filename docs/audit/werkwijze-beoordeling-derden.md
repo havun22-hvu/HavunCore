@@ -434,9 +434,9 @@ De AI controleert deze comments altijd voor wijzigingen aan views en templates.
 | **HavunCore** | 795 | 2.012 | **87,4%** | 80% | **Gehaald** |
 | **Studieplanner** | 223 | — | **82,67%** (Jest) | 80% | **Gehaald** |
 | **JudoScoreBoard** | — | — | **93,42%** (Jest) | 80% | **Gehaald** |
-| **Herdenkingsportaal** | 208+ | 366+ | **79,05%** | 80% | **Bijna gehaald** |
+| **Herdenkingsportaal** | 208+ | 366+ | **79,05%** | **85%** (publieke betalingen) | **Niet gehaald** |
 
-> **Resultaat:** 8 van 9 projecten hebben het 80%-doel gehaald. Herdenkingsportaal zit met **79,05%** net onder de drempel (1% te gaan). Het totale testportfolio omvat **9.600+ tests** met **17.000+ assertions**. React Native projecten gemeten met Jest (12-04-2026), Laravel met PCOV (16-04-2026).
+> **Resultaat:** 8 van 9 projecten hebben het 80%-doel gehaald. Herdenkingsportaal (79,05%) is het enige resterende punt. Gezien de aard van dit project — publieke webapp met betalingen — is voor Herdenkingsportaal een **verscherpt doel van 85%** afgesproken. De laatste 5,95% is géén formaliteit, maar een kritieke laatste stap. Totaal testportfolio: **9.600+ tests** met **17.000+ assertions**. React Native projecten gemeten met Jest (12-04-2026), Laravel met PCOV (16-04-2026).
 >
 > **Datum meting:** 16 april 2026 (alle projecten, lokaal gemeten met PCOV)
 
@@ -474,7 +474,7 @@ Geautomatiseerde test-workflow bij elke push en pull request:
 | HavunVet | 276 tests | Gepland | 90,87% |
 | Studieplanner | 223 tests (Jest) | n.v.t. | 82,67% |
 | JudoScoreBoard | (Jest) | n.v.t. | 93,42% |
-| Herdenkingsportaal | 208+ tests | Actief | 79,05% (bijna 80%) |
+| Herdenkingsportaal | 208+ tests | Actief | 79,05% (doel 85% — publieke betalingen) |
 
 ---
 
@@ -756,7 +756,7 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | VP | Actie | Status | Bron |
 |----|-------|--------|------|
 | VP-01 | AutoFix branch-model + dry-run | **Afgerond** | Gemini + Claude |
-| VP-02 | Test coverage verhogen (80% business) | In progress — 6/7 projecten boven 80%, Herdenkingsportaal (79,05%) bijna op drempel | Gemini + Claude |
+| VP-02 | Test coverage verhogen (80% business) | In progress — 8/9 projecten boven 80%. Herdenkingsportaal (79,05%) heeft verscherpt doel **85%** wegens publieke betalingen | Gemini + Claude |
 | VP-03 | Context-injectie optimaliseren | Gepland (juni) | Gemini |
 | VP-04 | Dependency & security audit | **Afgerond** | Gemini + Claude |
 | VP-05 | Integrity check v2.0 (selector + route + artisan command) | **Afgerond** (16-04-2026) | Gemini |
@@ -890,4 +890,4 @@ ALTIJD VEREIST:
 ---
 
 *Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 16 april 2026.*
-*Versie 3.0 — 9 van 10 verbeterpunten afgerond (VP-02 bijna klaar: Herdenkingsportaal 79,05% — 1% van doel). HavunCore: 795 tests, 87,4% coverage. Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
+*Versie 3.0 — 9 van 10 verbeterpunten afgerond (VP-02 in progress: Herdenkingsportaal 79,05% met verscherpt doel 85% wegens publieke betalingen). HavunCore: 795 tests, 87,4% coverage. Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
