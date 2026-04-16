@@ -20,6 +20,7 @@
 > **Role:** Centrale kennisbank & orchestrator voor ALLE Havun projecten
 > **Type:** Standalone Laravel 11 app + Task Queue API
 > **URL:** https://havuncore.havun.nl
+> **Onveranderlijke regels:** Zie [`CONTRACTS.md`](CONTRACTS.md) — bij elke wijziging eerst raadplegen.
 
 ## 🧠 WAT IS HAVUNCORE?
 
