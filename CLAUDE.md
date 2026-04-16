@@ -44,6 +44,7 @@
 3. NOOIT credentials/keys/env aanraken
 4. ALTIJD tests draaien voor én na wijzigingen (coverage >80%)
 5. ALTIJD toestemming vragen bij grote wijzigingen
+6. NOOIT een falende test "fixen" door de assertion aan te passen — eerst onderzoeken WAAROM hij faalt; assertion alleen wijzigen na expliciete gebruikersgoedkeuring + business-rule herverificatie (VP-17 — anti-pattern: AI repareert symptoom i.p.v. oorzaak)
 ```
 
 ## Rules (ALWAYS follow)

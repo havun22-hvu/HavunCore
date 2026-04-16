@@ -14,7 +14,8 @@
 |--------|-------|----------|-------------|
 | 1.0 | 29-03-2026 | Gemini + Claude Sonnet | Eerste versie, beoordeeld met 7/10 en "robuust voor eenmanszaak" |
 | 2.0 | 29-03-2026 | Gemini (9/10) + Claude (8.5/10) | Alle VP's verwerkt, coverage + CI op alle projecten |
-| 3.0 | 16-04-2026 | **Gemini (9,8/10)** | *"Overstijgt eenmanszaak-niveau, concurreert met middelgrote softwarehuizen."* Twee adviezen: (1) doc-synchronisatie check bij elke `/end` (VP-12); (2) periodieke noodprotocol-droogtest elke reviewcyclus (VP-13). Schaalbaarheid (9,0) is enige resterende zorg: onderhoudslast 16.000+ tests bij framework-upgrades. |
+| 3.0 | 16-04-2026 | **Gemini (9,8/10)** | *"Overstijgt eenmanszaak-niveau, concurreert met middelgrote softwarehuizen."* Adviezen → VP-12 (doc-sync bij /end), VP-13 (kwartaal-droogtest noodprotocol). Zorg: schaalbaarheid (9,0) — onderhoudslast 16.000+ tests bij framework-upgrades. |
+| 3.0 | 16-04-2026 | **Claude (kritisch contra-review, ~8,5/10 verwacht extern)** | *"Dossier is verzendbaar, maar 'AI als risico' is de enige lacune die een serieuze externe auditor zal opmerken."* Drie blinde vlekken benoemd: (1) test-intentie vs volume — geen onderscheid contract vs implementatie tests; (2) geen formele SLO/SLA + deploy-bevoegdheid tijdens afwezigheid; (3) AI hallucinatie risico (AI repareert test i.p.v. bug). Adviezen → VP-14 (CONTRACTS.md per app), VP-15 (deploy-bevoegdheden formaliseren), VP-16 (mutation testing), VP-17 (AI test-repair anti-pattern review-regel). |
 
 ---
 
@@ -785,6 +786,9 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | **Single point of failure** | Hoog | 2 noodcontactpersonen (Thiemo & Mawin), emergency protocol, remote control, droogtest afgerond (VP-07) | **Opgelost** |
 | **Staging overgeslagen** | Medium | Staging verplicht in deploy-procedure (VP-08) | **Nieuw** |
 | **KOR-drempel overschrijding** | Laag | Kwartaallijkse omzetcheck (VP-10) | **Nieuw** |
+| **AI hallucinatie / test-repair anti-pattern** | Hoog | Bij failing test moet AI eerst de bug onderzoeken — NOOIT een test aanpassen zonder expliciete instructie + business-rule herverificatie. CONTRACTS.md per app (VP-14) verankert onveranderlijke regels los van implementatie. Mutation testing (VP-16) detecteert tests die niets vangen. | **Erkend (16-04-2026)** |
+| **Geen formele SLO/SLA + deploy-bevoegdheid tijdens afwezigheid** | Hoog | Uptime-doelen zijn gedefinieerd (sectie 9.1), maar formele autorisatie voor noodcontacten ontbreekt (VP-15). | **Erkend (16-04-2026)** |
+| **Test-volume zonder intentie-borging** | Medium | 16.000+ tests is kwantitatief sterk, maar zonder CONTRACTS.md (VP-14) is niet expliciet wat *nooit* mag breken. Mutation testing (VP-16) borgt dat tests daadwerkelijk vangen. | **Erkend (16-04-2026)** |
 
 ### 12.2 Wat de AI NIET mag (samenvatting)
 
@@ -890,4 +894,4 @@ ALTIJD VEREIST:
 ---
 
 *Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 16 april 2026.*
-*Versie 3.0 — **alle 10 oorspronkelijke verbeterpunten afgerond** (VP-02 gehaald: Herdenkingsportaal 85,94% — boven verscherpt doel 85% wegens publieke betalingen). **Beoordeeld door Gemini AI met 9,8/10**: "overstijgt eenmanszaak-niveau, concurreert met middelgrote softwarehuizen". HavunCore: 795 tests, 87,4% coverage. Herdenkingsportaal: 6.729 tests, 85,94% coverage (payment-webhook 85,4%, invoice 88,6%, Mollie productie 81,7%). Drie nieuwe actiepunten op de roadmap: VP-11 (Alpine CSP), VP-12 (doc-synchronisatie bij /end), VP-13 (kwartaal-droogtest noodprotocol). Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
+*Versie 3.0 — **alle 10 oorspronkelijke verbeterpunten afgerond** (VP-02 gehaald: Herdenkingsportaal 85,94% — boven verscherpt doel 85% wegens publieke betalingen). **Beoordeeld door Gemini AI met 9,8/10** ("overstijgt eenmanszaak-niveau") en **kritisch contra-reviewd door Claude** (~8,5/10 verwachting voor externe auditor — "AI als risico" was lacune, nu erkend in sectie 12). HavunCore: 795 tests, 87,4% coverage. Herdenkingsportaal: 6.729 tests, 85,94% coverage (payment-webhook 85,4%, invoice 88,6%, Mollie productie 81,7%). Zeven nieuwe actiepunten op de roadmap: VP-11 (Alpine CSP), VP-12 (doc-synchronisatie), VP-13 (droogtest), VP-14 (CONTRACTS.md per app), VP-15 (deploy-bevoegdheden afwezigheid), VP-16 (mutation testing), VP-17 (AI test-repair anti-pattern). Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
