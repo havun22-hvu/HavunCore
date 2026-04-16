@@ -443,7 +443,7 @@ Juli 2026
 | VP-13 | Periodieke noodprotocol-droogtest | DONE — schema + roster doc, Laravel command + Mailable + Blade view, scheduler, 5 tests; eerste reminder gaat 12-07-2026 automatisch uit | Medium | 31-07-2026 | Gemini (v3.0) |
 | VP-14 | CONTRACTS.md per app | TODO — per app 5-10 onveranderlijke business rules vastleggen los van implementatie. Voorkomt dat AI bij refactor stille degradatie veroorzaakt | Hoog | 30-06-2026 | Claude (v3.0 contra-review) |
 | VP-15 | Formele deploy-bevoegdheden tijdens afwezigheid | DONE — `docs/kb/runbooks/wat-mag-noodcontact.md` met 3 scenario's (A/B/C), commando-matrix (mag wel/niet), SSH-cheatsheet, cross-link in `noodcontactpersoon-protocol.md` | Hoog | 31-05-2026 | Claude (v3.0 contra-review) |
-| VP-16 | Kwartaalse mutation testing | TODO — Infection PHP introduceren op kritieke pijlers (payment, auth) om te meten of tests werkelijk regressies vangen i.p.v. alleen statements raken | Medium | 30-09-2026 | Claude (v3.0 contra-review) |
+| VP-16 | Kwartaalse mutation testing | PARTIAL — `infection.json5` config in HP, GitHub Action workflow met cron (1e jan/apr/jul/okt 03:00 UTC + manueel), runbook met scope/uitvoeren/interpretatie. Activatie wacht op `composer require --dev infection/infection` (vereist eigenaar-akkoord — dependency-install) | Medium | 30-09-2026 | Claude (v3.0 contra-review) |
 | VP-17 | AI test-repair anti-pattern review-regel | DONE — CLAUDE.md regel 6 actief + runbook `docs/kb/runbooks/test-repair-anti-pattern.md` met 3 worked examples (code-bug, verouderde test, verouderde doc) | Hoog | 30-04-2026 | Claude (v3.0 contra-review) |
 
 ---
