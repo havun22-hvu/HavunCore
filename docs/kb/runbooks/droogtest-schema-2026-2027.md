@@ -7,14 +7,16 @@
 
 ## Schema (rouleert per kwartaal)
 
-| Kwartaal | Geplande datum | Contactpersoon | Stand-by |
-|----------|---------------|---------------|----------|
-| Q3 2026 | **zondag 19 juli 2026, 14:00** | Thiemo | Mawin |
-| Q4 2026 | **zondag 18 oktober 2026, 14:00** | Mawin | Thiemo |
-| Q1 2027 | **zondag 18 januari 2027, 14:00** | Thiemo | Mawin |
-| Q2 2027 | **zondag 19 april 2027, 14:00** | Mawin | Thiemo |
+> **Source-of-truth:** `config/droogtest.php`. Een test (`test_runbook_markdown_matches_config_schedule`) bewaakt dat onderstaande tabel synchroon blijft met de config — bij wijziging beide aanpassen.
 
-Verschuiven mag (vakantie etc.), maar moet binnen het kwartaal blijven en in dit document worden bijgewerkt.
+| Kwartaal | Geplande datum | ISO-datum | Contactpersoon | Stand-by |
+|----------|---------------|-----------|---------------|----------|
+| Q3 2026 | zondag 19 juli 2026, 14:00 | `2026-07-19` | Thiemo | Mawin |
+| Q4 2026 | zondag 18 oktober 2026, 14:00 | `2026-10-18` | Mawin | Thiemo |
+| Q1 2027 | zondag 18 januari 2027, 14:00 | `2027-01-18` | Thiemo | Mawin |
+| Q2 2027 | zondag 19 april 2027, 14:00 | `2027-04-19` | Mawin | Thiemo |
+
+Verschuiven mag (vakantie etc.), maar moet binnen het kwartaal blijven en in dit document **én** in `config/droogtest.php` worden bijgewerkt.
 
 ## Reminder
 
