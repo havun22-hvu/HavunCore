@@ -70,6 +70,10 @@ Ik heb een alert ontvangen. Check wat er aan de hand is en los het op.
 3. **Bij twijfel: stop** — liever niks doen dan iets kapot maken
 4. **Probeer Henk te bereiken** — bel, WhatsApp, SMS
 
+## Wat mag jij wel/niet doen zonder Henk?
+
+→ Zie [`wat-mag-noodcontact.md`](wat-mag-noodcontact.md) — drie scenario's (A: Henk bereikbaar, B: Henk weg <24u + site down, C: Henk weg >24u + security) met cheat-sheet welke commando's veilig zijn en welke niet.
+
 ---
 
 ## Belangrijke info
