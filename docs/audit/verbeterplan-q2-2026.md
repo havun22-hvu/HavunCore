@@ -118,7 +118,7 @@ AutoFix schrijft naar een `hotfix/autofix-[timestamp]` branch + automatische PR,
 | JudoToernooi | 60% | 75% | **80%** | 3257 tests / 6789 assertions — **89.84% coverage** | Poule-indeling, gewichtscheck, scoring | **GEHAALD** |
 | HavunAdmin | 30% | 40% | **80%** | 3180 tests / 5059 assertions — **89.75% coverage** | Invoices, BTW, Tenant isolatie | **GEHAALD** |
 | HavunCore | 40% | 50% | **80%** | 795 tests / 2012 assertions — **87.4% coverage** | AI Proxy, Task Queue, Vault, Auth | **GEHAALD** |
-| Herdenkingsportaal | 50% | 60% | **85%** (verscherpt: publieke betalingen) | 6.712 tests / 10.504 assertions — **85,75% coverage** | Betalingen, memorial CRUD, publieke views | **GEHAALD** |
+| Herdenkingsportaal | 50% | 60% | **85%** (verscherpt: publieke betalingen) | 6.729 tests / 10.530 assertions — **85,94% coverage** | Betalingen (webhook 85,4%, invoice 88,6%, Mollie 81,7%), memorial CRUD, publieke views | **GEHAALD** |
 | Studieplanner | 30% | 40% | **80%** | 223 tests (Jest) — **82,67% coverage** | Study flow, sync, notifications | **GEHAALD** |
 | JudoScoreBoard | 30% | 40% | **80%** | (Jest) — **93,42% coverage** (1.140 statements) | Scoreboard, timing, mat assignment | **GEHAALD** |
 | HavunClub | 30% | 40% | **80%** | 0 tests (alleen docs, geen app code) | — | N.v.t. |
@@ -429,7 +429,7 @@ Juli 2026
 | ID | Actie | Status | Prioriteit | Deadline | Bron |
 |----|-------|--------|------------|----------|------|
 | VP-01 | AutoFix Branch-Model + Dry-Run | DONE | Kritiek | 30-04-2026 | Gemini + Claude |
-| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS — 6/7 boven 80% (JT:3257t/89.8%, HA:3180t/89.8%, INF:834t/91.5%, HC:795t/87.4%, SH:302t/94.2%, HVet:276t/90.9%, **HP:9.5% — prioriteit**) | Kritiek | 31-05-2026 | Gemini + Claude |
+| VP-02 | Test Coverage + Feature Freeze | DONE — alle 9 projecten op of boven hun doel. HP 85,94% (verscherpt 85% voor publieke betalingen); binnen HP payment-webhook 85,4%, invoice 88,6%, Mollie productie 81,7% | Kritiek | 31-05-2026 | Gemini + Claude |
 | VP-03 | Context-Injectie | TODO | Medium | 30-06-2026 | Gemini |
 | VP-04 | Dependency & Security Audit | DONE (CI + /start) | Medium | 30-04-2026 | Gemini + Claude |
 | VP-05 | Integrity Uitbreiden | DONE (v2.0: selector+route checks, artisan command, HavunCore actief) | Medium | 31-05-2026 | Gemini |
@@ -438,6 +438,7 @@ Juli 2026
 | VP-08 | Staging Verplicht | DONE | Hoog | 31-05-2026 | Claude |
 | VP-09 | Uptime-Monitoring | DONE | Medium | 30-04-2026 | Claude |
 | VP-10 | KOR-Omzetmonitoring | DONE | Laag | 30-06-2026 | Claude |
+| VP-11 | Alpine.js CSP migratie (Herdenkingsportaal) | TODO — vereist voor Mozilla Observatory; 149 inline directives → `Alpine.data()`; CSP zonder `unsafe-eval` | Medium | 30-06-2026 | Claude |
 
 ---
 

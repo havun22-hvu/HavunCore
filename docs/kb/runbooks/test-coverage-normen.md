@@ -20,7 +20,7 @@
 | HavunAdmin | 89,75% | 3.180 | ✅ Enterprise |
 | HavunCore | 87,4% | 795 | ✅ Enterprise |
 | Studieplanner | 82,67% | 223 (Jest 12-04) | ✅ Enterprise |
-| Herdenkingsportaal | 85,75% | 6.712 | ✅ Doel **85%** (publieke betalingen) — gehaald |
+| Herdenkingsportaal | 85,94% | 6.729 | ✅ Doel **85%** (publieke betalingen) — gehaald (webhook 85,4%, invoice 88,6%, Mollie 81,7%) |
 
 **Totaal:** 9.600+ tests, 17.000+ assertions. 8 van 9 projecten boven 80%.
 

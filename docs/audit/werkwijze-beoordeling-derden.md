@@ -434,9 +434,9 @@ De AI controleert deze comments altijd voor wijzigingen aan views en templates.
 | **HavunCore** | 795 | 2.012 | **87,4%** | 80% | **Gehaald** |
 | **Studieplanner** | 223 | — | **82,67%** (Jest) | 80% | **Gehaald** |
 | **JudoScoreBoard** | — | — | **93,42%** (Jest) | 80% | **Gehaald** |
-| **Herdenkingsportaal** | 6.712 | 10.504 | **85,75%** | **85%** (publieke betalingen) | **Gehaald** |
+| **Herdenkingsportaal** | 6.729 | 10.530 | **85,94%** | **85%** (publieke betalingen) | **Gehaald** |
 
-> **Resultaat:** Alle 9 projecten hebben hun coverage-doel gehaald, inclusief Herdenkingsportaal dat met **85,75%** ruim boven de verscherpte 85%-norm zit (publieke betalingen vereisen extra dekking). Totaal testportfolio: **16.000+ tests** met **28.000+ assertions**. Meting: Laravel projecten via PCOV (15/16-04-2026), React Native via Jest (12-04-2026).
+> **Resultaat:** Alle 9 projecten hebben hun coverage-doel gehaald, inclusief Herdenkingsportaal dat met **85,94%** ruim boven de verscherpte 85%-norm zit (publieke betalingen vereisen extra dekking). Binnen Herdenkingsportaal is de kritieke payment-pijler extra hoog gedekt: webhook 85,4%, invoice-service 88,6%, Mollie productie-service 81,7%. Totaal testportfolio: **16.000+ tests** met **28.000+ assertions**. Meting: Laravel projecten via PCOV (16-04-2026), React Native via Jest (12-04-2026).
 >
 > **Datum meting:** 16 april 2026 (alle projecten, lokaal gemeten met PCOV)
 
@@ -474,7 +474,7 @@ Geautomatiseerde test-workflow bij elke push en pull request:
 | HavunVet | 276 tests | Gepland | 90,87% |
 | Studieplanner | 223 tests (Jest) | n.v.t. | 82,67% |
 | JudoScoreBoard | (Jest) | n.v.t. | 93,42% |
-| Herdenkingsportaal | 6.712 tests | Actief | 85,75% (doel 85% — publieke betalingen, gehaald) |
+| Herdenkingsportaal | 6.729 tests | Actief | 85,94% (doel 85% — publieke betalingen, gehaald) |
 
 ---
 
@@ -890,4 +890,4 @@ ALTIJD VEREIST:
 ---
 
 *Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 16 april 2026.*
-*Versie 3.0 — **alle 10 verbeterpunten afgerond** (VP-02 gehaald: Herdenkingsportaal 85,75% — boven verscherpt doel 85% wegens publieke betalingen). HavunCore: 795 tests, 87,4% coverage. Herdenkingsportaal: 6.712 tests, 85,75% coverage. Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
+*Versie 3.0 — **alle 10 verbeterpunten afgerond** (VP-02 gehaald: Herdenkingsportaal 85,94% — boven verscherpt doel 85% wegens publieke betalingen). HavunCore: 795 tests, 87,4% coverage. Herdenkingsportaal: 6.729 tests, 85,94% coverage (payment-webhook 85,4%, invoice 88,6%, Mollie productie 81,7%). VP-11 (Alpine CSP migratie) als nieuw actiepunt toegevoegd. Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
