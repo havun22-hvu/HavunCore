@@ -121,7 +121,40 @@ Verwijder entries ouder dan 7 dagen uit dit bestand.
 node scripts/check-integrity.js 2>&1 || php artisan integrity:check 2>&1
 ```
 
-## 6. Git Commit & Push (KRITIEK - NIETS MAG ACHTERBLIJVEN!)
+## 6. Doc-Sync Check (VP-12 — voor commit)
+
+> **Doel:** Voorkomen dat tests en business-docs uit elkaar gaan lopen. Een test die per ongeluk een verouderde regel codificeert is een stille bug.
+> **Wanneer:** alleen als er deze sessie tests gewijzigd of toegevoegd zijn.
+
+### Procedure
+
+Voor **elke** nieuwe of gewijzigde test in deze sessie:
+
+1. Lees de assertion(s)
+2. Zoek de bijbehorende business rule:
+   - `<project>/CONTRACTS.md` (als die bestaat — zie VP-14)
+   - `<project>/CLAUDE.md`
+   - `docs/kb/` (relevante runbook/pattern)
+3. Klopt de assertion 1-op-1 met wat de doc zegt?
+
+### Beslissing
+
+| Situatie | Actie |
+|----------|-------|
+| Assertion en doc matchen | ✅ door naar commit |
+| Assertion is strenger dan doc (correcte hard-coding) | ✅ door — overweeg de doc te verscherpen |
+| Assertion is losser dan doc (gevaarlijk) | ❌ STOP — assertion aanscherpen of doc bijwerken |
+| Assertion en doc spreken elkaar tegen | ❌ STOP — vraag eigenaar welke gedrag correct is |
+
+### Anti-pattern (verboden — zie ook CLAUDE.md regel 6 + runbook test-repair-anti-pattern.md)
+
+❌ Een falende test "fixen" door de assertion aan te passen tot hij groen is, zonder eerst te onderzoeken of de doc wel klopt.
+
+### Klaar-criteria
+
+In de handover (stap 4) is per gewijzigde test in 1 zin vermeld: *"Assertion checkt \[X], wat overeenkomt met regel \[Y] in \[doc]."*
+
+## 7. Git Commit & Push (KRITIEK - NIETS MAG ACHTERBLIJVEN!)
 
 ### Stap A: Commit ALLE code-wijzigingen EERST
 
@@ -164,7 +197,7 @@ git diff
 
 ⚠️ **Als er NOG wijzigingen open staan: NIET doorgaan. Eerst committen!**
 
-## 7. Deploy naar Server (indien van toepassing)
+## 8. Deploy naar Server (indien van toepassing)
 
 ### Bij publieke apps (HP, JT, HA): STAGING EERST!
 
@@ -196,20 +229,20 @@ git pull
 php artisan config:clear && php artisan cache:clear
 ```
 
-## 8. Branch Cleanup
+## 9. Branch Cleanup
 
 ```bash
 git branch --merged | grep -v master | xargs git branch -d
 ```
 
-## 9. USB / Op reis (HavunCore only)
+## 10. USB / Op reis (HavunCore only)
 
 **Nieuwe werkwijze:** USB bevat alleen credentials (vault) + startscript; geen code sync meer nodig. Code op reis via `git clone`/`git pull`.
 
 - **Vault bijwerken (thuis):** Zorg dat `credentials.vault` op de USB de actuele `.env` en `context.md` per project bevat (handmatig of eigen script).
 - **Runbook:** `docs/kb/runbooks/op-reis-workflow.md`
 
-## 10. KOR-Omzetcheck (elk kwartaal)
+## 11. KOR-Omzetcheck (elk kwartaal)
 
 **Alleen bij kwartaaleinde (maart, juni, september, december):**
 
@@ -230,7 +263,7 @@ Check of de omzet richting de KOR-drempel gaat (€20.000/jaar):
 Als omzet > €16.000: meld aan gebruiker dat BTW-overgangsplan nodig is.
 Zie: `docs/audit/verbeterplan-q2-2026.md` (VP-10)
 
-## 11. Urenregistratie (VERPLICHT - belastingaangifte)
+## 12. Urenregistratie (VERPLICHT - belastingaangifte)
 
 **Jij vult zelf de uren in.** Geef een zeer beknopt overzicht om de werkzaamheden te onderbouwen.
 **GEEN commit details of technische beschrijvingen.** Alleen projectnaam + globaal onderwerp (max 3 woorden).
