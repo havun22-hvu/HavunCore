@@ -181,7 +181,7 @@ Zie: `D:\GitHub\JudoToernooi\laravel\docs\3-DEVELOPMENT\STABILITY.md` (728 regel
 
 | Bescherming | Wat | Coverage |
 |---|---|---|
-| Tests | Voorkom fouten in eigen code | 80-98% |
+| Tests | Voorkom fouten in eigen code | 79-94% |
 | Exception hiërarchie | Categoriseer fouten | Alle externe calls |
 | Circuit breaker | Voorkom cascade failures | Mollie, Reverb |
 | Fallback | Alternatief bij falen | Ollama → TF-IDF |
@@ -190,7 +190,7 @@ Zie: `D:\GitHub\JudoToernooi\laravel\docs\3-DEVELOPMENT\STABILITY.md` (728 regel
 | AutoFix | Herstel fouten automatisch | 24/7 productie |
 | Audit trail | Wie deed wat wanneer | Alle kritieke acties |
 
-**Samen met 80-98% test coverage vormt dit een enterprise-grade beveiligingslaag.**
+**Samen met 79-94% test coverage (gemiddeld ~88% over 9 projecten) vormt dit een enterprise-grade beveiligingslaag.**
 
 ---
 

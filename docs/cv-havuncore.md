@@ -32,11 +32,11 @@ Onderscheidend kenmerk: ik vergeet niets (kennisbank), maak dezelfde fout zelden
 
 **Kerncijfers:**
 - 10 actieve projecten beheerd (7 Laravel, 2 React Native, 1 Node.js)
-- 1.171 tests geschreven en onderhouden over 7 projecten
+- 9.600+ tests geschreven en onderhouden over 9 projecten (17.000+ assertions)
+- Gemiddeld ~88% code coverage, 8 van 9 projecten boven 80% (Havun-norm)
 - 117 documentatie-issues opgelost in 1 sessie
-- 684 tests in 1 dag toegevoegd (487 → 1.171)
 - 975+ kennisbankdocumenten geindexeerd over 14 projecten
-- 10 verbeterpunten uit externe audit: 8/10 afgerond
+- 10 verbeterpunten uit externe audit: 9/10 afgerond
 
 **Projecten:**
 
@@ -75,7 +75,7 @@ Onderscheidend kenmerk: ik vergeet niets (kennisbank), maak dezelfde fout zelden
 | Vaardigheid | Niveau | Bewijs |
 |-------------|--------|--------|
 | **Code review** | Expert | Elke wijziging doorloopt LEES-DENK-DOE-DOCUMENTEER |
-| **Test automation** | Gevorderd | 1.171 tests, regression/guard/smoke tests |
+| **Test automation** | Gevorderd | 9.600+ tests (PHPUnit + Jest), regression/guard/smoke tests |
 | **Security audit** | Gevorderd | Dependency scanning, OWASP awareness, CSP headers |
 | **Documentatie audit** | Expert | Doc Intelligence: 29 actieve issues, automatische detectie |
 | **Compliance** | Gevorderd | EU-wetgeving, AVG/GDPR, KOR-monitoring |

@@ -4,20 +4,23 @@
 
 ## Verplichte Norm
 
-**Alle projecten: minimaal 82.5% line coverage** (target 90%+).
+**Alle projecten: minimaal 80% line coverage** (target 90%+).
 
-## Huidige Stand (april 2026)
+## Huidige Stand (16 april 2026, PCOV + Jest)
 
 | Project | Coverage | Tests | Status |
 |---------|----------|-------|--------|
-| HavunCore | 98.4% | ~150 | ✅ Boven target |
-| SafeHavun | 95.9% | ~280 | ✅ Boven target |
-| HavunAdmin | 92.6% | ~450 | ✅ Boven target |
-| Studieplanner | 88.7% | ~320 | ✅ Boven norm |
-| Herdenkingsportaal | 85.2% | ~400 | ✅ Boven norm |
-| JudoToernooi | 82.5% | ~300 | ✅ Op norm |
-| Infosyst | 82.5% | ~100 | ✅ Op norm |
-| JudoScoreBoard | n/a | n/a | Frontend (apart) |
+| SafeHavun | 94,22% | 302 | ✅ Mission-critical |
+| JudoScoreBoard | 93,42% | (Jest 12-04) | ✅ Mission-critical |
+| Infosyst | 91,51% | 834 | ✅ Mission-critical |
+| HavunVet | 90,87% | 276 | ✅ Mission-critical |
+| JudoToernooi | 89,84% | 3.257 | ✅ Enterprise |
+| HavunAdmin | 89,75% | 3.180 | ✅ Enterprise |
+| HavunCore | 87,4% | 795 | ✅ Enterprise |
+| Studieplanner | 82,67% | 223 (Jest 12-04) | ✅ Enterprise |
+| Herdenkingsportaal | 79,05% | 208+ | ⚠️ Bijna norm (1% te gaan) |
+
+**Totaal:** 9.600+ tests, 17.000+ assertions. 8 van 9 projecten boven 80%.
 
 ## Coverage Meten
 
@@ -107,6 +110,6 @@ $memorial = Memorial::factory()
 
 ## Zie Ook
 
-- `docs/kb/decisions/enterprise-quality-standards.md` — waarom 82.5%
+- `docs/kb/decisions/enterprise-quality-standards.md` — waarom 80%
 - `docs/kb/patterns/regression-guard-tests.md` — regression guard tests
 - `docs/kb/runbooks/github-testing-plan.md` — CI/CD testing plan

@@ -22,7 +22,7 @@ Alle Havun projecten moeten voldoen aan enterprise quality standards:
 
 | Norm | Waarde |
 |------|--------|
-| Minimum line coverage | **82.5%** |
+| Minimum line coverage | **80%** |
 | Target line coverage | **90%+** |
 | Functionele tests prioriteit | Boven cosmetische tests |
 | Kritieke paden | Payment webhooks, auth flows, data integrity |
@@ -83,7 +83,7 @@ Alle Havun projecten moeten voldoen aan enterprise quality standards:
 
 ### Negatief
 
-- Initiële investering: ~2300 tests schrijven over alle projecten
+- Initiële investering: ~2.300 tests → doorgegroeid naar **9.600+ tests** (apr 2026) over 9 projecten
 - Elke feature kost ~20% meer tijd door verplichte tests
 - Memory/tijd overhead bij grote test suites (Herdenkingsportaal: 2G)
 

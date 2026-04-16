@@ -549,14 +549,14 @@ flowchart TD
 
 **Test coverage standaarden:**
 
-| Niveau | Coverage | Havun status |
-|--------|----------|--------------|
-| Gevaarlijk | 0-20% | HavunAdmin (15.3%) |
+| Niveau | Coverage | Havun status (16-04-2026) |
+|--------|----------|---------------------------|
+| Gevaarlijk | 0-20% | - |
 | Basis | 20-40% | - |
 | Goed | 40-60% | - |
-| Professioneel | 60-80% | Herdenkingsportaal (70%) |
-| **Enterprise (NORM)** | **80-90%** | JT 80%, HavunVet 82.8%, Infosyst 83.3%, SafeHavun 86.6% |
-| Mission-critical | 90%+ | HavunCore 98.4% |
+| Professioneel | 60-80% | Herdenkingsportaal (79,05%) |
+| **Enterprise (NORM)** | **80-90%** | Studieplanner 82,67%, HavunCore 87,4%, HavunAdmin 89,75%, JT 89,84% |
+| Mission-critical | 90%+ | HavunVet 90,87%, Infosyst 91,51%, JudoScoreBoard 93,42%, SafeHavun 94,22% |
 
 ---
 
@@ -598,7 +598,7 @@ flowchart TD
 
 | Methode | Gebruikt bij |
 |---------|--------------|
-| **Tests** | 98.4% coverage HavunCore, 80%+ alle enterprise projecten |
+| **Tests** | 87,4% coverage HavunCore, 8 van 9 projecten boven 80% |
 | **Form Requests** | Alle user input in JudoToernooi, HP, HavunAdmin |
 | **Try-catch + Timeout** | Mollie API, Ollama embeddings, HTTP::timeout(30) |
 | **Circuit breaker** | Mollie service, Reverb WebSockets |

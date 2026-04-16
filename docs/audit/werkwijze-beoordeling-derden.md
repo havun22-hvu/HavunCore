@@ -431,12 +431,12 @@ De AI controleert deze comments altijd voor wijzigingen aan views en templates.
 | **HavunVet** | 276 | 442 | **90.87%** | 80% | **Gehaald** |
 | **JudoToernooi** | 3.257 | 6.789 | **89.84%** | 80% | **Gehaald** |
 | **HavunAdmin** | 3.180 | 5.059 | **89.75%** | 80% | **Gehaald** |
-| **HavunCore** | 795 | 2.012 | **87.4%** | 80% | **Gehaald** |
-| **Herdenkingsportaal** | 208+ | 366+ | **9.48%** | 80% | **Niet gehaald** |
-| Studieplanner | — | — | — (React Native) | — | N.v.t. |
-| JudoScoreBoard | — | — | — (React Native) | — | N.v.t. |
+| **HavunCore** | 795 | 2.012 | **87,4%** | 80% | **Gehaald** |
+| **Studieplanner** | 223 | — | **82,67%** (Jest) | 80% | **Gehaald** |
+| **JudoScoreBoard** | — | — | **93,42%** (Jest) | 80% | **Gehaald** |
+| **Herdenkingsportaal** | 208+ | 366+ | **79,05%** | 80% | **Bijna gehaald** |
 
-> **Resultaat:** 6 van 7 Laravel-projecten hebben het 80%-doel gehaald. Het totale testportfolio omvat **9.600+ tests** met **17.000+ assertions**. Herdenkingsportaal (9.48%) is het enige project dat nog significant onder het doel zit — dit is het meest urgente verbeterpunt vanwege publiek verkeer en betalingen.
+> **Resultaat:** 8 van 9 projecten hebben het 80%-doel gehaald. Herdenkingsportaal zit met **79,05%** net onder de drempel (1% te gaan). Het totale testportfolio omvat **9.600+ tests** met **17.000+ assertions**. React Native projecten gemeten met Jest (12-04-2026), Laravel met PCOV (16-04-2026).
 >
 > **Datum meting:** 16 april 2026 (alle projecten, lokaal gemeten met PCOV)
 
@@ -470,9 +470,11 @@ Geautomatiseerde test-workflow bij elke push en pull request:
 | HavunAdmin | 3.180 tests | Actief | 89.75% |
 | Infosyst | 834 tests | Actief | 91.51% |
 | HavunCore | 795 tests | Actief | 87.4% |
-| SafeHavun | 302 tests | Actief | 94.22% |
-| HavunVet | 276 tests | Gepland | 90.87% |
-| Herdenkingsportaal | 208+ tests | Actief | 9.48% (**prioriteit**) |
+| SafeHavun | 302 tests | Actief | 94,22% |
+| HavunVet | 276 tests | Gepland | 90,87% |
+| Studieplanner | 223 tests (Jest) | n.v.t. | 82,67% |
+| JudoScoreBoard | (Jest) | n.v.t. | 93,42% |
+| Herdenkingsportaal | 208+ tests | Actief | 79,05% (bijna 80%) |
 
 ---
 
@@ -649,11 +651,11 @@ De mobile apps (React Native / Expo) vallen deels buiten de standaard Laravel-wo
 | **OTA updates** | Expo Updates | JS-wijzigingen worden direct gepusht zonder app store |
 | **App store** | Niet van toepassing | APK wordt direct gehost op eigen server |
 | **Crash reporting** | Niet geimplementeerd | Gepland voor Q3 2026 |
-| **Tests** | `npm test` (Jest) | Basis test-setup aanwezig |
+| **Tests** | `npm test` (Jest) | Volwaardig — Studieplanner 82,67% (223 tests), JudoScoreBoard 93,42% coverage |
 | **Lint** | ESLint | Via `npm run lint` |
 | **GitGuardian** | Actief | Pre-commit hook op beide projecten |
 
-**Eerlijkheid:** De kwaliteitsborging voor mobile apps is minder volwassen dan voor Laravel-projecten. Er is geen crash reporting, en de test-coverage is minimaal. Dit wordt in Q3 2026 verbeterd.
+**Eerlijkheid:** De kwaliteitsborging voor mobile apps is grotendeels op niveau: Studieplanner 82,67% en JudoScoreBoard 93,42% coverage (Jest, gemeten 12-04-2026). Crash reporting ontbreekt nog — gepland voor Q3 2026.
 
 ---
 
@@ -754,7 +756,7 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | VP | Actie | Status | Bron |
 |----|-------|--------|------|
 | VP-01 | AutoFix branch-model + dry-run | **Afgerond** | Gemini + Claude |
-| VP-02 | Test coverage verhogen (80% business) | In progress — 6/7 projecten boven 80%, Herdenkingsportaal (9.48%) restant | Gemini + Claude |
+| VP-02 | Test coverage verhogen (80% business) | In progress — 6/7 projecten boven 80%, Herdenkingsportaal (79,05%) bijna op drempel | Gemini + Claude |
 | VP-03 | Context-injectie optimaliseren | Gepland (juni) | Gemini |
 | VP-04 | Dependency & security audit | **Afgerond** | Gemini + Claude |
 | VP-05 | Integrity check v2.0 (selector + route + artisan command) | **Afgerond** (16-04-2026) | Gemini |
@@ -888,4 +890,4 @@ ALTIJD VEREIST:
 ---
 
 *Dit document is gegenereerd op basis van de actuele projectdocumentatie en -configuratie per 16 april 2026.*
-*Versie 3.0 — 9 van 10 verbeterpunten afgerond (VP-02 in progress). HavunCore: 795 tests, 87.4% coverage. Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*
+*Versie 3.0 — 9 van 10 verbeterpunten afgerond (VP-02 bijna klaar: Herdenkingsportaal 79,05% — 1% van doel). HavunCore: 795 tests, 87,4% coverage. Integrity check v2.0 met selector/route support en 17 tests. 5 onschendbare regels in alle 9 projecten. Emergency protocol volledig getest met 2 noodcontactpersonen. GitGuardian op alle 8+ projecten. AutoFix branch-model op productie.*

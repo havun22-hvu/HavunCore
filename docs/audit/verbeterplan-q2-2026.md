@@ -118,12 +118,12 @@ AutoFix schrijft naar een `hotfix/autofix-[timestamp]` branch + automatische PR,
 | JudoToernooi | 60% | 75% | **80%** | 3257 tests / 6789 assertions — **89.84% coverage** | Poule-indeling, gewichtscheck, scoring | **GEHAALD** |
 | HavunAdmin | 30% | 40% | **80%** | 3180 tests / 5059 assertions — **89.75% coverage** | Invoices, BTW, Tenant isolatie | **GEHAALD** |
 | HavunCore | 40% | 50% | **80%** | 795 tests / 2012 assertions — **87.4% coverage** | AI Proxy, Task Queue, Vault, Auth | **GEHAALD** |
-| Herdenkingsportaal | 50% | 60% | **80%** | 208+ tests / 366+ assertions — **9.48% coverage** | Betalingen, memorial CRUD, publieke views | **NIET GEHAALD** |
-| Studieplanner | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | N.v.t. |
-| JudoScoreBoard | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | N.v.t. |
+| Herdenkingsportaal | 50% | 60% | **80%** | 208+ tests / 366+ assertions — **79,05% coverage** | Betalingen, memorial CRUD, publieke views | **Bijna gehaald** (1% te gaan) |
+| Studieplanner | 30% | 40% | **80%** | 223 tests (Jest) — **82,67% coverage** | Study flow, sync, notifications | **GEHAALD** |
+| JudoScoreBoard | 30% | 40% | **80%** | (Jest) — **93,42% coverage** (1.140 statements) | Scoreboard, timing, mat assignment | **GEHAALD** |
 | HavunClub | 30% | 40% | **80%** | 0 tests (alleen docs, geen app code) | — | N.v.t. |
 
-> **Meting 16-04-2026 (PCOV):** 6 van 7 Laravel-projecten boven 80% coverage. Totaal: 9.600+ tests, 17.000+ assertions. Herdenkingsportaal (9.48%) is het enige project dat significant achterblijft — dit is de hoogste prioriteit voor de komende weken.
+> **Meting 16-04-2026 (PCOV + Jest):** 8 van 9 projecten boven 80% coverage. Totaal: 9.600+ tests, 17.000+ assertions. Herdenkingsportaal zit met **79,05%** 1% onder de drempel — laatste 1% kan met een paar kleine tests worden gedekt. React Native projecten (Studieplanner, JudoScoreBoard) gemeten 12-04-2026 via Jest.
 
 **Bugs gevonden door test coverage uitbreiding (06-04-2026):**
 - HavunVet: `TreatmentForm` verwijst naar verwijderd `WorkLocation` model

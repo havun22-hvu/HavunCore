@@ -54,18 +54,19 @@ Een Havun project voldoet aan de normen als:
 | **80-90%** | **Enterprise** | ✅ **Norm** |
 | 90%+ | Mission-critical | ✅ Ideaal |
 
-**Havun status (09-04-2026):**
+**Havun status (16-04-2026):**
 
 | Project | Coverage | Status |
 |---------|----------|--------|
-| HavunCore | 98.4% | ✅ Mission-critical |
-| SafeHavun | 86.6% | ✅ Enterprise |
-| Infosyst | 83.3% | ✅ Enterprise |
-| HavunVet | 82.8% | ✅ Enterprise |
-| JudoToernooi | 80.0% | ✅ Enterprise |
-| Herdenkingsportaal | ~70% | ⚠️ Professioneel |
-| HavunAdmin | 15.3% | ❌ Gevaarlijk |
-| Studieplanner API | 0.2% | ❌ Gevaarlijk |
+| SafeHavun | 94,22% | ✅ Mission-critical |
+| JudoScoreBoard | 93,42% | ✅ Mission-critical |
+| Infosyst | 91,51% | ✅ Mission-critical |
+| HavunVet | 90,87% | ✅ Mission-critical |
+| JudoToernooi | 89,84% | ✅ Enterprise |
+| HavunAdmin | 89,75% | ✅ Enterprise |
+| HavunCore | 87,4% | ✅ Enterprise |
+| Studieplanner | 82,67% | ✅ Enterprise |
+| Herdenkingsportaal | 79,05% | ⚠️ Bijna enterprise (1% te gaan) |
 
 **Wat moet getest worden:**
 - Business logica (berekeningen, validaties, workflows)
