@@ -110,20 +110,20 @@ AutoFix schrijft naar een `hotfix/autofix-[timestamp]` branch + automatische PR,
 
 **Coverage-doelen (verscherpt na Claude-review):**
 
-| Project | Was (v1.0) | Was (Gemini) | Wordt (v2.0) | Actueel (06-04-2026) | Kritieke logica | Deadline |
-|---------|------------|--------------|--------------|----------------------|-----------------|----------|
-| JudoToernooi | 60% | 75% | **80%** | 419 tests / 970 assertions — **17.4% coverage** | Poule-indeling, gewichtscheck, scoring | 31 mei 2026 |
-| Herdenkingsportaal | 50% | 60% | **80%** | 208 tests / 366 assertions — **9.7% coverage** | Betalingen, memorial CRUD, publieke views | 30 juni 2026 |
-| HavunCore | 40% | 50% | **80%** | 473 tests / 1225 assertions — **87.4% coverage** (PCOV) | AI Proxy, Task Queue, Vault, Auth | 30 juni 2026 |
-| HavunAdmin | 30% | 40% | **80%** | 163 tests / 362 assertions — coverage rapport crasht (PhpParser) | Invoices, BTW, Tenant isolatie | 30 juni 2026 |
-| HavunVet | 30% | 40% | **80%** | 99 tests / 137 assertions — **32.6% coverage** | Models, Services, Routes | 30 juni 2026 |
-| SafeHavun | 30% | 40% | **80%** | 67 tests / 100 assertions — **26.0% coverage** | Models, Portfolio, MarketSignal | 30 juni 2026 |
-| Infosyst | 30% | 40% | **80%** | 64 tests / 113 assertions — **6.9% coverage** | Models, WikiLink, Routes | 30 juni 2026 |
-| Studieplanner | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | 30 juni 2026 |
-| JudoScoreBoard | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | 30 juni 2026 |
-| HavunClub | 30% | 40% | **80%** | 0 tests (alleen docs, geen app code) | — | 30 juni 2026 |
+| Project | Was (v1.0) | Was (Gemini) | Wordt (v2.0) | Actueel (16-04-2026) | Kritieke logica | Status |
+|---------|------------|--------------|--------------|----------------------|-----------------|--------|
+| SafeHavun | 30% | 40% | **80%** | 302 tests / 565 assertions — **94.22% coverage** | Models, Portfolio, MarketSignal | **GEHAALD** |
+| Infosyst | 30% | 40% | **80%** | 834 tests / 1552 assertions — **91.51% coverage** | Models, WikiLink, Routes | **GEHAALD** |
+| HavunVet | 30% | 40% | **80%** | 276 tests / 442 assertions — **90.87% coverage** | Models, Services, Routes | **GEHAALD** |
+| JudoToernooi | 60% | 75% | **80%** | 3257 tests / 6789 assertions — **89.84% coverage** | Poule-indeling, gewichtscheck, scoring | **GEHAALD** |
+| HavunAdmin | 30% | 40% | **80%** | 3180 tests / 5059 assertions — **89.75% coverage** | Invoices, BTW, Tenant isolatie | **GEHAALD** |
+| HavunCore | 40% | 50% | **80%** | 795 tests / 2012 assertions — **87.4% coverage** | AI Proxy, Task Queue, Vault, Auth | **GEHAALD** |
+| Herdenkingsportaal | 50% | 60% | **80%** | 208+ tests / 366+ assertions — **9.48% coverage** | Betalingen, memorial CRUD, publieke views | **NIET GEHAALD** |
+| Studieplanner | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | N.v.t. |
+| JudoScoreBoard | 30% | 40% | **80%** | 0 tests (React Native, geen jest) | — | N.v.t. |
+| HavunClub | 30% | 40% | **80%** | 0 tests (alleen docs, geen app code) | — | N.v.t. |
 
-> **Meting 07-04-2026 (PCOV):** HavunCore coverage van 0% → 87.4% (473 tests, 1225 assertions). Integratietests voor alle controllers + services. CI workflow draait met PCOV coverage check (min 40%, wordt verhoogd naarmate andere projecten volgen).
+> **Meting 16-04-2026 (PCOV):** 6 van 7 Laravel-projecten boven 80% coverage. Totaal: 9.600+ tests, 17.000+ assertions. Herdenkingsportaal (9.48%) is het enige project dat significant achterblijft — dit is de hoogste prioriteit voor de komende weken.
 
 **Bugs gevonden door test coverage uitbreiding (06-04-2026):**
 - HavunVet: `TreatmentForm` verwijst naar verwijderd `WorkLocation` model
@@ -429,7 +429,7 @@ Juli 2026
 | ID | Actie | Status | Prioriteit | Deadline | Bron |
 |----|-------|--------|------------|----------|------|
 | VP-01 | AutoFix Branch-Model + Dry-Run | DONE | Kritiek | 30-04-2026 | Gemini + Claude |
-| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS (JT:419t, **HC:795t/2012a**, HP:208t, HA:163t, HVet:99t, SH:67t, INF:64t) | Kritiek | 31-05-2026 | Gemini + Claude |
+| VP-02 | Test Coverage + Feature Freeze | IN PROGRESS — 6/7 boven 80% (JT:3257t/89.8%, HA:3180t/89.8%, INF:834t/91.5%, HC:795t/87.4%, SH:302t/94.2%, HVet:276t/90.9%, **HP:9.5% — prioriteit**) | Kritiek | 31-05-2026 | Gemini + Claude |
 | VP-03 | Context-Injectie | TODO | Medium | 30-06-2026 | Gemini |
 | VP-04 | Dependency & Security Audit | DONE (CI + /start) | Medium | 30-04-2026 | Gemini + Claude |
 | VP-05 | Integrity Uitbreiden | DONE (v2.0: selector+route checks, artisan command, HavunCore actief) | Medium | 31-05-2026 | Gemini |

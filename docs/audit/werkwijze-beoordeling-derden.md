@@ -424,21 +424,21 @@ De AI controleert deze comments altijd voor wijzigingen aan views en templates.
 
 ### 6.3 Coverage: huidige stand en doelen
 
-| Project | Tests | Assertions | Coverage (PCOV) | Doel | Prioriteit |
-|---------|-------|------------|-----------------|------|------------|
-| **HavunCore** | **795** | **2.012** | **87.4%** | 80% | **Gehaald** |
-| JudoToernooi | 419 | 970 | 17.4% | 80% | **Hoog** |
-| Herdenkingsportaal | 208 | 366 | 9.7% | 80% | **Hoog** |
-| HavunAdmin | 163 | 362 | Onbekend (PhpParser crash) | 80% | Medium |
-| HavunVet | 99 | 137 | 32.6% | 80% | Medium |
-| SafeHavun | 67 | 100 | 26.0% | 80% | Medium |
-| Infosyst | 64 | 113 | 6.9% | 80% | Medium |
-| Studieplanner | 0 | 0 | — (React Native) | — | Laag |
-| JudoScoreBoard | 0 | 0 | — (React Native) | — | Laag |
+| Project | Tests | Assertions | Coverage (PCOV) | Doel | Status |
+|---------|-------|------------|-----------------|------|--------|
+| **SafeHavun** | 302 | 565 | **94.22%** | 80% | **Gehaald** |
+| **Infosyst** | 834 | 1.552 | **91.51%** | 80% | **Gehaald** |
+| **HavunVet** | 276 | 442 | **90.87%** | 80% | **Gehaald** |
+| **JudoToernooi** | 3.257 | 6.789 | **89.84%** | 80% | **Gehaald** |
+| **HavunAdmin** | 3.180 | 5.059 | **89.75%** | 80% | **Gehaald** |
+| **HavunCore** | 795 | 2.012 | **87.4%** | 80% | **Gehaald** |
+| **Herdenkingsportaal** | 208+ | 366+ | **9.48%** | 80% | **Niet gehaald** |
+| Studieplanner | — | — | — (React Native) | — | N.v.t. |
+| JudoScoreBoard | — | — | — (React Native) | — | N.v.t. |
 
-> **Eerlijkheid:** HavunCore heeft als eerste project het 80%-doel gehaald (87.4%). De overige Laravel-projecten liggen ver onder de doelen. JudoToernooi en Herdenkingsportaal zijn de meest urgente verbeterpunten door hun publieke verkeer en betalingen. Feature freeze geldt voor JudoToernooi tot 75% coverage bereikt is.
+> **Resultaat:** 6 van 7 Laravel-projecten hebben het 80%-doel gehaald. Het totale testportfolio omvat **9.600+ tests** met **17.000+ assertions**. Herdenkingsportaal (9.48%) is het enige project dat nog significant onder het doel zit — dit is het meest urgente verbeterpunt vanwege publiek verkeer en betalingen.
 >
-> **Datum meting:** 16 april 2026 (HavunCore), 6 april 2026 (overige)
+> **Datum meting:** 16 april 2026 (alle projecten, lokaal gemeten met PCOV)
 
 **CI-afdwinging:** GitHub Actions blokkeert een push als het coverage-minimum niet wordt gehaald (HavunCore: 40%, wordt verhoogd per kwartaal).
 
@@ -464,15 +464,15 @@ Geautomatiseerde test-workflow bij elke push en pull request:
 4. Coverage-drempel check (minimum 40%, verhoogd per project)
 ```
 
-| Project | Tests | GitHub Actions | Coverage check |
-|---------|-------|----------------|----------------|
-| HavunCore | 795 tests | Actief | Minimum 40% (87.4% actueel) |
-| JudoToernooi | 419 tests | Actief | Gepland |
-| Herdenkingsportaal | 208 tests | Actief | Gepland |
-| HavunAdmin | 163 tests | Actief | Gepland |
-| HavunVet | 99 tests | Gepland | — |
-| SafeHavun | 67 tests | Gepland | — |
-| Infosyst | 64 tests | Gepland | — |
+| Project | Tests | GitHub Actions | Coverage (actueel) |
+|---------|-------|----------------|-------------------|
+| JudoToernooi | 3.257 tests | Actief | 89.84% |
+| HavunAdmin | 3.180 tests | Actief | 89.75% |
+| Infosyst | 834 tests | Actief | 91.51% |
+| HavunCore | 795 tests | Actief | 87.4% |
+| SafeHavun | 302 tests | Actief | 94.22% |
+| HavunVet | 276 tests | Gepland | 90.87% |
+| Herdenkingsportaal | 208+ tests | Actief | 9.48% (**prioriteit**) |
 
 ---
 
@@ -754,7 +754,7 @@ Alle bevindingen zijn vertaald naar een concreet verbeterplan met 10 actiepunten
 | VP | Actie | Status | Bron |
 |----|-------|--------|------|
 | VP-01 | AutoFix branch-model + dry-run | **Afgerond** | Gemini + Claude |
-| VP-02 | Test coverage verhogen (80% business) | In progress (HavunCore 87.4% gehaald) | Gemini + Claude |
+| VP-02 | Test coverage verhogen (80% business) | In progress — 6/7 projecten boven 80%, Herdenkingsportaal (9.48%) restant | Gemini + Claude |
 | VP-03 | Context-injectie optimaliseren | Gepland (juni) | Gemini |
 | VP-04 | Dependency & security audit | **Afgerond** | Gemini + Claude |
 | VP-05 | Integrity check v2.0 (selector + route + artisan command) | **Afgerond** (16-04-2026) | Gemini |
