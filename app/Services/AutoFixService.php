@@ -51,6 +51,8 @@ class AutoFixService
 
             $fixProposal = $result['response'] ?? '';
             $riskLevel = $this->assessRisk($fixProposal);
+            $deliveryMode = $this->resolveDeliveryMode($riskLevel);
+            $initialStatus = $deliveryMode === 'dry_run' ? 'dry_run' : 'branch_pending';
 
             $proposal = AutofixProposal::create([
                 'project' => $project,
@@ -59,10 +61,16 @@ class AutoFixService
                 'file' => $file,
                 'line' => $line,
                 'fix_proposal' => $fixProposal,
-                'status' => 'pending',
+                'status' => $initialStatus,
                 'risk_level' => $riskLevel,
                 'source' => 'central',
-                'context' => $context,
+                'context' => array_merge($context, [
+                    'delivery_mode' => $deliveryMode,
+                    'branch_name' => $deliveryMode === 'branch_pr'
+                        ? config('autofix.branch_prefix') . $project . '-' . now()->format('Y-m-d-Hi')
+                        : null,
+                    'snapshot_required' => (bool) config('autofix.snapshot_enabled'),
+                ]),
             ]);
 
             Log::info("AutoFix: proposal created for {$project}", [
@@ -154,6 +162,28 @@ class AutoFixService
             . 'Geef alleen fixes voor duidelijke bugs, geen refactoring. '
             . 'Wees conservatief: liever geen fix dan een riskante fix. '
             . 'Markeer risk level: low (typo, null check), medium (logica wijziging), high (database/auth/betaling).';
+    }
+
+    /**
+     * Resolve delivery mode based on risk + branch_model config.
+     *
+     * - branch_model OFF → legacy 'direct' (executor mag direct committen)
+     * - risk in dry_run_on_risk → 'dry_run' (alleen notificatie)
+     * - anders → 'branch_pr' (executor maakt branch + PR)
+     */
+    protected function resolveDeliveryMode(string $riskLevel): string
+    {
+        if (! config('autofix.branch_model', true)) {
+            return 'direct';
+        }
+
+        $dryRunRisks = (array) config('autofix.dry_run_on_risk', ['medium', 'high']);
+
+        if (in_array($riskLevel, $dryRunRisks, true)) {
+            return 'dry_run';
+        }
+
+        return 'branch_pr';
     }
 
     protected function assessRisk(string $proposal): string

@@ -74,3 +74,21 @@ Zoek info in `docs/kb/`:
 | Beslissingen | `decisions/` |
 | API specs | `reference/` |
 | Per-project info | `projects/` |
+
+## Essentiële docs (VP-03.2)
+
+> **Doel:** kortste pad naar relevante context bij elke taak. Lees deze
+> bestanden eerst voordat je een diepere `docs:search` start.
+
+| Onderwerp | Bestand |
+|-----------|---------|
+| 5 Onschendbare Regels | `CLAUDE.md` (top) + `CONTRACTS.md` |
+| AutoFix delivery-model | `docs/kb/runbooks/autofix-branch-model.md` |
+| Emergency runbook | `docs/kb/runbooks/emergency-runbook.md` |
+| Noodcontact-bevoegdheden | `docs/kb/runbooks/wat-mag-noodcontact.md` |
+| Kwaliteitsnormen | `docs/kb/reference/havun-quality-standards.md` |
+| Security headers + CSP | `docs/kb/runbooks/security-headers-check.md` |
+| Mutation testing baseline | `docs/kb/reference/mutation-baseline-2026-04-17.md` |
+| Test-repair anti-pattern | `docs/kb/runbooks/test-repair-anti-pattern.md` |
+| Verbeterplan tracking | `docs/audit/verbeterplan-q2-2026.md` |
+| Beschermingslagen | `docs/kb/runbooks/beschermingslagen.md` |

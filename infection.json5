@@ -1,0 +1,50 @@
+{
+    // Infection PHP — Mutation Testing config voor HavunCore.
+    // Bron: VP-16 (verbeterplan-q2-2026.md) — kwartaalse mutation testing
+    // op kritieke business-logica.
+    //
+    // Scope: AIProxy, AutoFix, Vault, Auth, Device-Trust, Circuit Breaker.
+    // Tests filter: alleen tests die deze services raken (sneller dan
+    // de full suite van 795 tests).
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": [
+            "app/Services"
+        ],
+        "excludes": [
+            "Chaos",
+            "DocIntelligence"
+        ]
+    },
+    "timeout": 30,
+    "logs": {
+        "text": "storage/logs/infection.log",
+        "html": "storage/logs/infection.html",
+        "summary": "storage/logs/infection-summary.log",
+        "json": "storage/logs/infection.json",
+        "perMutator": "storage/logs/infection-per-mutator.md",
+        "github": true,
+        "stryker": {
+            "badge": "master"
+        }
+    },
+    "tmpDir": "storage/framework/cache/infection",
+    "phpUnit": {
+        "configDir": ".",
+        "customPath": "vendor/bin/phpunit"
+    },
+    // Baseline 17-04-2026: 53,78% MSI / 53% Covered MSI.
+    // Drempel staat 5pp onder baseline om regressie-detectie zonder false fails.
+    // Verhoog elke kwartaal met 3-5pp tot doel 75% bereikt.
+    "minMsi": 48,
+    "minCoveredMsi": 48,
+    "mutators": {
+        "@default": true,
+        "global-ignoreSourceCodeByRegex": [
+            "Log::.*",
+            "report\\(.*\\)"
+        ]
+    },
+    "testFramework": "phpunit",
+    "testFrameworkOptions": "--testsuite=Feature,Unit --no-coverage"
+}
