@@ -52,16 +52,14 @@ Bij meerdere projecten tegelijk pakt Vite automatisch 5174, 5175 etc.
 
 **Volledige stappen:** `docs/kb/runbooks/op-reis-workflow.md`
 
-## Kwartaal-Audit
+## Audit & verbeterplan
 
-Elk kwartaal wordt de werkwijze extern beoordeeld. Documenten:
+Cadans is **wekelijks incrementeel** (sinds 17-04-2026 — geen kwartaal-deadlines meer).
 
 | Bestand | Inhoud |
 |---------|--------|
-| `docs/audit/werkwijze-beoordeling-derden.md` | Beoordelingsdocument voor derden |
-| `docs/audit/verbeterplan-q2-2026.md` | Verbeterplan met 10 actiepunten (VP-01 t/m VP-10) |
-
-Volgende review: Q3 2026 (juli 2026)
+| `docs/audit/werkwijze-beoordeling-derden.md` | Beoordelingsdocument (eerdere externe review) |
+| `docs/audit/verbeterplan-q2-2026.md` | **Archief** van VP-01 t/m VP-18 — afgerond + nog-open punten |
 
 ## Knowledge Base
 

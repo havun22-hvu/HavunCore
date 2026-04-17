@@ -1,11 +1,15 @@
 # Verbeterplan Q2 2026 — Havun Software Development
 
+> **Status (17-04-2026):** Cadans omgezet van kwartaal-deadlines naar **wekelijks
+> incrementeel fixen**. Dit document blijft als **archief** van wat opgepakt en
+> opgeleverd is — niet meer als deadline-roadmap. Geen Q3-audit-druk; punten die
+> nog open staan worden opgepakt wanneer relevant.
+
 **Gebaseerd op:** Externe beoordelingen Gemini AI + Claude Sonnet 4.6 (29 maart 2026)
 **Versie:** 2.0
 **Datum:** 29 maart 2026
 **Eigenaar:** Henk van Unen
-**Reviewperiode:** Q2 2026 (april – juni 2026)
-**Volgende audit:** Q3 2026 (juli 2026)
+**Cadans:** wekelijks (was: kwartaal)
 
 ---
 
