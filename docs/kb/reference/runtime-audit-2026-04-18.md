@@ -20,7 +20,7 @@ last_check: 2026-04-18
 | #2 CDN niet in CSP | onderzoek pending | — | alle met CDN-assets |
 | #3 Dynamisch `<style>` in JS zonder nonce | 2 | 2 | HavunAdmin (parallel CSP-migratie bezig) |
 | #4 Inline `on*=` handlers | 864 | 202 | alle projecten |
-| #5 SW `caches.match()` zonder Response-fallback | 15 | 6 | HA, HP, Infosyst, JT (2×), SafeHavun |
+| #5 SW `caches.match()` zonder Response-fallback | ~~15~~ **0** | ~~6~~ **0** | ✅ ALL FIXED (2026-04-18 later) |
 | #6 Alpine `x-text` object-chain zonder null-safety | 48 | 11 | JT (7), HA (1), HP (1), andere (2) |
 
 ## Per categorie — volledige file-lijst
@@ -72,22 +72,22 @@ dan dat patroon overnemen (`<meta name="csp-nonce" …>` + JS picker).
 **Strategie:** wacht op HavunAdmin-patroon (delegated listeners in `csp-handlers.js` +
 `data-*` attributes). Dat patroon kopieerbaar per project.
 
-### #5 Service Worker `caches.match()` zonder Response-fallback (15 hits)
+### #5 Service Worker `caches.match()` zonder Response-fallback — ✅ DONE (18-04-2026)
 
-Fix-patroon: `caches.match(req)` → `caches.match(req).then(r => r || fetch(req))`
-of vast aan het eind `.catch(() => new Response('', {status: 504}))`.
+Fix-patroon gebruikt: `.then(r => r || Response.error())` of
+`.catch(() => Response.error())` aan het eind van elke chain.
 
-| Project | File | Regels |
-|---------|------|--------|
-| HavunAdmin | `public/sw.js` | 82, 93 |
-| Herdenkingsportaal | `public/sw.js` | 74, 81 |
-| Infosyst | `public/sw.js` | 56, 63 |
-| JudoToernooi / laravel | `public/sw.js` | 118, 119, 139 |
-| JudoToernooi / staging | `public/sw.js` | 118, 119, 139 |
-| SafeHavun | `public/sw.js` | 94, 128, 188 |
+| Project | Commit | Wat gefixt |
+|---------|--------|-----------|
+| HavunAdmin | al eerder | `response || Response.error()` aanwezig |
+| Herdenkingsportaal | `dd3bc5d` | HTML + static fallbacks toegevoegd |
+| Infosyst | `1c3bf9c` | OFFLINE_URL-miss-chain-fallback |
+| SafeHavun | `6067c0d` | static + default strategy fallbacks |
+| JudoToernooi / laravel | `fbd9caaf` (main) + `fff8b865` (vp18-branch) | navigate + assets |
+| JudoToernooi / staging | idem | idem |
 
-**Niet alle 15 zijn een échte bug** — sommige hebben al een `|| fetch(...)` fallback
-(JT regel 119 b.v.). Per file handmatig narekenen vóór wijziging.
+Uit initiële audit (15 hits / 6 files) bleken 4 files écht ongepatcht. Nu alle
+chains defensief.
 
 ### #6 Alpine `x-text` zonder null-safety (48 hits / 11 files)
 
