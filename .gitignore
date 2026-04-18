@@ -39,3 +39,7 @@ database/doc_intelligence.sqlite
 /webapp/
 coverage.xml
 .cache_ggshield
+
+# Typo-filenames containing env data (Windows path-encoding accidents)
+*.env
+*env.bak
