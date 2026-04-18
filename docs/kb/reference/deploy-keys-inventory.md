@@ -22,7 +22,7 @@ next_review: 2026-05-18
 | Herdenkingsportaal | `Staging Server Deploy Key` | **RW** | AutoFix hotfix-branch push (VP-01) | 2025-11-24 | 2026-04-15 | 136782596 |
 | infosyst | `HavunCore Server` | RO | prod deploy | 2026-01-01 | 2026-04-12 | 139427685 |
 | Judotoernooi | `server-deploy-judotoernooi` | **RW** | AutoFix hotfix-branch push (VP-01) | 2026-02-22 | 2026-04-17 | 143647875 |
-| Studieplanner-api | `server-deploy` | **RW** | prod deploy (geen AutoFix — RW is overkill) | 2026-04-15 | 2026-04-15 | 148702447 |
+| Studieplanner-api | `studieplanner-api-deploy-prod` | RO | prod deploy | 2026-04-18 | 2026-04-18 | 148992748 |
 
 ## Per-project verwachting (uit runbook)
 
@@ -34,7 +34,7 @@ next_review: 2026-05-18
 | Herdenkingsportaal | RW (AutoFix) | RW ✅ | ✅ motivatie: AutoFix |
 | infosyst | RO deploy | RO ✅ | ✅ |
 | Judotoernooi | RW (AutoFix) | RW ✅ | ✅ motivatie: AutoFix |
-| Studieplanner-api | RO (geen AutoFix) | **RW** | ⚠️ **downgrade naar RO** |
+| Studieplanner-api | RO (geen AutoFix) | RO ✅ | ✅ (geroteerd 2026-04-18) |
 | HavunVet | geen (geen prod) | geen | ✅ |
 | SafeHavun | geen (geen prod) | geen | ✅ |
 | JudoScoreBoard | geen (Expo) | geen | ✅ |
@@ -46,20 +46,11 @@ next_review: 2026-05-18
 
 ## Openstaande acties (Claude)
 
-### ⚠️ Downgrade Studieplanner-api key RW → RO
+### ✅ Studieplanner-api key geroteerd RW→RO (2026-04-18)
 
-**Waarom:** project heeft geen AutoFix, server doet alleen `git pull`. RW is extra aanvalsoppervlak zonder operationele noodzaak.
-
-**Stappen:**
-1. SSH naar Studieplanner-api productieserver
-2. Genereer nieuwe ed25519 key met titel `studieplanner-api-deploy-prod`
-3. Voeg toe aan GitHub met `read_only=true`
-4. Update server's `~/.ssh/config` om nieuwe key te gebruiken
-5. Test `git pull` vanaf server
-6. Verwijder oude key 148702447 via `gh api -X DELETE`
-7. Update deze inventory met nieuwe id + titel
-
-**Window:** bij volgende deploy-moment (niet dringend — huidige werking niet aangetast, alleen over-priviligeerd).
+Oude `server-deploy` (RW, id 148702447) verwijderd van GitHub en server.
+Nieuwe `studieplanner-api-deploy-prod` (RO, id 148992748) actief.
+`~/.ssh/config` op 188.245.159.115 bijgewerkt. `git ls-remote` geverifieerd.
 
 ### HavunClub — bewaren (geparkeerd)
 
@@ -79,7 +70,7 @@ Huidige titels volgen geen conventie. Bij elke rotation → nieuwe titel volgens
 | `HavunCore Server` | `infosyst-deploy-prod` |
 | `server-deploy-judotoernooi` | `judotoernooi-autofix-prod` |
 | `server-deploy` (HavunClub) | `havunclub-deploy-prod` (bij volgende rotation) |
-| `server-deploy` (Studieplanner-api) | `studieplanner-api-deploy-prod` |
+| `server-deploy` (Studieplanner-api) | ✅ al geroteerd 2026-04-18 |
 
 ## Audit-script (maandelijks)
 
@@ -99,3 +90,5 @@ Vergelijk output met bovenstaande tabel. Elke afwijking = nieuw key zonder doc �
 | Datum | Wijziging | Door |
 |-------|-----------|------|
 | 2026-04-18 | Eerste centrale audit + inventory aangemaakt | Claude |
+| 2026-04-18 | Studieplanner-api: RW-key 148702447 → RO-key 148992748 (nieuwe naam `studieplanner-api-deploy-prod`). Oude key verwijderd van GitHub + server. | Claude |
+| 2026-04-18 | HavunClub status gecorrigeerd: niet archived, geparkeerd (mogelijk Cees re-activeert). Key blijft. | Claude |
