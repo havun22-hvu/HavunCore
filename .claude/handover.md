@@ -2,6 +2,31 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 14-18 april 2026 — Webapp fixes + Munus setup
+
+### Wat gedaan:
+- Studieplanner 500 error gefixt (ObservabilityMiddleware merge conflict + namespace + deploy key)
+- HavunCore webapp: reverb detectie via supervisor (niet alleen systemd)
+- HavunCore webapp: project paths gefixt (/var/www/development bestond niet → gebruikt nu remotePath)
+- JudoToernooi: unsafe-eval verwijderd (Alpine.js gemigreerd naar `@alpinejs/csp`)
+- Munus nieuw project opgezet met volledige HavunCore structuur (CLAUDE.md, commands, docs)
+
+### Openstaande items — VOLGENDE SESSIE:
+
+#### 1. HavunAdmin: Alpine.js `@alpinejs/csp` migratie
+- 268 expressies, 30 inline x-data, 17 function-based
+- Laatste project met unsafe-eval
+
+#### 2. Tailwind CDN in productie (Infosyst, SafeHavun)
+- Moet gebundeld via Vite i.p.v. CDN
+
+#### 3. Munus Fase 1 — MVP development
+- Docs/structuur klaar, code nog niet gestart
+- Eerst: Laravel module skeleton in HavunCore monorepo
+
+#### 4. Scheduled Agents opzetten
+- Mozilla Observatory auto-check, security audits, SSL, server health
+
 ## Sessie: 13-14 april 2026 — Mozilla Observatory CSP/SRI compliance
 
 ### Wat gedaan:
