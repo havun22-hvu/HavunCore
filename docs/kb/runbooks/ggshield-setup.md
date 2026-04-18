@@ -18,6 +18,31 @@ pip install ggshield
 python -m ggshield auth login --method web
 ```
 
+### Windows zonder Python
+
+De hook roept `python -m ggshield` aan. Als Python niet op je PATH staat
+(controleer met `where python` in PowerShell), dan faalt **elke** commit met:
+
+```
+.git/hooks/pre-commit: line 2: python: command not found
+```
+
+Installeer Python eerst (eenmalig, user-scope, geen admin nodig):
+
+```powershell
+winget install Python.Python.3.12 --scope user
+```
+
+Open daarna een **nieuwe** terminal, dan:
+
+```powershell
+pip install ggshield
+python -m ggshield auth login --method web
+```
+
+Vanaf dat moment werkt de hook in alle repos die `.git/hooks/pre-commit`
+gezet hebben (HavunCore, HavunAdmin, etc.).
+
 ## Pre-commit hook installeren (per repo)
 
 ```bash
@@ -46,6 +71,7 @@ echo "test" > test.txt && git add test.txt && git commit -m "Test"
 | "Token is missing scope" | `python -m ggshield auth login --method web` |
 | Command not found | Gebruik `python -m ggshield` i.p.v. `ggshield` |
 | Hook werkt niet | Check of `.git/hooks/pre-commit` executable is |
+| `python: command not found` (Windows) | Python niet geïnstalleerd — zie sectie "Windows zonder Python" |
 
 ## Handmatig scannen
 
