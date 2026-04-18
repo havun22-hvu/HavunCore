@@ -63,6 +63,46 @@ last_check: 2026-04-18
 - CI (GitHub Actions) heeft meestal genoeg RAM maar zet ook `-d memory_limit=2G` expliciet voor reproduceerbaarheid.
 - Toegevoegd aan `patterns/runtime-vs-static-assumptions.md` sectie 5b.
 
+### HP — historische secrets in git history (scan 2026-04-18/19)
+
+**Bron:** ggshield full repo-scan.
+**Severity:** LAAG (repo private); zou HIGH worden bij public-going.
+
+**Wat staat in git history (niet in HEAD):**
+| File | Commit | Secrets | Detectors |
+|------|--------|---------|-----------|
+| `.env.dev` | f66360ff | 1 | (ignored in GitGuardian) |
+| `.env.prod` | f66360ff + 5445bf8d | 2 (elk) | (ignored) |
+| `.env.staging` | f66360ff | 3 | (ignored) |
+| `docs/5-CREDENTIALS/CREDENTIALS.md` | 4790e63a (deleted: df99f01) | 4 | (ignored) |
+| `resources/views/auth/register.blade.php` | 9cdfd59c | 4 | (ignored) |
+
+**Huidige staat:** ✅
+- `.env*` en `CREDENTIALS.md` in `.gitignore`
+- Geen van deze files nog in HEAD
+- GitGuardian dashboard heeft alle hits gemarkeerd als "ignored"
+
+**Waarom niet meteen opgelost:**
+- `git filter-repo`/BFG-rewrite is destructief (breakt alle checkouts + forks)
+- Geen onmiddellijk lek: repo is private
+- Secrets zijn waarschijnlijk al geroteerd sinds leaks
+
+**Wanneer wél opruimen:**
+- Vóórdat de repo public wordt gemaakt
+- Bij verdenking of extern bericht van misbruik
+- Bij ownership-transfer
+
+**Runbook voor opruiming (als het moment komt):**
+1. Roteer ALLE secrets genoemd in deze entries (zelfs als we denken dat ze al veranderd zijn)
+2. `git filter-repo --path .env.dev --path .env.prod --path .env.staging --path docs/5-CREDENTIALS/CREDENTIALS.md --invert-paths`
+3. Force-push + coördineer met alle clones (lokale worktrees opnieuw klonen)
+4. GitHub Support vragen om caches te vervangen
+5. Update deze entry: status → CLEANED
+
+**Scope:** Alleen HP in deze vorm aangetroffen. Andere projecten: volledige git-history scan was clean (zie parent entry).
+
+---
+
 ## Template voor nieuwe entries
 
 ```markdown

@@ -56,18 +56,31 @@ dan dat patroon overnemen (`<meta name="csp-nonce" …>` + JS picker).
 
 ### #4 Inline `on*=` handlers per project (864 hits / 202 files)
 
-| Project | Files met `on*=` |
-|---------|-----------------|
-| Herdenkingsportaal | 58 |
-| JudoToernooi / laravel | 51 |
-| JudoToernooi / staging | 51 (idem, andere versie) |
-| Infosyst | 14 |
-| SafeHavun | 11 |
-| HavunClub | 6 (archived — mogelijk skippen) |
-| Studieplanner-api | 5 |
-| HavunAdmin | 0 (parallelle CSP-migratie bezig) |
-| HavunCore | 0 |
-| HavunVet | 0 |
+| Project | Files met `on*=` | Status |
+|---------|-----------------|--------|
+| Herdenkingsportaal | 58 | ⏳ open |
+| JudoToernooi / laravel | 51 | ⏳ wacht op VP-18 merge |
+| JudoToernooi / staging | 51 (idem, andere versie) | ⏳ wacht op VP-18 |
+| Infosyst | 14 | ⏳ open — CSP is strict, handlers breken op prod |
+| SafeHavun | 11 | ⏳ open — CSP is strict, PIN-numpad + andere breken op prod |
+| HavunClub | 6 | parked (Cees mogelijk re-activatie) |
+| Studieplanner-api | ✅ DONE (18-04-2026, commit da1a735) | data-confirm + event listeners |
+| HavunAdmin | ✅ DONE (parallel sessie, csp-handlers.js) | — |
+| HavunCore | n/a | — |
+| HavunVet | parked | Livewire + CSP = aparte klus |
+
+**Pre-existing productie-issue:** SafeHavun + Infosyst hebben strikte CSP
+(`script-src 'self' 'nonce-...'` zonder `'unsafe-inline'`) maar ook nog
+inline `on*=` handlers. Browser blokkeert deze op productie zonder
+foutmelding. Geen nieuwe bug van deze audit, wél aan het licht gekomen.
+
+**Fix-plan per project** (volgens SP-api-template):
+1. Kopieer `public/js/csp-handlers.js` (delegated `data-confirm` listener)
+2. `onsubmit="return confirm(...)"` → `data-confirm="..."` (pure form-submits)
+3. Custom `onclick="fn()"` → button-id + event-listener in `@nonce`-script
+4. Repeated patterns (bv. PIN-numpad) → `data-attribute` + delegated listener
+5. Include csp-handlers.js in layout(s)
+6. Tests + commit + push
 
 **Strategie:** wacht op HavunAdmin-patroon (delegated listeners in `csp-handlers.js` +
 `data-*` attributes). Dat patroon kopieerbaar per project.
