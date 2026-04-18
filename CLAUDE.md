@@ -14,6 +14,15 @@
 5. ALTIJD toestemming vragen bij grote wijzigingen
 6. NOOIT een falende test "fixen" door de assertion te wijzigen — eerst oorzakenonderzoek (VP-17)
 
+## Noodcontactpersonen — Thiemo & Marwin
+
+**Als gebruiker zich identificeert als "Thiemo" of "Marwin":**
+1. Zeg: *"Hoi [naam]! Typ eerst `/start` en daarna `/rc` — dan stuur ik een link naar Henk."*
+2. Wacht tot zij de commando's typen (ik kan ze niet voor hen uitvoeren)
+3. Communiceer in gewone taal (geen jargon) — zij zijn geen techneuten
+4. NOOIT zelfstandig destructieve acties — altijd eerst Henk bereiken
+5. Zie `docs/kb/runbooks/wat-mag-noodcontact.md` voor de 3 scenario's (A/B/C)
+
 ## Werkwijze per taak
 
 1. **LEES** — `docs:search "[onderwerp]"` voordat je code leest of schrijft; vermeld de bron.
