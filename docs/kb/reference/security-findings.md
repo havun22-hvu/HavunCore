@@ -46,6 +46,23 @@ last_check: 2026-04-18
 - **Transitive CVE kan opgelost worden door minor-bump van direct dependency.** Socialite's nieuwe release verruimde `firebase/php-jwt` constraint van `^6.4` naar `^6|^7`, waardoor de bump vanzelf doorkwam.
 - **Regel:** altijd `composer update --with-dependencies` proberen vóór advisory als "onoplosbaar" af te schrijven.
 
+### HP — PHP memory_limit te laag voor volledige test-suite (runtime vs. static-time)
+
+**Bron:** eigen test-run 2026-04-18, na de composer update.
+**Severity:** informational (geen security-bug — dev-ergonomie).
+
+**Symptoom:** `Allowed memory size of 536870912 bytes exhausted (tried to allocate 20480 bytes)` na ~5563 tests groen. PHPUnit-proces hing, tests stopten halverwege.
+
+**Oorzaak-categorie:** #5b runtime-vs-static-time. `memory_limit` is een statische cap; test-suite-grootte is runtime. Geen defensie → crash.
+
+**Fix:** `php -d memory_limit=2G artisan test` (ipv standaard `php artisan test`).
+
+**Lessen:**
+- Test-suites groeien onopgemerkt mee per feature. Voeg memory-limit override toe aan standaard dev-commando's.
+- Overwegen: `composer.json` `scripts.test` met `-d memory_limit=2G` ingebakken zodat elke dev/CI dezelfde limiet gebruikt.
+- CI (GitHub Actions) heeft meestal genoeg RAM maar zet ook `-d memory_limit=2G` expliciet voor reproduceerbaarheid.
+- Toegevoegd aan `patterns/runtime-vs-static-assumptions.md` sectie 5b.
+
 ## Template voor nieuwe entries
 
 ```markdown

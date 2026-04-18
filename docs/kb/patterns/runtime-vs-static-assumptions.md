@@ -93,6 +93,22 @@ self.addEventListener('fetch', (e) => {
 ```
 **Waarom:** `respondWith()` vereist altijd een `Response`-object of Promise daarvan. `undefined` → "Failed to convert value to Response" runtime-fout, SW faalt stil.
 
+### 5b. PHP `memory_limit` vs. runtime-groei van test-suite
+
+```bash
+# fout — default 512M is te laag voor HP/JT test-suite
+php artisan test
+
+# goed — expliciet ophogen
+php -d memory_limit=2G artisan test
+```
+**Waarom:** `memory_limit` is een statische cap in `php.ini` (of `-d` flag). PHPUnit
+bouwt tijdens een lange test-run geheugen op (fixtures, seeders, herhaalde app-boots).
+Overschreden → `Allowed memory size of 536870912 bytes exhausted`, hele proces hangt.
+**Waar dit is fout gegaan:** HP test-suite crashte 2026-04-18 na ~5563 tests groen.
+**Alternatief:** tests opsplitsen in `--testsuite` chunks (Unit + Feature apart).
+**CI-CD:** op GitHub Actions standaard hoger, maar ook daar expliciet instellen.
+
 ### 6. Alpine `x-text` op object-chain zonder null-safety
 ```blade
 {{-- fout: crash als yearlyDepreciationInfo() tijdelijk null geeft --}}
