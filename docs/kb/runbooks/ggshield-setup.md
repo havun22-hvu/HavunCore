@@ -88,12 +88,32 @@ python -m ggshield secret scan path bestand.txt
 
 ## Repos met hook
 
-- [x] HavunCore (27-12-2024)
-- [x] HavunAdmin (27-12-2024)
-- [x] Herdenkingsportaal (27-12-2024)
-- [x] Infosyst (27-12-2024)
-- [x] Studieplanner (27-12-2024)
-- [x] SafeHavun (27-12-2024)
+Laatste audit: **18-04-2026** — alle 9 projecten hebben de hook.
+
+| Project | Status | Sinds |
+|---------|--------|-------|
+| HavunCore | ✅ | 27-12-2024 |
+| HavunAdmin | ✅ | 27-12-2024 |
+| Herdenkingsportaal | ✅ | 27-12-2024 |
+| Infosyst | ✅ | 27-12-2024 |
+| SafeHavun | ✅ | 27-12-2024 |
+| Studieplanner (Expo) | ✅ | 27-12-2024 |
+| JudoToernooi | ✅ | ≤ 18-04-2026 (bestond al) |
+| JudoScoreBoard | ✅ | ≤ 18-04-2026 (bestond al) |
+| Studieplanner-api | ✅ | **18-04-2026** (toegevoegd deze audit) |
+| HavunVet | ✅ | **18-04-2026** (toegevoegd deze audit) |
+
+### Audit-commando (alle projecten in één keer)
+
+```bash
+for r in D:/GitHub/HavunCore D:/GitHub/HavunAdmin D:/GitHub/Herdenkingsportaal \
+         D:/GitHub/JudoToernooi D:/GitHub/SafeHavun D:/GitHub/infosyst \
+         D:/GitHub/Studieplanner-api D:/GitHub/HavunVet D:/GitHub/JudoScoreBoard \
+         D:/GitHub/Studieplanner; do
+  f="$r/.git/hooks/pre-commit"
+  [ -f "$f" ] && echo "$(basename $r): ✅" || echo "$(basename $r): ❌ MISSING"
+done
+```
 
 ## Links
 
