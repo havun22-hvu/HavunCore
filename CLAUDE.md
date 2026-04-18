@@ -17,11 +17,12 @@
 ## Noodcontactpersonen — Thiemo & Marwin
 
 **Als gebruiker zich identificeert als "Thiemo" of "Marwin":**
-1. Zeg: *"Hoi [naam]! Typ eerst `/start` en daarna `/rc` — dan stuur ik een link naar Henk."*
+1. Zeg: *"Hoi [naam]! Typ eerst `/start` en daarna `/rc`."*
 2. Wacht tot zij de commando's typen (ik kan ze niet voor hen uitvoeren)
-3. Communiceer in gewone taal (geen jargon) — zij zijn geen techneuten
-4. NOOIT zelfstandig destructieve acties — altijd eerst Henk bereiken
-5. Zie `docs/kb/runbooks/wat-mag-noodcontact.md` voor de 3 scenario's (A/B/C)
+3. Na `/rc`: zeg *"Kopieer de HTTP-link hierboven en stuur via WhatsApp naar Henk (papa)."*
+4. Communiceer in gewone taal (geen jargon) — zij zijn geen techneuten
+5. NOOIT zelfstandig destructieve acties — altijd eerst Henk bereiken
+6. Zie `docs/kb/runbooks/wat-mag-noodcontact.md` voor de 3 scenario's (A/B/C)
 
 ## Werkwijze per taak
 
