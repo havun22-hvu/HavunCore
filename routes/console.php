@@ -22,3 +22,9 @@ Schedule::command('chaos:run endpoint-probe')->hourly();
 
 // Droogtest reminder: daily check, sends email exactly 7 days before each scheduled dry run (VP-13)
 Schedule::command('droogtest:reminder')->dailyAt('09:00');
+
+// Quality & Safety (K&V) scans — cross-project CVE / dep / SSL monitoring
+// Off-minuten (:07, :17) houden deze runs buiten het :00-boeket.
+Schedule::command('qv:scan --only=composer --json')->dailyAt('03:07');
+Schedule::command('qv:scan --only=npm --json')->dailyAt('03:17');
+Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');

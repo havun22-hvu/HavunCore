@@ -34,6 +34,7 @@ yarn-error.log
 /.idea
 /.vscode
 database/doc_intelligence.sqlite
+/storage/app/qv-scans
 
 # Webapp is een aparte git repo (D:\GitHub\HavunCore\webapp)
 /webapp/
