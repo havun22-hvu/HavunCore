@@ -3,6 +3,10 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Vault\AdminCreateProjectRequest;
+use App\Http\Requests\Vault\AdminCreateSecretRequest;
+use App\Http\Requests\Vault\AdminUpdateProjectRequest;
+use App\Http\Requests\Vault\AdminUpdateSecretRequest;
 use App\Models\VaultAccessLog;
 use App\Models\VaultConfig;
 use App\Models\VaultProject;
@@ -227,22 +231,16 @@ class VaultController extends Controller
      * POST /api/vault/admin/secrets
      * Create a new secret
      */
-    public function adminCreateSecret(Request $request): JsonResponse
+    public function adminCreateSecret(AdminCreateSecretRequest $request): JsonResponse
     {
-        $request->validate([
-            'key' => 'required|string|unique:vault_secrets,key',
-            'value' => 'required|string',
-            'category' => 'nullable|string',
-            'description' => 'nullable|string',
-            'is_sensitive' => 'nullable|boolean',
-        ]);
+        $data = $request->validated();
 
         $secret = VaultSecret::create([
-            'key' => $request->input('key'),
-            'value' => $request->input('value'),
-            'category' => $request->input('category'),
-            'description' => $request->input('description'),
-            'is_sensitive' => $request->input('is_sensitive', true),
+            'key' => $data['key'],
+            'value' => $data['value'],
+            'category' => $data['category'] ?? null,
+            'description' => $data['description'] ?? null,
+            'is_sensitive' => $data['is_sensitive'] ?? true,
         ]);
 
         return response()->json([
@@ -260,7 +258,7 @@ class VaultController extends Controller
      * PUT /api/vault/admin/secrets/{key}
      * Update a secret
      */
-    public function adminUpdateSecret(Request $request, string $key): JsonResponse
+    public function adminUpdateSecret(AdminUpdateSecretRequest $request, string $key): JsonResponse
     {
         $secret = VaultSecret::where('key', $key)->first();
 
@@ -268,14 +266,16 @@ class VaultController extends Controller
             return response()->json(['error' => 'Secret not found'], 404);
         }
 
-        if ($request->has('value')) {
-            $secret->value = $request->input('value');
+        $data = $request->validated();
+
+        if (array_key_exists('value', $data)) {
+            $secret->value = $data['value'];
         }
-        if ($request->has('category')) {
-            $secret->category = $request->input('category');
+        if (array_key_exists('category', $data)) {
+            $secret->category = $data['category'];
         }
-        if ($request->has('description')) {
-            $secret->description = $request->input('description');
+        if (array_key_exists('description', $data)) {
+            $secret->description = $data['description'];
         }
 
         $secret->save();
@@ -333,20 +333,15 @@ class VaultController extends Controller
      * POST /api/vault/admin/projects
      * Create a new project
      */
-    public function adminCreateProject(Request $request): JsonResponse
+    public function adminCreateProject(AdminCreateProjectRequest $request): JsonResponse
     {
-        $request->validate([
-            'project' => 'required|string|unique:vault_projects,project',
-            'secrets' => 'nullable|array',
-            'configs' => 'nullable|array',
-        ]);
-
+        $data = $request->validated();
         $token = VaultProject::generateToken();
 
         $project = VaultProject::create([
-            'project' => $request->input('project'),
-            'secrets' => $request->input('secrets', []),
-            'configs' => $request->input('configs', []),
+            'project' => $data['project'],
+            'secrets' => $data['secrets'] ?? [],
+            'configs' => $data['configs'] ?? [],
             'api_token' => $token,
             'is_active' => true,
         ]);
@@ -363,7 +358,7 @@ class VaultController extends Controller
      * PUT /api/vault/admin/projects/{project}
      * Update project permissions
      */
-    public function adminUpdateProject(Request $request, string $projectName): JsonResponse
+    public function adminUpdateProject(AdminUpdateProjectRequest $request, string $projectName): JsonResponse
     {
         $project = VaultProject::where('project', $projectName)->first();
 
@@ -371,14 +366,16 @@ class VaultController extends Controller
             return response()->json(['error' => 'Project not found'], 404);
         }
 
-        if ($request->has('secrets')) {
-            $project->secrets = $request->input('secrets');
+        $data = $request->validated();
+
+        if (array_key_exists('secrets', $data)) {
+            $project->secrets = $data['secrets'];
         }
-        if ($request->has('configs')) {
-            $project->configs = $request->input('configs');
+        if (array_key_exists('configs', $data)) {
+            $project->configs = $data['configs'];
         }
-        if ($request->has('is_active')) {
-            $project->is_active = $request->input('is_active');
+        if (array_key_exists('is_active', $data)) {
+            $project->is_active = $data['is_active'];
         }
 
         $project->save();

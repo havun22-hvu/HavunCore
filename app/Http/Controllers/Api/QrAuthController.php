@@ -3,6 +3,14 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Auth\ApproveAuthenticatedRequest;
+use App\Http\Requests\Auth\ApproveEmailRequest;
+use App\Http\Requests\Auth\ApproveFromAppRequest;
+use App\Http\Requests\Auth\ApproveQrRequest;
+use App\Http\Requests\Auth\GenerateQrRequest;
+use App\Http\Requests\Auth\LoginRequest;
+use App\Http\Requests\Auth\RegisterRequest;
+use App\Http\Requests\Auth\SendEmailRequest;
 use App\Models\AuthUser;
 use App\Models\AuthDevice;
 use App\Services\QrAuthService;
@@ -21,7 +29,7 @@ class QrAuthController extends Controller
      * POST /api/auth/qr/generate
      * Generate a new QR code for login
      */
-    public function generateQr(Request $request): JsonResponse
+    public function generateQr(GenerateQrRequest $request): JsonResponse
     {
         $deviceInfo = [
             'browser' => $request->input('browser', 'Unknown'),
@@ -56,7 +64,7 @@ class QrAuthController extends Controller
      * POST /api/auth/qr/{code}/approve
      * Approve a QR session from mobile device (requires auth)
      */
-    public function approveQr(Request $request, string $code): JsonResponse
+    public function approveQr(ApproveQrRequest $request, string $code): JsonResponse
     {
         // Get authenticated user from device token
         $token = $request->bearerToken();
@@ -106,13 +114,8 @@ class QrAuthController extends Controller
      * POST /api/auth/login
      * Login with email and password (fallback)
      */
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|string',
-        ]);
-
         $deviceInfo = [
             'browser' => $request->input('browser', 'Unknown'),
             'os' => $request->input('os', 'Unknown'),
@@ -181,14 +184,8 @@ class QrAuthController extends Controller
      * POST /api/auth/qr/{code}/send-email
      * Send login email for QR session
      */
-    public function sendEmail(Request $request, string $code): JsonResponse
+    public function sendEmail(SendEmailRequest $request, string $code): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email',
-            'callback_url' => 'required|url',
-            'site_name' => 'nullable|string|max:100',
-        ]);
-
         $result = $this->qrAuthService->sendLoginEmail(
             $code,
             $request->input('email'),
@@ -207,12 +204,8 @@ class QrAuthController extends Controller
      * POST /api/auth/email/approve
      * Approve login via email token
      */
-    public function approveEmail(Request $request): JsonResponse
+    public function approveEmail(ApproveEmailRequest $request): JsonResponse
     {
-        $request->validate([
-            'token' => 'required|string|size:64',
-        ]);
-
         $result = $this->qrAuthService->approveViaEmailToken(
             $request->input('token'),
             $request->ip()
@@ -229,13 +222,8 @@ class QrAuthController extends Controller
      * POST /api/auth/qr/approve-from-app
      * Approve QR session from client app (email from trusted session)
      */
-    public function approveFromApp(Request $request): JsonResponse
+    public function approveFromApp(ApproveFromAppRequest $request): JsonResponse
     {
-        $request->validate([
-            'token' => 'required|string|size:64',
-            'email' => 'required|email',
-        ]);
-
         $result = $this->qrAuthService->approveViaQrScan(
             $request->input('token'),
             $request->input('email'),
@@ -253,13 +241,8 @@ class QrAuthController extends Controller
      * POST /api/auth/qr/approve-authenticated
      * Approve QR session using device token from mobile app
      */
-    public function approveAuthenticated(Request $request): JsonResponse
+    public function approveAuthenticated(ApproveAuthenticatedRequest $request): JsonResponse
     {
-        $request->validate([
-            'token' => 'required|string|size:64',
-            'device_token' => 'required|string',
-        ]);
-
         $deviceToken = $request->input('device_token');
 
         // Verify the device token
@@ -305,14 +288,8 @@ class QrAuthController extends Controller
      * POST /api/auth/register
      * Register a new user (admin only or first user)
      */
-    public function register(Request $request): JsonResponse
+    public function register(RegisterRequest $request): JsonResponse
     {
-        $request->validate([
-            'email' => 'required|email|unique:auth_users,email',
-            'name' => 'required|string|max:255',
-            'password' => 'required|string|min:8',
-        ]);
-
         // Check if this is the first user (make them admin)
         $isFirstUser = AuthUser::count() === 0;
 

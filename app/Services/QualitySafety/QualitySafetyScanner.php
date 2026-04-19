@@ -524,10 +524,12 @@ class QualitySafetyScanner
             return ['findings' => []];
         }
 
+        // Inline-validate covers three Laravel idioms: $req->validate([...]),
+        // Validator::make($data, [...]), and $this->validate($req, [...]).
         $appCounts = is_dir($appDir)
             ? $this->countMatches($appDir, [
                 'fr' => '/extends\s+FormRequest\b/',
-                'iv' => '/->validate\s*\(/',
+                'iv' => '/->validate\s*\(|Validator::make\s*\(|\$this->validate\s*\(/',
             ])
             : ['fr' => 0, 'iv' => 0];
         $formRequests = $appCounts['fr'];
