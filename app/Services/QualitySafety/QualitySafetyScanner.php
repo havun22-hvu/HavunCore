@@ -674,46 +674,17 @@ class QualitySafetyScanner
     private function scanFilesForSecrets(string $root, array $patterns): array
     {
         $hits = [];
-        $skip = [
-            DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR,
-            DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR,
-            DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR,
-            DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR,
+        $skipDirs = array_merge($this->defaultSkipDirs(), [
             DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR,
             DIRECTORY_SEPARATOR . '.git' . DIRECTORY_SEPARATOR,
-        ];
-        $skipFiles = ['composer.lock', 'package-lock.json'];
-        $extensions = ['php', 'js', 'ts', 'yml', 'yaml', 'json', 'sh'];
+        ]);
 
-        try {
-            $iter = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
-            );
-        } catch (\UnexpectedValueException) {
-            return [];
-        }
-
-        foreach ($iter as $file) {
-            if (! $file->isFile()) {
-                continue;
-            }
-            $filePath = $file->getPathname();
-            foreach ($skip as $needle) {
-                if (str_contains($filePath, $needle)) {
-                    continue 2;
-                }
-            }
-            if (in_array($file->getFilename(), $skipFiles, true)) {
-                continue;
-            }
-            $ext = $file->getExtension();
-            if ($ext !== '' && ! in_array($ext, $extensions, true)) {
-                continue;
-            }
-            $content = @file_get_contents($filePath);
-            if ($content === false) {
-                continue;
-            }
+        foreach ($this->walkSourceFiles(
+            $root,
+            extensions: ['php', 'js', 'ts', 'yml', 'yaml', 'json', 'sh'],
+            skipDirs: $skipDirs,
+            skipFiles: ['composer.lock', 'package-lock.json'],
+        ) as $filePath => $content) {
             $relative = ltrim(str_replace($root, '', $filePath), '/\\');
             foreach ($patterns as $kind => $pattern) {
                 if (preg_match_all($pattern, $content, $matches)) {
@@ -783,43 +754,75 @@ class QualitySafetyScanner
     {
         $counts = array_fill_keys(array_keys($patterns), 0);
 
-        if (! is_dir($dir)) {
-            return $counts;
-        }
-
-        $skip = [DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR,
-                 DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR,
-                 DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR,
-                 DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR];
-
-        try {
-            $iter = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
-            );
-        } catch (\UnexpectedValueException) {
-            return $counts;
-        }
-
-        foreach ($iter as $file) {
-            if (! $file->isFile() || $file->getExtension() !== 'php') {
-                continue;
-            }
-            $filePath = $file->getPathname();
-            foreach ($skip as $needle) {
-                if (str_contains($filePath, $needle)) {
-                    continue 2;
-                }
-            }
-            $content = @file_get_contents($filePath);
-            if ($content === false) {
-                continue;
-            }
+        foreach ($this->walkSourceFiles($dir, ['php'], $this->defaultSkipDirs(), []) as $content) {
             foreach ($patterns as $key => $pattern) {
                 $counts[$key] += preg_match_all($pattern, $content);
             }
         }
 
         return $counts;
+    }
+
+    /**
+     * @return array<int,string>
+     */
+    private function defaultSkipDirs(): array
+    {
+        return [
+            DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR,
+            DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR,
+            DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR,
+            DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR,
+        ];
+    }
+
+    /**
+     * Recursive PHP-source-file iterator with skip-list, extension whitelist
+     * and tolerant error handling. Yields `path => content` for every file
+     * that survives the filters.
+     *
+     * @param  array<int,string>  $extensions  whitelist (e.g. ['php']) or empty for any
+     * @param  array<int,string>  $skipDirs    DIRECTORY_SEPARATOR-bracketed prefixes to drop
+     * @param  array<int,string>  $skipFiles   exact basenames to drop
+     * @return \Generator<string,string>
+     */
+    private function walkSourceFiles(string $root, array $extensions, array $skipDirs, array $skipFiles): \Generator
+    {
+        if (! is_dir($root)) {
+            return;
+        }
+
+        try {
+            $iter = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+            );
+        } catch (\UnexpectedValueException) {
+            return;
+        }
+
+        foreach ($iter as $file) {
+            if (! $file->isFile()) {
+                continue;
+            }
+            $filePath = $file->getPathname();
+            foreach ($skipDirs as $needle) {
+                if (str_contains($filePath, $needle)) {
+                    continue 2;
+                }
+            }
+            if ($skipFiles && in_array($file->getFilename(), $skipFiles, true)) {
+                continue;
+            }
+            $ext = $file->getExtension();
+            if ($extensions && ($ext === '' || ! in_array($ext, $extensions, true))) {
+                continue;
+            }
+            $content = @file_get_contents($filePath);
+            if ($content === false) {
+                continue;
+            }
+            yield $filePath => $content;
+        }
     }
 
     private function gradeRank(string $grade): int
