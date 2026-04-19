@@ -99,30 +99,31 @@ Route::prefix('vault')->group(function () {
 
 // QR Auth API - Passwordless authentication with device trust
 Route::prefix('auth')->group(function () {
-    // QR Login Flow
-    Route::post('/qr/generate', [QrAuthController::class, 'generateQr'])->name('api.auth.qr.generate');
+    // QR Login Flow — `auth` limiter (5/min/IP) on the brute-force surface,
+    // `auth-session` (30/min) on token-bearing approve endpoints.
+    Route::post('/qr/generate', [QrAuthController::class, 'generateQr'])->middleware('throttle:auth')->name('api.auth.qr.generate');
     Route::get('/qr/{code}/status', [QrAuthController::class, 'checkQrStatus'])->name('api.auth.qr.status');
-    Route::post('/qr/{code}/approve', [QrAuthController::class, 'approveQr'])->name('api.auth.qr.approve');
-    Route::post('/qr/{code}/send-email', [QrAuthController::class, 'sendEmail'])->name('api.auth.qr.send-email');
+    Route::post('/qr/{code}/approve', [QrAuthController::class, 'approveQr'])->middleware('throttle:auth-session')->name('api.auth.qr.approve');
+    Route::post('/qr/{code}/send-email', [QrAuthController::class, 'sendEmail'])->middleware('throttle:auth')->name('api.auth.qr.send-email');
 
     // Email Login (approve via email link)
-    Route::post('/email/approve', [QrAuthController::class, 'approveEmail'])->name('api.auth.email.approve');
+    Route::post('/email/approve', [QrAuthController::class, 'approveEmail'])->middleware('throttle:auth')->name('api.auth.email.approve');
 
     // Authenticated QR approve (from mobile app with device token)
-    Route::post('/qr/approve-authenticated', [QrAuthController::class, 'approveAuthenticated'])->name('api.auth.qr.approve-authenticated');
+    Route::post('/qr/approve-authenticated', [QrAuthController::class, 'approveAuthenticated'])->middleware('throttle:auth-session')->name('api.auth.qr.approve-authenticated');
 
     // QR approve from client app (email from trusted session)
-    Route::post('/qr/approve-from-app', [QrAuthController::class, 'approveFromApp'])->name('api.auth.qr.approve-from-app');
+    Route::post('/qr/approve-from-app', [QrAuthController::class, 'approveFromApp'])->middleware('throttle:auth-session')->name('api.auth.qr.approve-from-app');
 
     // Password Login (fallback)
-    Route::post('/login', [QrAuthController::class, 'login'])->name('api.auth.login');
-    Route::post('/logout', [QrAuthController::class, 'logout'])->name('api.auth.logout');
+    Route::post('/login', [QrAuthController::class, 'login'])->middleware('throttle:auth')->name('api.auth.login');
+    Route::post('/logout', [QrAuthController::class, 'logout'])->middleware('throttle:auth-session')->name('api.auth.logout');
 
     // Token verification
-    Route::post('/verify', [QrAuthController::class, 'verify'])->name('api.auth.verify');
+    Route::post('/verify', [QrAuthController::class, 'verify'])->middleware('throttle:auth-session')->name('api.auth.verify');
 
     // User registration (first user or admin only)
-    Route::post('/register', [QrAuthController::class, 'register'])->name('api.auth.register');
+    Route::post('/register', [QrAuthController::class, 'register'])->middleware('throttle:auth')->name('api.auth.register');
 
     // Device management (requires auth)
     Route::get('/devices', [DeviceController::class, 'index'])->name('api.auth.devices');
@@ -136,16 +137,16 @@ Route::prefix('auth')->group(function () {
     Route::prefix('webauthn')->group(function () {
         // Registration (requires auth)
         Route::get('/register-options', [WebAuthnController::class, 'registerOptions'])->name('api.auth.webauthn.register-options');
-        Route::post('/register', [WebAuthnController::class, 'register'])->name('api.auth.webauthn.register');
+        Route::post('/register', [WebAuthnController::class, 'register'])->middleware('throttle:auth-session')->name('api.auth.webauthn.register');
 
-        // Login (no auth required)
+        // Login (no auth required) — brute-force surface, tight limit.
         Route::get('/login-options', [WebAuthnController::class, 'loginOptions'])->name('api.auth.webauthn.login-options');
-        Route::post('/login', [WebAuthnController::class, 'login'])->name('api.auth.webauthn.login');
+        Route::post('/login', [WebAuthnController::class, 'login'])->middleware('throttle:auth')->name('api.auth.webauthn.login');
         Route::get('/available', [WebAuthnController::class, 'available'])->name('api.auth.webauthn.available');
 
         // Credential management (requires auth)
         Route::get('/credentials', [WebAuthnController::class, 'credentials'])->name('api.auth.webauthn.credentials');
-        Route::delete('/credentials/{id}', [WebAuthnController::class, 'deleteCredential'])->name('api.auth.webauthn.credentials.delete');
+        Route::delete('/credentials/{id}', [WebAuthnController::class, 'deleteCredential'])->middleware('throttle:auth-session')->name('api.auth.webauthn.credentials.delete');
     });
 });
 
