@@ -62,6 +62,30 @@ last_check: 2026-04-19
 
 > vpdupdate (3002) en Studieplanner (8001) hebben geen publieke nginx-ingang — alleen interne calls via `localhost:`.
 
+### Laravel projecten zónder eigen TCP-poort (php-fpm via socket)
+
+De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2-fpm.sock` — geen TCP-poort, geen conflict mogelijk.
+
+| Project | Public host | Pad |
+|---------|-------------|-----|
+| HavunCore | `havuncore.havun.nl` | `/var/www/havuncore/production` |
+| HavunAdmin | `havunadmin.havun.nl` + `staging.havunadmin.havun.nl` | `/var/www/havunadmin/{production,staging}` |
+| Herdenkingsportaal | `herdenkingsportaal.nl` | `/var/www/herdenkingsportaal/production` |
+| JudoToernooi (HTTP) | `judotournament.org` + `staging.judotournament.org` | `/var/www/judotoernooi/{laravel,staging}` (alleen WS-deel proxyt naar Reverb 8080/8081) |
+| Infosyst | `infosyst.havun.nl` | `/var/www/infosyst/...` |
+| SafeHavun | `safehavun.havun.nl` | `/var/www/safehavun/...` |
+| Demo | `demo.havun.nl` | `/var/www/demo/...` |
+| JudoScoreBoard | `judoscoreboard.havun.nl` | `/var/www/judoscoreboard/...` |
+| HavunClub | `havunclub.havun.nl` + staging | **geparkeerd** — nginx config bestaat, deploy-key actief |
+| HavunVet (staging) | `staging.havunvet.havun.nl` | **geparkeerd** — geen prod-deploy |
+
+### Toekomstige / geparkeerde projecten (nog geen poort)
+
+| Project | Verwachte tech | Verwachte poort | Status |
+|---------|---------------|-----------------|--------|
+| **Munus** | Laravel 12 module binnen HavunCore monorepo | geen TCP (via php-fpm socket) zoals overige Laravel projecten | Fase 1 — docs gereed, nog geen code (`D:\GitHub\Munus\`) |
+| Havunity | (paginabuilder, apart product) | TBD | geparkeerd (`D:\GitHub\Havunity\`) — niet aanraken |
+
 ## Lokale dev (per ontwikkelaar)
 
 > **Conventie:** hou lokale poorten gelijk aan productie waar mogelijk, om
