@@ -63,6 +63,7 @@ class QualitySafetyScanner
             'npm' => $this->npmAudit($project),
             'ssl' => $this->sslExpiry($project),
             'observatory' => $this->observatory($project),
+            'server' => $this->serverHealth($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -308,6 +309,168 @@ class QualitySafetyScanner
                 'message' => "{$host} — Observatory grade {$grade} (< {$minGrade})",
             ]],
         ];
+    }
+
+    /**
+     * SSH-based server health: disk usage + failed systemd units.
+     *
+     * Runs only for project entries that declare a `host`. Other entries are
+     * silently skipped so the same check can be added to `--only=server` runs
+     * without polluting per-project loops.
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function serverHealth(array $project): array
+    {
+        $host = $project['host'] ?? null;
+        if (! $host) {
+            return ['findings' => []];
+        }
+
+        $user = $project['user'] ?? 'root';
+        $bin = config('quality-safety.bin.ssh', 'ssh');
+        $sshOpts = (array) config('quality-safety.server.ssh_options', []);
+
+        $remoteCmd = 'df -P -B1 && echo ---SYSTEMD--- && systemctl --failed --no-legend --plain --type=service 2>/dev/null || true';
+
+        $cmd = array_merge([$bin], $sshOpts, ["{$user}@{$host}", $remoteCmd]);
+
+        $result = Process::timeout(30)->run($cmd);
+
+        if (! $result->successful()) {
+            $stderr = trim($result->errorOutput()) ?: trim($result->output());
+
+            return [
+                'findings' => [],
+                'error' => "SSH to {$host} failed (exit {$result->exitCode()}): " . ($stderr ?: 'no output'),
+            ];
+        }
+
+        [$dfOutput, $systemdOutput] = $this->splitServerOutput($result->output());
+
+        $warnPct = (int) config('quality-safety.thresholds.disk_warning_pct', 90);
+        $critPct = (int) config('quality-safety.thresholds.disk_critical_pct', 95);
+        $ignorePrefixes = (array) config('quality-safety.server.disk_ignore_mounts', []);
+
+        $findings = array_merge(
+            $this->parseDiskFindings($dfOutput, $host, $warnPct, $critPct, $ignorePrefixes),
+            $this->parseSystemdFindings($systemdOutput, $host),
+        );
+
+        return ['findings' => $findings];
+    }
+
+    /**
+     * @return array{0:string, 1:string}  [df-section, systemd-section]
+     */
+    private function splitServerOutput(string $raw): array
+    {
+        $parts = preg_split('/^---SYSTEMD---\s*$/m', $raw, 2);
+
+        return [
+            $parts[0] ?? '',
+            $parts[1] ?? '',
+        ];
+    }
+
+    /**
+     * @param  array<int,string>  $ignorePrefixes
+     * @return array<int,array<string,mixed>>
+     */
+    private function parseDiskFindings(string $df, string $host, int $warn, int $crit, array $ignorePrefixes): array
+    {
+        $findings = [];
+        $lines = preg_split('/\R/', trim($df)) ?: [];
+
+        foreach ($lines as $i => $line) {
+            if ($i === 0 || trim($line) === '') {
+                continue; // skip header + blanks
+            }
+
+            $cols = preg_split('/\s+/', trim($line));
+            if (! is_array($cols) || count($cols) < 6) {
+                continue;
+            }
+
+            // df -P collapses to: Filesystem 1024-blocks Used Available Capacity Mountpoint
+            $capacity = $cols[count($cols) - 2] ?? '';
+            $mount = $cols[count($cols) - 1] ?? '';
+
+            if (! preg_match('/^(\d+)%$/', $capacity, $m)) {
+                continue;
+            }
+            $pct = (int) $m[1];
+
+            if ($this->mountIsIgnored($mount, $ignorePrefixes)) {
+                continue;
+            }
+
+            if ($pct >= $crit) {
+                $severity = 'critical';
+            } elseif ($pct >= $warn) {
+                $severity = 'high';
+            } else {
+                continue;
+            }
+
+            $findings[] = [
+                'severity' => $severity,
+                'title' => "Disk usage {$pct}% on {$mount}",
+                'host' => $host,
+                'mount' => $mount,
+                'usage_pct' => $pct,
+                'message' => "{$host} {$mount} — {$pct}% full (warn={$warn}%, crit={$crit}%)",
+            ];
+        }
+
+        return $findings;
+    }
+
+    /**
+     * @param  array<int,string>  $ignorePrefixes
+     */
+    private function mountIsIgnored(string $mount, array $ignorePrefixes): bool
+    {
+        foreach ($ignorePrefixes as $prefix) {
+            if ($prefix !== '' && str_starts_with($mount, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * @return array<int,array<string,mixed>>
+     */
+    private function parseSystemdFindings(string $systemd, string $host): array
+    {
+        $findings = [];
+        $lines = preg_split('/\R/', trim($systemd)) ?: [];
+
+        foreach ($lines as $line) {
+            $line = trim($line);
+            if ($line === '') {
+                continue;
+            }
+
+            $cols = preg_split('/\s+/', $line);
+            $unit = $cols[0] ?? '';
+            if ($unit === '' || ! str_contains($unit, '.')) {
+                continue;
+            }
+
+            $findings[] = [
+                'severity' => 'high',
+                'title' => "systemd unit failed: {$unit}",
+                'host' => $host,
+                'unit' => $unit,
+                'message' => "{$host} — failed unit {$unit}",
+            ];
+        }
+
+        return $findings;
     }
 
     private function gradeRank(string $grade): int

@@ -32,6 +32,7 @@ last_check: 2026-04-19
 | `npm audit --omit=dev` | dagelijks | projects met `package.json` | idem |
 | SSL-expiry | wekelijks | prod-URL's | waarschuwing bij <30 dagen tot expiry |
 | Mozilla Observatory | wekelijks | prod-URL's | grade < `B` = `high` finding (`D`/`F` = `critical`) via v2 API |
+| Server health (SSH) | dagelijks | project-entries met `host` (bv. `server-prod`) | disk ≥ 90 % = `high` (≥ 95 % = `critical`); failed systemd-units = `high` |
 
 > De checks zelf zijn **read-only** — geen enkele scan mag code, config of dependencies wijzigen. Fixes gaan via een normale ontwikkel-cyclus (docs-first, /mpc).
 
@@ -46,6 +47,7 @@ php artisan qv:scan --only=composer
 php artisan qv:scan --only=npm
 php artisan qv:scan --only=ssl
 php artisan qv:scan --only=observatory
+php artisan qv:scan --only=server
 
 # Specifiek project
 php artisan qv:scan --project=havunadmin
@@ -72,10 +74,11 @@ Schedule::command('qv:scan --only=composer --json')->dailyAt('03:07');
 Schedule::command('qv:scan --only=npm --json')->dailyAt('03:17');
 Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');          // ma 04:07
 Schedule::command('qv:scan --only=observatory --json')->weeklyOn(1, '04:37');  // ma 04:37
+Schedule::command('qv:scan --only=server --json')->dailyAt('03:47');           // server health (SSH)
 Schedule::command('qv:log')->dailyAt('03:27');                                  // render latest → KB
 ```
 
-Off-minuten (`:07`, `:17`) voorkomen dat Havun-cron samenvalt met het wereldwijde `:00`-boeket.
+Off-minuten (`:07`, `:17`, `:27`, `:37`, `:47`) voorkomen dat Havun-cron samenvalt met het wereldwijde `:00`-boeket.
 
 ## Output & logging
 
@@ -86,9 +89,19 @@ Off-minuten (`:07`, `:17`) voorkomen dat Havun-cron samenvalt met het wereldwijd
 
 ## Wat scant `qv:scan` (nog) niet?
 
-- SSH-diepe server-health (disk, systemd-status) — staat op roadmap
 - OWASP ZAP / Burp automated DAST — ad-hoc via runbook
 - PHPUnit mutation-score — apart traject (`mutation-baseline-2026-04-17.md`)
+- Memory / CPU baselines — al gedekt door `observability:baseline`
+
+## Server health — vereisten
+
+De `server`-check gebruikt SSH (publickey-only, `BatchMode=yes`). Vereist op de host die de scheduler draait:
+
+- `ssh` binary in PATH (override via `QV_SSH_BIN` env-var indien nodig)
+- SSH-key zonder passphrase (of agent-forwarding) met `root@188.245.159.115` toegang
+- `df`, `systemctl` aanwezig op de remote (Linux servers — standaard)
+
+Drempelwaardes en mount-filters (`/snap`, `/dev`, `/proc`, …) staan in `config/quality-safety.php` onder `thresholds.disk_*` en `server.disk_ignore_mounts`.
 
 ## Onderhoud
 

@@ -56,6 +56,14 @@ return [
             'path' => env('HAVUNCORE_LOCAL_PATH', base_path()),
             'url' => 'https://havuncore.havun.nl',
         ],
+
+        // Server-only entry: triggers the `server` health check (no path/url).
+        // composer/npm/ssl/observatory are skipped automatically.
+        'server-prod' => [
+            'enabled' => env('QV_SERVER_ENABLED', true),
+            'host' => env('QV_SERVER_HOST', '188.245.159.115'),
+            'user' => env('QV_SERVER_USER', 'root'),
+        ],
     ],
 
     /*
@@ -67,6 +75,8 @@ return [
     'thresholds' => [
         'ssl_warning_days' => 30,
         'ssl_critical_days' => 7,
+        'disk_warning_pct' => 90,
+        'disk_critical_pct' => 95,
     ],
 
     /*
@@ -98,6 +108,29 @@ return [
     'bin' => [
         'composer' => env('QV_COMPOSER_BIN', 'composer'),
         'npm' => env('QV_NPM_BIN', 'npm'),
+        'ssh' => env('QV_SSH_BIN', 'ssh'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Server health (SSH-based)
+    |--------------------------------------------------------------------------
+    |
+    | Connection options + filters used by the `server` check. The check skips
+    | any project entry that lacks a `host` field, so leaving `host` unset for
+    | regular projects is safe.
+    |
+    */
+
+    'server' => [
+        'ssh_options' => [
+            '-o', 'BatchMode=yes',
+            '-o', 'ConnectTimeout=10',
+            '-o', 'StrictHostKeyChecking=accept-new',
+        ],
+        // Filesystems whose mount-point matches one of these prefixes are
+        // ignored (tmpfs, snap loops, container overlays). Empty list = include all.
+        'disk_ignore_mounts' => ['/dev', '/proc', '/sys', '/run', '/snap', '/var/lib/docker'],
     ],
 
     /*

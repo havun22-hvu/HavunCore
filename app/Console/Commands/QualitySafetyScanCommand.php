@@ -10,18 +10,18 @@ use Illuminate\Support\Facades\Storage;
 class QualitySafetyScanCommand extends Command
 {
     protected $signature = 'qv:scan
-        {--only= : Run only one check (composer|npm|ssl|observatory)}
+        {--only= : Run only one check (composer|npm|ssl|observatory|server)}
         {--project= : Scan only one project (slug)}
         {--json : Emit machine-readable JSON on stdout}';
 
-    protected $description = 'Cross-project Quality & Safety scan (composer audit, npm audit, SSL expiry, Mozilla Observatory)';
+    protected $description = 'Cross-project Quality & Safety scan (composer audit, npm audit, SSL expiry, Mozilla Observatory, server health)';
 
     public function handle(QualitySafetyScanner $scanner): int
     {
         $only = $this->option('only');
         $projectFilter = $this->option('project');
 
-        $availableChecks = ['composer', 'npm', 'ssl', 'observatory'];
+        $availableChecks = ['composer', 'npm', 'ssl', 'observatory', 'server'];
         $checks = $only ? [$only] : $availableChecks;
 
         foreach ($checks as $check) {

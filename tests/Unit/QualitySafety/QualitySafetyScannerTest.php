@@ -299,4 +299,181 @@ class QualitySafetyScannerTest extends TestCase
         $this->assertSame([], $run['errors']);
         $this->assertSame([], $run['projects']);
     }
+
+    public function test_server_check_skips_projects_without_host(): void
+    {
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['nohost' => $this->project()], ['server']);
+
+        $this->assertSame(0, $run['totals']['errors']);
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_server_check_reports_critical_disk_above_critical_threshold(): void
+    {
+        config()->set('quality-safety.thresholds.disk_warning_pct', 90);
+        config()->set('quality-safety.thresholds.disk_critical_pct', 95);
+        config()->set('quality-safety.server.disk_ignore_mounts', ['/dev', '/proc', '/sys', '/run']);
+
+        Process::fake([
+            '*' => Process::result(
+                output: $this->fakeServerOutput(
+                    df: <<<'DF'
+Filesystem     1024-blocks      Used Available Capacity Mounted on
+/dev/sda1       100000000  96000000   4000000      96% /
+tmpfs            8000000          0   8000000       0% /run
+DF,
+                    systemd: '',
+                ),
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'srv' => ['enabled' => true, 'host' => '1.2.3.4', 'user' => 'root'],
+        ], ['server']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('critical', $run['findings'][0]['severity']);
+        $this->assertSame('/', $run['findings'][0]['mount']);
+        $this->assertSame(96, $run['findings'][0]['usage_pct']);
+    }
+
+    public function test_server_check_reports_high_disk_between_warn_and_critical(): void
+    {
+        config()->set('quality-safety.thresholds.disk_warning_pct', 90);
+        config()->set('quality-safety.thresholds.disk_critical_pct', 95);
+        config()->set('quality-safety.server.disk_ignore_mounts', []);
+
+        Process::fake([
+            '*' => Process::result(
+                output: $this->fakeServerOutput(
+                    df: <<<'DF'
+Filesystem     1024-blocks      Used Available Capacity Mounted on
+/dev/sda1       100000000  91000000   9000000      91% /
+DF,
+                    systemd: '',
+                ),
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'srv' => ['enabled' => true, 'host' => '1.2.3.4'],
+        ], ['server']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('high', $run['findings'][0]['severity']);
+    }
+
+    public function test_server_check_ignores_disks_below_warning_threshold(): void
+    {
+        config()->set('quality-safety.thresholds.disk_warning_pct', 90);
+        config()->set('quality-safety.thresholds.disk_critical_pct', 95);
+        config()->set('quality-safety.server.disk_ignore_mounts', []);
+
+        Process::fake([
+            '*' => Process::result(
+                output: $this->fakeServerOutput(
+                    df: <<<'DF'
+Filesystem     1024-blocks      Used Available Capacity Mounted on
+/dev/sda1       100000000  50000000  50000000      50% /
+DF,
+                    systemd: '',
+                ),
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'srv' => ['enabled' => true, 'host' => '1.2.3.4'],
+        ], ['server']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_server_check_skips_ignored_mount_prefixes(): void
+    {
+        config()->set('quality-safety.thresholds.disk_warning_pct', 90);
+        config()->set('quality-safety.thresholds.disk_critical_pct', 95);
+        config()->set('quality-safety.server.disk_ignore_mounts', ['/snap', '/run']);
+
+        Process::fake([
+            '*' => Process::result(
+                output: $this->fakeServerOutput(
+                    df: <<<'DF'
+Filesystem     1024-blocks      Used Available Capacity Mounted on
+/dev/loop0       50000000  49000000   1000000      99% /snap/core/123
+tmpfs            8000000   7900000     100000      99% /run/lock
+DF,
+                    systemd: '',
+                ),
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'srv' => ['enabled' => true, 'host' => '1.2.3.4'],
+        ], ['server']);
+
+        $this->assertEmpty($run['findings'], 'Snap loops and tmpfs should be ignored even at 99%.');
+    }
+
+    public function test_server_check_reports_failed_systemd_units(): void
+    {
+        Process::fake([
+            '*' => Process::result(
+                output: $this->fakeServerOutput(
+                    df: <<<'DF'
+Filesystem     1024-blocks      Used Available Capacity Mounted on
+/dev/sda1       100000000  10000000  90000000      10% /
+DF,
+                    systemd: <<<'UNITS'
+nginx.service                 loaded failed failed A high performance web server
+worker.service                loaded failed failed App worker
+UNITS,
+                ),
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'srv' => ['enabled' => true, 'host' => '1.2.3.4'],
+        ], ['server']);
+
+        $units = array_column($run['findings'], 'unit');
+        $this->assertContains('nginx.service', $units);
+        $this->assertContains('worker.service', $units);
+        $this->assertSame(2, $run['totals']['high']);
+    }
+
+    public function test_server_check_records_error_when_ssh_fails(): void
+    {
+        Process::fake([
+            '*' => Process::result(
+                output: '',
+                errorOutput: 'Permission denied (publickey).',
+                exitCode: 255,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'srv' => ['enabled' => true, 'host' => '1.2.3.4'],
+        ], ['server']);
+
+        $this->assertSame(1, $run['totals']['errors']);
+        $this->assertStringContainsString('SSH to 1.2.3.4 failed', $run['errors'][0]['message']);
+        $this->assertStringContainsString('Permission denied', $run['errors'][0]['message']);
+    }
+
+    private function fakeServerOutput(string $df, string $systemd): string
+    {
+        return $df . "\n---SYSTEMD---\n" . $systemd . "\n";
+    }
 }
