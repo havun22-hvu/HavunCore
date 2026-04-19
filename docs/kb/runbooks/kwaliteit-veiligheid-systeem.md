@@ -51,6 +51,10 @@ php artisan qv:scan --project=havunadmin
 
 # JSON-output (voor CI / scheduled runs)
 php artisan qv:scan --json
+
+# Laatste run renderen als Markdown-rapport in de KB
+php artisan qv:log
+php artisan qv:log --output=docs/kb/reference/custom-path.md
 ```
 
 Exit-codes:
@@ -63,17 +67,19 @@ Exit-codes:
 Geregistreerd in `routes/console.php`:
 
 ```php
-Schedule::command('qv:scan --only=composer')->dailyAt('03:07');
-Schedule::command('qv:scan --only=npm')->dailyAt('03:17');
-Schedule::command('qv:scan --only=ssl')->weeklyOn(1, '04:07');   // ma 04:07
+Schedule::command('qv:scan --only=composer --json')->dailyAt('03:07');
+Schedule::command('qv:scan --only=npm --json')->dailyAt('03:17');
+Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');   // ma 04:07
+Schedule::command('qv:log')->dailyAt('03:27');                           // render latest → KB
 ```
 
 Off-minuten (`:07`, `:17`) voorkomen dat Havun-cron samenvalt met het wereldwijde `:00`-boeket.
 
 ## Output & logging
 
-- **JSON-log per run**: `storage/app/qv-scans/{YYYY-MM-DD}/{check}-{project}.json`
-- **Bij HIGH/CRITICAL**: append Markdown-sectie aan `docs/kb/reference/security-findings.md` (handmatig of via aparte `qv:log` stap — nog TODO)
+- **JSON-log per run**: `storage/app/qv-scans/{YYYY-MM-DD}/run-{Hisv}-{pid}.json`
+- **Markdown-rapport**: `docs/kb/reference/qv-scan-latest.md` (overschreven door `qv:log` na elke scheduled scan — bevat HIGH/CRIT findings + totals + errors)
+- **Curated post-mortem**: `docs/kb/reference/security-findings.md` — handmatig onderhouden met prose, lessen en fix-statussen. Auto-rapport is **alleen** raw data, de human log is de single source of truth voor post-mortem.
 - **Geen e-mail** (zie `feedback_no_email_notifications.md`) — in-app notificaties/observability zijn de norm.
 
 ## Wat scant `qv:scan` (nog) niet?

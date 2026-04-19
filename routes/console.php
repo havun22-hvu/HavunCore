@@ -28,3 +28,5 @@ Schedule::command('droogtest:reminder')->dailyAt('09:00');
 Schedule::command('qv:scan --only=composer --json')->dailyAt('03:07');
 Schedule::command('qv:scan --only=npm --json')->dailyAt('03:17');
 Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');
+// Render latest scan as Markdown report (overwrites docs/kb/reference/qv-scan-latest.md)
+Schedule::command('qv:log')->dailyAt('03:27');
