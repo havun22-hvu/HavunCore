@@ -2,7 +2,14 @@
 
 > **Frequentie:** Bij elke deploy + kwartaallijkse volledige check
 > **Geldt voor:** Alle publieke webapps
-> **Test URL:** https://observatory.mozilla.org
+
+## Online test-sites (handmatig, na deploy)
+
+| Test | URL | Wat checkt het |
+|------|-----|----------------|
+| Mozilla Observatory | https://observatory.mozilla.org | CSP, SRI, X-Content-Type, HSTS — scored 0-100 |
+| SecurityHeaders.com | https://securityheaders.com | Alle security headers — letter grade A-F |
+| SSL Labs | https://www.ssllabs.com/ssltest | SSL certificaat, cipher suites, protocol — letter grade A-F |
 
 ## Waar staan security headers?
 
