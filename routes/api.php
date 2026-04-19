@@ -78,8 +78,8 @@ Route::prefix('vault')->group(function () {
     Route::get('/configs/{name}', [VaultController::class, 'getConfig'])->name('api.vault.config');
     Route::get('/bootstrap', [VaultController::class, 'bootstrap'])->name('api.vault.bootstrap');
 
-    // Admin endpoints (TODO: add admin auth middleware)
-    Route::prefix('admin')->group(function () {
+    // Admin endpoints — require bearer token from an AuthUser with is_admin = true.
+    Route::prefix('admin')->middleware('admin.token')->group(function () {
         // Secrets management
         Route::get('/secrets', [VaultController::class, 'adminListSecrets'])->name('api.vault.admin.secrets');
         Route::post('/secrets', [VaultController::class, 'adminCreateSecret'])->name('api.vault.admin.secrets.create');

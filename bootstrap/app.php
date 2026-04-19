@@ -16,6 +16,10 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->api(prepend: [
             \App\Http\Middleware\RequestMetricsMiddleware::class,
         ]);
+
+        $middleware->alias([
+            'admin.token' => \App\Http\Middleware\EnsureAdminToken::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->reportable(function (\Throwable $e) {

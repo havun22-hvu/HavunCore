@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
+use App\Models\AuthDevice;
+use App\Models\AuthUser;
 use App\Models\VaultAccessLog;
 use App\Models\VaultConfig;
 use App\Models\VaultProject;
 use App\Models\VaultSecret;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Str;
 use Tests\TestCase;
 
 class VaultControllerExtendedTest extends TestCase
@@ -15,6 +18,7 @@ class VaultControllerExtendedTest extends TestCase
 
     private string $token;
     private VaultProject $project;
+    private string $adminToken;
 
     protected function setUp(): void
     {
@@ -28,11 +32,38 @@ class VaultControllerExtendedTest extends TestCase
             'api_token' => $this->token,
             'is_active' => true,
         ]);
+
+        $admin = AuthUser::create([
+            'email' => 'admin@havun.nl',
+            'name' => 'Test Admin',
+            'password' => bcrypt('test-password'),
+            'is_admin' => true,
+        ]);
+
+        $this->adminToken = Str::random(64);
+        AuthDevice::create([
+            'user_id' => $admin->id,
+            'token' => $this->adminToken,
+            'device_hash' => hash('sha256', 'test-admin-device'),
+            'device_name' => 'Test Admin Device',
+            'browser' => 'PHPUnit',
+            'os' => 'Test',
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'phpunit',
+            'is_active' => true,
+            'last_used_at' => now(),
+            'expires_at' => now()->addDays(30),
+        ]);
     }
 
     private function authHeader(): array
     {
         return ['Authorization' => "Bearer {$this->token}"];
+    }
+
+    private function adminHeader(): array
+    {
+        return ['Authorization' => "Bearer {$this->adminToken}"];
     }
 
     // ========================================
@@ -226,7 +257,7 @@ class VaultControllerExtendedTest extends TestCase
             'is_sensitive' => true,
         ]);
 
-        $response = $this->getJson('/api/vault/admin/secrets');
+        $response = $this->getJson('/api/vault/admin/secrets', $this->adminHeader());
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
@@ -259,7 +290,7 @@ class VaultControllerExtendedTest extends TestCase
             'category' => 'api',
             'description' => 'A new secret',
             'is_sensitive' => true,
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(201)
             ->assertJsonPath('success', true)
@@ -275,7 +306,7 @@ class VaultControllerExtendedTest extends TestCase
 
     public function test_admin_create_secret_validation_requires_key_and_value(): void
     {
-        $response = $this->postJson('/api/vault/admin/secrets', []);
+        $response = $this->postJson('/api/vault/admin/secrets', [], $this->adminHeader());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['key', 'value']);
@@ -288,7 +319,7 @@ class VaultControllerExtendedTest extends TestCase
         $response = $this->postJson('/api/vault/admin/secrets', [
             'key' => 'existing_key',
             'value' => 'another-value',
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['key']);
@@ -299,7 +330,7 @@ class VaultControllerExtendedTest extends TestCase
         $response = $this->postJson('/api/vault/admin/secrets', [
             'key' => 'minimal_secret',
             'value' => 'minimal-value',
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(201);
 
@@ -320,7 +351,7 @@ class VaultControllerExtendedTest extends TestCase
 
         $response = $this->putJson('/api/vault/admin/secrets/update_me', [
             'value' => 'new-value',
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
@@ -342,7 +373,7 @@ class VaultControllerExtendedTest extends TestCase
         $response = $this->putJson('/api/vault/admin/secrets/update_meta', [
             'category' => 'new-category',
             'description' => 'new description',
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(200);
 
@@ -357,7 +388,7 @@ class VaultControllerExtendedTest extends TestCase
     {
         $response = $this->putJson('/api/vault/admin/secrets/nonexistent', [
             'value' => 'new-value',
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(404)
             ->assertJsonPath('error', 'Secret not found');
@@ -371,7 +402,7 @@ class VaultControllerExtendedTest extends TestCase
     {
         VaultSecret::create(['key' => 'delete_me', 'value' => 'val', 'category' => 'api']);
 
-        $response = $this->deleteJson('/api/vault/admin/secrets/delete_me');
+        $response = $this->deleteJson('/api/vault/admin/secrets/delete_me', [], $this->adminHeader());
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
@@ -382,7 +413,7 @@ class VaultControllerExtendedTest extends TestCase
 
     public function test_admin_delete_secret_returns_404_for_nonexistent(): void
     {
-        $response = $this->deleteJson('/api/vault/admin/secrets/nonexistent');
+        $response = $this->deleteJson('/api/vault/admin/secrets/nonexistent', [], $this->adminHeader());
 
         $response->assertStatus(404)
             ->assertJsonPath('error', 'Secret not found');
@@ -403,7 +434,7 @@ class VaultControllerExtendedTest extends TestCase
             'is_active' => false,
         ]);
 
-        $response = $this->getJson('/api/vault/admin/projects');
+        $response = $this->getJson('/api/vault/admin/projects', $this->adminHeader());
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
@@ -427,7 +458,7 @@ class VaultControllerExtendedTest extends TestCase
             'project' => 'new-project',
             'secrets' => ['secret1', 'secret2'],
             'configs' => ['config1'],
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(201)
             ->assertJsonPath('success', true)
@@ -447,7 +478,7 @@ class VaultControllerExtendedTest extends TestCase
 
     public function test_admin_create_project_validation_requires_name(): void
     {
-        $response = $this->postJson('/api/vault/admin/projects', []);
+        $response = $this->postJson('/api/vault/admin/projects', [], $this->adminHeader());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['project']);
@@ -457,7 +488,7 @@ class VaultControllerExtendedTest extends TestCase
     {
         $response = $this->postJson('/api/vault/admin/projects', [
             'project' => 'testproject', // already exists from setUp
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['project']);
@@ -467,7 +498,7 @@ class VaultControllerExtendedTest extends TestCase
     {
         $response = $this->postJson('/api/vault/admin/projects', [
             'project' => 'minimal-project',
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(201);
 
@@ -485,7 +516,7 @@ class VaultControllerExtendedTest extends TestCase
         $response = $this->putJson('/api/vault/admin/projects/testproject', [
             'secrets' => ['new_secret_1', 'new_secret_2'],
             'configs' => ['new_config_1'],
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
@@ -500,7 +531,7 @@ class VaultControllerExtendedTest extends TestCase
     {
         $response = $this->putJson('/api/vault/admin/projects/testproject', [
             'is_active' => false,
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(200);
 
@@ -511,7 +542,7 @@ class VaultControllerExtendedTest extends TestCase
     {
         $response = $this->putJson('/api/vault/admin/projects/nonexistent', [
             'secrets' => ['s1'],
-        ]);
+        ], $this->adminHeader());
 
         $response->assertStatus(404)
             ->assertJsonPath('error', 'Project not found');
@@ -523,7 +554,7 @@ class VaultControllerExtendedTest extends TestCase
 
     public function test_admin_regenerate_token_success(): void
     {
-        $response = $this->postJson('/api/vault/admin/projects/testproject/regenerate-token');
+        $response = $this->postJson('/api/vault/admin/projects/testproject/regenerate-token', [], $this->adminHeader());
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true)
@@ -548,7 +579,7 @@ class VaultControllerExtendedTest extends TestCase
 
     public function test_admin_regenerate_token_returns_404_for_nonexistent(): void
     {
-        $response = $this->postJson('/api/vault/admin/projects/nonexistent/regenerate-token');
+        $response = $this->postJson('/api/vault/admin/projects/nonexistent/regenerate-token', [], $this->adminHeader());
 
         $response->assertStatus(404)
             ->assertJsonPath('error', 'Project not found');
@@ -561,10 +592,10 @@ class VaultControllerExtendedTest extends TestCase
     public function test_admin_get_logs_returns_recent_logs(): void
     {
         // Generate some logs via API calls
-        VaultSecret::create(['key' => 'allowed_secret', 'value' => 'val', 'category' => 'api']);
+        VaultSecret::create(['key' => 'allowed_secret', 'value' => 'val', 'category' => 'api'], $this->adminHeader());
         $this->getJson('/api/vault/secrets', $this->authHeader());
 
-        $response = $this->getJson('/api/vault/admin/logs');
+        $response = $this->getJson('/api/vault/admin/logs', $this->adminHeader());
 
         $response->assertStatus(200)
             ->assertJsonPath('success', true);
@@ -581,7 +612,7 @@ class VaultControllerExtendedTest extends TestCase
         VaultAccessLog::log('project_b', 'read', 'secret', 'key2', '127.0.0.1');
         VaultAccessLog::log('project_a', 'read', 'config', 'cfg1', '127.0.0.1');
 
-        $response = $this->getJson('/api/vault/admin/logs?project=project_a');
+        $response = $this->getJson('/api/vault/admin/logs?project=project_a', $this->adminHeader());
 
         $response->assertStatus(200);
 
@@ -607,7 +638,7 @@ class VaultControllerExtendedTest extends TestCase
             'created_at' => now()->subDays(30),
         ]);
 
-        $response = $this->getJson('/api/vault/admin/logs?days=7');
+        $response = $this->getJson('/api/vault/admin/logs?days=7', $this->adminHeader());
 
         $response->assertStatus(200);
 
