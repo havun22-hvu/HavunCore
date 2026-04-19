@@ -69,6 +69,7 @@ class QualitySafetyScanner
             'secrets' => $this->secretsScan($project),
             'session-cookies' => $this->sessionCookieFlags($project),
             'test-erosion' => $this->testErosion($project),
+            'debug-mode' => $this->debugModeFlag($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -775,6 +776,49 @@ class QualitySafetyScanner
                 'message' => 'config/session.php: ' . implode('; ', $issues),
             ]],
         ];
+    }
+
+    /**
+     * Verifies that config/app.php has `debug` defaulting to false. With
+     * `env('APP_DEBUG', true)` (default in some Laravel skeletons), a missing
+     * APP_DEBUG env-var leaks Whoops stack traces with database credentials,
+     * env-vars, and request payloads on every uncaught exception. The
+     * production .env should set APP_DEBUG=false but defaults must be safe.
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function debugModeFlag(array $project): array
+    {
+        $root = $this->laravelRootOrNull($project);
+        if ($root === null) {
+            return ['findings' => []];
+        }
+
+        $configPath = $root . '/config/app.php';
+        if (! file_exists($configPath)) {
+            return ['findings' => []];
+        }
+
+        $content = @file_get_contents($configPath);
+        if ($content === false) {
+            return ['findings' => []];
+        }
+
+        // Safe forms: env('APP_DEBUG', false) | env('APP_DEBUG', null) | (bool)env(...) ? false : false
+        // Unsafe form: env('APP_DEBUG', true) — default-on debug.
+        if (preg_match('/[\'"]debug[\'"]\s*=>\s*(?:\(bool\)\s*)?env\([\'"]APP_DEBUG[\'"]\s*,\s*true\s*\)/', $content)) {
+            return [
+                'findings' => [[
+                    'severity' => 'critical',
+                    'title' => 'APP_DEBUG defaults to true in config/app.php',
+                    'config' => 'config/app.php',
+                    'message' => "config/app.php: 'debug' defaults to true — missing APP_DEBUG env-var leaks Whoops stack traces in production.",
+                ]],
+            ];
+        }
+
+        return ['findings' => []];
     }
 
     /**

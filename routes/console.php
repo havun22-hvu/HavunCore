@@ -42,5 +42,7 @@ Schedule::command('qv:scan --only=secrets --json')->weeklyOn(4, '05:17');
 Schedule::command('qv:scan --only=session-cookies --json')->weeklyOn(5, '05:27');
 // Test-erosion (deleted/skipped tests) — weekly, off-minute (Saturday).
 Schedule::command('qv:scan --only=test-erosion --json')->weeklyOn(6, '05:37');
+// APP_DEBUG default check — daily (cheap config-read).
+Schedule::command('qv:scan --only=debug-mode --json')->dailyAt('03:57');
 // Render latest scan as Markdown report (overwrites docs/kb/reference/qv-scan-latest.md)
 Schedule::command('qv:log')->dailyAt('03:27');

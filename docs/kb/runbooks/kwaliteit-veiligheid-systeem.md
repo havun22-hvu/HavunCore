@@ -38,6 +38,7 @@ last_check: 2026-04-19
 | Hardcoded secrets | wekelijks (do) | alle code-files (skip vendor/tests/lock) | provider-prefixed credentials (Stripe, AWS, Anthropic, Groq, GitHub PAT, Slack, Mollie, Resend, Google) = `critical`. Output is masked (eerste 8 + laatste 4 chars). |
 | Session-cookie flags | wekelijks (vr) | Laravel `config/session.php` | ontbrekende `secure`/`http_only`/`same_site` flag = `high` (XSS / CSRF / cookie hijack risk) |
 | Test-erosion | wekelijks (za) | git log + `tests/` walk | test-files deleted in laatste 30d = `high` (VP-17 review); markTestSkipped > 5 = `high` (stille uitschakeling). markTestIncomplete = visible WIP, niet geflagd. |
+| Debug-mode default | dagelijks | Laravel `config/app.php` | `'debug' => env('APP_DEBUG', true)` = `critical` (Whoops stack-trace leak in prod als APP_DEBUG mist) |
 
 > De checks zelf zijn **read-only** — geen enkele scan mag code, config of dependencies wijzigen. Fixes gaan via een normale ontwikkel-cyclus (docs-first, /mpc).
 
@@ -58,6 +59,7 @@ php artisan qv:scan --only=ratelimit
 php artisan qv:scan --only=secrets
 php artisan qv:scan --only=session-cookies
 php artisan qv:scan --only=test-erosion
+php artisan qv:scan --only=debug-mode
 
 # Specifiek project
 php artisan qv:scan --project=havunadmin
@@ -90,6 +92,7 @@ Schedule::command('qv:scan --only=ratelimit --json')->weeklyOn(3, '05:07');     
 Schedule::command('qv:scan --only=secrets --json')->weeklyOn(4, '05:17');       // hardcoded credentials (do)
 Schedule::command('qv:scan --only=session-cookies --json')->weeklyOn(5, '05:27'); // session-cookie flags (vr)
 Schedule::command('qv:scan --only=test-erosion --json')->weeklyOn(6, '05:37'); // test deletions + skips (za)
+Schedule::command('qv:scan --only=debug-mode --json')->dailyAt('03:57');         // APP_DEBUG default check
 Schedule::command('qv:log')->dailyAt('03:27');                                  // render latest → KB
 ```
 

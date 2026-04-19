@@ -804,6 +804,69 @@ UNITS,
         $this->assertCount(3, $run['findings'][0]['issues']);
     }
 
+    public function test_debug_mode_check_skips_non_laravel(): void
+    {
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['nonlaravel' => $this->project()], ['debug-mode']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_debug_mode_check_skips_when_no_app_config(): void
+    {
+        file_put_contents($this->tempProject . '/artisan', "#!/usr/bin/env php\n");
+        mkdir($this->tempProject . '/routes', 0755, true);
+        file_put_contents($this->tempProject . '/routes/web.php', '<?php');
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['noconfig' => $this->project()], ['debug-mode']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_debug_mode_check_clean_when_default_is_false(): void
+    {
+        $this->buildAppConfig("'debug' => env('APP_DEBUG', false)");
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['safe' => $this->project()], ['debug-mode']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_debug_mode_check_critical_when_default_is_true(): void
+    {
+        $this->buildAppConfig("'debug' => env('APP_DEBUG', true)");
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['unsafe' => $this->project()], ['debug-mode']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('critical', $run['findings'][0]['severity']);
+    }
+
+    public function test_debug_mode_check_clean_with_bool_cast(): void
+    {
+        $this->buildAppConfig("'debug' => (bool) env('APP_DEBUG', false)");
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['cast' => $this->project()], ['debug-mode']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    private function buildAppConfig(string $debugLine): void
+    {
+        file_put_contents($this->tempProject . '/artisan', "#!/usr/bin/env php\n");
+        mkdir($this->tempProject . '/routes', 0755, true);
+        file_put_contents($this->tempProject . '/routes/web.php', '<?php');
+        mkdir($this->tempProject . '/config', 0755, true);
+        file_put_contents(
+            $this->tempProject . '/config/app.php',
+            "<?php\nreturn [\n    'name' => 'Test',\n    {$debugLine},\n];\n"
+        );
+    }
+
     public function test_test_erosion_check_skips_when_no_tests_dir(): void
     {
         $scanner = new QualitySafetyScanner;
