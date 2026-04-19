@@ -502,22 +502,13 @@ class QualitySafetyScanner
      */
     private function formsCoverage(array $project): array
     {
-        $path = $project['path'] ?? null;
-        if (! $path || ! is_dir($path)) {
-            return ['findings' => []];
-        }
-
-        $root = rtrim($path, '/\\');
-        if (! file_exists($root . '/artisan')) {
+        $root = $this->laravelRootOrNull($project);
+        if ($root === null) {
             return ['findings' => []];
         }
 
         $routesDir = $root . '/routes';
         $appDir = $root . '/app';
-
-        if (! is_dir($routesDir)) {
-            return ['findings' => []];
-        }
 
         $writeRoutes = $this->countMatches($routesDir, ['w' => '/Route::(?:post|put|patch|delete)\s*\(/i'])['w'];
 
@@ -571,25 +562,21 @@ class QualitySafetyScanner
      * the absence of *any* rate-limiting on write-routes is the actionable
      * signal; tuning the limits is a follow-up.
      *
+     * Limitations: only detects `throttle:` middleware strings and
+     * `RateLimiter::for(` provider definitions. Custom rate-limit middleware
+     * classes (e.g. `LoginThrottler::class`) are not recognised.
+     *
      * @param  array<string,mixed>  $project
      * @return array{findings:array<int,array<string,mixed>>, error?:string}
      */
     private function rateLimitCoverage(array $project): array
     {
-        $path = $project['path'] ?? null;
-        if (! $path || ! is_dir($path)) {
-            return ['findings' => []];
-        }
-
-        $root = rtrim($path, '/\\');
-        if (! file_exists($root . '/artisan')) {
+        $root = $this->laravelRootOrNull($project);
+        if ($root === null) {
             return ['findings' => []];
         }
 
         $routesDir = $root . '/routes';
-        if (! is_dir($routesDir)) {
-            return ['findings' => []];
-        }
 
         $routeCounts = $this->countMatches($routesDir, [
             'write' => '/Route::(?:post|put|patch|delete)\s*\(/i',
@@ -619,6 +606,29 @@ class QualitySafetyScanner
                 'message' => "No `throttle:` middleware or `RateLimiter::for(` defs found across {$routeCounts['write']} write-routes",
             ]],
         ];
+    }
+
+    /**
+     * Returns the trimmed project root if the path looks like a Laravel app
+     * (has both `artisan` and a `routes/` directory), otherwise null. Used to
+     * gate the per-project Laravel checks (forms, ratelimit) with a single
+     * preamble.
+     *
+     * @param  array<string,mixed>  $project
+     */
+    private function laravelRootOrNull(array $project): ?string
+    {
+        $path = $project['path'] ?? null;
+        if (! $path || ! is_dir($path)) {
+            return null;
+        }
+
+        $root = rtrim($path, '/\\');
+        if (! file_exists($root . '/artisan') || ! is_dir($root . '/routes')) {
+            return null;
+        }
+
+        return $root;
     }
 
     /**
