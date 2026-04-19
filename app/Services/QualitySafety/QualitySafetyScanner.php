@@ -67,6 +67,7 @@ class QualitySafetyScanner
             'forms' => $this->formsCoverage($project),
             'ratelimit' => $this->rateLimitCoverage($project),
             'secrets' => $this->secretsScan($project),
+            'session-cookies' => $this->sessionCookieFlags($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -713,6 +714,66 @@ class QualitySafetyScanner
         }
 
         return substr($secret, 0, 8) . str_repeat('*', max(4, $len - 12)) . substr($secret, -4);
+    }
+
+    /**
+     * Verifies that a Laravel project's session-cookie flags are secure:
+     * - `secure` defaults to true (cookie only over HTTPS)
+     * - `http_only` defaults to true (JS can't read cookie — XSS shield)
+     * - `same_site` is 'lax' or 'strict' (CSRF shield)
+     *
+     * Laravel's stock config/session.php uses `env(..., null)` for `secure`,
+     * which lets the framework auto-detect HTTPS but isn't strict-secure.
+     * For production-only apps explicit `true` is the safer default.
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function sessionCookieFlags(array $project): array
+    {
+        $root = $this->laravelRootOrNull($project);
+        if ($root === null) {
+            return ['findings' => []];
+        }
+
+        $configPath = $root . '/config/session.php';
+        if (! file_exists($configPath)) {
+            return ['findings' => []];
+        }
+
+        $content = @file_get_contents($configPath);
+        if ($content === false) {
+            return ['findings' => []];
+        }
+
+        $issues = [];
+
+        if (! preg_match('/[\'"]secure[\'"]\s*=>\s*(?:env\([^)]*,\s*true\s*\)|true)/', $content)) {
+            $issues[] = 'secure cookie flag default is not true (env fallback null/false)';
+        }
+
+        if (! preg_match('/[\'"]http_only[\'"]\s*=>\s*(?:env\([^)]*,\s*true\s*\)|true)/', $content)) {
+            $issues[] = 'http_only cookie flag default is not true';
+        }
+
+        if (! preg_match('/[\'"]same_site[\'"]\s*=>\s*(?:env\([^)]*,\s*[\'"](?:strict|lax)|[\'"](?:strict|lax))/', $content)) {
+            $issues[] = 'same_site is not strict/lax (CSRF risk)';
+        }
+
+        if (empty($issues)) {
+            return ['findings' => []];
+        }
+
+        $count = count($issues);
+
+        return [
+            'findings' => [[
+                'severity' => 'high',
+                'title' => "{$count} session-cookie flag(s) not securely set",
+                'issues' => $issues,
+                'message' => 'config/session.php: ' . implode('; ', $issues),
+            ]],
+        ];
     }
 
     /**

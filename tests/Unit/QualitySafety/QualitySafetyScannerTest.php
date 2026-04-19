@@ -738,6 +738,100 @@ UNITS,
         $this->assertEmpty($run['findings']);
     }
 
+    public function test_session_cookies_check_skips_non_laravel_project(): void
+    {
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['nonlaravel' => $this->project()], ['session-cookies']);
+
+        $this->assertEmpty($run['findings']);
+        $this->assertSame(0, $run['totals']['errors']);
+    }
+
+    public function test_session_cookies_check_skips_when_no_session_config(): void
+    {
+        // Laravel skeleton without config/session.php
+        file_put_contents($this->tempProject . '/artisan', "#!/usr/bin/env php\n");
+        mkdir($this->tempProject . '/routes', 0755, true);
+        file_put_contents($this->tempProject . '/routes/web.php', '<?php');
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['no-session' => $this->project()], ['session-cookies']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_session_cookies_check_clean_when_all_flags_secure(): void
+    {
+        $this->buildSessionConfig(secure: true, httpOnly: true, sameSite: 'lax');
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['secure' => $this->project()], ['session-cookies']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_session_cookies_check_high_when_secure_default_is_null(): void
+    {
+        $this->buildSessionConfig(secureRaw: "env('SESSION_SECURE_COOKIE', null)", httpOnly: true, sameSite: 'lax');
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['unsafe' => $this->project()], ['session-cookies']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('high', $run['findings'][0]['severity']);
+        $this->assertContains('secure cookie flag default is not true (env fallback null/false)', $run['findings'][0]['issues']);
+    }
+
+    public function test_session_cookies_check_high_when_same_site_is_none(): void
+    {
+        $this->buildSessionConfig(secure: true, httpOnly: true, sameSite: 'none');
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['none' => $this->project()], ['session-cookies']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertContains('same_site is not strict/lax (CSRF risk)', $run['findings'][0]['issues']);
+    }
+
+    public function test_session_cookies_check_lists_multiple_issues(): void
+    {
+        $this->buildSessionConfig(secureRaw: "false", httpOnlyRaw: "false", sameSite: 'none');
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['triple' => $this->project()], ['session-cookies']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertCount(3, $run['findings'][0]['issues']);
+    }
+
+    private function buildSessionConfig(
+        bool|string|null $secure = null,
+        bool|string|null $httpOnly = null,
+        string $sameSite = 'lax',
+        ?string $secureRaw = null,
+        ?string $httpOnlyRaw = null,
+    ): void {
+        file_put_contents($this->tempProject . '/artisan', "#!/usr/bin/env php\n");
+        mkdir($this->tempProject . '/routes', 0755, true);
+        file_put_contents($this->tempProject . '/routes/web.php', '<?php');
+        mkdir($this->tempProject . '/config', 0755, true);
+
+        $secureValue = $secureRaw ?? ($secure ? 'true' : 'false');
+        $httpOnlyValue = $httpOnlyRaw ?? ($httpOnly ? 'true' : 'false');
+
+        $php = <<<PHP
+<?php
+return [
+    'driver' => 'file',
+    'lifetime' => 120,
+    'secure' => {$secureValue},
+    'http_only' => {$httpOnlyValue},
+    'same_site' => '{$sameSite}',
+];
+PHP;
+        file_put_contents($this->tempProject . '/config/session.php', $php);
+    }
+
     private function buildLaravelSkeleton(int $writeRoutes, int $formRequests, int $inlineValidates): void
     {
         // Marker
