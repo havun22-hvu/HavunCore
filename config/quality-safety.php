@@ -71,6 +71,22 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Mozilla Observatory
+    |--------------------------------------------------------------------------
+    |
+    | HTTP endpoint for the Observatory v2 API and the minimum acceptable grade.
+    | Anything below `min_grade` becomes a finding (`critical` if D/F, otherwise
+    | `high`).
+    |
+    */
+
+    'observatory' => [
+        'endpoint' => env('QV_OBSERVATORY_ENDPOINT', 'https://observatory-api.mdn.mozilla.net/api/v2/scan'),
+        'min_grade' => env('QV_OBSERVATORY_MIN_GRADE', 'B'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | External binaries
     |--------------------------------------------------------------------------
     |

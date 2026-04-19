@@ -31,7 +31,7 @@ last_check: 2026-04-19
 | `composer audit` | dagelijks | elke project-root in `config/quality-safety.php` | JSON-log + append naar findings-log bij HIGH/CRIT |
 | `npm audit --omit=dev` | dagelijks | projects met `package.json` | idem |
 | SSL-expiry | wekelijks | prod-URL's | waarschuwing bij <30 dagen tot expiry |
-| Mozilla Observatory | wekelijks (optie) | prod-URL's | score + diff t.o.v. vorige run |
+| Mozilla Observatory | wekelijks | prod-URL's | grade < `B` = `high` finding (`D`/`F` = `critical`) via v2 API |
 
 > De checks zelf zijn **read-only** — geen enkele scan mag code, config of dependencies wijzigen. Fixes gaan via een normale ontwikkel-cyclus (docs-first, /mpc).
 
@@ -45,6 +45,7 @@ php artisan qv:scan
 php artisan qv:scan --only=composer
 php artisan qv:scan --only=npm
 php artisan qv:scan --only=ssl
+php artisan qv:scan --only=observatory
 
 # Specifiek project
 php artisan qv:scan --project=havunadmin
@@ -69,8 +70,9 @@ Geregistreerd in `routes/console.php`:
 ```php
 Schedule::command('qv:scan --only=composer --json')->dailyAt('03:07');
 Schedule::command('qv:scan --only=npm --json')->dailyAt('03:17');
-Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');   // ma 04:07
-Schedule::command('qv:log')->dailyAt('03:27');                           // render latest → KB
+Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');          // ma 04:07
+Schedule::command('qv:scan --only=observatory --json')->weeklyOn(1, '04:37');  // ma 04:37
+Schedule::command('qv:log')->dailyAt('03:27');                                  // render latest → KB
 ```
 
 Off-minuten (`:07`, `:17`) voorkomen dat Havun-cron samenvalt met het wereldwijde `:00`-boeket.

@@ -4,6 +4,7 @@ namespace App\Services\QualitySafety;
 
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 
 class QualitySafetyScanner
@@ -61,6 +62,7 @@ class QualitySafetyScanner
             'composer' => $this->composerAudit($project),
             'npm' => $this->npmAudit($project),
             'ssl' => $this->sslExpiry($project),
+            'observatory' => $this->observatory($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -246,6 +248,80 @@ class QualitySafetyScanner
                 'message' => "{$host} — cert expires {$expiresAt->toDateString()} ({$daysLeft} days)",
             ]],
         ];
+    }
+
+    /**
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function observatory(array $project): array
+    {
+        $url = $project['url'] ?? null;
+        if (! $url) {
+            return ['findings' => []];
+        }
+
+        $host = parse_url($url, PHP_URL_HOST);
+        if (! $host) {
+            return ['findings' => [], 'error' => "Cannot parse host from url: {$url}"];
+        }
+
+        $endpoint = rtrim(config('quality-safety.observatory.endpoint', 'https://observatory-api.mdn.mozilla.net/api/v2/scan'), '/');
+
+        try {
+            $response = Http::timeout(30)
+                ->acceptJson()
+                ->post($endpoint, ['host' => $host]);
+        } catch (\Throwable $e) {
+            return ['findings' => [], 'error' => "Observatory request failed for {$host}: {$e->getMessage()}"];
+        }
+
+        if (! $response->ok()) {
+            return [
+                'findings' => [],
+                'error' => "Observatory returned HTTP {$response->status()} for {$host}",
+            ];
+        }
+
+        $data = $response->json();
+        if (! is_array($data) || ! isset($data['grade'])) {
+            return ['findings' => [], 'error' => "Observatory response missing grade for {$host}"];
+        }
+
+        $grade = (string) $data['grade'];
+        $score = $data['score'] ?? null;
+        $minGrade = (string) config('quality-safety.observatory.min_grade', 'B');
+
+        if ($this->gradeRank($grade) >= $this->gradeRank($minGrade)) {
+            return ['findings' => []];
+        }
+
+        $severity = $this->gradeRank($grade) <= $this->gradeRank('D') ? 'critical' : 'high';
+
+        return [
+            'findings' => [[
+                'severity' => $severity,
+                'title' => "Observatory grade {$grade} (score {$score}, minimum {$minGrade})",
+                'host' => $host,
+                'grade' => $grade,
+                'score' => $score,
+                'message' => "{$host} — Observatory grade {$grade} (< {$minGrade})",
+            ]],
+        ];
+    }
+
+    private function gradeRank(string $grade): int
+    {
+        return match (strtoupper($grade)) {
+            'A+' => 7,
+            'A' => 6,
+            'A-' => 5,
+            'B+' => 4,
+            'B' => 3,
+            'B-' => 2,
+            'C+', 'C' => 1,
+            default => 0,
+        };
     }
 
     private function normalizeSeverity(string $raw): string

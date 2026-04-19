@@ -3,6 +3,7 @@
 namespace Tests\Unit\QualitySafety;
 
 use App\Services\QualitySafety\QualitySafetyScanner;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Tests\TestCase;
 
@@ -193,6 +194,84 @@ class QualitySafetyScannerTest extends TestCase
         $run = $scanner->scan(['p' => $this->project()], ['composer']);
 
         $this->assertSame('medium', $run['findings'][0]['severity']);
+    }
+
+    public function test_observatory_grade_a_plus_is_clean(): void
+    {
+        config()->set('quality-safety.observatory.min_grade', 'B');
+        Http::fake([
+            '*' => Http::response(['grade' => 'A+', 'score' => 115]),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'good' => ['enabled' => true, 'url' => 'https://ok.example'],
+        ], ['observatory']);
+
+        $this->assertEmpty($run['findings']);
+        $this->assertSame(0, $run['totals']['errors']);
+    }
+
+    public function test_observatory_grade_c_triggers_high_finding(): void
+    {
+        config()->set('quality-safety.observatory.min_grade', 'B');
+        Http::fake([
+            '*' => Http::response(['grade' => 'C', 'score' => 50]),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'poor' => ['enabled' => true, 'url' => 'https://weak.example'],
+        ], ['observatory']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('high', $run['findings'][0]['severity']);
+        $this->assertSame('C', $run['findings'][0]['grade']);
+    }
+
+    public function test_observatory_grade_f_triggers_critical_finding(): void
+    {
+        config()->set('quality-safety.observatory.min_grade', 'B');
+        Http::fake([
+            '*' => Http::response(['grade' => 'F', 'score' => 0]),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'broken' => ['enabled' => true, 'url' => 'https://bad.example'],
+        ], ['observatory']);
+
+        $this->assertSame('critical', $run['findings'][0]['severity']);
+    }
+
+    public function test_observatory_non_200_response_registers_error(): void
+    {
+        Http::fake([
+            '*' => Http::response(['message' => 'internal'], 500),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'bad' => ['enabled' => true, 'url' => 'https://err.example'],
+        ], ['observatory']);
+
+        $this->assertSame(1, $run['totals']['errors']);
+        $this->assertStringContainsString('HTTP 500', $run['errors'][0]['message']);
+    }
+
+    public function test_observatory_response_without_grade_registers_error(): void
+    {
+        Http::fake([
+            '*' => Http::response(['score' => 80]),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'weird' => ['enabled' => true, 'url' => 'https://x.example'],
+        ], ['observatory']);
+
+        $this->assertSame(1, $run['totals']['errors']);
+        $this->assertStringContainsString('missing grade', $run['errors'][0]['message']);
     }
 
     public function test_unknown_check_yields_no_findings_or_errors_when_none_run(): void
