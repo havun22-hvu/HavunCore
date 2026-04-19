@@ -74,17 +74,17 @@ last_check: 2026-04-19
 |---------|---------|--------------|-------|
 | HavunCore (Laravel) | `php artisan serve` | 8000 | default |
 | HavunCore (Laravel) | Vite | 5173 | default |
-| havuncore-webapp | Backend (Node) | 3001 | gelijk aan prod |
-| havuncore-webapp | Frontend | _TODO bevestigen_ | mogelijke conflict met Laravel 8000 — anders 8002 |
-| HavunAdmin | `php artisan serve` | 8000 | botst met HavunCore Laravel — niet beide tegelijk draaien, of override naar 8003 |
-| Herdenkingsportaal | `php artisan serve` | 8000 | idem — gebruik `--port=8004` om parallel te draaien |
-| JudoToernooi | `php artisan serve` | 8000 | idem |
+| havuncore-webapp | Backend (Node) | **8009** lokaal / 3001 prod | dev/prod mismatch (`start.bat` + `.env.example`) — bewust gehouden, lokaal proxyt frontend naar :8009 |
+| havuncore-webapp | Frontend (Vite + React) | **8000** | uit `start.bat`. **Botst met Laravel `artisan serve`** — niet beide tegelijk draaien, of Laravel `--port=8003` |
+| HavunAdmin | `php artisan serve` | 8000 | botst met andere Laravel + webapp-frontend — gebruik `--port=8003` parallel |
+| Herdenkingsportaal | `php artisan serve` | 8000 | idem — gebruik `--port=8004` parallel |
+| JudoToernooi | `php artisan serve` | 8000 | idem — gebruik `--port=8005` parallel |
 | JudoToernooi | Reverb | 8080 | gelijk aan prod |
 | Studieplanner-API | `php artisan serve` | 8001 | gelijk aan prod |
 | Mailpit | SMTP | 1025 | gedeeld voor alle projecten |
 | Mailpit | web | 8025 | gedeeld |
 
-> **TODO:** Henk bevestigt of de lokale Node-frontend van havuncore-webapp op 8000 of 8002 draait, dan dit register bijwerken.
+> **Parallel-conventie bij Laravel:** als je tegelijk `havuncore-webapp` (frontend op 8000) en een Laravel project draait, start Laravel altijd met `--port=80xx` (zie tabel). Standaard `php artisan serve` zonder flag = 8000 = conflict.
 
 ## Procedure: nieuwe service toevoegen
 
