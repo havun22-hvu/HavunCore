@@ -36,5 +36,7 @@ Schedule::command('qv:scan --only=server --json')->dailyAt('03:47');
 Schedule::command('qv:scan --only=forms --json')->weeklyOn(2, '04:57');
 // Rate-limit coverage heuristic — weekly, off-minute (Wednesday).
 Schedule::command('qv:scan --only=ratelimit --json')->weeklyOn(3, '05:07');
+// Hardcoded-credentials scan — weekly, off-minute (Thursday).
+Schedule::command('qv:scan --only=secrets --json')->weeklyOn(4, '05:17');
 // Render latest scan as Markdown report (overwrites docs/kb/reference/qv-scan-latest.md)
 Schedule::command('qv:log')->dailyAt('03:27');

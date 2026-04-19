@@ -642,6 +642,102 @@ UNITS,
         $this->assertEmpty($run['findings']);
     }
 
+    public function test_secrets_check_returns_no_findings_when_clean(): void
+    {
+        // Plain code with no secret-shaped strings
+        file_put_contents($this->tempProject . '/clean.php', "<?php\n\$x = 'hello world';\n");
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['clean' => $this->project()], ['secrets']);
+
+        $this->assertEmpty($run['findings']);
+        $this->assertSame(0, $run['totals']['errors']);
+    }
+
+    public function test_secrets_check_detects_anthropic_api_key(): void
+    {
+        file_put_contents(
+            $this->tempProject . '/leak.php',
+            "<?php\n\$key = 'sk-ant-" . str_repeat('a1B2c3D4e5', 6) . "';\n"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['leak' => $this->project()], ['secrets']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('critical', $run['findings'][0]['severity']);
+        $this->assertSame('anthropic', $run['findings'][0]['kind']);
+    }
+
+    public function test_secrets_check_detects_aws_access_key(): void
+    {
+        file_put_contents(
+            $this->tempProject . '/aws.php',
+            "<?php\n\$creds = ['key' => 'AKIAIOSFODNN7EXAMPLE'];\n"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['aws' => $this->project()], ['secrets']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('aws-access-key', $run['findings'][0]['kind']);
+    }
+
+    public function test_secrets_check_skips_tests_directory(): void
+    {
+        mkdir($this->tempProject . '/tests', 0755, true);
+        file_put_contents(
+            $this->tempProject . '/tests/FixtureTest.php',
+            "<?php\n\$dummy = 'sk-ant-" . str_repeat('xyz12345', 8) . "';\n"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['fixture' => $this->project()], ['secrets']);
+
+        $this->assertEmpty($run['findings'], 'Test fixtures must be ignored.');
+    }
+
+    public function test_secrets_check_skips_env_files(): void
+    {
+        $key = 'sk-ant-' . str_repeat('a1B2c3D4e5', 6);
+        file_put_contents($this->tempProject . '/.env', "ANTHROPIC_API_KEY={$key}\n");
+        file_put_contents($this->tempProject . '/.env.production', "ANTHROPIC_API_KEY={$key}\n");
+        file_put_contents($this->tempProject . '/.env.example', "ANTHROPIC_API_KEY=placeholder\n");
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['env' => $this->project()], ['secrets']);
+
+        $this->assertEmpty($run['findings'], '.env* files contain real secrets by design — not a code-leak.');
+    }
+
+    public function test_secrets_check_masks_credential_in_output(): void
+    {
+        $secret = 'sk-ant-' . str_repeat('a1B2c3D4e5', 6);
+        file_put_contents($this->tempProject . '/leak.php', "<?php\n\$k = '{$secret}';\n");
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['m' => $this->project()], ['secrets']);
+
+        $masked = $run['findings'][0]['masked'];
+        $this->assertStringNotContainsString('a1B2c3D4', substr($masked, 8, -4),
+            'Middle of the secret must be masked.');
+        $this->assertStringStartsWith(substr($secret, 0, 8), $masked);
+        $this->assertStringEndsWith(substr($secret, -4), $masked);
+    }
+
+    public function test_secrets_check_skips_non_text_extensions(): void
+    {
+        file_put_contents(
+            $this->tempProject . '/binary.png',
+            "AKIAIOSFODNN7EXAMPLE"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['bin' => $this->project()], ['secrets']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
     private function buildLaravelSkeleton(int $writeRoutes, int $formRequests, int $inlineValidates): void
     {
         // Marker

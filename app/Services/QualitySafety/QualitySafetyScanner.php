@@ -66,6 +66,7 @@ class QualitySafetyScanner
             'server' => $this->serverHealth($project),
             'forms' => $this->formsCoverage($project),
             'ratelimit' => $this->rateLimitCoverage($project),
+            'secrets' => $this->secretsScan($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -606,6 +607,141 @@ class QualitySafetyScanner
                 'message' => "No `throttle:` middleware or `RateLimiter::for(` defs found across {$routeCounts['write']} write-routes",
             ]],
         ];
+    }
+
+    /**
+     * Scans the project for hardcoded credentials matching well-known
+     * provider-specific patterns (Stripe, AWS, Anthropic, Groq, GitHub, …).
+     *
+     * Avoids generic password/secret regexes — those false-positive too often
+     * on test fixtures and database column names. The current set is tuned
+     * for high-confidence prefixed tokens; the cost of a `critical` finding
+     * is high, so accuracy beats recall.
+     *
+     * The check is for **code leaks** (secrets in tracked source files), not
+     * for the legitimate per-environment storage in `.env` files. `.env*` is
+     * therefore not scanned — keeping secrets out of `.env` is enforced by
+     * `.gitignore`, not by this heuristic. Same for tests/, vendor/,
+     * node_modules/, storage/, and lockfiles.
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function secretsScan(array $project): array
+    {
+        $path = $project['path'] ?? null;
+        if (! $path || ! is_dir($path)) {
+            return ['findings' => []];
+        }
+
+        $root = rtrim($path, '/\\');
+
+        $patterns = [
+            'stripe-live' => '/\bsk_live_[A-Za-z0-9]{24,}\b/',
+            'stripe-test' => '/\bsk_test_[A-Za-z0-9]{24,}\b/',
+            'aws-access-key' => '/\bAKIA[0-9A-Z]{16}\b/',
+            'groq' => '/\bgsk_[A-Za-z0-9]{40,}\b/',
+            'google-api' => '/\bAIza[0-9A-Za-z\-_]{35}\b/',
+            'slack' => '/\bxox[baprs]-[0-9]{10,}-[0-9]{10,}-[A-Za-z0-9]{24,}\b/',
+            'github-pat' => '/\bghp_[A-Za-z0-9]{36}\b/',
+            'mollie-live' => '/\bmollie_live_[A-Za-z0-9]{20,}\b/',
+            'mollie-test' => '/\bmollie_test_[A-Za-z0-9]{20,}\b/',
+            'resend' => '/\bre_[A-Za-z0-9_]{16,}\b/',
+            'anthropic' => '/\bsk-ant-[A-Za-z0-9\-_]{50,}\b/',
+        ];
+
+        $hits = $this->scanFilesForSecrets($root, $patterns);
+
+        $findings = [];
+        foreach ($hits as $hit) {
+            $findings[] = [
+                'severity' => 'critical',
+                'title' => "Hardcoded {$hit['kind']} credential",
+                'kind' => $hit['kind'],
+                'file' => $hit['file'],
+                'masked' => $this->maskCredential($hit['match']),
+                'message' => "{$hit['file']}: hardcoded {$hit['kind']} ({$this->maskCredential($hit['match'])})",
+            ];
+        }
+
+        return ['findings' => $findings];
+    }
+
+    /**
+     * @param  array<string,string>  $patterns
+     * @return array<int,array{kind:string,file:string,match:string}>
+     */
+    private function scanFilesForSecrets(string $root, array $patterns): array
+    {
+        $hits = [];
+        $skip = [
+            DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR,
+            DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR,
+            DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR,
+            DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR,
+            DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR,
+            DIRECTORY_SEPARATOR . '.git' . DIRECTORY_SEPARATOR,
+        ];
+        $skipFiles = ['composer.lock', 'package-lock.json'];
+        $extensions = ['php', 'js', 'ts', 'yml', 'yaml', 'json', 'sh'];
+
+        try {
+            $iter = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
+            );
+        } catch (\UnexpectedValueException) {
+            return [];
+        }
+
+        foreach ($iter as $file) {
+            if (! $file->isFile()) {
+                continue;
+            }
+            $filePath = $file->getPathname();
+            foreach ($skip as $needle) {
+                if (str_contains($filePath, $needle)) {
+                    continue 2;
+                }
+            }
+            if (in_array($file->getFilename(), $skipFiles, true)) {
+                continue;
+            }
+            $ext = $file->getExtension();
+            if ($ext !== '' && ! in_array($ext, $extensions, true)) {
+                continue;
+            }
+            $content = @file_get_contents($filePath);
+            if ($content === false) {
+                continue;
+            }
+            $relative = ltrim(str_replace($root, '', $filePath), '/\\');
+            foreach ($patterns as $kind => $pattern) {
+                if (preg_match_all($pattern, $content, $matches)) {
+                    foreach (array_unique($matches[0]) as $match) {
+                        $hits[] = [
+                            'kind' => $kind,
+                            'file' => str_replace('\\', '/', $relative),
+                            'match' => $match,
+                        ];
+                    }
+                }
+            }
+        }
+
+        return $hits;
+    }
+
+    /**
+     * Show the prefix + last 4 chars only, so log lines never re-leak the secret.
+     */
+    private function maskCredential(string $secret): string
+    {
+        $len = strlen($secret);
+        if ($len <= 12) {
+            return str_repeat('*', $len);
+        }
+
+        return substr($secret, 0, 8) . str_repeat('*', max(4, $len - 12)) . substr($secret, -4);
     }
 
     /**
