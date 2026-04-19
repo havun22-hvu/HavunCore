@@ -64,6 +64,7 @@ class QualitySafetyScanner
             'ssl' => $this->sslExpiry($project),
             'observatory' => $this->observatory($project),
             'server' => $this->serverHealth($project),
+            'forms' => $this->formsCoverage($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -485,6 +486,117 @@ class QualitySafetyScanner
         }
 
         return $findings;
+    }
+
+    /**
+     * Static-analysis estimate of form-validation coverage for Laravel projects.
+     *
+     * Heuristic: ratio between (FormRequest classes + inline `->validate(`) and
+     * write-routes (POST/PUT/PATCH/DELETE). Below the warn-threshold becomes a
+     * `high` finding, below the critical-threshold a `critical`. Skipped for
+     * non-Laravel projects (no `artisan` file at the project root).
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function formsCoverage(array $project): array
+    {
+        $path = $project['path'] ?? null;
+        if (! $path || ! is_dir($path)) {
+            return ['findings' => []];
+        }
+
+        $root = rtrim($path, '/\\');
+        if (! file_exists($root . '/artisan')) {
+            return ['findings' => []];
+        }
+
+        $routesDir = $root . '/routes';
+        $appDir = $root . '/app';
+
+        if (! is_dir($routesDir)) {
+            return ['findings' => []];
+        }
+
+        $writeRoutes = $this->countMatches($routesDir, '/Route::(?:post|put|patch|delete)\s*\(/i');
+
+        if ($writeRoutes === 0) {
+            return ['findings' => []];
+        }
+
+        $formRequests = is_dir($appDir) ? $this->countMatches($appDir, '/extends\s+FormRequest\b/') : 0;
+        $inlineValidates = is_dir($appDir) ? $this->countMatches($appDir, '/->validate\s*\(/') : 0;
+        $covered = $formRequests + $inlineValidates;
+
+        $coverage = (int) round(($covered / $writeRoutes) * 100);
+
+        $warn = (int) config('quality-safety.thresholds.forms_warning_pct', 60);
+        $crit = (int) config('quality-safety.thresholds.forms_critical_pct', 30);
+
+        if ($coverage >= $warn) {
+            return ['findings' => []];
+        }
+
+        $severity = $coverage < $crit ? 'critical' : 'high';
+
+        return [
+            'findings' => [[
+                'severity' => $severity,
+                'title' => "Form validation coverage {$coverage}% ({$covered}/{$writeRoutes} write-routes)",
+                'coverage_pct' => $coverage,
+                'write_routes' => $writeRoutes,
+                'form_requests' => $formRequests,
+                'inline_validates' => $inlineValidates,
+                'message' => "{$coverage}% form-validation coverage ({$formRequests} FormRequest + {$inlineValidates} inline ::validate vs {$writeRoutes} write-routes)",
+            ]],
+        ];
+    }
+
+    /**
+     * Count regex matches across all `.php` files in a directory tree.
+     *
+     * Skips vendor / node_modules / storage / bootstrap-cache to keep the
+     * walk bounded on real Laravel apps. Returns 0 for unreadable trees
+     * rather than throwing — coverage heuristic should never break a scan.
+     */
+    private function countMatches(string $dir, string $pattern): int
+    {
+        if (! is_dir($dir)) {
+            return 0;
+        }
+
+        $count = 0;
+        $skip = [DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR,
+                 DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR,
+                 DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR,
+                 DIRECTORY_SEPARATOR . 'bootstrap' . DIRECTORY_SEPARATOR . 'cache' . DIRECTORY_SEPARATOR];
+
+        try {
+            $iter = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+            );
+        } catch (\UnexpectedValueException) {
+            return 0;
+        }
+
+        foreach ($iter as $file) {
+            if (! $file->isFile() || $file->getExtension() !== 'php') {
+                continue;
+            }
+            $filePath = $file->getPathname();
+            foreach ($skip as $needle) {
+                if (str_contains($filePath, $needle)) {
+                    continue 2;
+                }
+            }
+            $content = @file_get_contents($filePath);
+            if ($content === false) {
+                continue;
+            }
+            $count += preg_match_all($pattern, $content);
+        }
+
+        return $count;
     }
 
     private function gradeRank(string $grade): int

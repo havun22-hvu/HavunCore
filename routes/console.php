@@ -31,5 +31,8 @@ Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');
 Schedule::command('qv:scan --only=observatory --json')->weeklyOn(1, '04:37');
 // Server health (disk + failed systemd units) — daily, off-minute :47.
 Schedule::command('qv:scan --only=server --json')->dailyAt('03:47');
+// Form-validation coverage heuristic — weekly, off-minute :57 (Tuesday so it
+// runs after the Monday SSL+Observatory window).
+Schedule::command('qv:scan --only=forms --json')->weeklyOn(2, '04:57');
 // Render latest scan as Markdown report (overwrites docs/kb/reference/qv-scan-latest.md)
 Schedule::command('qv:log')->dailyAt('03:27');

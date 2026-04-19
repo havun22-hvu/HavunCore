@@ -77,6 +77,10 @@ return [
         'ssl_critical_days' => 7,
         'disk_warning_pct' => 90,
         'disk_critical_pct' => 95,
+        // Form-validation coverage (FormRequest + inline ::validate vs write-routes).
+        // Heuristic, so be lenient: 60 % is "warn", 30 % is "critical".
+        'forms_warning_pct' => 60,
+        'forms_critical_pct' => 30,
     ],
 
     /*

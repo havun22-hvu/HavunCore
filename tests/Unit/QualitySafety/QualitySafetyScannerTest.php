@@ -476,4 +476,143 @@ UNITS,
     {
         return $df . "\n---SYSTEMD---\n" . $systemd . "\n";
     }
+
+    public function test_forms_check_skips_non_laravel_project(): void
+    {
+        // No artisan file → not Laravel → skip
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['nonlaravel' => $this->project()], ['forms']);
+
+        $this->assertEmpty($run['findings']);
+        $this->assertSame(0, $run['totals']['errors']);
+    }
+
+    public function test_forms_check_skips_when_no_write_routes(): void
+    {
+        $this->buildLaravelSkeleton(writeRoutes: 0, formRequests: 0, inlineValidates: 0);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['empty' => $this->project()], ['forms']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_forms_check_clean_when_above_warning(): void
+    {
+        config()->set('quality-safety.thresholds.forms_warning_pct', 60);
+        config()->set('quality-safety.thresholds.forms_critical_pct', 30);
+
+        // 10 routes, 8 FormRequests = 80%
+        $this->buildLaravelSkeleton(writeRoutes: 10, formRequests: 8, inlineValidates: 0);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['good' => $this->project()], ['forms']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_forms_check_high_when_below_warning(): void
+    {
+        config()->set('quality-safety.thresholds.forms_warning_pct', 60);
+        config()->set('quality-safety.thresholds.forms_critical_pct', 30);
+
+        // 10 routes, 4 FormRequests = 40% → high
+        $this->buildLaravelSkeleton(writeRoutes: 10, formRequests: 4, inlineValidates: 0);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['weak' => $this->project()], ['forms']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('high', $run['findings'][0]['severity']);
+        $this->assertSame(40, $run['findings'][0]['coverage_pct']);
+    }
+
+    public function test_forms_check_critical_when_below_critical_threshold(): void
+    {
+        config()->set('quality-safety.thresholds.forms_warning_pct', 60);
+        config()->set('quality-safety.thresholds.forms_critical_pct', 30);
+
+        // 10 routes, 2 FormRequests = 20% → critical
+        $this->buildLaravelSkeleton(writeRoutes: 10, formRequests: 2, inlineValidates: 0);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['bad' => $this->project()], ['forms']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('critical', $run['findings'][0]['severity']);
+    }
+
+    public function test_forms_check_counts_inline_validates_as_coverage(): void
+    {
+        config()->set('quality-safety.thresholds.forms_warning_pct', 60);
+        config()->set('quality-safety.thresholds.forms_critical_pct', 30);
+
+        // 10 routes, 0 FormRequests + 7 inline ::validate = 70% → clean
+        $this->buildLaravelSkeleton(writeRoutes: 10, formRequests: 0, inlineValidates: 7);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['inline' => $this->project()], ['forms']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_forms_check_skips_vendor_directory(): void
+    {
+        config()->set('quality-safety.thresholds.forms_warning_pct', 60);
+        config()->set('quality-safety.thresholds.forms_critical_pct', 30);
+
+        $this->buildLaravelSkeleton(writeRoutes: 10, formRequests: 1, inlineValidates: 0);
+
+        // Plant 100 fake FormRequest classes inside vendor/ — must be ignored.
+        mkdir($this->tempProject . '/app/vendor/fake', 0755, true);
+        for ($i = 0; $i < 100; $i++) {
+            file_put_contents(
+                $this->tempProject . "/app/vendor/fake/Req{$i}.php",
+                "<?php\nclass R{$i} extends FormRequest {}\n"
+            );
+        }
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['vendortest' => $this->project()], ['forms']);
+
+        // Only 1 real FormRequest → 10% coverage → critical
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('critical', $run['findings'][0]['severity']);
+        $this->assertSame(10, $run['findings'][0]['coverage_pct']);
+    }
+
+    private function buildLaravelSkeleton(int $writeRoutes, int $formRequests, int $inlineValidates): void
+    {
+        // Marker
+        file_put_contents($this->tempProject . '/artisan', "#!/usr/bin/env php\n");
+
+        // Routes file with N write-routes
+        mkdir($this->tempProject . '/routes', 0755, true);
+        $routesPhp = "<?php\n";
+        for ($i = 0; $i < $writeRoutes; $i++) {
+            $verb = ['post', 'put', 'patch', 'delete'][$i % 4];
+            $routesPhp .= "Route::{$verb}('/r{$i}', fn () => null);\n";
+        }
+        file_put_contents($this->tempProject . '/routes/web.php', $routesPhp);
+
+        // FormRequests
+        mkdir($this->tempProject . '/app/Http/Requests', 0755, true);
+        for ($i = 0; $i < $formRequests; $i++) {
+            file_put_contents(
+                $this->tempProject . "/app/Http/Requests/Req{$i}.php",
+                "<?php\nclass Req{$i} extends FormRequest {}\n"
+            );
+        }
+
+        // Inline validates
+        mkdir($this->tempProject . '/app/Http/Controllers', 0755, true);
+        if ($inlineValidates > 0) {
+            $controller = "<?php\nclass C {\n";
+            for ($i = 0; $i < $inlineValidates; $i++) {
+                $controller .= "    public function m{$i}(\$r) { \$r->validate([]); }\n";
+            }
+            $controller .= "}\n";
+            file_put_contents($this->tempProject . '/app/Http/Controllers/C.php', $controller);
+        }
+    }
 }
