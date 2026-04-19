@@ -518,17 +518,25 @@ class QualitySafetyScanner
             return ['findings' => []];
         }
 
-        $writeRoutes = $this->countMatches($routesDir, '/Route::(?:post|put|patch|delete)\s*\(/i');
+        $writeRoutes = $this->countMatches($routesDir, ['w' => '/Route::(?:post|put|patch|delete)\s*\(/i'])['w'];
 
         if ($writeRoutes === 0) {
             return ['findings' => []];
         }
 
-        $formRequests = is_dir($appDir) ? $this->countMatches($appDir, '/extends\s+FormRequest\b/') : 0;
-        $inlineValidates = is_dir($appDir) ? $this->countMatches($appDir, '/->validate\s*\(/') : 0;
+        $appCounts = is_dir($appDir)
+            ? $this->countMatches($appDir, [
+                'fr' => '/extends\s+FormRequest\b/',
+                'iv' => '/->validate\s*\(/',
+            ])
+            : ['fr' => 0, 'iv' => 0];
+        $formRequests = $appCounts['fr'];
+        $inlineValidates = $appCounts['iv'];
         $covered = $formRequests + $inlineValidates;
 
-        $coverage = (int) round(($covered / $writeRoutes) * 100);
+        // Cap at write-route count: a single route covered by both a FormRequest
+        // and an inline ::validate must not push coverage above 100 %.
+        $coverage = (int) round((min($covered, $writeRoutes) / $writeRoutes) * 100);
 
         $warn = (int) config('quality-safety.thresholds.forms_warning_pct', 60);
         $crit = (int) config('quality-safety.thresholds.forms_critical_pct', 30);
@@ -555,17 +563,23 @@ class QualitySafetyScanner
     /**
      * Count regex matches across all `.php` files in a directory tree.
      *
-     * Skips vendor / node_modules / storage / bootstrap-cache to keep the
-     * walk bounded on real Laravel apps. Returns 0 for unreadable trees
-     * rather than throwing — coverage heuristic should never break a scan.
+     * Multiple patterns are evaluated in a single walk to halve I/O when the
+     * caller needs several counts on the same tree. Skips vendor / node_modules
+     * / storage / bootstrap-cache to keep the walk bounded on real Laravel apps.
+     * Returns 0-counts for unreadable trees rather than throwing — coverage
+     * heuristic should never break a scan.
+     *
+     * @param  array<string,string>  $patterns  keyed pattern map
+     * @return array<string,int>     same keys, with match counts
      */
-    private function countMatches(string $dir, string $pattern): int
+    private function countMatches(string $dir, array $patterns): array
     {
+        $counts = array_fill_keys(array_keys($patterns), 0);
+
         if (! is_dir($dir)) {
-            return 0;
+            return $counts;
         }
 
-        $count = 0;
         $skip = [DIRECTORY_SEPARATOR . 'vendor' . DIRECTORY_SEPARATOR,
                  DIRECTORY_SEPARATOR . 'node_modules' . DIRECTORY_SEPARATOR,
                  DIRECTORY_SEPARATOR . 'storage' . DIRECTORY_SEPARATOR,
@@ -576,7 +590,7 @@ class QualitySafetyScanner
                 new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
             );
         } catch (\UnexpectedValueException) {
-            return 0;
+            return $counts;
         }
 
         foreach ($iter as $file) {
@@ -593,10 +607,12 @@ class QualitySafetyScanner
             if ($content === false) {
                 continue;
             }
-            $count += preg_match_all($pattern, $content);
+            foreach ($patterns as $key => $pattern) {
+                $counts[$key] += preg_match_all($pattern, $content);
+            }
         }
 
-        return $count;
+        return $counts;
     }
 
     private function gradeRank(string $grade): int
