@@ -824,7 +824,7 @@ UNITS,
         $this->assertEmpty($run['findings']);
     }
 
-    public function test_test_erosion_check_high_when_many_skipped(): void
+    public function test_test_erosion_check_high_when_many_unconditional_skipped(): void
     {
         config()->set('quality-safety.thresholds.test_skip_max', 2);
         mkdir($this->tempProject . '/tests', 0755, true);
@@ -839,7 +839,46 @@ UNITS,
 
         $this->assertCount(1, $run['findings']);
         $this->assertSame('high', $run['findings'][0]['severity']);
-        $this->assertSame(5, $run['findings'][0]['skipped_count']);
+        $this->assertSame(5, $run['findings'][0]['unconditional_skips']);
+        $this->assertSame(0, $run['findings'][0]['defensive_skips']);
+    }
+
+    public function test_test_erosion_check_separates_defensive_from_unconditional_skips(): void
+    {
+        config()->set('quality-safety.thresholds.test_skip_max', 1);
+        mkdir($this->tempProject . '/tests', 0755, true);
+
+        // 1 unconditional + 2 defensive (else-branch is unreachable when file
+        // exists, so they're cosmetic noise, not silent disabling).
+        $body = <<<'PHP'
+<?php
+class FooTest {
+    public function test_skip_unconditional() {
+        $this->markTestSkipped('really skipped');
+    }
+    public function test_defensive_one() {
+        if (extension_loaded('imagick')) {
+            $this->assertTrue(true);
+        } else {
+            $this->markTestSkipped('imagick missing');
+        }
+    }
+    public function test_defensive_two() {
+        if (file_exists('/tmp/x')) {
+            $this->assertTrue(true);
+        } else {
+            $this->markTestSkipped('file missing');
+        }
+    }
+}
+PHP;
+        file_put_contents($this->tempProject . '/tests/MixedTest.php', $body);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['mixed' => $this->project()], ['test-erosion']);
+
+        // Only the unconditional one counts toward the threshold (1 > 1 is false).
+        $this->assertEmpty($run['findings'], 'Defensive skips behind else-branches must not push us over threshold.');
     }
 
     public function test_test_erosion_check_does_not_flag_incomplete_below_threshold(): void

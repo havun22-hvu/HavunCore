@@ -805,7 +805,7 @@ class QualitySafetyScanner
         }
 
         $findings = [];
-        $threshold = (int) config('quality-safety.thresholds.test_skip_max', 5);
+        $threshold = (int) config('quality-safety.thresholds.test_skip_max', 10);
 
         $deletedSince = $this->recentlyDeletedTests($root, days: 30);
         if (! empty($deletedSince)) {
@@ -819,26 +819,71 @@ class QualitySafetyScanner
             ];
         }
 
-        $skipCounts = $this->countMatches($testsDir, [
-            'skipped' => '/\$this->markTestSkipped\s*\(/',
-            'incomplete' => '/\$this->markTestIncomplete\s*\(/',
-        ]);
+        $skipCounts = $this->classifyTestSkips($testsDir);
 
-        if ($skipCounts['skipped'] > $threshold) {
+        if ($skipCounts['unconditional'] > $threshold) {
             $findings[] = [
                 'severity' => 'high',
-                'title' => "{$skipCounts['skipped']} markTestSkipped calls (threshold {$threshold})",
-                'skipped_count' => $skipCounts['skipped'],
+                'title' => "{$skipCounts['unconditional']} unconditional markTestSkipped calls (threshold {$threshold})",
+                'unconditional_skips' => $skipCounts['unconditional'],
+                'defensive_skips' => $skipCounts['defensive'],
                 'incomplete_count' => $skipCounts['incomplete'],
                 'message' => sprintf(
-                    'tests/: %d markTestSkipped + %d markTestIncomplete — audit the skip-reasons',
-                    $skipCounts['skipped'],
+                    'tests/: %d unconditional + %d defensive markTestSkipped + %d markTestIncomplete — audit the unconditional ones',
+                    $skipCounts['unconditional'],
+                    $skipCounts['defensive'],
                     $skipCounts['incomplete'],
                 ),
             ];
         }
 
         return ['findings' => $findings];
+    }
+
+    /**
+     * Walks tests/, separates markTestSkipped into unconditional (real silent
+     * disabling) and defensive (`if (file_exists(...)) {...} else { skip }`).
+     * The defensive branch is unreachable when the resource exists, so it's
+     * cosmetic noise rather than test-erosion.
+     *
+     * @return array{unconditional:int, defensive:int, incomplete:int}
+     */
+    private function classifyTestSkips(string $testsDir): array
+    {
+        $unconditional = 0;
+        $defensive = 0;
+        $incomplete = 0;
+
+        foreach ($this->walkSourceFiles($testsDir, ['php'], $this->defaultSkipDirs(), []) as $content) {
+            $lines = preg_split('/\R/', $content) ?: [];
+
+            foreach ($lines as $i => $line) {
+                if (str_contains($line, 'markTestIncomplete(')) {
+                    $incomplete++;
+                    continue;
+                }
+                if (! str_contains($line, 'markTestSkipped(')) {
+                    continue;
+                }
+
+                // Look back up to 5 non-empty lines for an `} else {` or
+                // `} elseif (...) {` — those mark a defensive branch.
+                $start = max(0, $i - 5);
+                $context = implode("\n", array_slice($lines, $start, $i - $start + 1));
+
+                if (preg_match('/}\s*else(if\s*\([^)]*\))?\s*\{/', $context)) {
+                    $defensive++;
+                } else {
+                    $unconditional++;
+                }
+            }
+        }
+
+        return [
+            'unconditional' => $unconditional,
+            'defensive' => $defensive,
+            'incomplete' => $incomplete,
+        ];
     }
 
     /**

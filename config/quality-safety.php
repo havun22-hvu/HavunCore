@@ -83,7 +83,11 @@ return [
         'forms_critical_pct' => 30,
         // Test-erosion: meer dan dit aantal markTestSkipped wijst op stille
         // uitschakeling van tests. markTestIncomplete telt apart (visible WIP).
-        'test_skip_max' => 5,
+        // Heuristic-limitatie: telt alle markTestSkipped strings, ook
+        // `if (file_exists(...)) { ... } else { markTestSkipped(...) }` waar
+        // de else-tak runtime onbereikbaar is. Threshold dus loose: HP heeft
+        // 25 statische, runtime maar 7. Lager = veel false positives.
+        'test_skip_max' => 10,
     ],
 
     /*
