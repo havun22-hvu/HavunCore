@@ -18,7 +18,7 @@ generated_at: 2026-04-19T09:40:12+02:00
 ## Totals
 
 | Severity | Count |
-|----------|-------|
+|---|---|
 | critical | 0 |
 | high | 0 |
 | medium | 0 |

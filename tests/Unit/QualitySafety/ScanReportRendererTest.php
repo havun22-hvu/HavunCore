@@ -11,7 +11,7 @@ class ScanReportRendererTest extends TestCase
     {
         $renderer = new ScanReportRenderer;
 
-        $md = $renderer->render($this->makeRun(), 'qv-scans/2026-04-19/empty.json');
+        $md = $renderer->render($this->makeRun(['_source_file' => 'qv-scans/2026-04-19/empty.json']));
 
         $this->assertStringContainsString('Geen HIGH/CRITICAL findings', $md);
         $this->assertStringContainsString('generated_from: qv-scans/2026-04-19/empty.json', $md);
@@ -33,7 +33,7 @@ class ScanReportRendererTest extends TestCase
                 ],
             ],
             'totals' => ['critical' => 0, 'high' => 1, 'medium' => 0, 'low' => 0, 'informational' => 0, 'errors' => 0],
-        ]), 'qv-scans/2026-04-19/high.json');
+        ]));
 
         $this->assertStringContainsString('phpseclib/phpseclib', $md);
         $this->assertStringContainsString('GHSA-xxxx', $md);
@@ -51,7 +51,7 @@ class ScanReportRendererTest extends TestCase
                 ['project' => 'p', 'check' => 'composer', 'severity' => 'low', 'package' => 'noise/low', 'title' => 'low'],
             ],
             'totals' => ['critical' => 0, 'high' => 0, 'medium' => 1, 'low' => 1, 'informational' => 0, 'errors' => 0],
-        ]), 'qv-scans/t.json');
+        ]));
 
         $this->assertStringNotContainsString('noise/medium', $md);
         $this->assertStringNotContainsString('noise/low', $md);
@@ -66,7 +66,7 @@ class ScanReportRendererTest extends TestCase
             'errors' => [
                 ['project' => 'bad', 'check' => 'composer', 'message' => 'Project path not found: /nope'],
             ],
-        ]), 'qv-scans/t.json');
+        ]));
 
         $this->assertStringContainsString('## Scanner errors', $md);
         $this->assertStringContainsString('Project path not found', $md);
@@ -80,7 +80,7 @@ class ScanReportRendererTest extends TestCase
             'findings' => [
                 ['project' => 'p', 'check' => 'composer', 'severity' => 'high', 'package' => 'p|k', 'title' => 'bad|title'],
             ],
-        ]), 'qv-scans/t.json');
+        ]));
 
         $this->assertStringContainsString('bad\|title', $md);
         $this->assertStringNotContainsString('| bad|title |', $md);
@@ -92,7 +92,7 @@ class ScanReportRendererTest extends TestCase
 
         $md = $renderer->render($this->makeRun([
             'totals' => ['critical' => 2, 'high' => 3, 'medium' => 4, 'low' => 5, 'informational' => 6, 'errors' => 7],
-        ]), 'qv-scans/t.json');
+        ]));
 
         $this->assertStringContainsString('| critical | 2 |', $md);
         $this->assertStringContainsString('| high | 3 |', $md);

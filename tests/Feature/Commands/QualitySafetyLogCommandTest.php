@@ -24,7 +24,8 @@ class QualitySafetyLogCommandTest extends TestCase
             unlink($absolute);
         }
         $dir = dirname($absolute);
-        if (is_dir($dir) && basename($dir) !== 'HavunCore') {
+        $safeRoot = base_path('tmp-tests');
+        if (is_dir($dir) && str_starts_with($dir, $safeRoot)) {
             @rmdir($dir);
         }
         parent::tearDown();
