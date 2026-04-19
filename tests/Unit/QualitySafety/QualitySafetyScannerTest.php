@@ -581,6 +581,67 @@ UNITS,
         $this->assertSame(10, $run['findings'][0]['coverage_pct']);
     }
 
+    public function test_ratelimit_check_skips_non_laravel_project(): void
+    {
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['nonlaravel' => $this->project()], ['ratelimit']);
+
+        $this->assertEmpty($run['findings']);
+        $this->assertSame(0, $run['totals']['errors']);
+    }
+
+    public function test_ratelimit_check_skips_when_no_write_routes(): void
+    {
+        $this->buildLaravelSkeleton(writeRoutes: 0, formRequests: 0, inlineValidates: 0);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['empty' => $this->project()], ['ratelimit']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_ratelimit_check_high_when_no_throttle_or_ratelimiter(): void
+    {
+        $this->buildLaravelSkeleton(writeRoutes: 5, formRequests: 0, inlineValidates: 0);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['unsafe' => $this->project()], ['ratelimit']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('high', $run['findings'][0]['severity']);
+        $this->assertSame(5, $run['findings'][0]['write_routes']);
+    }
+
+    public function test_ratelimit_check_clean_when_throttle_middleware_present(): void
+    {
+        $this->buildLaravelSkeleton(writeRoutes: 5, formRequests: 0, inlineValidates: 0);
+        // Add a throttled route on top
+        file_put_contents(
+            $this->tempProject . '/routes/web.php',
+            "<?php\nRoute::post('/login', fn() => null)->middleware('throttle:5,1');\n"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['safe' => $this->project()], ['ratelimit']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_ratelimit_check_clean_when_ratelimiter_for_in_provider(): void
+    {
+        $this->buildLaravelSkeleton(writeRoutes: 5, formRequests: 0, inlineValidates: 0);
+        mkdir($this->tempProject . '/app/Providers', 0755, true);
+        file_put_contents(
+            $this->tempProject . '/app/Providers/RouteServiceProvider.php',
+            "<?php\nRateLimiter::for('api', fn() => null);\n"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['safe2' => $this->project()], ['ratelimit']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
     private function buildLaravelSkeleton(int $writeRoutes, int $formRequests, int $inlineValidates): void
     {
         // Marker

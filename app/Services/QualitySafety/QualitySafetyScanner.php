@@ -65,6 +65,7 @@ class QualitySafetyScanner
             'observatory' => $this->observatory($project),
             'server' => $this->serverHealth($project),
             'forms' => $this->formsCoverage($project),
+            'ratelimit' => $this->rateLimitCoverage($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -559,6 +560,63 @@ class QualitySafetyScanner
                 'form_requests' => $formRequests,
                 'inline_validates' => $inlineValidates,
                 'message' => "{$coverage}% form-validation coverage ({$formRequests} FormRequest + {$inlineValidates} inline ::validate vs {$writeRoutes} write-routes)",
+            ]],
+        ];
+    }
+
+    /**
+     * Boolean rate-limiting check: a Laravel project with write-routes that has
+     * neither `throttle:` middleware references nor `RateLimiter::for(` in its
+     * providers triggers a `high` finding. We don't try to score per-route —
+     * the absence of *any* rate-limiting on write-routes is the actionable
+     * signal; tuning the limits is a follow-up.
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function rateLimitCoverage(array $project): array
+    {
+        $path = $project['path'] ?? null;
+        if (! $path || ! is_dir($path)) {
+            return ['findings' => []];
+        }
+
+        $root = rtrim($path, '/\\');
+        if (! file_exists($root . '/artisan')) {
+            return ['findings' => []];
+        }
+
+        $routesDir = $root . '/routes';
+        if (! is_dir($routesDir)) {
+            return ['findings' => []];
+        }
+
+        $routeCounts = $this->countMatches($routesDir, [
+            'write' => '/Route::(?:post|put|patch|delete)\s*\(/i',
+            'throttle' => '/[\'"]throttle:/',
+        ]);
+
+        if ($routeCounts['write'] === 0) {
+            return ['findings' => []];
+        }
+
+        $providersDir = $root . '/app/Providers';
+        $providerCounts = is_dir($providersDir)
+            ? $this->countMatches($providersDir, ['rl' => '/RateLimiter::for\s*\(/'])
+            : ['rl' => 0];
+
+        if ($routeCounts['throttle'] > 0 || $providerCounts['rl'] > 0) {
+            return ['findings' => []];
+        }
+
+        return [
+            'findings' => [[
+                'severity' => 'high',
+                'title' => 'No rate-limiting detected on any write-route',
+                'write_routes' => $routeCounts['write'],
+                'throttle_refs' => 0,
+                'rate_limiter_for_defs' => 0,
+                'message' => "No `throttle:` middleware or `RateLimiter::for(` defs found across {$routeCounts['write']} write-routes",
             ]],
         ];
     }

@@ -34,6 +34,7 @@ last_check: 2026-04-19
 | Mozilla Observatory | wekelijks | prod-URL's | grade < `B` = `high` finding (`D`/`F` = `critical`) via v2 API |
 | Server health (SSH) | dagelijks | project-entries met `host` (bv. `server-prod`) | disk ≥ 90 % = `high` (≥ 95 % = `critical`); failed systemd-units = `high` |
 | Form-validation coverage | wekelijks (di) | Laravel projects (artisan-detectie) | (FormRequest + inline `::validate`) / write-routes < 60 % = `high`, < 30 % = `critical` (heuristic) |
+| Rate-limit coverage | wekelijks (wo) | Laravel projects met write-routes | 0 `throttle:` middleware + 0 `RateLimiter::for(` op write-routes = `high` (boolean — geen rate-limiting actief) |
 
 > De checks zelf zijn **read-only** — geen enkele scan mag code, config of dependencies wijzigen. Fixes gaan via een normale ontwikkel-cyclus (docs-first, /mpc).
 
@@ -50,6 +51,7 @@ php artisan qv:scan --only=ssl
 php artisan qv:scan --only=observatory
 php artisan qv:scan --only=server
 php artisan qv:scan --only=forms
+php artisan qv:scan --only=ratelimit
 
 # Specifiek project
 php artisan qv:scan --project=havunadmin
@@ -78,6 +80,7 @@ Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');          /
 Schedule::command('qv:scan --only=observatory --json')->weeklyOn(1, '04:37');  // ma 04:37
 Schedule::command('qv:scan --only=server --json')->dailyAt('03:47');           // server health (SSH)
 Schedule::command('qv:scan --only=forms --json')->weeklyOn(2, '04:57');         // form-validation coverage (di)
+Schedule::command('qv:scan --only=ratelimit --json')->weeklyOn(3, '05:07');     // rate-limit coverage (wo)
 Schedule::command('qv:log')->dailyAt('03:27');                                  // render latest → KB
 ```
 
