@@ -81,6 +81,9 @@ return [
         // Heuristic, so be lenient: 60 % is "warn", 30 % is "critical".
         'forms_warning_pct' => 60,
         'forms_critical_pct' => 30,
+        // Test-erosion: meer dan dit aantal markTestSkipped wijst op stille
+        // uitschakeling van tests. markTestIncomplete telt apart (visible WIP).
+        'test_skip_max' => 5,
     ],
 
     /*
@@ -113,6 +116,7 @@ return [
         'composer' => env('QV_COMPOSER_BIN', 'composer'),
         'npm' => env('QV_NPM_BIN', 'npm'),
         'ssh' => env('QV_SSH_BIN', 'ssh'),
+        'git' => env('QV_GIT_BIN', 'git'),
     ],
 
     /*

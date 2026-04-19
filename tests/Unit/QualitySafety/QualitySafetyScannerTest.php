@@ -804,6 +804,60 @@ UNITS,
         $this->assertCount(3, $run['findings'][0]['issues']);
     }
 
+    public function test_test_erosion_check_skips_when_no_tests_dir(): void
+    {
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['no-tests' => $this->project()], ['test-erosion']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_test_erosion_check_clean_when_no_skipped_tests(): void
+    {
+        config()->set('quality-safety.thresholds.test_skip_max', 5);
+        mkdir($this->tempProject . '/tests', 0755, true);
+        file_put_contents($this->tempProject . '/tests/Foo.php', "<?php\nclass Foo {}\n");
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['clean' => $this->project()], ['test-erosion']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_test_erosion_check_high_when_many_skipped(): void
+    {
+        config()->set('quality-safety.thresholds.test_skip_max', 2);
+        mkdir($this->tempProject . '/tests', 0755, true);
+        $body = "<?php\n";
+        for ($i = 0; $i < 5; $i++) {
+            $body .= "function t{$i}() { \$this->markTestSkipped('reason'); }\n";
+        }
+        file_put_contents($this->tempProject . '/tests/SkipTest.php', $body);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['skipped' => $this->project()], ['test-erosion']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('high', $run['findings'][0]['severity']);
+        $this->assertSame(5, $run['findings'][0]['skipped_count']);
+    }
+
+    public function test_test_erosion_check_does_not_flag_incomplete_below_threshold(): void
+    {
+        config()->set('quality-safety.thresholds.test_skip_max', 5);
+        mkdir($this->tempProject . '/tests', 0755, true);
+        $body = "<?php\n";
+        for ($i = 0; $i < 3; $i++) {
+            $body .= "function t{$i}() { \$this->markTestIncomplete('TODO'); }\n";
+        }
+        file_put_contents($this->tempProject . '/tests/IncompleteTest.php', $body);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['wip' => $this->project()], ['test-erosion']);
+
+        $this->assertEmpty($run['findings'], 'markTestIncomplete is visible WIP, not erosion.');
+    }
+
     private function buildSessionConfig(
         bool|string|null $secure = null,
         bool|string|null $httpOnly = null,

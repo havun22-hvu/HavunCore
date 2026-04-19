@@ -139,6 +139,19 @@ class QualitySafetyScanCommandTest extends TestCase
         );
     }
 
+    public function test_test_erosion_check_is_an_accepted_only_value(): void
+    {
+        $this->mockScanner([
+            'findings' => [],
+            'errors' => [],
+            'totals' => ['critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'informational' => 0, 'errors' => 0],
+        ]);
+
+        $this->artisan('qv:scan', ['--only' => 'test-erosion'])
+            ->expectsOutputToContain('Quality & Safety scan')
+            ->assertExitCode(0);
+    }
+
     public function test_session_cookies_check_is_an_accepted_only_value(): void
     {
         $this->mockScanner([

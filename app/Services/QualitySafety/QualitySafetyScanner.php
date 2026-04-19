@@ -68,6 +68,7 @@ class QualitySafetyScanner
             'ratelimit' => $this->rateLimitCoverage($project),
             'secrets' => $this->secretsScan($project),
             'session-cookies' => $this->sessionCookieFlags($project),
+            'test-erosion' => $this->testErosion($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -774,6 +775,102 @@ class QualitySafetyScanner
                 'message' => 'config/session.php: ' . implode('; ', $issues),
             ]],
         ];
+    }
+
+    /**
+     * Detects test-suite erosion: tests deleted in the last N days and tests
+     * sitting in markTestSkipped/markTestIncomplete state. Both are visibility
+     * signals — VP-17 ("never fix a failing test by editing the assertion")
+     * extends to "never silently drop a test either".
+     *
+     * Findings:
+     * - any test-file deletion in the last 30 days = high (must be reviewed)
+     * - markTestSkipped count above threshold = high (silent disabling)
+     * - markTestIncomplete = info (visible work-in-progress, not erosion)
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function testErosion(array $project): array
+    {
+        $path = $project['path'] ?? null;
+        if (! $path || ! is_dir($path)) {
+            return ['findings' => []];
+        }
+
+        $root = rtrim($path, '/\\');
+        $testsDir = $root . '/tests';
+        if (! is_dir($testsDir)) {
+            return ['findings' => []];
+        }
+
+        $findings = [];
+        $threshold = (int) config('quality-safety.thresholds.test_skip_max', 5);
+
+        $deletedSince = $this->recentlyDeletedTests($root, days: 30);
+        if (! empty($deletedSince)) {
+            $files = implode(', ', array_slice($deletedSince, 0, 5));
+            $more = count($deletedSince) > 5 ? sprintf(' (+%d more)', count($deletedSince) - 5) : '';
+            $findings[] = [
+                'severity' => 'high',
+                'title' => count($deletedSince) . ' test file(s) deleted in last 30 days',
+                'deleted_files' => $deletedSince,
+                'message' => 'Recently deleted: ' . $files . $more,
+            ];
+        }
+
+        $skipCounts = $this->countMatches($testsDir, [
+            'skipped' => '/\$this->markTestSkipped\s*\(/',
+            'incomplete' => '/\$this->markTestIncomplete\s*\(/',
+        ]);
+
+        if ($skipCounts['skipped'] > $threshold) {
+            $findings[] = [
+                'severity' => 'high',
+                'title' => "{$skipCounts['skipped']} markTestSkipped calls (threshold {$threshold})",
+                'skipped_count' => $skipCounts['skipped'],
+                'incomplete_count' => $skipCounts['incomplete'],
+                'message' => sprintf(
+                    'tests/: %d markTestSkipped + %d markTestIncomplete — audit the skip-reasons',
+                    $skipCounts['skipped'],
+                    $skipCounts['incomplete'],
+                ),
+            ];
+        }
+
+        return ['findings' => $findings];
+    }
+
+    /**
+     * Lists test-files deleted in `tests/` over the last `$days` days using
+     * the project's git history. Returns paths relative to the project root,
+     * empty array when not a git repo or git is unavailable.
+     *
+     * @return array<int,string>
+     */
+    private function recentlyDeletedTests(string $root, int $days): array
+    {
+        if (! is_dir($root . '/.git')) {
+            return [];
+        }
+
+        $bin = config('quality-safety.bin.git', 'git');
+        $since = sprintf('--since=%d.days.ago', $days);
+
+        $result = Process::path($root)->timeout(30)->run([
+            $bin, 'log', $since, '--diff-filter=D', '--name-only', '--pretty=format:',
+        ]);
+
+        if (! $result->successful()) {
+            return [];
+        }
+
+        $files = array_filter(
+            preg_split('/\R/', $result->output()) ?: [],
+            fn ($line) => $line !== '' && str_starts_with($line, 'tests/') && str_ends_with($line, '.php'),
+        );
+
+        return array_values(array_unique($files));
     }
 
     /**
