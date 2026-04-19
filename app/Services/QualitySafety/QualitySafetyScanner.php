@@ -375,25 +375,39 @@ class QualitySafetyScanner
     }
 
     /**
+     * @return array<int,string>
+     */
+    private function splitLines(string $raw): array
+    {
+        return preg_split('/\R/', trim($raw)) ?: [];
+    }
+
+    /**
+     * Parses POSIX `df -P` output (header line skipped).
+     *
+     * Last two columns are used: capacity (e.g. `91%`) and mountpoint. This
+     * tolerates filesystem names with embedded spaces because we index from
+     * the end of each row.
+     *
      * @param  array<int,string>  $ignorePrefixes
      * @return array<int,array<string,mixed>>
      */
     private function parseDiskFindings(string $df, string $host, int $warn, int $crit, array $ignorePrefixes): array
     {
         $findings = [];
-        $lines = preg_split('/\R/', trim($df)) ?: [];
+        $lines = $this->splitLines($df);
 
         foreach ($lines as $i => $line) {
-            if ($i === 0 || trim($line) === '') {
-                continue; // skip header + blanks
-            }
-
-            $cols = preg_split('/\s+/', trim($line));
-            if (! is_array($cols) || count($cols) < 6) {
+            $line = trim($line);
+            if ($i === 0 || $line === '') {
                 continue;
             }
 
-            // df -P collapses to: Filesystem 1024-blocks Used Available Capacity Mountpoint
+            $cols = preg_split('/\s+/', $line, -1, PREG_SPLIT_NO_EMPTY) ?: [];
+            if (count($cols) < 6) {
+                continue;
+            }
+
             $capacity = $cols[count($cols) - 2] ?? '';
             $mount = $cols[count($cols) - 1] ?? '';
 
@@ -447,7 +461,7 @@ class QualitySafetyScanner
     private function parseSystemdFindings(string $systemd, string $host): array
     {
         $findings = [];
-        $lines = preg_split('/\R/', trim($systemd)) ?: [];
+        $lines = $this->splitLines($systemd);
 
         foreach ($lines as $line) {
             $line = trim($line);
@@ -455,7 +469,7 @@ class QualitySafetyScanner
                 continue;
             }
 
-            $cols = preg_split('/\s+/', $line);
+            $cols = preg_split('/\s+/', $line, -1, PREG_SPLIT_NO_EMPTY) ?: [];
             $unit = $cols[0] ?? '';
             if ($unit === '' || ! str_contains($unit, '.')) {
                 continue;
