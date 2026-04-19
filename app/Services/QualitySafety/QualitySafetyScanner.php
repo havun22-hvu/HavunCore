@@ -296,7 +296,7 @@ class QualitySafetyScanner
             return ['findings' => []];
         }
 
-        $severity = $this->gradeRank($grade) <= $this->gradeRank('D') ? 'critical' : 'high';
+        $severity = in_array(strtoupper($grade), ['D', 'F'], true) ? 'critical' : 'high';
 
         return [
             'findings' => [[
@@ -313,14 +313,16 @@ class QualitySafetyScanner
     private function gradeRank(string $grade): int
     {
         return match (strtoupper($grade)) {
-            'A+' => 7,
-            'A' => 6,
-            'A-' => 5,
-            'B+' => 4,
-            'B' => 3,
-            'B-' => 2,
-            'C+', 'C' => 1,
-            default => 0,
+            'A+' => 8,
+            'A' => 7,
+            'A-' => 6,
+            'B+' => 5,
+            'B' => 4,
+            'B-' => 3,
+            'C+' => 2,
+            'C' => 1,
+            'C-' => 0,
+            default => -1,
         };
     }
 

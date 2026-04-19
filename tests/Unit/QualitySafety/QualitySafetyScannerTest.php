@@ -244,6 +244,22 @@ class QualitySafetyScannerTest extends TestCase
         $this->assertSame('critical', $run['findings'][0]['severity']);
     }
 
+    public function test_observatory_grade_c_minus_triggers_high_not_critical(): void
+    {
+        config()->set('quality-safety.observatory.min_grade', 'B');
+        Http::fake([
+            '*' => Http::response(['grade' => 'C-', 'score' => 40]),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'meh' => ['enabled' => true, 'url' => 'https://meh.example'],
+        ], ['observatory']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('high', $run['findings'][0]['severity']);
+    }
+
     public function test_observatory_non_200_response_registers_error(): void
     {
         Http::fake([
