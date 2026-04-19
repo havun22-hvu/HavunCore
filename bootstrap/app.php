@@ -20,6 +20,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin.token' => \App\Http\Middleware\EnsureAdminToken::class,
         ]);
+
+        // App + nginx draaien op dezelfde host (188.245.159.115) → vertrouw alleen
+        // 127.0.0.1 als proxy. Zonder dit zou $request->ip() de loopback teruggeven
+        // voor elke request en zou rate-limiting van auth-routes alle gebruikers in
+        // één bucket stoppen (brute-force gap).
+        $middleware->trustProxies(at: ['127.0.0.1', '::1']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         $exceptions->reportable(function (\Throwable $e) {

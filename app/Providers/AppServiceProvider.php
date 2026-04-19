@@ -26,13 +26,14 @@ class AppServiceProvider extends ServiceProvider
         RateLimiter::for('auth', fn (Request $request) => Limit::perMinute(5)->by($request->ip()));
 
         // Token-bearing auth endpoints (verify, logout, approve-*) — moderate.
-        RateLimiter::for('auth-session', fn (Request $request) => Limit::perMinute(30)->by(
-            optional($request->user())->id ?: $request->ip()
-        ));
+        RateLimiter::for('auth-session', fn (Request $request) => Limit::perMinute(30)->by($this->userOrIp($request)));
 
         // General API write traffic (Vault user-token, MCP, ClaudeTask, etc.) — loose.
-        RateLimiter::for('api-write', fn (Request $request) => Limit::perMinute(60)->by(
-            optional($request->user())->id ?: $request->ip()
-        ));
+        RateLimiter::for('api-write', fn (Request $request) => Limit::perMinute(60)->by($this->userOrIp($request)));
+    }
+
+    private function userOrIp(Request $request): string
+    {
+        return (string) ($request->user()?->id ?? $request->ip());
     }
 }
