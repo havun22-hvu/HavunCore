@@ -24,8 +24,6 @@ class QualitySafetyScanCommandTest extends TestCase
                 'enabled' => true,
                 'path' => $this->tempProject,
                 'url' => 'https://example.test',
-                'has_composer' => true,
-                'has_npm' => false,
             ],
         ]);
     }
@@ -148,8 +146,6 @@ class QualitySafetyScanCommandTest extends TestCase
                 'enabled' => false,
                 'path' => $this->tempProject,
                 'url' => 'https://example.test',
-                'has_composer' => true,
-                'has_npm' => false,
             ],
         ]);
 

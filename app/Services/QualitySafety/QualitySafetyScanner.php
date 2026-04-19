@@ -2,21 +2,12 @@
 
 namespace App\Services\QualitySafety;
 
+use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Process;
 
 class QualitySafetyScanner
 {
-    private const SEVERITY_RANK = [
-        'informational' => 0,
-        'info' => 0,
-        'low' => 1,
-        'medium' => 2,
-        'moderate' => 2,
-        'high' => 3,
-        'critical' => 4,
-    ];
-
     /**
      * @param  array<string,array<string,mixed>>  $projects
      * @param  array<int,string>                  $checks
@@ -30,7 +21,7 @@ class QualitySafetyScanner
 
         foreach ($projects as $slug => $project) {
             foreach ($checks as $check) {
-                $result = $this->runCheck($check, $slug, $project);
+                $result = $this->runCheck($check, $project);
 
                 foreach ($result['findings'] as $finding) {
                     $findings[] = $finding + [
@@ -64,12 +55,12 @@ class QualitySafetyScanner
      * @param  array<string,mixed>  $project
      * @return array{findings:array<int,array<string,mixed>>, error?:string}
      */
-    private function runCheck(string $check, string $slug, array $project): array
+    private function runCheck(string $check, array $project): array
     {
         return match ($check) {
-            'composer' => $this->composerAudit($slug, $project),
-            'npm' => $this->npmAudit($slug, $project),
-            'ssl' => $this->sslExpiry($slug, $project),
+            'composer' => $this->composerAudit($project),
+            'npm' => $this->npmAudit($project),
+            'ssl' => $this->sslExpiry($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
     }
@@ -78,37 +69,29 @@ class QualitySafetyScanner
      * @param  array<string,mixed>  $project
      * @return array{findings:array<int,array<string,mixed>>, error?:string}
      */
-    private function composerAudit(string $slug, array $project): array
+    private function composerAudit(array $project): array
     {
-        if (empty($project['has_composer'])) {
-            return ['findings' => []];
-        }
-
         $path = $project['path'] ?? null;
         if (! $path || ! is_dir($path)) {
             return ['findings' => [], 'error' => "Project path not found: {$path}"];
         }
+        if (! file_exists(rtrim($path, '/\\') . '/composer.json')) {
+            return ['findings' => []];
+        }
 
         $bin = config('quality-safety.bin.composer', 'composer');
-
-        $result = Process::path($path)
-            ->timeout(120)
+        $result = Process::path($path)->timeout(120)
             ->run([$bin, 'audit', '--format=json', '--no-interaction']);
 
-        $decoded = json_decode($result->output(), true);
-
-        if (! is_array($decoded)) {
-            if ($result->exitCode() === 0) {
-                return ['findings' => []];
-            }
-
-            return ['findings' => [], 'error' => 'composer audit produced no parseable JSON'];
+        $decoded = $this->decodeAuditJson($result);
+        if ($decoded === null) {
+            return $result->exitCode() === 0
+                ? ['findings' => []]
+                : ['findings' => [], 'error' => 'composer audit produced no parseable JSON'];
         }
 
         $findings = [];
-        $advisories = $decoded['advisories'] ?? [];
-
-        foreach ($advisories as $package => $items) {
+        foreach ($decoded['advisories'] ?? [] as $package => $items) {
             foreach ($items as $advisory) {
                 $findings[] = [
                     'severity' => $this->normalizeSeverity($advisory['severity'] ?? 'medium'),
@@ -133,38 +116,27 @@ class QualitySafetyScanner
      * @param  array<string,mixed>  $project
      * @return array{findings:array<int,array<string,mixed>>, error?:string}
      */
-    private function npmAudit(string $slug, array $project): array
+    private function npmAudit(array $project): array
     {
-        if (empty($project['has_npm'])) {
-            return ['findings' => []];
-        }
-
         $path = $project['path'] ?? null;
         if (! $path || ! is_dir($path)) {
             return ['findings' => [], 'error' => "Project path not found: {$path}"];
         }
-
         if (! file_exists(rtrim($path, '/\\') . '/package.json')) {
             return ['findings' => []];
         }
 
         $bin = config('quality-safety.bin.npm', 'npm');
-
-        $result = Process::path($path)
-            ->timeout(180)
+        $result = Process::path($path)->timeout(180)
             ->run([$bin, 'audit', '--json', '--omit=dev']);
 
-        $decoded = json_decode($result->output(), true);
-
-        if (! is_array($decoded)) {
+        $decoded = $this->decodeAuditJson($result);
+        if ($decoded === null) {
             return ['findings' => [], 'error' => 'npm audit produced no parseable JSON'];
         }
 
         $findings = [];
-        $vulns = $decoded['vulnerabilities'] ?? [];
-
-        foreach ($vulns as $pkg => $vuln) {
-            $severity = $this->normalizeSeverity($vuln['severity'] ?? 'low');
+        foreach ($decoded['vulnerabilities'] ?? [] as $pkg => $vuln) {
             $viaItems = is_array($vuln['via'] ?? null) ? $vuln['via'] : [];
             $title = 'npm vulnerability';
             foreach ($viaItems as $via) {
@@ -175,7 +147,7 @@ class QualitySafetyScanner
             }
 
             $findings[] = [
-                'severity' => $severity,
+                'severity' => $this->normalizeSeverity($vuln['severity'] ?? 'low'),
                 'title' => $title,
                 'package' => $pkg,
                 'range' => $vuln['range'] ?? null,
@@ -187,10 +159,20 @@ class QualitySafetyScanner
     }
 
     /**
+     * @return array<string,mixed>|null  null when output is not valid JSON
+     */
+    private function decodeAuditJson(ProcessResult $result): ?array
+    {
+        $decoded = json_decode($result->output(), true);
+
+        return is_array($decoded) ? $decoded : null;
+    }
+
+    /**
      * @param  array<string,mixed>  $project
      * @return array{findings:array<int,array<string,mixed>>, error?:string}
      */
-    private function sslExpiry(string $slug, array $project): array
+    private function sslExpiry(array $project): array
     {
         $url = $project['url'] ?? null;
 
@@ -268,9 +250,7 @@ class QualitySafetyScanner
 
     private function normalizeSeverity(string $raw): string
     {
-        $normalized = strtolower($raw);
-
-        return match ($normalized) {
+        return match (strtolower($raw)) {
             'crit', 'critical' => 'critical',
             'high' => 'high',
             'med', 'medium', 'moderate' => 'medium',

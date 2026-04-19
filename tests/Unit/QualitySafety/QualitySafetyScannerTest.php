@@ -38,8 +38,29 @@ class QualitySafetyScannerTest extends TestCase
         rmdir($dir);
     }
 
+    /** @return array<string,mixed> */
+    private function project(array $overrides = []): array
+    {
+        return array_merge([
+            'enabled' => true,
+            'path' => $this->tempProject,
+            'url' => 'https://example.test',
+        ], $overrides);
+    }
+
+    private function withComposerManifest(): void
+    {
+        file_put_contents($this->tempProject . '/composer.json', '{"name":"test/t"}');
+    }
+
+    private function withPackageManifest(): void
+    {
+        file_put_contents($this->tempProject . '/package.json', '{"name":"test"}');
+    }
+
     public function test_composer_audit_parses_advisories_json(): void
     {
+        $this->withComposerManifest();
         Process::fake([
             '*' => Process::result(
                 output: json_encode([
@@ -57,15 +78,7 @@ class QualitySafetyScannerTest extends TestCase
         ]);
 
         $scanner = new QualitySafetyScanner;
-        $run = $scanner->scan([
-            'testproject' => [
-                'enabled' => true,
-                'path' => $this->tempProject,
-                'url' => 'https://example.test',
-                'has_composer' => true,
-                'has_npm' => false,
-            ],
-        ], ['composer']);
+        $run = $scanner->scan(['testproject' => $this->project()], ['composer']);
 
         $this->assertCount(1, $run['findings']);
         $this->assertSame('high', $run['findings'][0]['severity']);
@@ -75,20 +88,13 @@ class QualitySafetyScannerTest extends TestCase
 
     public function test_composer_audit_clean_run_has_no_findings(): void
     {
+        $this->withComposerManifest();
         Process::fake([
             '*' => Process::result(output: json_encode(['advisories' => []]), exitCode: 0),
         ]);
 
         $scanner = new QualitySafetyScanner;
-        $run = $scanner->scan([
-            'clean' => [
-                'enabled' => true,
-                'path' => $this->tempProject,
-                'url' => 'https://example.test',
-                'has_composer' => true,
-                'has_npm' => false,
-            ],
-        ], ['composer']);
+        $run = $scanner->scan(['clean' => $this->project()], ['composer']);
 
         $this->assertEmpty($run['findings']);
         $this->assertSame(0, $run['totals']['high']);
@@ -97,20 +103,13 @@ class QualitySafetyScannerTest extends TestCase
 
     public function test_unparseable_composer_output_registers_error(): void
     {
+        $this->withComposerManifest();
         Process::fake([
             '*' => Process::result(output: 'garbage not json', exitCode: 1),
         ]);
 
         $scanner = new QualitySafetyScanner;
-        $run = $scanner->scan([
-            'broken' => [
-                'enabled' => true,
-                'path' => $this->tempProject,
-                'url' => 'https://example.test',
-                'has_composer' => true,
-                'has_npm' => false,
-            ],
-        ], ['composer']);
+        $run = $scanner->scan(['broken' => $this->project()], ['composer']);
 
         $this->assertSame(1, $run['totals']['errors']);
     }
@@ -119,31 +118,26 @@ class QualitySafetyScannerTest extends TestCase
     {
         $scanner = new QualitySafetyScanner;
         $run = $scanner->scan([
-            'ghost' => [
-                'enabled' => true,
-                'path' => '/nonexistent/path-' . uniqid(),
-                'url' => 'https://example.test',
-                'has_composer' => true,
-                'has_npm' => false,
-            ],
+            'ghost' => $this->project(['path' => '/nonexistent/path-' . uniqid()]),
         ], ['composer']);
 
         $this->assertSame(1, $run['totals']['errors']);
         $this->assertStringContainsString('Project path not found', $run['errors'][0]['message']);
     }
 
+    public function test_composer_audit_without_composer_json_is_skipped(): void
+    {
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['nonphp' => $this->project()], ['composer']);
+
+        $this->assertSame(0, $run['totals']['errors']);
+        $this->assertEmpty($run['findings']);
+    }
+
     public function test_npm_audit_without_package_json_is_skipped(): void
     {
         $scanner = new QualitySafetyScanner;
-        $run = $scanner->scan([
-            'nonjs' => [
-                'enabled' => true,
-                'path' => $this->tempProject,
-                'url' => 'https://example.test',
-                'has_composer' => false,
-                'has_npm' => true,
-            ],
-        ], ['npm']);
+        $run = $scanner->scan(['nonjs' => $this->project()], ['npm']);
 
         $this->assertSame(0, $run['totals']['errors']);
         $this->assertEmpty($run['findings']);
@@ -151,8 +145,7 @@ class QualitySafetyScannerTest extends TestCase
 
     public function test_npm_audit_parses_vulnerabilities(): void
     {
-        file_put_contents($this->tempProject . '/package.json', '{"name":"test"}');
-
+        $this->withPackageManifest();
         Process::fake([
             '*' => Process::result(
                 output: json_encode([
@@ -171,15 +164,7 @@ class QualitySafetyScannerTest extends TestCase
         ]);
 
         $scanner = new QualitySafetyScanner;
-        $run = $scanner->scan([
-            'jsproj' => [
-                'enabled' => true,
-                'path' => $this->tempProject,
-                'url' => 'https://example.test',
-                'has_composer' => false,
-                'has_npm' => true,
-            ],
-        ], ['npm']);
+        $run = $scanner->scan(['jsproj' => $this->project()], ['npm']);
 
         $this->assertCount(1, $run['findings']);
         $this->assertSame('critical', $run['findings'][0]['severity']);
@@ -188,6 +173,7 @@ class QualitySafetyScannerTest extends TestCase
 
     public function test_severity_normalization_maps_moderate_to_medium(): void
     {
+        $this->withComposerManifest();
         Process::fake([
             '*' => Process::result(
                 output: json_encode([
@@ -204,15 +190,7 @@ class QualitySafetyScannerTest extends TestCase
         ]);
 
         $scanner = new QualitySafetyScanner;
-        $run = $scanner->scan([
-            'p' => [
-                'enabled' => true,
-                'path' => $this->tempProject,
-                'url' => 'https://example.test',
-                'has_composer' => true,
-                'has_npm' => false,
-            ],
-        ], ['composer']);
+        $run = $scanner->scan(['p' => $this->project()], ['composer']);
 
         $this->assertSame('medium', $run['findings'][0]['severity']);
     }

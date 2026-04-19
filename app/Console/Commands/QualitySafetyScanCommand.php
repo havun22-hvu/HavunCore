@@ -41,13 +41,14 @@ class QualitySafetyScanCommand extends Command
         }
 
         $run = $scanner->scan($projects, $checks);
+        $encoded = json_encode($run, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
-        $this->persist($run);
+        $this->persist($encoded);
 
         if (! $this->option('json')) {
             $this->renderHuman($run);
         } else {
-            $this->line(json_encode($run, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            $this->line($encoded);
         }
 
         return $this->exitCodeFor($run);
@@ -69,15 +70,15 @@ class QualitySafetyScanCommand extends Command
         return array_intersect_key($enabled, [$filter => true]);
     }
 
-    private function persist(array $run): void
+    private function persist(string $encoded): void
     {
-        $date = Carbon::now()->toDateString();
+        $now = Carbon::now();
         $root = rtrim(config('quality-safety.storage.root', 'qv-scans'), '/');
         $disk = config('quality-safety.storage.disk', 'local');
 
         Storage::disk($disk)->put(
-            "{$root}/{$date}/run-" . Carbon::now()->format('His') . '.json',
-            json_encode($run, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)
+            "{$root}/{$now->toDateString()}/run-{$now->format('Hisv')}-" . getmypid() . '.json',
+            $encoded
         );
     }
 
