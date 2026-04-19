@@ -2,7 +2,6 @@
 
 namespace App\Http\Middleware;
 
-use App\Models\AuthUser;
 use App\Services\DeviceTrustService;
 use Closure;
 use Illuminate\Http\Request;
@@ -32,14 +31,13 @@ class EnsureAdminToken
 
         $verification = $this->deviceTrust->verifyToken($token, $request->ip());
 
-        if (! ($verification['valid'] ?? false)) {
-            return response()->json(['error' => 'Invalid or expired token'], 401);
-        }
-
-        $user = AuthUser::find($verification['user']['id'] ?? null);
+        // Same response for "invalid token" and "token references a deleted user"
+        // — prevents an enumeration oracle that lets callers probe whether an
+        // arbitrary token string belongs to a (now-deleted) account.
+        $user = ($verification['valid'] ?? false) ? ($verification['user_model'] ?? null) : null;
 
         if (! $user) {
-            return response()->json(['error' => 'User not found'], 401);
+            return response()->json(['error' => 'Invalid or expired token'], 401);
         }
 
         if (! $user->is_admin) {

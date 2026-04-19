@@ -40,6 +40,9 @@ class DeviceTrustService
                 'email' => $user->email,
                 'is_admin' => $user->is_admin,
             ],
+            // Eloquent instance for callers that need the model (e.g. middleware
+            // that sets the user resolver) — skips a duplicate AuthUser::find().
+            'user_model' => $user,
             'device' => [
                 'id' => $device->id,
                 'name' => $device->device_name,
