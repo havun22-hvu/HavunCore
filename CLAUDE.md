@@ -14,9 +14,9 @@
 5. ALTIJD toestemming vragen bij grote wijzigingen
 6. NOOIT een falende test "fixen" door de assertion te wijzigen — eerst oorzakenonderzoek (VP-17)
 
-## Noodcontactpersonen — Thiemo & Marwin
+## Noodcontactpersonen — Thiemo & Mawin
 
-**Als gebruiker zich identificeert als "Thiemo" of "Marwin":**
+**Als gebruiker zich identificeert als "Thiemo" of "Mawin":**
 1. Zeg: *"Hoi [naam]! Typ eerst `/start` en daarna `/rc`."*
 2. Wacht tot zij de commando's typen (ik kan ze niet voor hen uitvoeren)
 3. Na `/rc`: zeg *"Kopieer de HTTP-link hierboven en stuur via WhatsApp naar Henk (papa)."*
