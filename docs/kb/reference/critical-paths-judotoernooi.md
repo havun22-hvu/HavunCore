@@ -52,6 +52,10 @@ publicatie en financien.
 - `tests/Unit/Models/MagicLinkTokenTest.php`
 - `tests/Unit/Mail/MagicLinkMailTest.php`
 - `tests/Unit/Middleware/CheckRolSessieTest.php`
+- `tests/Unit/Middleware/CheckDeviceBindingTest.php` (6 tests / 10
+  assertions — missing toegang / unknown toegang / rol-mismatch /
+  missing-cookie redirect / wrong-cookie redirect / valid-cookie
+  forward)
 
 **Mutation-score target:** 90 %.
 
