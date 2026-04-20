@@ -83,10 +83,13 @@ getrashed memorial per ongeluk publiceren.
 
 - `tests/Feature/MemorialControllerTest.php`
 - `tests/Feature/MemorialLifecycleTest.php` (7 tests / 28 assertions —
-  preview default, upgrade-to-premium, publish-from-premium,
-  publish-from-preview guarded, rollback-to-preview, rollback blocked
-  on complete_custom, rollback blocked when arweave_transaction_id
-  set)
+  model-level transitions: preview default, upgrade-to-premium,
+  publish-from-premium, publish-from-preview guarded, rollback-to-
+  preview, rollback blocked on complete_custom, rollback blocked when
+  arweave_transaction_id set)
+- `tests/Feature/Memorial/PublishFlowTest.php` (4 tests / 9 assertions
+  — HTTP-layer guards: owner-success, unpaid-error, non-owner-denial,
+  basic-package-immediate-upload)
 
 **Mutation-score target:** 90 %.
 
