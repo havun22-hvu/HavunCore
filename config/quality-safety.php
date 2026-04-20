@@ -30,13 +30,13 @@ return [
         'studieplanner' => [
             'enabled' => env('QV_STUDIEPLANNER_ENABLED', true),
             'path' => env('STUDIEPLANNER_LOCAL_PATH', 'D:/GitHub/Studieplanner-api'),
-            'url' => 'https://studieplanner-api.havun.nl',
+            'url' => 'https://api.studieplanner.havun.nl',
         ],
 
         'judotoernooi' => [
             'enabled' => env('QV_JUDOTOERNOOI_ENABLED', true),
             'path' => env('JUDOTOERNOOI_LOCAL_PATH', 'D:/GitHub/JudoToernooi/laravel'),
-            'url' => 'https://judotoernooi.havun.nl',
+            'url' => 'https://judotournament.org',
         ],
 
         'infosyst' => [
