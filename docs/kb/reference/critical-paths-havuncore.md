@@ -46,9 +46,9 @@ Een bug = lek of uitval. Auth-bypass hier is een incident.
 - `tests/Unit/VaultProjectTest.php`
 - `tests/Unit/VaultAccessLogTest.php`
 - `tests/Unit/VaultConfigTest.php`
-
-**Gap (TODO):** dedicated `EnsureAdminTokenTest` als aparte middleware-unit
-ontbreekt. Dekking zit nu impliciet in `VaultControllerExtendedTest`.
+- `tests/Unit/Middleware/EnsureAdminTokenTest.php` (5 tests / 16
+  assertions — missing-bearer / invalid-token / deleted-user-no-
+  enumeration / non-admin 403 / admin forward+user-resolver)
 
 **Mutation-score target:** 90 %.
 **Laatst geverifieerd:** _te meten — eerstvolgende mutation run._
