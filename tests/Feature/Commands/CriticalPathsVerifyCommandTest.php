@@ -159,6 +159,46 @@ MD);
         ])->assertExitCode(1);
     }
 
+    public function test_run_collapses_glob_matches_into_single_artisan_call(): void
+    {
+        $fixtureDir = base_path('tests/fixtures/critpath-glob');
+        File::ensureDirectoryExists($fixtureDir);
+        File::put($fixtureDir . '/AlphaTest.php', '<?php');
+        File::put($fixtureDir . '/BravoTest.php', '<?php');
+
+        $this->writeFixtureDoc('fixture-glob', <<<MD
+## Pad 1 — Glob
+
+**Tests die dit afdekken:**
+
+- `tests/fixtures/critpath-glob/*.php`
+MD);
+
+        try {
+            $runner = $this->mock(TestRunner::class);
+            // Critical: ONE artisan-test boot for the whole glob, not one per match.
+            $runner->shouldReceive('run')
+                ->once()
+                ->withArgs(fn ($filter) => str_contains($filter, 'AlphaTest')
+                    && str_contains($filter, 'BravoTest')
+                    && str_contains($filter, '|'))
+                ->andReturn([
+                    'filter' => 'AlphaTest|BravoTest',
+                    'exit_code' => 0,
+                    'passed' => true,
+                    'duration_ms' => 33,
+                    'output' => 'ok',
+                ]);
+
+            $this->artisan('critical-paths:verify', [
+                '--project' => 'fixture-glob',
+                '--run' => true,
+            ])->assertExitCode(0);
+        } finally {
+            File::deleteDirectory($fixtureDir);
+        }
+    }
+
     public function test_all_flag_scans_every_critical_paths_doc(): void
     {
         $this->writeFixtureDoc('fixture-all-a', <<<'MD'

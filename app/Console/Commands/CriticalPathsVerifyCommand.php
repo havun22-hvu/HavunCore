@@ -92,21 +92,23 @@ class CriticalPathsVerifyCommand extends Command
                 $entry['tests_duration_ms'] = null;
 
                 $totalRefs++;
-                if ($ref['exists']) {
-                    $ok++;
-
-                    if ($this->option('run') && $ref['matches']) {
-                        foreach ($ref['matches'] as $matchedPath) {
-                            $result = $runner->run(TestRunner::filterFromPath($matchedPath));
-                            $entry['tests_passed'] = ($entry['tests_passed'] ?? true) && $result['passed'];
-                            $entry['tests_duration_ms'] = ($entry['tests_duration_ms'] ?? 0) + $result['duration_ms'];
-                            if (! $result['passed']) {
-                                $failed++;
-                            }
-                        }
-                    }
-                } else {
+                if (! $ref['exists']) {
                     $missing++;
+                    $refReports[] = $entry;
+                    continue;
+                }
+
+                $ok++;
+
+                // One Artisan run per reference (glob matches are collapsed into
+                // a single `--filter` regex so we don't boot PHPUnit N times).
+                if ($this->option('run') && $ref['matches']) {
+                    $result = $runner->run($this->combinedFilter($ref['matches']));
+                    $entry['tests_passed'] = $result['passed'];
+                    $entry['tests_duration_ms'] = $result['duration_ms'];
+                    if (! $result['passed']) {
+                        $failed++;
+                    }
                 }
 
                 $refReports[] = $entry;
@@ -164,6 +166,17 @@ class CriticalPathsVerifyCommand extends Command
             $this->line("  Summary: {$t['paths']} paths / {$t['references']} refs / {$t['ok']} ok / {$t['missing']} missing / {$t['failed']} failed");
             $this->line('');
         }
+    }
+
+    /**
+     * @param list<string> $matches
+     */
+    private function combinedFilter(array $matches): string
+    {
+        return implode('|', array_unique(array_map(
+            fn ($p) => TestRunner::filterFromPath($p),
+            $matches
+        )));
     }
 
     /**
