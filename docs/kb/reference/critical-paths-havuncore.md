@@ -170,36 +170,41 @@ terwijl er iets stuk is, weten we het niet.
 
 **Mutation-score target:** 85 %.
 
-## Pad 6 — Security headers & CSP (alle responses)
+## Pad 6 — Session-cookie defaults (HavunCore-eigen scope)
 
-**Waarom kritiek:** Mozilla Observatory, XSS-verdediging, cookie-afscherming.
-Één middleware-regressie en alle pagina's lekken headers.
+**Waarom kritiek:** HavunCore zelf is API-only — de CSP/HSTS/X-Frame-
+response-headers worden op `havuncore.havun.nl` door nginx geleverd
+(static hosting). Wat Laravel wél bewaakt zijn de **session-cookie
+defaults** in `config/session.php`. Eén regressie van `secure=true`
+naar env-fallback null = sessie-cookies mogen over HTTP reizen.
+
+De **middleware-variant** (`stubs/SecurityHeaders.php`) is een
+cross-project stub: hij wordt in JT / HP / HA / SafeHavun / Infosyst
+gekopieerd en daar getest. Zie die projecten' eigen
+`critical-paths-*.md` (werk in uitvoering).
 
 **Componenten:**
 
-- `app/Http/Middleware/SecurityHeaders.php`
-- `config/session.php` (`SESSION_SECURE_COOKIE` default `true`)
+- `config/session.php` — drie defaults (`secure`, `http_only`,
+  `same_site`).
+- `stubs/SecurityHeaders.php` — referentie-implementatie voor andere
+  projecten; geen runtime-rol in HavunCore zelf.
 
-**Branches:**
+**Branches die getest moeten zijn:**
 
-- [ ] Elke response krijgt CSP, HSTS, X-Frame-Options, X-Content-Type-Options,
-  Referrer-Policy.
-- [ ] CSP nonce is per-request random, niet hergebruikt.
-- [ ] Session-cookie: `secure`, `http_only`, `same_site=lax`.
-- [ ] HSTS alleen op HTTPS-requests (niet op HTTP).
-- [ ] `app()->environment('local')` geeft ontwikkel-CSP (localhost toegestaan),
-  production géén localhost-origins.
+- [x] `SESSION_SECURE_COOKIE` default `true` — cookie weigert HTTP.
+- [x] `SESSION_HTTP_ONLY` default `true` — JavaScript kan cookie niet
+  lezen.
+- [x] `SESSION_SAME_SITE` default `'lax'` — basis CSRF-bescherming.
+- [x] Runtime-waardes komen door als env-vars ontbreken.
 
 **Tests:**
 
-**Gap (TODO — must-build):** er bestaat geen dedicated test voor
-`SecurityHeaders` middleware in HavunCore. Security headers zijn
-kritiek (Mozilla Observatory grade, CSP, HSTS) — zonder eigen test is
-een regressie pas zichtbaar bij de externe scan. Prioriteit: hoog.
-Zie `stubs/SecurityHeaders.php` voor het contract dat de tests
-moeten afdwingen.
+- `tests/Unit/Config/SessionConfigTest.php` (4 tests, 5 assertions)
 
-**Mutation-score target:** 85 % (zodra test bestaat).
+**Mutation-score target:** 90 % — het is een klein config-bestand met
+duidelijke defaults; een gemuteerde `false` moet direct worden
+gevangen.
 
 ## Pad 7 — Audit infrastructure (`critical-paths:verify`)
 
