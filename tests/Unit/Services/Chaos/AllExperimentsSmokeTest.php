@@ -5,6 +5,7 @@ namespace Tests\Unit\Services\Chaos;
 use App\Services\Chaos\ChaosExperiment;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
 /**
@@ -40,9 +41,7 @@ class AllExperimentsSmokeTest extends TestCase
         config()->set('chaos.endpoints', []);
     }
 
-    /**
-     * @dataProvider experimentClasses
-     */
+    #[DataProvider('experimentClasses')]
     public function test_experiment_execute_returns_well_formed_result(string $class): void
     {
         $this->assertTrue(is_subclass_of($class, ChaosExperiment::class),
