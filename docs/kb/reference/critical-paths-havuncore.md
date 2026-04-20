@@ -186,6 +186,39 @@ terwijl er iets stuk is, weten we het niet.
 
 **Mutation-score target:** 85 %.
 
+## Pad 7 — Audit infrastructure (`critical-paths:verify`)
+
+**Waarom kritiek:** deze command bewaakt of de andere 6 paden actueel
+blijven. Als hij roest, worden doc-rot en ongemerkt-verwijderde tests
+onzichtbaar.
+
+**Componenten:**
+
+- `app/Console/Commands/CriticalPathsVerifyCommand.php`
+- `app/Services/CriticalPaths/DocParser.php`
+- `app/Services/CriticalPaths/ReferenceChecker.php`
+- `app/Services/CriticalPaths/TestRunner.php`
+
+**Branches / edge-cases:**
+
+- [x] Ontbrekend bestand → exit 1, gerapporteerd.
+- [x] Glob zonder match → exit 1.
+- [x] Ontbrekende doc → exit 2.
+- [x] `--project` en `--all` conflict → exit 2.
+- [x] `--json` output is valide + bevat totals.
+- [x] `--run` triggert TestRunner (via Artisan::call).
+- [x] `--run` met falende test → exit 1.
+- [x] `--all` ontdekt alle `critical-paths-*.md` via glob.
+
+**Tests:**
+
+- `tests/Unit/CriticalPaths/DocParserTest.php`
+- `tests/Unit/CriticalPaths/ReferenceCheckerTest.php`
+- `tests/Unit/CriticalPaths/TestRunnerTest.php`
+- `tests/Feature/Commands/CriticalPathsVerifyCommandTest.php`
+
+**Mutation-score target:** 85 %.
+
 ## Audit-checklist (externe review)
 
 Gebruik deze bij een audit-review:

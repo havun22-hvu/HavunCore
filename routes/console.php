@@ -46,3 +46,5 @@ Schedule::command('qv:scan --only=test-erosion --json')->weeklyOn(6, '05:37');
 Schedule::command('qv:scan --only=debug-mode --json')->dailyAt('03:57');
 // Render latest scan as Markdown report (overwrites docs/kb/reference/qv-scan-latest.md)
 Schedule::command('qv:log')->dailyAt('03:27');
+// Verify critical-paths docs still point at existing tests (link-check only; no --run).
+Schedule::command('critical-paths:verify --all --json')->dailyAt('03:52');
