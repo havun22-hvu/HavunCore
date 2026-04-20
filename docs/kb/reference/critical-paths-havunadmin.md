@@ -148,11 +148,14 @@ accepteert externe input; idempotency is essentieel.
 
 - `tests/Unit/TransactionMatchingServiceTest.php`
 - `tests/Unit/TransactionModelTest.php`
+- `tests/Feature/MollieWebhookControllerTest.php` (1 test — missing
+  payment-id → 400; richer scenarios nog open, vereisen
+  `mollie-api-php-laravel` facade-package of een service-refactor)
 
-**Gap (TODO):** geen dedicated `MollieWebhookControllerTest` gevonden op
-Feature-niveau. Webhooks zijn externe attack-surface — Priority: hoog.
-Volgende sessie: bouwen met `postJson(route('mollie.webhook'))` + mock
-van signature-check.
+**Gap (TODO):** rijkere webhook-scenarios (malformed metadata /
+unknown tenant / paid / failed / 3-strikes suspension / Mollie
+exception handling). Vereist facade-package of refactor naar
+injected MollieService.
 
 **Mutation-score target:** 90 %.
 
