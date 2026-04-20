@@ -179,10 +179,14 @@ Infosyst, etc.). Tenant-leak = factuur-data van klant A lezen als klant B.
 **Tests:**
 
 - `tests/Unit/TenantServiceTest.php`
+- `tests/Unit/Middleware/TenantMiddlewareTest.php` (3 tests / 6
+  assertions — skip-paths: anoniem request, central-DB unavailable,
+  cache-reset)
 
-**Gap (TODO):** TenantMiddleware heeft alleen service-level tests —
-geen Feature-test die een cross-tenant request forged en 403 asserteert.
-Priority: hoog. Volgende sessie: dedicated `TenantIsolationTest`.
+**Gap (TODO):** Feature-level `TenantIsolationTest` die cross-tenant
+requests forged en 403 asserteert blijft open — vereist full
+factory chain + tenant-DB setup. Priority: hoog. De skip-paths zijn
+nu gedekt; wat rest is de echte multi-tenant enforcement.
 
 **Mutation-score target:** 90 %.
 
