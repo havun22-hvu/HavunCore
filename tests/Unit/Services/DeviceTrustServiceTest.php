@@ -133,4 +133,86 @@ class DeviceTrustServiceTest extends TestCase
         $this->assertFalse($result['success']);
         $this->assertSame('Device not found', $result['message']);
     }
+
+    public function test_get_user_devices_lists_only_active_devices_sorted_by_last_used(): void
+    {
+        [$user, $active] = $this->makeUserWithDevice([
+            'device_name' => 'Recent',
+            'last_used_at' => now(),
+        ]);
+        // Second active device, used earlier (should come after "Recent")
+        AuthDevice::create([
+            'user_id' => $user->id,
+            'token' => Str::random(64),
+            'device_hash' => hash('sha256', 'old'),
+            'device_name' => 'Older',
+            'browser' => 'PHPUnit',
+            'os' => 'Test',
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'phpunit',
+            'is_active' => true,
+            'last_used_at' => now()->subDays(3),
+            'expires_at' => now()->addDays(20),
+        ]);
+        // Revoked device — must NOT appear.
+        AuthDevice::create([
+            'user_id' => $user->id,
+            'token' => Str::random(64),
+            'device_hash' => hash('sha256', 'revoked'),
+            'device_name' => 'Revoked',
+            'browser' => 'PHPUnit',
+            'os' => 'Test',
+            'ip_address' => '127.0.0.1',
+            'user_agent' => 'phpunit',
+            'is_active' => false,
+            'last_used_at' => now(),
+            'expires_at' => now()->addDays(10),
+        ]);
+
+        $devices = (new DeviceTrustService())->getUserDevices($user);
+
+        $this->assertCount(2, $devices, 'Revoked device must not appear in the list');
+        $names = array_column($devices, 'name');
+        $this->assertSame(['Recent', 'Older'], $names, 'Sorted by last_used_at descending');
+        // Shape-check: every entry has the fields the controller expects.
+        foreach ($devices as $entry) {
+            $this->assertArrayHasKey('id', $entry);
+            $this->assertArrayHasKey('ip_address', $entry);
+            $this->assertArrayHasKey('last_used_at', $entry);
+            $this->assertArrayHasKey('expires_at', $entry);
+            $this->assertFalse($entry['is_current'], 'is_current is set by the controller, not the service');
+        }
+    }
+
+    public function test_get_access_logs_returns_recent_log_entries_for_user(): void
+    {
+        [$user] = $this->makeUserWithDevice();
+
+        \App\Models\AuthAccessLog::log(
+            \App\Models\AuthAccessLog::ACTION_LOGIN,
+            $user->id,
+            'Chrome op Mac',
+            '10.0.0.1',
+        );
+        \App\Models\AuthAccessLog::log(
+            \App\Models\AuthAccessLog::ACTION_LOGOUT,
+            $user->id,
+            'Chrome op Mac',
+            '10.0.0.1',
+        );
+
+        $logs = (new DeviceTrustService())->getAccessLogs($user, limit: 10);
+
+        $this->assertCount(2, $logs);
+        $actions = array_column($logs, 'action');
+        $this->assertContains(\App\Models\AuthAccessLog::ACTION_LOGIN, $actions);
+        $this->assertContains(\App\Models\AuthAccessLog::ACTION_LOGOUT, $actions);
+        // Shape-check.
+        foreach ($logs as $entry) {
+            $this->assertArrayHasKey('action', $entry);
+            $this->assertArrayHasKey('device_name', $entry);
+            $this->assertArrayHasKey('ip_address', $entry);
+            $this->assertArrayHasKey('created_at', $entry);
+        }
+    }
 }
