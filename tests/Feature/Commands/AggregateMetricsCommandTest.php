@@ -7,10 +7,6 @@ use App\Models\RequestMetric;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
-/**
- * Coverage voor observability:aggregate command — period validatie,
- * empty-set early-return, hourly + daily aggregation, percentile-calc.
- */
 class AggregateMetricsCommandTest extends TestCase
 {
     use RefreshDatabase;
@@ -104,14 +100,20 @@ class AggregateMetricsCommandTest extends TestCase
 
     public function test_percentile_calculation_picks_correct_value(): void
     {
-        // 100 metrics in window 13:00-13:59
+        // 100 metrics in window 13:00-13:59 — bulk insert om ~100 INSERT-calls
+        // te bundelen tot één query
+        $rows = [];
         for ($i = 1; $i <= 100; $i++) {
-            $this->makeMetric([
+            $rows[] = [
+                'project' => 'havuncore',
+                'method' => 'GET',
+                'path' => '/api/x',
+                'status_code' => 200,
                 'response_time_ms' => $i,
-                'created_at' => sprintf('2026-04-20 13:%02d:%02d',
-                    intdiv($i, 60), $i % 60),
-            ]);
+                'created_at' => sprintf('2026-04-20 13:%02d:%02d', intdiv($i, 60), $i % 60),
+            ];
         }
+        RequestMetric::insert($rows);
 
         $this->artisan('observability:aggregate', ['--period' => 'hourly'])->assertExitCode(0);
 

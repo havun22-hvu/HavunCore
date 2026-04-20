@@ -5,13 +5,10 @@ namespace Tests\Feature;
 use App\Models\AutofixProposal;
 use App\Services\AIProxyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Cache;
 use Mockery;
 use Tests\TestCase;
 
-/**
- * Coverage voor AutoFixController + AutoFixService — analyze/report/fallback/list
- * via HTTP. AIProxyService is gemockt zodat we geen externe Anthropic call doen.
- */
 class AutoFixApiTest extends TestCase
 {
     use RefreshDatabase;
@@ -20,17 +17,21 @@ class AutoFixApiTest extends TestCase
     {
         parent::setUp();
 
+        // Cache::flush voorkomt dat circuit-breaker / rate-limit state lekt
+        // tussen tests (CircuitBreaker en RateLimiter gebruiken cache backend)
+        Cache::flush();
+
         config([
             'autofix.branch_model' => true,
             'autofix.branch_prefix' => 'hotfix/autofix-',
             'autofix.dry_run_on_risk' => ['medium', 'high'],
             'autofix.snapshot_enabled' => true,
-            // AIProxyService constructor leest deze key — vereist non-null in tests
+            // AIProxyService constructor leest deze key — non-null vereist
             'services.claude.api_key' => 'test-key',
         ]);
 
-        // Default neutral mock: voorkomt dat enkel-leesroutes (proposals) de
-        // echte Anthropic-binding raken via container DI ladder.
+        // Default neutral mock: voorkomt dat read-only routes (proposals) de
+        // echte Anthropic-binding raken via container DI ladder
         $this->fakeAi('RISK: low');
     }
 
