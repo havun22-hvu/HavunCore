@@ -115,6 +115,30 @@ class QualitySafetyScannerTest extends TestCase
         $this->assertSame(1, $run['totals']['errors']);
     }
 
+    public function test_composer_silently_skips_server_only_entries(): void
+    {
+        // Server-only entries (no path, only host) must not raise composer
+        // errors — they exist for the `server` check, not for code audits.
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'server-prod' => ['enabled' => true, 'host' => '1.2.3.4', 'user' => 'root'],
+        ], ['composer']);
+
+        $this->assertSame(0, $run['totals']['errors']);
+        $this->assertEmpty($run['findings']);
+    }
+
+    public function test_npm_silently_skips_server_only_entries(): void
+    {
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan([
+            'server-prod' => ['enabled' => true, 'host' => '1.2.3.4', 'user' => 'root'],
+        ], ['npm']);
+
+        $this->assertSame(0, $run['totals']['errors']);
+        $this->assertEmpty($run['findings']);
+    }
+
     public function test_missing_project_path_registers_error(): void
     {
         $scanner = new QualitySafetyScanner;

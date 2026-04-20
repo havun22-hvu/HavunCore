@@ -81,7 +81,10 @@ class QualitySafetyScanner
     private function composerAudit(array $project): array
     {
         $path = $project['path'] ?? null;
-        if (! $path || ! is_dir($path)) {
+        if (! $path) {
+            return ['findings' => []]; // server-only entries (no path) silently skip
+        }
+        if (! is_dir($path)) {
             return ['findings' => [], 'error' => "Project path not found: {$path}"];
         }
         if (! file_exists(rtrim($path, '/\\') . '/composer.json')) {
@@ -128,7 +131,10 @@ class QualitySafetyScanner
     private function npmAudit(array $project): array
     {
         $path = $project['path'] ?? null;
-        if (! $path || ! is_dir($path)) {
+        if (! $path) {
+            return ['findings' => []]; // server-only entries (no path) silently skip
+        }
+        if (! is_dir($path)) {
             return ['findings' => [], 'error' => "Project path not found: {$path}"];
         }
         if (! file_exists(rtrim($path, '/\\') . '/package.json')) {
