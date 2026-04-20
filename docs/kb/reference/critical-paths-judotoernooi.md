@@ -107,15 +107,20 @@ race-condition = oneerlijke uitslag; een judoka verliest zijn plek.
 
 **Tests:**
 
-- `tests/Feature/ScoreRegistrationTest.php` (markIncomplete — TODO in
-  handover, ontgrendelen als pivot-setup + factory chain klaar)
+- `tests/Feature/ScoreRegistrationTest.php` (8 tests / 18 assertions —
+  registreerUitslag sets winnaar / score-placement per winnende kant
+  wit/blauw / isEchtGespeeld / isGelijk / getVerliezerId — alle
+  model-niveau)
 - `tests/Unit/Concerns/HandlesWedstrijdConflictTest.php`
 
 **Mutation-score target:** 90 %.
 
-**Gap (TODO):** `ScoreRegistrationTest` staat gedeeltelijk op
-`markTestIncomplete` (zie handover 20-04 sessie). Zichtbare WIP, niet
-test-erosion. Volgende score-pad PR moet dit ontgrendelen.
+De markTestIncomplete-placeholders uit de 20-04 reconstructie zijn
+ontgrendeld op 2026-04-21 — rescoped naar model-niveau omdat JT geen
+enkele `score.update` HTTP-endpoint heeft (score-registratie verloopt
+via MatController etc. die alle `Wedstrijd::registreerUitslag()`
+aanroepen). Het model-niveau test de atomic unit; HTTP-mocks zouden
+alleen Laravel's routing testen.
 
 ## Pad 4 — Security headers + session-cookie
 
