@@ -11,11 +11,13 @@
 **Claude MOET:**
 
 1. **Docs-first werken** — geen code zonder MD docs/plan
-2. **Coverage >80% halen** voor alle nieuwe interne code (enterprise niveau)
+2. **Zinvolle tests schrijven** op kritieke paden (100 %), business-logica (70-85 %)
+   en glue zo laag als praktisch. Zie het bindend beleid:
+   **[`test-quality-policy.md`](test-quality-policy.md)**. **Geen coverage-padding.**
 3. **ALLE veiligheidstechnieken toepassen** bij externe input/invoer (zie secties 2-10)
 4. **De checklist doorlopen** voordat een feature "klaar" is
 5. **Tests schrijven** voor elke nieuwe functie VOORDAT code gecommit wordt
-6. **Bestaand werk respecteren** — projecten onder 80% worden verbeterd, niet geblokkeerd
+6. **Bestaand werk respecteren** — projecten worden incrementeel verbeterd, niet geblokkeerd
 
 **Bij twijfel:** dit document is leidend, NIET Laravel defaults of persoonlijke voorkeur.
 
@@ -25,7 +27,9 @@
 
 Een Havun project voldoet aan de normen als:
 
-- ✅ Test coverage **>80%** voor alle interne code (niveau enterprise)
+- ✅ **Kritieke paden 100 % gedekt** met zinvolle tests (zie
+  `critical-paths-{project}.md`); mutation-score ≥ 80 op die paden;
+  coverage-% is secundair (zie `test-quality-policy.md`).
 - ✅ **Input validatie** via Form Requests bij elke user input
 - ✅ **Rate limiting** op alle API endpoints en login
 - ✅ **CSRF bescherming** op alle forms (Laravel default)
@@ -41,36 +45,56 @@ Een Havun project voldoet aan de normen als:
 
 ---
 
-## 1. Test Coverage (>80%)
+## 1. Test-kwaliteit (het bindend beleid leidt)
 
-**Norm:** Minimaal 80% line coverage voor alle interne logica.
+**Autoritatief:** [`test-quality-policy.md`](test-quality-policy.md).
+Dit is vanaf 2026-04-20 leidend boven de oude "coverage >80 %"-eis.
 
-| Coverage | Niveau | Acceptabel? |
-|----------|--------|-------------|
-| 0-20% | Gevaarlijk | ❌ Blokkeer deploy |
-| 20-40% | Basis | ⚠️ Werk-in-progress |
-| 40-60% | Goed | ⚠️ Verbeter stap voor stap |
-| 60-80% | Professioneel | ✅ Acceptabel |
-| **80-90%** | **Enterprise** | ✅ **Norm** |
-| 90%+ | Mission-critical | ✅ Ideaal |
+### Samengevat
 
-**Havun status:** Actuele coverage per project → [`test-coverage-normen.md`](../runbooks/test-coverage-normen.md). 8 van 9 projecten boven 80%-norm (16-04-2026).
+| Laag | Eis | Voorbeelden |
+|------|-----|-------------|
+| **Kritiek** | **100 %** — elke branch, edge-case, faalpad, mutation-score ≥ 80 | Auth, betalingen, migraties, security headers, data-integriteit, credential-handling |
+| **Business-logica** | 70-85 % happy path + belangrijke errors | Services, queries, workflows, commands met business-regels |
+| **Glue** | zo laag als praktisch (typisch 20-40 %) | Thin controllers, DTOs, views, framework-boilerplate |
 
-**Wat moet getest worden:**
-- Business logica (berekeningen, validaties, workflows)
-- Eloquent models (relaties, scopes, methodes)
-- Controllers (happy path + error paths)
-- Services (alle publieke methodes)
-- Policies (autorisatie)
-- Middleware (guards, rate limits)
+**Projectgemiddelde ≈ 65-75 %** — bewust gekalibreerd, niet zwakte.
 
-**Wat hoeft NIET getest:**
-- Blade templates (wel smoke tests voor pagina's)
-- Migration files
-- Config files
-- Third-party code
+### Coverage-% is secundair, maar blijft CI-gate
 
-**Details:** `docs/kb/patterns/regression-guard-tests.md`
+Om **gaten zichtbaar te maken** (niet om ons eraan te meten):
+
+| Suite-type | CI-drempel |
+|------------|------------|
+| Unit-only | **≥ 60 %** |
+| Unit + Feature (Laravel full) | **≥ 80 %** |
+
+Onder drempel = review verplicht, geen auto-merge. Boven drempel ≠ klaar —
+mutation-score op kritieke paden blijft het echte signaal.
+
+### Havun status
+
+- HavunCore Full: 92,29 % Lines ✓ (maar belangrijker: kritieke paden lijst
+  in `critical-paths-havuncore.md`).
+- Andere projecten: incrementele migratie naar deze standaard — voorheen
+  opgebouwde `*Coverage*Test`-padding wordt systematisch opgeruimd,
+  vervangen door zinvolle kritieke-paden-dekking.
+
+### Wat telt als zinvolle test
+
+Zie `test-quality-policy.md` §4. Kort:
+
+1. Assertie die waarneembare uitkomst controleert.
+2. Faalt als het gedrag verandert (mutation-bestendig).
+3. Test gedrag, niet implementatie-details.
+4. Naam beschrijft het scenario, niet een LOC-doel.
+
+### Verboden patronen
+
+- `*CoverageTest.php`, `*Coverage[0-9]Test`, `*Boost*Test`, `*Ultimate*Test`,
+  `Final*Test`, `Push[0-9]+Test`, `Last[0-9]+Test`, `Over[0-9]+Test`.
+- `assertTrue(true)`, tautologieën, duplicate scenarios zonder nieuwe branches.
+- Assertion-flip zonder oorzakenonderzoek (VP-17).
 
 ---
 

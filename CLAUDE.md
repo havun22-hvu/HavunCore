@@ -10,7 +10,9 @@
 1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
 2. NOOIT features/UI-elementen verwijderen zonder instructie
 3. NOOIT credentials/keys/env aanraken
-4. ALTIJD tests draaien voor én na wijzigingen (coverage >80%)
+4. ALTIJD tests draaien voor én na wijzigingen. **Kritieke paden 100 %
+   gedekt + mutation-score hoog** — zie `docs/kb/reference/test-quality-policy.md`.
+   Geen coverage-padding. Coverage-% is secundair; zinvolheid is primair.
 5. ALTIJD toestemming vragen bij grote wijzigingen
 6. NOOIT een falende test "fixen" door de assertion te wijzigen — eerst oorzakenonderzoek (VP-17)
 
