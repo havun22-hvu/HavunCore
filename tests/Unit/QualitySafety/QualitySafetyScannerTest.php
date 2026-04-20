@@ -236,6 +236,22 @@ class QualitySafetyScannerTest extends TestCase
         $this->assertSame(0, $run['totals']['errors']);
     }
 
+    public function test_observatory_sends_host_as_querystring_not_json_body(): void
+    {
+        // Mozilla Observatory v2 API requires `host` in the querystring.
+        // Sending it as a JSON body triggers HTTP 400 "querystring must have required property 'host'".
+        Http::fake([
+            '*' => Http::response(['grade' => 'A', 'score' => 100]),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $scanner->scan([
+            'good' => ['enabled' => true, 'url' => 'https://example.havun.nl'],
+        ], ['observatory']);
+
+        Http::assertSent(fn ($request) => str_contains($request->url(), 'host=example.havun.nl'));
+    }
+
     public function test_observatory_grade_c_triggers_high_finding(): void
     {
         config()->set('quality-safety.observatory.min_grade', 'B');

@@ -284,7 +284,8 @@ class QualitySafetyScanner
         try {
             $response = Http::timeout(30)
                 ->acceptJson()
-                ->post($endpoint, ['host' => $host]);
+                ->withHeaders(['Content-Length' => '0'])
+                ->post($endpoint . '?' . http_build_query(['host' => $host]));
         } catch (\Throwable $e) {
             return ['findings' => [], 'error' => "Observatory request failed for {$host}: {$e->getMessage()}"];
         }
