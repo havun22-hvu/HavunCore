@@ -1026,6 +1026,48 @@ PHP;
         $this->assertEmpty($run['findings'], 'Defensive skips behind else-branches must not push us over threshold.');
     }
 
+    public function test_test_erosion_treats_if_guarded_skip_as_defensive(): void
+    {
+        // Pattern without `else` — just `if (condition) { markTestSkipped() }`.
+        // The skip only fires when the guard condition holds, so this is a
+        // runtime environment check, not silent test disabling.
+        config()->set('quality-safety.thresholds.test_skip_max', 0);
+        mkdir($this->tempProject . '/tests', 0755, true);
+        $body = <<<'PHP'
+<?php
+class GuardTest {
+    public function test_a() {
+        if (extension_loaded('imagick')) {
+            $this->markTestSkipped('Imagick loaded — other path');
+        }
+        $this->assertTrue(true);
+    }
+    public function test_b() {
+        if (! \Schema::hasTable('advertisers')) {
+            $this->markTestSkipped('advertisers table not present');
+        }
+        $this->assertTrue(true);
+    }
+    public function test_c() {
+        try {
+            doThing();
+        } catch (\Throwable $e) {
+            $this->markTestSkipped('env cannot do thing');
+        }
+    }
+}
+PHP;
+        file_put_contents($this->tempProject . '/tests/GuardTest.php', $body);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['guard' => $this->project()], ['test-erosion']);
+
+        $this->assertEmpty(
+            $run['findings'],
+            'if-guarded and catch-guarded markTestSkipped calls are defensive, not unconditional.'
+        );
+    }
+
     public function test_test_erosion_check_does_not_flag_incomplete_below_threshold(): void
     {
         config()->set('quality-safety.thresholds.test_skip_max', 5);

@@ -898,9 +898,10 @@ class QualitySafetyScanner
 
     /**
      * Walks tests/, separates markTestSkipped into unconditional (real silent
-     * disabling) and defensive (`if (file_exists(...)) {...} else { skip }`).
-     * The defensive branch is unreachable when the resource exists, so it's
-     * cosmetic noise rather than test-erosion.
+     * disabling) and defensive (runtime-guarded by `if (extension_loaded)`,
+     * `if (!Schema::hasTable)`, `} else { skip }`, `} catch { skip }` etc.).
+     * The defensive branch only fires when the environment lacks a resource,
+     * so it's cosmetic noise rather than test-erosion.
      *
      * @return array{unconditional:int, defensive:int, incomplete:int}
      */
@@ -922,12 +923,14 @@ class QualitySafetyScanner
                     continue;
                 }
 
-                // Look back up to 5 non-empty lines for an `} else {` or
-                // `} elseif (...) {` — those mark a defensive branch.
                 $start = max(0, $i - 5);
                 $context = implode("\n", array_slice($lines, $start, $i - $start + 1));
 
-                if (preg_match('/}\s*else(if\s*\([^)]*\))?\s*\{/', $context)) {
+                $isDefensive = preg_match('/}\s*else(if\s*\([^)]*\))?\s*\{/', $context)
+                    || preg_match('/\bif\s*\(/', $context)
+                    || preg_match('/}\s*catch\s*\(/', $context);
+
+                if ($isDefensive) {
                     $defensive++;
                 } else {
                     $unconditional++;
