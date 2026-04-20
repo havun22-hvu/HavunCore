@@ -647,10 +647,15 @@ class QualitySafetyScanner
             'google-api' => '/\bAIza[0-9A-Za-z\-_]{35}\b/',
             'slack' => '/\bxox[baprs]-[0-9]{10,}-[0-9]{10,}-[A-Za-z0-9]{24,}\b/',
             'github-pat' => '/\bghp_[A-Za-z0-9]{36}\b/',
+            'github-fine-grained-pat' => '/\bgithub_pat_[A-Za-z0-9_]{82}\b/',
             'mollie-live' => '/\bmollie_live_[A-Za-z0-9]{20,}\b/',
             'mollie-test' => '/\bmollie_test_[A-Za-z0-9]{20,}\b/',
             'resend' => '/\bre_[A-Za-z0-9_]{16,}\b/',
             'anthropic' => '/\bsk-ant-[A-Za-z0-9\-_]{50,}\b/',
+            'openai' => '/\bsk-proj-[A-Za-z0-9\-_]{40,}\b/',
+            'sentry-dsn' => '/\bhttps?:\/\/[a-f0-9]{32}@[\w.-]*sentry\.io\/\d+\b/',
+            'digitalocean' => '/\bdop_v1_[a-f0-9]{64}\b/',
+            'huggingface' => '/\bhf_[A-Za-z0-9]{34,}\b/',
         ];
 
         $hits = $this->scanFilesForSecrets($root, $patterns);

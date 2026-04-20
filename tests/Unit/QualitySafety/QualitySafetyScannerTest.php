@@ -725,6 +725,48 @@ UNITS,
         $this->assertStringEndsWith(substr($secret, -4), $masked);
     }
 
+    public function test_secrets_check_detects_openai_project_key(): void
+    {
+        file_put_contents(
+            $this->tempProject . '/openai.php',
+            "<?php\n\$key = 'sk-proj-" . str_repeat('AbCdEf12_', 5) . "';\n"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['oa' => $this->project()], ['secrets']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('openai', $run['findings'][0]['kind']);
+    }
+
+    public function test_secrets_check_detects_sentry_dsn(): void
+    {
+        file_put_contents(
+            $this->tempProject . '/sentry.php',
+            "<?php\n\$dsn = 'https://" . str_repeat('a', 32) . "@o12345.ingest.sentry.io/678';\n"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['s' => $this->project()], ['secrets']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('sentry-dsn', $run['findings'][0]['kind']);
+    }
+
+    public function test_secrets_check_detects_digitalocean_token(): void
+    {
+        file_put_contents(
+            $this->tempProject . '/do.php',
+            "<?php\n\$tok = 'dop_v1_" . str_repeat('a', 64) . "';\n"
+        );
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['do' => $this->project()], ['secrets']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('digitalocean', $run['findings'][0]['kind']);
+    }
+
     public function test_secrets_check_skips_non_text_extensions(): void
     {
         file_put_contents(
