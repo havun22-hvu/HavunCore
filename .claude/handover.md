@@ -2,6 +2,37 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 20 april 2026 (avond/nacht) — Coverage push HavunCore + JT/HP/HA baseline
+
+### Wat gedaan vannacht:
+- **HavunCore: doel >80% bereikt** — Lines 92,29% (5510/5970), Methods 82,40% (398/483)
+  - 23 nieuwe Feature-tests in 2 commits (a833d50 → 2d193ee, gepusht naar master):
+    - `tests/Feature/AutoFixApiTest.php` (11) — controller + service via HTTP, AIProxy gemockt
+    - `tests/Feature/Commands/PerformanceBaselineCommandTest.php` (6) — observability:baseline
+    - `tests/Feature/Commands/AggregateMetricsCommandTest.php` (6) — observability:aggregate
+  - Refactor: bulk-insert helpers (~400 INSERTs → 4 queries), Cache::flush isolatie
+- **JT/HP/HA baseline gemeten** (zie hieronder) — alle drie zitten 33-37% Lines, multi-sessie werk
+
+### Cross-project coverage status (20-04-2026 21:00):
+| Project | Lines | Methods | Notitie |
+|---------|-------|---------|---------|
+| HavunCore | **92,29%** ✅ | 82,40% ✅ | doel bereikt |
+| JT (full suite) | 37,60% | 50,23% | 18.344 LOC, gap ~7800 → 50-100 testfiles |
+| HavunAdmin (Unit only) | 32,68% | 44,74% | 9.124 LOC, Feature-suite kan nog veel toevoegen |
+| Herdenkingsportaal (Unit only) | 34,33% | 47,60% | 16.736 LOC, 1 bestaande failure in FinalCoverageBoost2Test.php:414 |
+
+**Realiteit:** JT/HA/HP naar >80% trekken vergt elk 2-5 sessies werk. Niet trekken in 1 nacht zonder Henk's keuze welk project prioriteit krijgt.
+
+### Volgende sessie keuze:
+1. **HavunAdmin Feature-suite ook draaien** — zou Lines flink kunnen optillen (analoog HavunCore Unit 19% → Full 92%)
+2. **JT top-10 zwaarste 0%-controllers** — incrementele push 37% → 50% in 1 sessie
+3. **HP 1 falende test fixen** (`FinalCoverageBoost2Test.php:414`) voordat coverage-push start
+4. **Studieplanner Functions-coverage** — staat op 77,05% Functions / 82,67% Lines (Jest, React Native), kortste afstand naar 80%
+
+Mijn advies: optie 1 of 4 — kortste afstand tot meetbare ">80% bereikt"-mijlpaal.
+
+---
+
 ## Sessie: 19/20 april 2026 — K&V uitbreiding + security hardening + VP-17 reconstructie
 
 ### Wat gedaan:
