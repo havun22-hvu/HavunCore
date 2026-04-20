@@ -189,9 +189,51 @@ test. Priority: middel — de gate zelf is nu gedekt op model-niveau;
 wat rest is een Feature-level test die bewijst dat alle write-routes
 die gate aanroepen. Kan in een aparte sessie.
 
+## Pad 6 — Local-sync gate (offline-tournament-day)
+
+**Waarom kritiek:** LocalSyncAuth beschermt sync-routes die tijdens
+toernooidagen over een LAN worden gebruikt door mat-devices. De
+middleware heeft een drievoudige allow-logica (offline-mode / private-
+IP / shared-secret) — een misconfiguratie betekent óf dat het
+tournament-LAN geblokkeerd wordt (geen scores), óf dat het open web
+fake wedstrijd-data kan indienen.
+
+**Componenten:**
+
+- `app/Http/Middleware/LocalSyncAuth.php`
+
+**Tests:**
+
+- `tests/Unit/Middleware/LocalSyncAuthTest.php` (7 tests / 8
+  assertions — offline-mode bypass / 192.168.x / 10.x / loopback /
+  public-IP-without-token 403 / public-IP-with-token OK / wrong-token
+  403)
+
+**Mutation-score target:** 90 %.
+
+## Pad 7 — Scoreboard API bearer-token gate
+
+**Waarom kritiek:** mat-TVs en LCD-scoreborden fetchen live
+wedstrijddata via een Bearer-token (gestoked op DeviceToegang.api_token).
+Een token-check-bug laat willekeurige rollen (weger/spreker)
+scoreboard-data scrapen of, slechter, fake scores posten.
+
+**Componenten:**
+
+- `app/Http/Middleware/CheckScoreboardToken.php`
+- `app/Models/DeviceToegang` (rol ∈ {scoreboard, mat})
+
+**Tests:**
+
+- `tests/Unit/Middleware/CheckScoreboardTokenTest.php` (5 tests / 9
+  assertions — missing bearer / unknown token / unauthorized-role
+  token / valid scoreboard-token / valid mat-token)
+
+**Mutation-score target:** 85 %.
+
 ## Audit-checklist (externe review)
 
-1. Klopt het aantal paden? (5 actieve + TODO's).
+1. Klopt het aantal paden? (7 actieve + TODO's).
 2. Bevat elk pad componenten + branches + tests?
 3. Zijn de tests actueel? → `critical-paths:verify --project=judotoernooi`.
 4. Wordt test-erosion gemonitord? → ja, K&V-scanner.
