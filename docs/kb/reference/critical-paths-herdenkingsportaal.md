@@ -191,12 +191,14 @@ bugs), of elke mini-fout triggert code-wijzigingen (chaos).
 
 **Tests:**
 
-- `tests/Unit/AutoFixServiceTest.php` (TBC — als bestaand)
+- `tests/Unit/AutoFixServiceTest.php` (20 tests — bestaand, dekt
+  service-niveau edge-cases van de AutoFix-pipeline)
 
-**Gap (TODO):** AutoFix-tests zijn verspreid over `AutoFixServiceCoverage2..4Test`
-(padding-candidates). Na sanitization: één dedicated
-`AutoFixServiceTest` met expliciete scenario's voor elke branch
-hierboven.
+**Gap (TODO):** een deel van de AutoFix-coverage zit verspreid over
+`AutoFixServiceCoverage2..4Test` (padding-naming). Tijdens de
+sanitization-ronde worden die 3 files inhoudelijk tegen
+`AutoFixServiceTest.php` gelegd — duplicates gaan weg, uniek-nog-niet-
+elders-gedekte scenarios verhuizen naar `AutoFixServiceTest`.
 
 **Mutation-score target:** 85 %.
 
