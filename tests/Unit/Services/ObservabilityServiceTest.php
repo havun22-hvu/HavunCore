@@ -117,4 +117,43 @@ class ObservabilityServiceTest extends TestCase
 
         $this->assertSame(1, (new ObservabilityService())->getDashboard()['slow_queries']['last_24h']);
     }
+
+    public function test_quality_findings_returns_null_when_no_scans(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+
+        $this->assertNull((new ObservabilityService())->getQualityFindings());
+    }
+
+    public function test_quality_findings_reads_latest_scan_and_filters_high_critical(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+
+        $older = [
+            'findings' => [['severity' => 'critical', 'project' => 'x', 'check' => 'old']],
+            'totals' => ['critical' => 1, 'high' => 0, 'errors' => 0],
+        ];
+        $latest = [
+            'findings' => [
+                ['severity' => 'critical', 'project' => 'jt', 'check' => 'observatory', 'title' => 'grade F'],
+                ['severity' => 'high', 'project' => 'hp', 'check' => 'forms', 'title' => '52%'],
+                ['severity' => 'medium', 'project' => 'hp', 'check' => 'x', 'title' => 'ignored'],
+            ],
+            'totals' => ['critical' => 1, 'high' => 1, 'errors' => 0],
+        ];
+        $disk->put('qv-scans/2026-04-19/run-older.json', json_encode($older));
+        // Force distinct mtimes by touching the older file backwards.
+        touch($disk->path('qv-scans/2026-04-19/run-older.json'), time() - 3600);
+        $disk->put('qv-scans/2026-04-20/run-newer.json', json_encode($latest));
+
+        $result = (new ObservabilityService())->getQualityFindings();
+
+        $this->assertIsArray($result);
+        $this->assertSame(1, $result['totals']['critical']);
+        $this->assertSame(1, $result['totals']['high']);
+        $this->assertCount(2, $result['findings']);
+        $severities = array_column($result['findings'], 'severity');
+        $this->assertSame(['critical', 'high'], $severities);
+    }
 }

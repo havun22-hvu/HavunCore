@@ -8,6 +8,7 @@ use App\Models\RequestMetric;
 use App\Models\SlowQuery;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Observability Service
@@ -85,7 +86,63 @@ class ObservabilityService
             'slow_queries' => [
                 'last_24h' => $slowQueryCount,
             ],
+            'quality_findings' => $this->getQualityFindings(),
             'generated_at' => $now->toIso8601String(),
+        ];
+    }
+
+    /**
+     * Read the most recent qv:scan run and return a summary of findings.
+     *
+     * Returns null when no scan has been recorded yet.
+     */
+    public function getQualityFindings(): ?array
+    {
+        $disk = Storage::disk(config('quality-safety.storage.disk', 'local'));
+        $root = rtrim((string) config('quality-safety.storage.root', 'qv-scans'), '/');
+
+        $latestPath = null;
+        $latestMtime = 0;
+        foreach ($disk->allFiles($root) as $file) {
+            if (! str_ends_with($file, '.json')) {
+                continue;
+            }
+            $mtime = $disk->lastModified($file);
+            if ($mtime > $latestMtime) {
+                $latestMtime = $mtime;
+                $latestPath = $file;
+            }
+        }
+
+        if ($latestPath === null) {
+            return null;
+        }
+
+        $raw = $disk->get($latestPath);
+        $data = is_string($raw) ? json_decode($raw, true) : null;
+        if (! is_array($data)) {
+            return null;
+        }
+
+        $findings = collect($data['findings'] ?? [])
+            ->filter(fn ($f) => in_array($f['severity'] ?? null, ['critical', 'high'], true))
+            ->map(fn ($f) => [
+                'severity' => $f['severity'],
+                'project' => $f['project'] ?? null,
+                'check' => $f['check'] ?? null,
+                'title' => $f['title'] ?? ($f['message'] ?? ''),
+            ])
+            ->values()
+            ->all();
+
+        return [
+            'last_scan_at' => \Carbon\CarbonImmutable::createFromTimestamp($latestMtime)->toIso8601String(),
+            'totals' => [
+                'critical' => (int) ($data['totals']['critical'] ?? 0),
+                'high' => (int) ($data['totals']['high'] ?? 0),
+                'errors' => (int) ($data['totals']['errors'] ?? 0),
+            ],
+            'findings' => $findings,
         ];
     }
 
