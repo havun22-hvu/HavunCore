@@ -40,9 +40,15 @@ Een bug = lek of uitval. Auth-bypass hier is een incident.
 
 **Tests die dit afdekken:**
 
-- `tests/Feature/VaultControllerTest.php` (happy path + auth)
-- `tests/Feature/Middleware/EnsureAdminTokenTest.php`
-- `tests/Unit/Vault/*` (service/encryptie)
+- `tests/Feature/VaultTest.php`
+- `tests/Feature/VaultControllerExtendedTest.php` (admin-token gating + edge-cases)
+- `tests/Unit/VaultSecretTest.php`
+- `tests/Unit/VaultProjectTest.php`
+- `tests/Unit/VaultAccessLogTest.php`
+- `tests/Unit/VaultConfigTest.php`
+
+**Gap (TODO):** dedicated `EnsureAdminTokenTest` als aparte middleware-unit
+ontbreekt. Dekking zit nu impliciet in `VaultControllerExtendedTest`.
 
 **Mutation-score target:** 90 %.
 **Laatst geverifieerd:** _te meten — eerstvolgende mutation run._
@@ -69,7 +75,7 @@ isolatie, kost geld per call, mag niet lekken.
 
 **Tests:**
 
-- `tests/Feature/AiChatApiTest.php`
+- `tests/Feature/AIProxyControllerTest.php`
 - `tests/Unit/Services/AIProxyServiceTest.php`
 - `tests/Unit/Services/CircuitBreakerTest.php`
 
@@ -101,7 +107,11 @@ Verkeerde check = verkeerde fix in production.
 **Tests:**
 
 - `tests/Feature/AutoFixApiTest.php`
-- `tests/Unit/Services/AutoFixServiceTest.php`
+- `tests/Feature/AutoFixDeliveryModeTest.php`
+
+**Gap (TODO):** dedicated unit-level `AutoFixServiceTest` ontbreekt —
+service wordt nu alleen via API-feature tests gehit. Risico: edge-cases
+in `isProjectFile()` / rate-limit logica moeilijker te isoleren.
 
 **Mutation-score target:** 85 %.
 
@@ -182,9 +192,14 @@ terwijl er iets stuk is, weten we het niet.
 
 **Tests:**
 
-- `tests/Feature/SecurityHeadersMiddlewareTest.php` (of equivalent)
+**Gap (TODO — must-build):** er bestaat geen dedicated test voor
+`SecurityHeaders` middleware in HavunCore. Security headers zijn
+kritiek (Mozilla Observatory grade, CSP, HSTS) — zonder eigen test is
+een regressie pas zichtbaar bij de externe scan. Prioriteit: hoog.
+Zie `stubs/SecurityHeaders.php` voor het contract dat de tests
+moeten afdwingen.
 
-**Mutation-score target:** 85 %.
+**Mutation-score target:** 85 % (zodra test bestaat).
 
 ## Pad 7 — Audit infrastructure (`critical-paths:verify`)
 
