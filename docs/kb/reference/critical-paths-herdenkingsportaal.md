@@ -82,12 +82,11 @@ getrashed memorial per ongeluk publiceren.
 **Tests:**
 
 - `tests/Feature/MemorialControllerTest.php`
-
-**Gap (TODO):** lifecycle-transities zijn onderbedekt in één enkele
-test-file. De meeste coverage zit verspreid over `MemorialControllerCoverage*`
-padding-files die tijdens de sanitization-ronde worden gereviewd. Na
-saneren: een dedicated `MemorialLifecycleTest` met alle 5 transities
-expliciet.
+- `tests/Feature/MemorialLifecycleTest.php` (7 tests / 28 assertions —
+  preview default, upgrade-to-premium, publish-from-premium,
+  publish-from-preview guarded, rollback-to-preview, rollback blocked
+  on complete_custom, rollback blocked when arweave_transaction_id
+  set)
 
 **Mutation-score target:** 90 %.
 
