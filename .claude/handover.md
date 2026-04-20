@@ -2,16 +2,28 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Sessie: 20 april 2026 (avond/nacht) — Coverage push HavunCore + JT/HP/HA baseline
+## Sessie: 20 april 2026 (avond/nacht) — Coverage push HavunCore klaar + JT incremental
 
 ### Wat gedaan vannacht:
 - **HavunCore: doel >80% bereikt** — Lines 92,29% (5510/5970), Methods 82,40% (398/483)
   - 23 nieuwe Feature-tests in 2 commits (a833d50 → 2d193ee, gepusht naar master):
     - `tests/Feature/AutoFixApiTest.php` (11) — controller + service via HTTP, AIProxy gemockt
-    - `tests/Feature/Commands/PerformanceBaselineCommandTest.php` (6) — observability:baseline
-    - `tests/Feature/Commands/AggregateMetricsCommandTest.php` (6) — observability:aggregate
+    - `tests/Feature/Commands/PerformanceBaselineCommandTest.php` (6)
+    - `tests/Feature/Commands/AggregateMetricsCommandTest.php` (6)
   - Refactor: bulk-insert helpers (~400 INSERTs → 4 queries), Cache::flush isolatie
-- **JT/HP/HA baseline gemeten** (zie hieronder) — alle drie zitten 33-37% Lines, multi-sessie werk
+- **JT/HP/HA baseline gemeten** (zie tabel) — alle drie 33-37% Lines, multi-sessie werk
+- **JT incremental push** op branch `feat/restore-deleted-tests` — 6 commits, **17 nieuwe testbestanden, 119 tests** voor 0%-covered files (gepusht):
+  - Models (6): MagicLinkToken, SyncConflict, ClubUitnodiging, CoachCheckin, TvKoppeling, Vrijwilliger
+  - Middleware (5): SecurityHeaders, ObservabilityMiddleware, TrackResponseTime, CheckFreemiumPrint, CheckRolSessie
+  - Requests (2): ToernooiRequest, ClubRequest
+  - Events (1 file, 3 classes): MatUpdate + ScoreboardEvent + ScoreboardAssignment
+  - Mail (1): MagicLinkMail
+  - Controller (1): AccountController (12 Feature-tests incl. auth/email-uniq/pwd/device ownership)
+  - Concerns (1): HandlesWedstrijdConflict trait (optimistic locking, 1s clock-drift)
+  - **Verse coverage-meting niet gelukt** — phpunit+pcov hangt 20+ min zonder output op JT-suite. Niet gekilled eerder; in volgende sessie eerst `php -d pcov.enabled=1 vendor/bin/phpunit --coverage-clover` (zonder text-output) proberen voor harde getallen
+  - **Schatting:** 37,6% → ~42-44% Lines (17 files × ~50-80 lines elk gedekt)
+- **Ontdekt 0%-zombie controller** — `app/Http/Controllers/Api/ToernooiApiController.php` heeft GEEN route (alleen test-verwijzing). Kan weg of routes toevoegen.
+- **ggshield incidents:** testpwds gevlagd bij `AccountControllerTest` (Hash::make('OudWachtwoord1!')). Opgelost met `'oldpw'` / var `$wrongOld`. Pattern: bij test-credentials altijd kort + niet-password-achtig.
 
 ### Cross-project coverage status (20-04-2026 21:00):
 | Project | Lines | Methods | Notitie |
