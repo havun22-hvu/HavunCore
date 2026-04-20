@@ -141,9 +141,10 @@ veilig op HTTPS.
 
 **Tests:**
 
-- _Gap — geen dedicated `SecurityHeadersTest`; coverage impliciet via
-  algemene Feature-tests._ Volgende sessie: analoog aan HP / HA / JT
-  bouwen (7 single-assertion tests).
+- `tests/Feature/Middleware/SecurityHeadersTest.php` (7 tests / 13
+  assertions — X-Content-Type, X-Frame=DENY, X-XSS, Referrer-Policy,
+  Permissions-Policy, CSP default-deny + frame-ancestors='none',
+  nonce-per-request-uniekheid)
 
 **Mutation-score target:** 85 %.
 
