@@ -79,7 +79,7 @@ class CriticalPathsVerifyCommand extends Command
     private function verifyProject(string $project, string $docPath, DocParser $parser, TestRunner $runner): array
     {
         $paths = $parser->parseFile($docPath);
-        $checker = new ReferenceChecker(base_path());
+        $checker = new ReferenceChecker($this->resolveProjectRoot($project));
 
         $pathReports = [];
         $totalRefs = $ok = $missing = $failed = 0;
@@ -166,6 +166,22 @@ class CriticalPathsVerifyCommand extends Command
             $this->line("  Summary: {$t['paths']} paths / {$t['references']} refs / {$t['ok']} ok / {$t['missing']} missing / {$t['failed']} failed");
             $this->line('');
         }
+    }
+
+    /**
+     * Resolve the filesystem root that test references in this project's
+     * critical-paths doc are relative to. For HavunCore itself that's the
+     * Laravel base-path; for other projects we re-use the path configured
+     * in config/quality-safety.php so references stay repo-relative.
+     */
+    private function resolveProjectRoot(string $project): string
+    {
+        $configured = config("quality-safety.projects.{$project}.path");
+        if (is_string($configured) && $configured !== '' && is_dir($configured)) {
+            return $configured;
+        }
+
+        return base_path();
     }
 
     /**
