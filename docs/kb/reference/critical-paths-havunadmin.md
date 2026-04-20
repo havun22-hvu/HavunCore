@@ -204,8 +204,9 @@ Priority: hoog. Volgende sessie: dedicated `TenantIsolationTest`.
 
 **Tests:**
 
-- _Gap — geen dedicated SecurityHeadersTest gevonden. Volgende sessie:
-  analoog aan HP/JT bouwen (7 single-assertion tests)._
+- `tests/Feature/Middleware/SecurityHeadersTest.php` (7 tests / 12 assertions —
+  X-Content-Type, X-Frame=SAMEORIGIN, X-XSS, Referrer-Policy,
+  Permissions-Policy, CSP default-deny, nonce-per-request-uniekheid)
 
 **Mutation-score target:** 85 %.
 
