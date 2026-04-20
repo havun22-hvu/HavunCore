@@ -56,13 +56,33 @@
   `defensive` (`if-else` markTestSkipped) — HP rapportage van 25 → 19
   echt actie-vereisend.
 
-### Eerlijke coverage-status (gemeten 20-04 vroeg):
+### Eerlijke coverage-status (gemeten 20-04 vroeg, na 2e ronde tests):
 
 | Project | Unit-only | Full (Unit + Feature) |
 |---|---:|---:|
-| HavunCore | 22.4 % | **58.7 %** (CI hard min 50 %) |
-| JudoToernooi | 37.6 % | (full liep — niet afgerond) |
+| HavunCore | **26.1 %** (was 19.9 %, +6.2pp) | 58.7 % (CI hard min 50 %) |
+| JudoToernooi | 37.6 % (was 37.6 %) | (full liep — niet afgerond) |
 | Anderen | niet gemeten deze sessie | — |
+
+**Patroon:** elke 8-10 model/service Unit-tests = +0.5-1pp Unit-coverage.
+Om naar 80 % Unit te komen vanaf 26 % zijn ~500-700 nieuwe tests nodig.
+Niet realistisch in 1 sessie. Beter: per release 50-100 nieuwe tests +
+mutation-testing om dode code te identificeren.
+
+**HavunCore tests deze nacht (+54):**
+- Models (35): AuthDevice (11), AutofixProposal (6), VaultSecret (6),
+  VaultAccessLog (3), SlowQuery (3), VaultProject (9), ClaudeTask (8),
+  ChaosResult (4), MetricsAggregated (4)
+- Services (34): CircuitBreaker (8), PostcodeService (5), DeviceTrustService
+  (8), ObservabilityService (5), AIProxyService (8)
+
+**JT tests deze nacht (+30) op `feat/restore-deleted-tests` branch (PR #2):**
+- Restored: AuthenticationTest (5/5 incl. rate-limit), JudoToernooiException
+  (34/34), ErrorNotificationServiceTest (5/5)
+- Placeholders: JudokaManagementTest (5x markIncomplete), ScoreRegistrationTest
+  (4x markIncomplete) — vereisen pivot setUp + factory chain
+- Coverage push: PaymentProviderFactory (5), InternetMonitorService (9),
+  ActivityLogger (7), BackupService (4)
 
 80 %-target is **niet gehaald** in deze nacht. Service-tests verhogen Unit
 nauwelijks omdat Feature-tests dezelfde paden al raken; om Unit + Full
