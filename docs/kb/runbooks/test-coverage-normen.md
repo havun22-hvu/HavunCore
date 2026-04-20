@@ -8,6 +8,8 @@
 
 **Verscherpte norm voor projecten met publieke betalingen: 85%** (Herdenkingsportaal).
 
+> **Belangrijk:** coverage is een proxy, geen doel. Alleen **zinvolle tests** tellen — contracts, invariants, bug-regressies en domein-regels. Coverage-padding (getters, triviale booleans, relationship-type checks) is verboden. Zie [`docs/kb/patterns/zinvolle-tests.md`](../patterns/zinvolle-tests.md) voor de volledige regels en voorbeelden.
+
 ## Huidige Stand (16 april 2026, PCOV + Jest)
 
 | Project | Coverage | Tests | Status |
@@ -112,6 +114,6 @@ $memorial = Memorial::factory()
 
 ## Zie Ook
 
+- `docs/kb/patterns/zinvolle-tests.md` — wat wel/niet testen (kernregel: geen padding)
 - `docs/kb/decisions/enterprise-quality-standards.md` — waarom 80%
-- `docs/kb/patterns/regression-guard-tests.md` — regression guard tests
 - `docs/kb/runbooks/github-testing-plan.md` — CI/CD testing plan

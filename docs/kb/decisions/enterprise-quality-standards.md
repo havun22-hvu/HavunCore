@@ -26,6 +26,7 @@ Alle Havun projecten moeten voldoen aan enterprise quality standards:
 | Target line coverage | **90%+** |
 | Functionele tests prioriteit | Boven cosmetische tests |
 | Kritieke paden | Payment webhooks, auth flows, data integrity |
+| Test-soort | Alleen zinvolle tests (contract/invariant/regressie/domein) — zie `docs/kb/patterns/zinvolle-tests.md`. Coverage-padding is verboden. |
 
 ### Code Grootte Limieten
 

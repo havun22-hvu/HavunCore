@@ -165,6 +165,7 @@ docs/audit/                   ← Kwartaal-audit (extern)
 - [design-inspiration-session.md](reference/design-inspiration-session.md) - Design inspiration
 
 ### Patterns (herbruikbare code)
+- [zinvolle-tests.md](patterns/zinvolle-tests.md) - **VERPLICHT:** Wat wel/niet testen (geen padding, alleen contract/invariant/regressie/domein)
 - [regression-guard-tests.md](patterns/regression-guard-tests.md) - **VERPLICHT:** Regression/guard/smoke tests + coverage targets
 - [integrity-check.md](patterns/integrity-check.md) - Shadow file `.integrity.json` validatie
 - [email-verification.md](patterns/email-verification.md) - Email verificatie met 6-cijferige code
