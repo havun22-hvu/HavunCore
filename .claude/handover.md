@@ -70,6 +70,22 @@
 - **SP `screens.test.tsx`**: pre-existing JS heap OOM tijdens render
   op regel 120. Niets mee te maken met mijn werk. Apart onderzoek.
 
+### HP test-repair (VP-17):
+
+- `Over80Test::test_verify_bunq_payments_command` en
+  `FinalCoverageBoost2Test::test_verify_bunq_payments_normal_mode`
+  asserteerden beide exit code 1 met de comment "no file argument in
+  non-interactive mode". Het command heeft nooit zo'n file-argument
+  gehad — stale assertion.
+- Per VP-17 niet gewoon de assertion geflipt. Onderzocht en gebleken
+  dat `Tests\Feature\CoverageDeepCommandsTest` het command al grondig
+  dekt (not-configured / --test mode configured+unconfigured /
+  normal-mode happy path via `Http::fake`). Dus de 2 stale tests waren
+  duplicate coverage-padding + foute assertion. Verwijderd met
+  comment-verwijzingen naar de surviving tests.
+- HP Unit: 0 failed, 2012 passed, 7 skipped. Suite is weer 100 %
+  groen en klaar voor een echte coverage-push.
+
 ### Eindstaat qv:scan:
 
 | Severity | Was begin sessie | Nu |
