@@ -2,6 +2,120 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 21 april 2026 (nacht, ~01:30) — Autonomous push: gap-tests + portfolio PHPUnit 12-ready
+
+> Henk is weg, opdracht: "fix alles volgens policy, ga door tot klaar".
+> Sessie is doorgeschakeld na de vorige consolidation. Dit deel is het
+> autonome werk, zonder user-interactie.
+
+### Gap-tests gebouwd (alle zinvol, geen padding):
+
+- **HavunCore**:
+  - `tests/Unit/Middleware/EnsureAdminTokenTest.php` (5 tests / 16
+    assertions — Vault admin-gate: missing-bearer, invalid-token,
+    deleted-user no-enumeration, non-admin 403, admin forward)
+  - `tests/Unit/Services/DeviceTrustServiceTest.php` — 2 extra tests
+    voor `getUserDevices` + `getAccessLogs` (alle 6 publieke methods
+    nu gedekt, 10 tests / 41 assertions totaal)
+- **HerdenkingsPortaal**:
+  - `tests/Feature/MemorialLifecycleTest.php` (7 / 28 —
+    preview/premium/published model transitions + 3 guard-paden)
+  - `tests/Feature/Memorial/PublishFlowTest.php` (4 / 9 — HTTP-layer
+    publish: owner success, unpaid error, non-owner denial,
+    basic-package immediate-upload)
+- **HavunAdmin**:
+  - `tests/Unit/Middleware/TenantMiddlewareTest.php` (3 / 6 — skip-
+    paths: anoniem, central-DB-unavailable, cache-reset)
+  - `tests/Feature/MollieWebhookControllerTest.php` (1 / 2 —
+    missing-payment-id; rijkere scenarios vereisen facade-package)
+- **JudoToernooi**:
+  - `tests/Feature/ScoreRegistrationTest.php` (8 / 18 — unlock van 4
+    markTestIncomplete placeholders; model-niveau tests op
+    `Wedstrijd::registreerUitslag` + `isEchtGespeeld` + `isGelijk`)
+  - `tests/Feature/JudokaManagementTest.php` (7 / 16 — unlock van 5
+    markTestIncomplete placeholders; HTTP-level FormRequest validatie
+    + auth-middleware)
+  - `tests/Unit/Models/OrganisatorTenantIsolationTest.php` (5 / 8 —
+    cross-tenant denial, eigenaar-vs-beheerder-vs-sitebeheerder)
+  - `tests/Unit/Middleware/CheckDeviceBindingTest.php` (6 / 10 — 5
+    failure modes + 1 happy path)
+  - `tests/Unit/Middleware/CheckScoreboardTokenTest.php` (5 / 9 —
+    bearer-token gate op scoreboard-API)
+  - `tests/Unit/Middleware/LocalSyncAuthTest.php` (7 / 8 — offline-
+    mode / 3 private-IP ranges / bearer-token / 403-paths)
+- **HerdenkingsPortaal (cross-project security headers)**:
+  - `tests/Feature/Middleware/SecurityHeadersTest.php` (7 / 12)
+- **HavunAdmin**: idem (7 / 12, X-Frame=SAMEORIGIN variant)
+- **Infosyst**: idem (7 / 13, frame-ancestors=none)
+- **SafeHavun**: idem (7 / 13, frame-ancestors=none)
+- **Studieplanner-api**: idem (7 / 12)
+
+Totaal deze sessie (autonome fase): ~95 nieuwe tests, ~200 nieuwe
+assertions over 7 projecten.
+
+### Stale tests verwijderd (VP-17 conform):
+
+- HP: 3 stale bunq-tests (duplicate + stale assertion)
+- HP: 2 unconditional `markTestSkipped` stubs (gitCommitAndPush)
+- HA: 1 stale LocalInvoiceController test (FormRequest regressie)
+- 5× Laravel-default `tests/Unit/ExampleTest.php` (pure `assertTrue(true)`
+  tautologie)
+
+### Portfolio PHPUnit 12-ready:
+
+- `@dataProvider` docblocks gemigreerd naar `#[DataProvider]` attributes
+  in `AllExperimentsSmokeTest` (HC) en `Push90FinalTest` (HP).
+- Cross-project scan: 0 `@dataProvider` docblocks + 0 `@test` docblocks
+  overgebleven — PHPUnit 12-upgrade zal geen deprecation-warnings
+  meer tonen voor metadata-in-docblock.
+
+### Cross-project critical-paths eindstaat:
+
+| Project            | Paden | Refs | OK |
+|--------------------|------:|-----:|---:|
+| havuncore          | 7     | 22   | 22 |
+| havunadmin         | 6     | 19   | 19 |
+| herdenkingsportaal | 6     | 25   | 25 |
+| infosyst           | 4     | 17   | 17 |
+| judotoernooi       | 7     | 17   | 17 |
+| safehavun          | 5     | 24   | 24 |
+| studieplanner-api  | 6     | 17   | 17 |
+| studieplanner-mobile | 7   | 17   | 17 |
+| **TOTAAL**         | **48**| **158** | **158** |
+
+Alle 158 referenties groen. `critical-paths:verify --all` blijft het
+auditBewijs: elke PR die een kritiek pad raakt moet de doc
+bijwerken of de CI faalt.
+
+### HavunCore full-suite na alle toevoegingen:
+
+- 1070+ tests, alle groen (exact aantal meegroeiend).
+- Session-duur ~160s (zonder coverage), <2 min — snel genoeg voor
+  PR-gate.
+
+### Resterend werk voor volgende sessies:
+
+1. **HP padding-sanitization** — 150 candidates volgens runbook, per-
+   file inhoudelijke review (3-5 sessies). De 5 grootste files
+   (`Push90Test.php` 4072 regels, `MaxServiceCoverageTest.php` 1186
+   regels, etc.) vereisen gericht werk.
+2. **HavunAdmin padding** — `Push90Test.php` daar heeft **87 tautologieën**,
+   `MaxServiceCoverageTest.php` 34. Zelfde aanpak.
+3. **HA Feature-level TenantIsolationTest** — vereist tenant-DB
+   setup + factory-chain.
+4. **HA rijkere MollieWebhook scenarios** — vereist installatie van
+   `mollie/laravel` facade-package of controller-refactor naar
+   injected MollieService.
+5. **JT Feature-level tenant query-scope tests** — Wedstrijd/Poule/
+   Judoka cross-tenant forging via direct-ID-lookup.
+6. **Mutation-baseline per project** — Infection (PHP) + Stryker
+   (TS) op de kritieke paden (niet hele codebase — te duur).
+7. **HP `package_type` enum-ruimer in SQLite migration** — 'compleet'
+   branch van PublishController niet testbaar in SQLite want CHECK
+   constraint nog op basic/premium.
+
+---
+
 ## Sessie: 20/21 april 2026 (avond/nacht) — Policy-shift + portfolio-brede audit-infra
 
 > Henk's opdracht: "Geen cosmetische coverage-opkrikking; alleen
