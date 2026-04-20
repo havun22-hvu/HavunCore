@@ -174,13 +174,16 @@ deelnemers/scores van elkaar.
 **Tests:**
 
 - `tests/Unit/Middleware/CheckRolSessieTest.php`
+- `tests/Unit/Models/OrganisatorTenantIsolationTest.php` (5 tests / 8
+  assertions — cross-tenant denial, pivot-required, eigenaar vs
+  beheerder roles, sitebeheerder-override, legacy organisator_id
+  does not grant access)
 
 **Gap (TODO):** query-scope tenant-isolatie op Wedstrijd/Poule/Judoka
-heeft nu geen dedicated test. Prioriteit: middel — exploitatie
-vereist dat een organisator zelf requests forged met andere tenant-
-IDs. Niet trivial maar wel doenbaar. Volgende sessie: een
-`TenantIsolationTest.php` die alle kritieke models test op
-cross-tenant access.
+(cross-request forging via direct-ID-lookup) heeft nog geen dedicated
+test. Priority: middel — de gate zelf is nu gedekt op model-niveau;
+wat rest is een Feature-level test die bewijst dat alle write-routes
+die gate aanroepen. Kan in een aparte sessie.
 
 ## Audit-checklist (externe review)
 
