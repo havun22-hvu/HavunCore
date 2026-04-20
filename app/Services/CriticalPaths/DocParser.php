@@ -53,7 +53,7 @@ class DocParser
                 $inTestsSection = false;
             }
 
-            if ($inTestsSection && preg_match('/^\s*-\s+`([^`]+\.php)`/u', $line, $m)) {
+            if ($inTestsSection && preg_match('/^\s*-\s+`([^`]+\.(?:php|ts|tsx|js|jsx))`/u', $line, $m)) {
                 $current['references'][] = $m[1];
             }
         }

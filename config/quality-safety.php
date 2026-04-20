@@ -57,6 +57,14 @@ return [
             'url' => 'https://havuncore.havun.nl',
         ],
 
+        // Studieplanner mobile (Expo) — no composer, no URL, no SSL.
+        // Registered so `critical-paths:verify --project=studieplanner-mobile`
+        // can resolve the repo root for file-existence checks.
+        'studieplanner-mobile' => [
+            'enabled' => env('QV_STUDIEPLANNER_MOBILE_ENABLED', true),
+            'path' => env('STUDIEPLANNER_MOBILE_LOCAL_PATH', 'D:/GitHub/Studieplanner'),
+        ],
+
         // Server-only entry: triggers the `server` health check (no path/url).
         // composer/npm/ssl/observatory are skipped automatically.
         'server-prod' => [

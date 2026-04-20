@@ -131,4 +131,29 @@ MD;
     {
         $this->assertSame([], (new DocParser)->parseFile('/nonexistent/critical-paths.md'));
     }
+
+    public function test_picks_up_typescript_and_javascript_references(): void
+    {
+        // Non-Laravel projects (React Native / Jest) reference `.ts` / `.tsx` /
+        // `.js` / `.jsx` test-files — the parser must not limit itself to `.php`.
+        $md = <<<'MD'
+## Pad 1 — Mobile
+
+**Tests die dit afdekken:**
+
+- `src/services/__tests__/storage.test.ts`
+- `src/components/__tests__/Button.test.tsx`
+- `src/legacy/helpers.test.js`
+- `src/utils/old-util.test.jsx`
+MD;
+
+        $result = (new DocParser)->parse($md);
+
+        $this->assertSame([
+            'src/services/__tests__/storage.test.ts',
+            'src/components/__tests__/Button.test.tsx',
+            'src/legacy/helpers.test.js',
+            'src/utils/old-util.test.jsx',
+        ], $result[0]['references']);
+    }
 }
