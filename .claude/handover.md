@@ -2,6 +2,45 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 19/20 april 2026 — K&V uitbreiding + security hardening + VP-17 reconstructie
+
+### Wat gedaan:
+**K&V-systeem van 4 → 11 checks** (composer / npm / ssl / observatory / server / forms / ratelimit / secrets / session-cookies / test-erosion / debug-mode). Allemaal scheduled in `routes/console.php` met off-minute spreiding.
+
+**Security gaps gedicht cross-project:**
+- HavunCore Vault admin endpoints: nieuwe `EnsureAdminToken` middleware (waren unauthenticated)
+- HavunCore + SafeHavun + Infosyst: rate-limiters (auth/auth-session/webhook) + TrustProxies(127.0.0.1)
+- 6 projecten: `SESSION_SECURE_COOKIE` default `true` (was env-fallback null)
+- HavunCore: 12 nieuwe FormRequests (Vault + QrAuth) → coverage 47% → ≥60%
+- HavunAdmin: 4 nieuwe FormRequests (LocalInvoice + AiChat) → 56% → ≥60%
+- HP + SafeHavun: GenerateQrRequest voor device-tracking input
+- HavunCore CI: hard 50% coverage drempel in tests.yml (was geen drempel)
+- HavunCore: PM2 productie-runtime van root → www-data (zie `pm2_www_data_migration.md` in memory)
+- Poort-register als single source of truth: `docs/kb/reference/poort-register.md`
+
+**VP-17 reconstructie:** vandaag bleek dat ik in feb 2026 zelf 4 JudoToernooi tests verwijderde i.p.v. fixen (commit f01b04 — "Remove complex Feature tests"). Branch `feat/restore-deleted-tests` herstel:
+- AuthenticationTest 5/5 pass (incl. rate-limit)
+- JudoToernooiExceptionTest 34/34 pass (API-aanpassingen voor `technicalMessage:` + safe-fallback userMessage)
+- JudokaManagementTest + ScoreRegistrationTest als markTestIncomplete-placeholders met TODO (vereisen M-N pivot setUp + Wedstrijd factory chain — diep werk)
+
+**Test-erosion check** (qv:scan --only=test-erosion) preventief: detecteert toekomstige deletions + onderscheidt unconditional vs defensive markTestSkipped patronen.
+
+### Eindstaat cross-project (qv:scan):
+- 0 critical findings
+- 1 high finding: judotoernooi/forms 52% (geblokkeerd door WIP-branch feat/vp18-alpine-csp-migration)
+- 0 ratelimit / secrets / debug-mode / session-cookies findings
+- Test-erosion: HP 19 unconditional skipped, JudoToernooi 16+10 incomplete (zichtbare WIP — placeholders)
+
+### Openstaande items:
+1. **HavunAdmin Alpine `@alpinejs/csp` migratie** (groot — 268 expressies, 30 inline x-data, 17 function-based — eigen sessie)
+2. **HavunCore CI-coverage 50→80%** (incremental: nieuwe tests per release)
+3. **JudoToernooi placeholders → echt** (JudokaManagementTest + ScoreRegistrationTest reconstrueren met factory chain)
+4. **HP nog 15 dead-skip patronen** opruimen (zelfde patroon als de 3 AutoFixService die we vandaag fixten)
+5. **`feat/restore-deleted-tests` PR** maken naar JudoToernooi main na merge feat/vp18-alpine-csp-migration
+6. **Cache backend Redis op productie** (throttle-counters in file = synchronous I/O — staat in memory feedback)
+
+### Sessie eerder hieronder:
+
 ## Sessie: 19 april 2026 — K&V-systeem (Kwaliteit & Veiligheid)
 
 ### Wat gedaan:
