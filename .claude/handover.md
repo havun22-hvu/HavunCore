@@ -31,13 +31,55 @@
 - 0 ratelimit / secrets / debug-mode / session-cookies findings
 - Test-erosion: HP 19 unconditional skipped, JudoToernooi 16+10 incomplete (zichtbare WIP — placeholders)
 
-### Openstaande items:
-1. **HavunAdmin Alpine `@alpinejs/csp` migratie** (groot — 268 expressies, 30 inline x-data, 17 function-based — eigen sessie)
-2. **HavunCore CI-coverage 50→80%** (incremental: nieuwe tests per release)
-3. **JudoToernooi placeholders → echt** (JudokaManagementTest + ScoreRegistrationTest reconstrueren met factory chain)
-4. **HP nog 15 dead-skip patronen** opruimen (zelfde patroon als de 3 AutoFixService die we vandaag fixten)
-5. **`feat/restore-deleted-tests` PR** maken naar JudoToernooi main na merge feat/vp18-alpine-csp-migration
-6. **Cache backend Redis op productie** (throttle-counters in file = synchronous I/O — staat in memory feedback)
+### Vervolg-werk in dezelfde nacht 20-04 vroeg ochtend:
+
+- **2 extra K&V-checks**: test-erosion (preventief — VP-17 voorkomen) +
+  debug-mode (`APP_DEBUG=true` lekken voorkomen). Totaal 11 → 13
+  scheduled checks.
+- **VP-17 reconstructie 2 (vervolg)**: 6 obsolete `markTestSkipped`
+  tests in JT (ErrorNotificationService email-API) verwijderd EN
+  vervangen door 5 nieuwe Log-mock based tests die de huidige
+  AutofixProposal-store API dekken.
+- **Coverage push**: 5 untested services geactiveerd:
+  - JT: PaymentProviderFactory (5), InternetMonitorService (9),
+    ActivityLogger (7), BackupService (4) — 25 nieuwe tests
+  - HavunCore: CircuitBreaker (8), PostcodeService (5), DeviceTrustService
+    (8), ObservabilityService (5), AIProxyService (8) — 34 nieuwe tests
+  - Cross-project npm CVE patches (HP × 2, HavunAdmin × 5 incl. axios HIGH,
+    JT × 2 picomatch + rollup HIGH)
+  - 5 HP dead-skip patterns (welcome.blade.php × 2, AutoFixService × 3)
+    vervangen door echte assertFileExists
+  - HavunCore session.php gepubliceerd + `SESSION_SECURE_COOKIE=true`
+- **Bug-fix qv:scan**: composer/npm silent-skip voor server-only entries
+  (was 2 errors per scan).
+- **Test-erosion heuristic verbeterd**: onderscheid `unconditional` vs
+  `defensive` (`if-else` markTestSkipped) — HP rapportage van 25 → 19
+  echt actie-vereisend.
+
+### Eerlijke coverage-status (gemeten 20-04 vroeg):
+
+| Project | Unit-only | Full (Unit + Feature) |
+|---|---:|---:|
+| HavunCore | 22.4 % | **58.7 %** (CI hard min 50 %) |
+| JudoToernooi | 37.6 % | (full liep — niet afgerond) |
+| Anderen | niet gemeten deze sessie | — |
+
+80 %-target is **niet gehaald** in deze nacht. Service-tests verhogen Unit
+nauwelijks omdat Feature-tests dezelfde paden al raken; om Unit + Full
+boven 80 % te krijgen moet er meer worden gedaan dan testen-toevoegen
+(bv. mutation-test om dode code te identificeren, of Feature → Unit
+test-refactor). Eigen sessie waardig.
+
+### Resterende openstaande items:
+1. **HavunAdmin Alpine `@alpinejs/csp` migratie** (groot — 268 expressies, eigen sessie)
+2. **JT JudokaManagementTest + ScoreRegistrationTest** placeholders → echt (M-N pivot setUp + Wedstrijd factory chain)
+3. **HavunCore + JT remaining untested services** (HavunCore: AutoFixService, QrAuthService; JT: ToernooiService, FactuurService, LocalSyncService, OfflineExportService, etc.)
+4. **JT 16 unconditional markTestSkipped** audit (6 "service refactored" patterns nog over — tests onderzoeken)
+5. **`feat/restore-deleted-tests` PR** naar JT main na merge WIP-branch
+6. **Cache backend Redis op prod** (throttle file → Redis voor performance)
+7. **JT esbuild/vite naar v8** (`npm audit fix --force` met breaking change — eigen sessie met dev-server smoke-test)
+8. **SQLite enum-CHECK constraint fix** voor JT autofix_proposals (table-rebuild voor full status-set in test-DB)
+9. **HP CoverageInvoiceServiceTest + Last82Test**: runtime skip-patterns checken
 
 ### Sessie eerder hieronder:
 
