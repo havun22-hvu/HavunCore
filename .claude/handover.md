@@ -2,6 +2,116 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 20/21 april 2026 (avond/nacht) — Policy-shift + portfolio-brede audit-infra
+
+> Henk's opdracht: "Geen cosmetische coverage-opkrikking; alleen
+> zinvolle, robuuste tests op gevoelige locaties. 100 % (aantoonbare)
+> kwaliteit. Ga door tot klaar."
+
+### Beleid (bindend, vanaf 20-04-2026):
+
+- **`docs/kb/reference/test-quality-policy.md`** — 3-lagen-model
+  (kritiek 100 % / business 70-85 % / glue 20-40 %), definitie van
+  zinvolle tests, verboden padding-patronen, wanneer tests mogen worden
+  verwijderd, audit-ready checklist.
+- **`docs/kb/runbooks/coverage-padding-sanitization.md`** — werkwijze +
+  pilot-leerpunt (naam is geen bewijs; `MiscCoverageTest.php` heeft 14
+  echte tests ondanks padding-naam).
+- **`docs/kb/reference/havun-quality-standards.md`** — coverage-%
+  gedegradeerd naar secundaire CI-gate (Unit ≥ 60 %, Full ≥ 80 %);
+  policy leidt.
+- **`CLAUDE.md` regel 4** aangescherpt: "Kritieke paden 100 % gedekt +
+  mutation-score hoog".
+
+### `critical-paths:verify` command (MPC fase 1→3):
+
+- Nieuwe artisan-command die `critical-paths-{project}.md` parseert,
+  glob-referenties uitvouwt, bestaan van test-files checkt en
+  optioneel (`--run`) draait.
+- Multi-project: leest project-root uit `config/quality-safety.php`.
+- Scheduler: dagelijks 03:52 via `routes/console.php`.
+- 24 gerichte tests (geen padding).
+- Refactor na review: glob-matches collapsen naar 1 Artisan-call
+  (was N-boots bom); `LatestRunFinder` gedeeld met `QualitySafetyLogCommand`;
+  60s cache voor dashboard hot-path.
+
+### Kritieke-paden documenten (alle 7 projecten):
+
+| Project        | Paden | Refs | OK |
+|----------------|-------|------|----|
+| havuncore      |   7   |  21  | 21 |
+| havunadmin     |   6   |  17  | 17 |
+| herdenkingsportaal | 6 |  23  | 23 |
+| infosyst       |   4   |  17  | 17 |
+| judotoernooi   |   5   |  13  | 13 |
+| safehavun      |   5   |  24  | 24 |
+| studieplanner-api |  6 |  17  | 17 |
+| **TOTAAL**     | **39**| **132**| **132** |
+
+Zero broken references. Elke PR die een kritiek pad raakt moet de
+bijbehorende doc bijwerken (gate: `critical-paths:verify` in CI).
+
+### Nieuwe tests deze sessie (allemaal zinvol, geen padding):
+
+- **HavunCore**:
+  - `tests/Unit/Config/SessionConfigTest.php` (4 tests / 5 assertions)
+  - `tests/Unit/CriticalPaths/DocParserTest.php` (7 / 14)
+  - `tests/Unit/CriticalPaths/ReferenceCheckerTest.php` (5 / 12)
+  - `tests/Unit/CriticalPaths/TestRunnerTest.php` (3 / 7)
+  - `tests/Feature/Commands/CriticalPathsVerifyCommandTest.php` (8 /
+    assertieve scenario-coverage voor exit-codes + JSON + --run)
+- **HP**: `tests/Feature/Middleware/SecurityHeadersTest.php` (7 / 12)
+- **HA**: idem (7 / 12) — X-Frame=SAMEORIGIN (invoice-iframe)
+- **Infosyst**: idem (7 / 13) — frame-ancestors='none' asserted
+- **SafeHavun**: idem (7 / 13) — frame-ancestors='none' asserted
+- **Studieplanner-api**: idem (7 / 12)
+
+Totaal: ~55 nieuwe tests, ~130 nieuwe assertions.
+
+### Stale tests verwijderd (VP-17 conform):
+
+- **HP**: 3 stale bunq-tests (`FinalCoverageBoost2Test`, `Over80Test`,
+  `Push825Test`) asserteerden exit code 1 voor een "file-argument" dat
+  nooit heeft bestaan. Coverage gedekt door `CoverageDeepCommandsTest`.
+- **HavunAdmin**: `Last825Test::test_local_invoice_controller_available_transactions`
+  — stale assertion na FormRequest-hardening. Coverage gedekt door
+  `ControllerCoverage2Test` (3 route-tests).
+
+### Coverage-padding sanitization — pilot:
+
+- 150 files met padding-achtige namen in HP geïdentificeerd (runbook).
+- Pilot-leerpunt: `MiscCoverageTest.php` heeft ondanks naam 14 zinvolle
+  tests → **naam alleen is geen bewijs**; inhoudelijke check
+  verplicht.
+- Geen massa-deletions; systematisch proces over 3-5 toekomstige
+  sessies.
+
+### Stand van K&V-scan:
+
+- 0 critical / 2 high / 0 errors.
+- Beide highs zijn bekende accepted items:
+  - HP `XrpPaymentServiceCoverage2Test` deletion (legitiem; verified).
+  - JT forms 52 % (blocked by `feat/vp18-alpine-csp-migration` WIP).
+
+### Volgende sessie (in volgorde van waarde):
+
+1. **Gerichte missing tests** (expliciete TODO's uit critical-paths docs):
+   - HA `TenantIsolationTest` + `MollieWebhookControllerTest`
+   - HP `MemorialLifecycleTest`
+   - JT `TenantIsolationTest`
+   - JT ScoreRegistrationTest — ontgrendelen markTestIncomplete
+2. **Mutation-baseline** per project (Infection, start met kritieke
+   paden alleen — niet hele codebase).
+3. **Coverage-padding sanitization** volgens runbook (HP ~150 files, JT
+   klein aantal, HA paar `Coverage2/3`-files).
+4. **JT `feat/vp18-alpine-csp-migration` merge** (nog DRAFT; groot —
+   Henk's keuze).
+5. **Studieplanner (Expo mobile) critical-paths** — nog niet opgesteld
+   (Jest i.p.v. PHPUnit; `critical-paths:verify` ondersteunt nu alleen
+   Laravel).
+
+---
+
 ## Sessie: 20 april 2026 (middag/avond) — K&V draad opgepakt + SP >80 %
 
 ### K&V-systeem (alle openstaande items uit voorgaande sessie):
