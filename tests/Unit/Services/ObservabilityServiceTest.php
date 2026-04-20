@@ -129,23 +129,20 @@ class ObservabilityServiceTest extends TestCase
     {
         \Illuminate\Support\Facades\Storage::fake('local');
         $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        $today = now()->toDateString();
 
-        $older = [
+        $disk->put("qv-scans/2025-01-01/run-older.json", json_encode([
             'findings' => [['severity' => 'critical', 'project' => 'x', 'check' => 'old']],
             'totals' => ['critical' => 1, 'high' => 0, 'errors' => 0],
-        ];
-        $latest = [
+        ]));
+        $disk->put("qv-scans/{$today}/run-newer.json", json_encode([
             'findings' => [
                 ['severity' => 'critical', 'project' => 'jt', 'check' => 'observatory', 'title' => 'grade F'],
                 ['severity' => 'high', 'project' => 'hp', 'check' => 'forms', 'title' => '52%'],
                 ['severity' => 'medium', 'project' => 'hp', 'check' => 'x', 'title' => 'ignored'],
             ],
             'totals' => ['critical' => 1, 'high' => 1, 'errors' => 0],
-        ];
-        $disk->put('qv-scans/2026-04-19/run-older.json', json_encode($older));
-        // Force distinct mtimes by touching the older file backwards.
-        touch($disk->path('qv-scans/2026-04-19/run-older.json'), time() - 3600);
-        $disk->put('qv-scans/2026-04-20/run-newer.json', json_encode($latest));
+        ]));
 
         $result = (new ObservabilityService())->getQualityFindings();
 
