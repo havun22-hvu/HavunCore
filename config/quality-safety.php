@@ -100,6 +100,24 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Test-erosion exclusions
+    |--------------------------------------------------------------------------
+    |
+    | Deletions of these paths never count as erosion. Laravel's default
+    | `ExampleTest.php` files contain only `assertTrue(true)` — removing them
+    | is sanitization, not test-loss.
+    |
+    */
+
+    'test_erosion' => [
+        'ignored_deletions' => [
+            'tests/Unit/ExampleTest.php',
+            'tests/Feature/ExampleTest.php',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Mozilla Observatory
     |--------------------------------------------------------------------------
     |

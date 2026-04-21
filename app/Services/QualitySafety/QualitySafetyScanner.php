@@ -864,6 +864,10 @@ class QualitySafetyScanner
         $threshold = (int) config('quality-safety.thresholds.test_skip_max', 10);
 
         $deletedSince = $this->recentlyDeletedTests($root, days: 30);
+        $ignored = (array) config('quality-safety.test_erosion.ignored_deletions', []);
+        if (! empty($ignored)) {
+            $deletedSince = array_values(array_diff($deletedSince, $ignored));
+        }
         if (! empty($deletedSince)) {
             $files = implode(', ', array_slice($deletedSince, 0, 5));
             $more = count($deletedSince) > 5 ? sprintf(' (+%d more)', count($deletedSince) - 5) : '';

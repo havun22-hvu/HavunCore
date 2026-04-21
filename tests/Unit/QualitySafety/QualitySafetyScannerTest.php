@@ -1068,6 +1068,53 @@ PHP;
         );
     }
 
+    public function test_test_erosion_ignores_configured_boilerplate_deletions(): void
+    {
+        config()->set('quality-safety.test_erosion.ignored_deletions', [
+            'tests/Unit/ExampleTest.php',
+        ]);
+
+        mkdir($this->tempProject . '/.git', 0755, true);
+        mkdir($this->tempProject . '/tests', 0755, true);
+
+        Process::fake([
+            '*' => Process::result(
+                output: "tests/Unit/ExampleTest.php\ntests/Unit/RealTest.php\n",
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['gitrepo' => $this->project()], ['test-erosion']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertContains('tests/Unit/RealTest.php', $run['findings'][0]['deleted_files']);
+        $this->assertNotContains('tests/Unit/ExampleTest.php', $run['findings'][0]['deleted_files']);
+    }
+
+    public function test_test_erosion_reports_no_finding_when_only_ignored_files_deleted(): void
+    {
+        config()->set('quality-safety.test_erosion.ignored_deletions', [
+            'tests/Unit/ExampleTest.php',
+            'tests/Feature/ExampleTest.php',
+        ]);
+
+        mkdir($this->tempProject . '/.git', 0755, true);
+        mkdir($this->tempProject . '/tests', 0755, true);
+
+        Process::fake([
+            '*' => Process::result(
+                output: "tests/Unit/ExampleTest.php\ntests/Feature/ExampleTest.php\n",
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['only-ignored' => $this->project()], ['test-erosion']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
     public function test_test_erosion_check_does_not_flag_incomplete_below_threshold(): void
     {
         config()->set('quality-safety.thresholds.test_skip_max', 5);
