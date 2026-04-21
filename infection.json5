@@ -34,14 +34,16 @@
         "customPath": "vendor/bin/phpunit"
     },
     // Baseline 17-04-2026: 53,78% MSI / 53% Covered MSI.
-    // 21-22-04-2026 sessie: 5 kritieke paden uitgewerkt met Infection-runs
-    // (Vault 91, AIProxy 81, AutoFix 87, DeviceTrust 100, Observability 100,
-    // CriticalPaths 88,89 — zie docs/kb/runbooks/infection-setup-plan.md §2–3).
-    // Drempel opgehoogd 48 → 60 als regressie-gate; blijft 5pp onder verwachte
-    // `app/Services`-brede baseline om flake-marge te houden. Volgende
-    // verhoging naar 70 zodra de kwartaal-baseline-run dat bevestigt.
-    "minMsi": 60,
-    "minCoveredMsi": 60,
+    // 22-04-2026 brede `app/Services` baseline-run: 74 % Covered MSI
+    // (100 % Mutation Code Coverage). Drempel nu `minMsi=70`: 4pp onder
+    // werkelijke baseline om flake-marge te houden.
+    // Per-pad targets in docs/kb/reference/critical-paths-havuncore.md
+    // (85-90 %) worden separately gebound via de CI matrix-job met
+    // `infection-critical-paths.json5`. Zie
+    // `docs/kb/reference/mutation-baseline-2026-04-22.md` voor de
+    // volledige run-tabel en drempel-historie.
+    "minMsi": 70,
+    "minCoveredMsi": 70,
     "mutators": {
         "@default": true,
         "global-ignoreSourceCodeByRegex": [

@@ -23,8 +23,19 @@
 | Datum | `minMsi` | Rationale |
 |-------|---------:|-----------|
 | 17-04 | 48 | Baseline (53,78 %) − 5pp flake-marge |
-| **22-04** | **60** | **5 paden boven 85 %; brede baseline nu verwacht ≥ 65 %** |
-| (gepland 01-07) | 70 | na kwartaal-baseline-run als bevestiging |
+| 22-04 (eerste pas) | 60 | 5 paden op target; brede baseline nog niet gemeten |
+| **22-04 (tweede pas)** | **70** | **Brede `app/Services` baseline-run: 74 % (gemeten deze sessie), drempel gezet op 70 om flake-marge van 4 pp te behouden** |
+| (gepland 01-07) | 75 | na kwartaal-run als bevestiging dat 74 % geen uitschieter is |
+
+## Brede `app/Services` baseline (22-04-2026)
+
+| Metric | Waarde |
+|--------|--------|
+| Scope | `app/Services` minus `Chaos`, `DocIntelligence` |
+| Totaal mutaties | ~700 (gelijkaardig aan 17-04) |
+| Mutation Code Coverage | **100 %** (was 87,4 %) |
+| **Covered Code MSI** | **74 %** (was 53,78 %) |
+| Drempel `minMsi` | 70 — 4 pp onder actual |
 
 ## AIProxy — false-positive floor (9 pp onder target)
 
