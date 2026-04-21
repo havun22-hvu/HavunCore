@@ -39,10 +39,13 @@ Parallel-werk met agents (pad 4, 5, 7) + handmatige runs op pad 1
 **Resterende werk (uit plan):**
 - AIProxy MySQL-integration fixture → echte 90 % (de gap bestaat uit
   CastInt-mutaties op SUM/COUNT die SQLite niet kan onderscheiden).
-- Pad 6 Session-cookie defaults (nog niet los gemeten — klein scope,
-  waarschijnlijk 1 run naar target).
-- CI matrix-job: per-pad `--min-msi` als PR-gate activeren via
-  `infection-critical-paths.json5`.
+- Pad 6 Session-cookie defaults: gedocumenteerd als **n/a** voor
+  mutation-testing — `config/session.php` is een return-array zonder
+  executable logic; bestaande `SessionConfigTest` pint via
+  file-content + runtime-config assertions.
+- CI matrix-job (commit `1b4ffe5`): per-pad `--min-msi` gate op elke
+  PR via `infection-critical-paths.json5`. Thresholds hardcoded; te
+  syncen met `critical-paths-havuncore.md` wanneer targets wijzigen.
 - `minMsi` globaal verhogen van 48 → 60 → 75 zodra alle paden
   stabiel boven 85 % blijven.
 
