@@ -19,9 +19,96 @@ class ObservabilityServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    private ObservabilityService $service;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->service = new ObservabilityService();
+    }
+
+    /**
+     * Create a RequestMetric with sane defaults. Overrides win.
+     */
+    private function makeRequest(array $overrides = []): RequestMetric
+    {
+        return RequestMetric::create(array_merge([
+            'project' => 'hc',
+            'method' => 'GET',
+            'path' => '/x',
+            'status_code' => 200,
+            'response_time_ms' => 1,
+            'created_at' => now(),
+        ], $overrides));
+    }
+
+    private function makeError(array $overrides = []): ErrorLog
+    {
+        return ErrorLog::create(array_merge([
+            'project' => 'hc',
+            'exception_class' => 'E',
+            'message' => 'm',
+            'file' => '/x',
+            'line' => 1,
+            'severity' => 'warning',
+            'fingerprint' => 'fp-' . uniqid('', true),
+            'last_occurred_at' => now(),
+            'created_at' => now(),
+        ], $overrides));
+    }
+
+    private function makeSlowQuery(array $overrides = []): SlowQuery
+    {
+        return SlowQuery::create(array_merge([
+            'project' => 'hc',
+            'query' => 'SELECT 1',
+            'time_ms' => 100,
+            'connection' => 'mysql',
+            'created_at' => now(),
+        ], $overrides));
+    }
+
+    private function makeMetricsRow(array $overrides = []): MetricsAggregated
+    {
+        return MetricsAggregated::create(array_merge([
+            'project' => 'hc',
+            'period' => 'hourly',
+            'period_start' => now(),
+            'path' => null,
+            'request_count' => 1,
+            'error_count' => 0,
+            'server_error_count' => 0,
+            'avg_response_time_ms' => 1,
+            'p95_response_time_ms' => 1,
+            'p99_response_time_ms' => 1,
+            'min_response_time_ms' => 1,
+            'max_response_time_ms' => 1,
+        ], $overrides));
+    }
+
+    /**
+     * Subclass that exposes the two protected methods under test.
+     * Killing ProtectedVisibility mutations requires calling through
+     * this subclass, not direct invocation on the base.
+     */
+    private function exposedService(): ObservabilityService
+    {
+        return new class extends ObservabilityService {
+            public function callDbSize(): float
+            {
+                return $this->getDatabaseSize();
+            }
+
+            public function callTableSizes(): array
+            {
+                return $this->getObservabilityTableSizes();
+            }
+        };
+    }
+
     public function test_dashboard_returns_zero_stats_when_no_metrics(): void
     {
-        $dashboard = (new ObservabilityService())->getDashboard();
+        $dashboard = $this->service->getDashboard();
 
         $this->assertSame(0, $dashboard['requests']['last_hour']);
         $this->assertSame(0, $dashboard['requests']['last_24h']);
@@ -33,24 +120,17 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_dashboard_counts_requests_in_last_24h_window(): void
     {
-        RequestMetric::create([
-            'project' => 'havuncore',
-            'method' => 'GET',
-            'path' => '/api/x',
-            'status_code' => 200,
-            'response_time_ms' => 50,
-            'created_at' => now()->subMinutes(30),
+        $this->makeRequest([
+            'project' => 'havuncore', 'path' => '/api/x',
+            'response_time_ms' => 50, 'created_at' => now()->subMinutes(30),
         ]);
-        RequestMetric::create([
-            'project' => 'havuncore',
-            'method' => 'GET',
-            'path' => '/api/y',
-            'status_code' => 500,
-            'response_time_ms' => 100,
+        $this->makeRequest([
+            'project' => 'havuncore', 'path' => '/api/y',
+            'status_code' => 500, 'response_time_ms' => 100,
             'created_at' => now()->subMinutes(10),
         ]);
 
-        $dashboard = (new ObservabilityService())->getDashboard();
+        $dashboard = $this->service->getDashboard();
 
         $this->assertSame(2, $dashboard['requests']['last_24h']);
         $this->assertSame(2, $dashboard['requests']['last_hour']);
@@ -59,19 +139,11 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_dashboard_filter_by_project_isolates_metrics(): void
     {
-        RequestMetric::create([
-            'project' => 'havuncore',
-            'method' => 'GET', 'path' => '/a', 'status_code' => 200,
-            'response_time_ms' => 10, 'created_at' => now()->subMinutes(5),
-        ]);
-        RequestMetric::create([
-            'project' => 'judotoernooi',
-            'method' => 'GET', 'path' => '/b', 'status_code' => 200,
-            'response_time_ms' => 10, 'created_at' => now()->subMinutes(5),
-        ]);
+        $this->makeRequest(['project' => 'havuncore', 'path' => '/a', 'response_time_ms' => 10, 'created_at' => now()->subMinutes(5)]);
+        $this->makeRequest(['project' => 'judotoernooi', 'path' => '/b', 'response_time_ms' => 10, 'created_at' => now()->subMinutes(5)]);
 
-        $hcDash = (new ObservabilityService())->getDashboard('havuncore');
-        $jtDash = (new ObservabilityService())->getDashboard('judotoernooi');
+        $hcDash = $this->service->getDashboard('havuncore');
+        $jtDash = $this->service->getDashboard('judotoernooi');
 
         $this->assertSame(1, $hcDash['requests']['last_24h']);
         $this->assertSame(1, $jtDash['requests']['last_24h']);
@@ -79,28 +151,18 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_dashboard_counts_critical_errors_separately(): void
     {
-        ErrorLog::create([
-            'project' => 'havuncore',
-            'exception_class' => 'RuntimeException',
-            'message' => 'critical thing',
-            'file' => '/x', 'line' => 1,
-            'severity' => 'critical',
-            'fingerprint' => 'a-' . uniqid(),
-            'last_occurred_at' => now()->subHour(),
-            'created_at' => now()->subHour(),
+        $this->makeError([
+            'project' => 'havuncore', 'exception_class' => 'RuntimeException',
+            'message' => 'critical thing', 'severity' => 'critical',
+            'last_occurred_at' => now()->subHour(), 'created_at' => now()->subHour(),
         ]);
-        ErrorLog::create([
-            'project' => 'havuncore',
-            'exception_class' => 'Notice',
-            'message' => 'small thing',
-            'file' => '/y', 'line' => 2,
-            'severity' => 'warning',
-            'fingerprint' => 'b-' . uniqid(),
-            'last_occurred_at' => now()->subHour(),
-            'created_at' => now()->subHour(),
+        $this->makeError([
+            'project' => 'havuncore', 'exception_class' => 'Notice',
+            'message' => 'small thing', 'file' => '/y', 'line' => 2,
+            'last_occurred_at' => now()->subHour(), 'created_at' => now()->subHour(),
         ]);
 
-        $dashboard = (new ObservabilityService())->getDashboard();
+        $dashboard = $this->service->getDashboard();
 
         $this->assertSame(2, $dashboard['errors']['last_24h']);
         $this->assertSame(1, $dashboard['errors']['critical']);
@@ -108,22 +170,19 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_dashboard_counts_slow_queries_in_24h(): void
     {
-        SlowQuery::create([
-            'project' => 'havuncore',
-            'query' => 'SELECT * FROM x',
-            'time_ms' => 1500,
-            'connection' => 'mysql',
-            'created_at' => now()->subHours(2),
+        $this->makeSlowQuery([
+            'project' => 'havuncore', 'query' => 'SELECT * FROM x',
+            'time_ms' => 1500, 'created_at' => now()->subHours(2),
         ]);
 
-        $this->assertSame(1, (new ObservabilityService())->getDashboard()['slow_queries']['last_24h']);
+        $this->assertSame(1, $this->service->getDashboard()['slow_queries']['last_24h']);
     }
 
     public function test_quality_findings_returns_null_when_no_scans(): void
     {
         \Illuminate\Support\Facades\Storage::fake('local');
 
-        $this->assertNull((new ObservabilityService())->getQualityFindings());
+        $this->assertNull($this->service->getQualityFindings());
     }
 
     public function test_quality_findings_reads_latest_scan_and_filters_high_critical(): void
@@ -145,7 +204,7 @@ class ObservabilityServiceTest extends TestCase
             'totals' => ['critical' => 1, 'high' => 1, 'errors' => 0],
         ]));
 
-        $result = (new ObservabilityService())->getQualityFindings();
+        $result = $this->service->getQualityFindings();
 
         $this->assertIsArray($result);
         $this->assertSame(1, $result['totals']['critical']);
@@ -158,22 +217,15 @@ class ObservabilityServiceTest extends TestCase
     /**
      * Kills Coalesce + Increment/Decrement mutations on `?? 50` default
      * for getRequests/getErrors/getSlowQueries pagination. We create
-     * exactly 50 rows and assert a full first page = 50 (the default).
+     * exactly 51 rows and assert a full first page = 50 (the default).
      */
     public function test_get_requests_default_per_page_is_exactly_50(): void
     {
         for ($i = 0; $i < 51; $i++) {
-            RequestMetric::create([
-                'project' => 'havuncore',
-                'method' => 'GET',
-                'path' => '/r/' . $i,
-                'status_code' => 200,
-                'response_time_ms' => 5,
-                'created_at' => now()->subMinutes($i),
-            ]);
+            $this->makeRequest(['path' => '/r/' . $i, 'response_time_ms' => 5, 'created_at' => now()->subMinutes($i)]);
         }
 
-        $page = (new ObservabilityService())->getRequests();
+        $page = $this->service->getRequests();
 
         $this->assertSame(50, $page->perPage(), 'default per_page MUST be 50');
         $this->assertCount(50, $page->items());
@@ -183,17 +235,10 @@ class ObservabilityServiceTest extends TestCase
     public function test_get_requests_honors_explicit_per_page_filter(): void
     {
         for ($i = 0; $i < 5; $i++) {
-            RequestMetric::create([
-                'project' => 'havuncore',
-                'method' => 'GET',
-                'path' => '/p/' . $i,
-                'status_code' => 200,
-                'response_time_ms' => 5,
-                'created_at' => now()->subMinutes($i),
-            ]);
+            $this->makeRequest(['path' => '/p/' . $i, 'response_time_ms' => 5, 'created_at' => now()->subMinutes($i)]);
         }
 
-        $page = (new ObservabilityService())->getRequests(['per_page' => 3]);
+        $page = $this->service->getRequests(['per_page' => 3]);
 
         $this->assertSame(3, $page->perPage());
         $this->assertCount(3, $page->items());
@@ -201,16 +246,10 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_requests_filters_path_substring(): void
     {
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/api/ai/chat',
-            'status_code' => 200, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/api/vault',
-            'status_code' => 200, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
+        $this->makeRequest(['path' => '/api/ai/chat']);
+        $this->makeRequest(['path' => '/api/vault']);
 
-        $page = (new ObservabilityService())->getRequests(['path' => 'ai']);
+        $page = $this->service->getRequests(['path' => 'ai']);
 
         $this->assertSame(1, $page->total());
         $this->assertSame('/api/ai/chat', $page->items()[0]->path);
@@ -218,16 +257,10 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_requests_filter_status_code_matches_exact(): void
     {
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/a',
-            'status_code' => 200, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/b',
-            'status_code' => 500, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
+        $this->makeRequest(['path' => '/a']);
+        $this->makeRequest(['path' => '/b', 'status_code' => 500]);
 
-        $page = (new ObservabilityService())->getRequests(['status_code' => 500]);
+        $page = $this->service->getRequests(['status_code' => 500]);
 
         $this->assertSame(1, $page->total());
         $this->assertSame(500, $page->items()[0]->status_code);
@@ -235,18 +268,10 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_requests_filter_tenant_via_scope(): void
     {
-        RequestMetric::create([
-            'project' => 'hc', 'tenant' => 'infosyst', 'method' => 'GET',
-            'path' => '/a', 'status_code' => 200, 'response_time_ms' => 1,
-            'created_at' => now(),
-        ]);
-        RequestMetric::create([
-            'project' => 'hc', 'tenant' => 'havuncore', 'method' => 'GET',
-            'path' => '/b', 'status_code' => 200, 'response_time_ms' => 1,
-            'created_at' => now(),
-        ]);
+        $this->makeRequest(['path' => '/a', 'tenant' => 'infosyst']);
+        $this->makeRequest(['path' => '/b', 'tenant' => 'havuncore']);
 
-        $page = (new ObservabilityService())->getRequests(['tenant' => 'infosyst']);
+        $page = $this->service->getRequests(['tenant' => 'infosyst']);
 
         $this->assertSame(1, $page->total());
         $this->assertSame('infosyst', $page->items()[0]->tenant);
@@ -254,16 +279,10 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_requests_method_filter_is_uppercased(): void
     {
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'POST', 'path' => '/a',
-            'status_code' => 200, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/b',
-            'status_code' => 200, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
+        $this->makeRequest(['path' => '/a', 'method' => 'POST']);
+        $this->makeRequest(['path' => '/b', 'method' => 'GET']);
 
-        $page = (new ObservabilityService())->getRequests(['method' => 'post']);
+        $page = $this->service->getRequests(['method' => 'post']);
 
         $this->assertSame(1, $page->total(), 'strtoupper must normalize lowercase input');
         $this->assertSame('POST', $page->items()[0]->method);
@@ -271,20 +290,11 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_requests_errors_only_keeps_4xx_and_5xx(): void
     {
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/ok',
-            'status_code' => 200, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/404',
-            'status_code' => 404, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/500',
-            'status_code' => 500, 'response_time_ms' => 1, 'created_at' => now(),
-        ]);
+        $this->makeRequest(['path' => '/ok']);
+        $this->makeRequest(['path' => '/404', 'status_code' => 404]);
+        $this->makeRequest(['path' => '/500', 'status_code' => 500]);
 
-        $page = (new ObservabilityService())->getRequests(['errors_only' => true]);
+        $page = $this->service->getRequests(['errors_only' => true]);
 
         $this->assertSame(2, $page->total());
         $statuses = array_map(fn ($r) => $r->status_code, $page->items());
@@ -294,24 +304,19 @@ class ObservabilityServiceTest extends TestCase
 
     /**
      * Kills Coalesce + Int increment/decrement on getErrors `?? 50`.
-     * Also kills `exception_class like '%...%'` filter mutations.
      */
     public function test_get_errors_default_per_page_is_exactly_50(): void
     {
         for ($i = 0; $i < 51; $i++) {
-            ErrorLog::create([
-                'project' => 'havuncore',
+            $this->makeError([
                 'exception_class' => 'E' . $i,
-                'message' => 'm',
-                'file' => '/x', 'line' => 1,
-                'severity' => 'warning',
                 'fingerprint' => 'fp-' . $i,
                 'last_occurred_at' => now()->subMinutes($i),
                 'created_at' => now()->subMinutes($i),
             ]);
         }
 
-        $page = (new ObservabilityService())->getErrors();
+        $page = $this->service->getErrors();
 
         $this->assertSame(50, $page->perPage());
         $this->assertCount(50, $page->items());
@@ -319,32 +324,20 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_errors_filters_project_and_severity_and_exception_substring(): void
     {
-        ErrorLog::create([
-            'project' => 'havuncore',
-            'exception_class' => 'Illuminate\\Database\\QueryException',
-            'message' => 'sql', 'file' => '/x', 'line' => 1,
-            'severity' => 'critical',
-            'fingerprint' => 'q-' . uniqid(),
-            'last_occurred_at' => now(), 'created_at' => now(),
+        $this->makeError([
+            'project' => 'havuncore', 'exception_class' => 'Illuminate\\Database\\QueryException',
+            'message' => 'sql', 'severity' => 'critical',
         ]);
-        ErrorLog::create([
-            'project' => 'havuncore',
-            'exception_class' => 'RuntimeException',
+        $this->makeError([
+            'project' => 'havuncore', 'exception_class' => 'RuntimeException',
             'message' => 'other', 'file' => '/y', 'line' => 2,
-            'severity' => 'warning',
-            'fingerprint' => 'r-' . uniqid(),
-            'last_occurred_at' => now(), 'created_at' => now(),
         ]);
-        ErrorLog::create([
-            'project' => 'judotoernooi',
-            'exception_class' => 'Illuminate\\Database\\QueryException',
-            'message' => 'other-proj', 'file' => '/z', 'line' => 3,
-            'severity' => 'critical',
-            'fingerprint' => 'z-' . uniqid(),
-            'last_occurred_at' => now(), 'created_at' => now(),
+        $this->makeError([
+            'project' => 'judotoernooi', 'exception_class' => 'Illuminate\\Database\\QueryException',
+            'message' => 'other-proj', 'file' => '/z', 'line' => 3, 'severity' => 'critical',
         ]);
 
-        $page = (new ObservabilityService())->getErrors([
+        $page = $this->service->getErrors([
             'project' => 'havuncore',
             'severity' => 'critical',
             'exception_class' => 'QueryException',
@@ -359,21 +352,19 @@ class ObservabilityServiceTest extends TestCase
 
     /**
      * Kills Coalesce + Int mutations on getSlowQueries `?? 50`, and
-     * CastFloat mutation on slowerThan((float) $min_time) at line 203.
+     * CastFloat mutation on slowerThan((float) $min_time).
      */
     public function test_get_slow_queries_default_per_page_is_exactly_50(): void
     {
         for ($i = 0; $i < 51; $i++) {
-            SlowQuery::create([
-                'project' => 'havuncore',
+            $this->makeSlowQuery([
                 'query' => 'SELECT ' . $i,
                 'time_ms' => 100 + $i,
-                'connection' => 'mysql',
                 'created_at' => now()->subMinutes($i),
             ]);
         }
 
-        $page = (new ObservabilityService())->getSlowQueries();
+        $page = $this->service->getSlowQueries();
 
         $this->assertSame(50, $page->perPage());
         $this->assertCount(50, $page->items());
@@ -381,17 +372,11 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_slow_queries_min_time_cast_to_float_and_filters(): void
     {
-        SlowQuery::create([
-            'project' => 'hc', 'query' => 'fast', 'time_ms' => 100,
-            'connection' => 'mysql', 'created_at' => now(),
-        ]);
-        SlowQuery::create([
-            'project' => 'hc', 'query' => 'slow', 'time_ms' => 500,
-            'connection' => 'mysql', 'created_at' => now(),
-        ]);
+        $this->makeSlowQuery(['query' => 'fast', 'time_ms' => 100]);
+        $this->makeSlowQuery(['query' => 'slow', 'time_ms' => 500]);
 
         // String input must be cast to float for the slowerThan scope.
-        $page = (new ObservabilityService())->getSlowQueries(['min_time' => '250']);
+        $page = $this->service->getSlowQueries(['min_time' => '250']);
 
         $this->assertSame(1, $page->total());
         $this->assertSame('slow', $page->items()[0]->query);
@@ -399,16 +384,10 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_slow_queries_filter_by_project(): void
     {
-        SlowQuery::create([
-            'project' => 'havuncore', 'query' => 'a', 'time_ms' => 1000,
-            'connection' => 'mysql', 'created_at' => now(),
-        ]);
-        SlowQuery::create([
-            'project' => 'judotoernooi', 'query' => 'b', 'time_ms' => 1000,
-            'connection' => 'mysql', 'created_at' => now(),
-        ]);
+        $this->makeSlowQuery(['project' => 'havuncore', 'query' => 'a', 'time_ms' => 1000]);
+        $this->makeSlowQuery(['project' => 'judotoernooi', 'query' => 'b', 'time_ms' => 1000]);
 
-        $page = (new ObservabilityService())->getSlowQueries(['project' => 'havuncore']);
+        $page = $this->service->getSlowQueries(['project' => 'havuncore']);
 
         $this->assertSame(1, $page->total());
         $this->assertSame('havuncore', $page->items()[0]->project);
@@ -422,41 +401,24 @@ class ObservabilityServiceTest extends TestCase
     {
         // 50 global (path=null) rows, oldest first by period_start.
         for ($i = 0; $i < 50; $i++) {
-            MetricsAggregated::create([
-                'project' => 'havuncore',
-                'period' => 'hourly',
+            $this->makeMetricsRow([
                 'period_start' => now()->subHours($i),
-                'path' => null,
-                'request_count' => 1,
-                'error_count' => 0,
-                'server_error_count' => 0,
-                'avg_response_time_ms' => 10,
-                'p95_response_time_ms' => 10,
-                'p99_response_time_ms' => 10,
-                'min_response_time_ms' => 10,
+                'avg_response_time_ms' => 10, 'p95_response_time_ms' => 10,
+                'p99_response_time_ms' => 10, 'min_response_time_ms' => 10,
                 'max_response_time_ms' => 10,
             ]);
         }
         // Path-scoped row that MUST be excluded by `->global()`.
-        MetricsAggregated::create([
-            'project' => 'havuncore',
-            'period' => 'hourly',
-            'period_start' => now(),
-            'path' => '/api/ai/chat',
-            'request_count' => 99,
-            'error_count' => 0,
-            'server_error_count' => 0,
-            'avg_response_time_ms' => 10,
-            'p95_response_time_ms' => 10,
-            'p99_response_time_ms' => 10,
-            'min_response_time_ms' => 10,
+        $this->makeMetricsRow([
+            'path' => '/api/ai/chat', 'request_count' => 99,
+            'avg_response_time_ms' => 10, 'p95_response_time_ms' => 10,
+            'p99_response_time_ms' => 10, 'min_response_time_ms' => 10,
             'max_response_time_ms' => 10,
         ]);
 
-        $rows = (new ObservabilityService())->getMetrics();
+        $rows = $this->service->getMetrics();
 
         $this->assertCount(48, $rows, 'default limit MUST be exactly 48');
-        // No path-scoped row should appear.
         foreach ($rows as $row) {
             $this->assertNull($row['path']);
         }
@@ -464,24 +426,10 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_metrics_forPath_excludes_global_rows(): void
     {
-        MetricsAggregated::create([
-            'project' => 'hc', 'period' => 'hourly',
-            'period_start' => now(), 'path' => null,
-            'request_count' => 1, 'error_count' => 0, 'server_error_count' => 0,
-            'avg_response_time_ms' => 1, 'p95_response_time_ms' => 1,
-            'p99_response_time_ms' => 1, 'min_response_time_ms' => 1,
-            'max_response_time_ms' => 1,
-        ]);
-        MetricsAggregated::create([
-            'project' => 'hc', 'period' => 'hourly',
-            'period_start' => now(), 'path' => '/x',
-            'request_count' => 1, 'error_count' => 0, 'server_error_count' => 0,
-            'avg_response_time_ms' => 1, 'p95_response_time_ms' => 1,
-            'p99_response_time_ms' => 1, 'min_response_time_ms' => 1,
-            'max_response_time_ms' => 1,
-        ]);
+        $this->makeMetricsRow();
+        $this->makeMetricsRow(['path' => '/x']);
 
-        $rows = (new ObservabilityService())->getMetrics('hourly', '/x');
+        $rows = $this->service->getMetrics('hourly', '/x');
 
         $this->assertCount(1, $rows);
         $this->assertSame('/x', $rows[0]['path']);
@@ -489,24 +437,10 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_get_metrics_period_filter_isolates_hourly_vs_daily(): void
     {
-        MetricsAggregated::create([
-            'project' => 'hc', 'period' => 'hourly',
-            'period_start' => now(), 'path' => null,
-            'request_count' => 1, 'error_count' => 0, 'server_error_count' => 0,
-            'avg_response_time_ms' => 1, 'p95_response_time_ms' => 1,
-            'p99_response_time_ms' => 1, 'min_response_time_ms' => 1,
-            'max_response_time_ms' => 1,
-        ]);
-        MetricsAggregated::create([
-            'project' => 'hc', 'period' => 'daily',
-            'period_start' => now(), 'path' => null,
-            'request_count' => 1, 'error_count' => 0, 'server_error_count' => 0,
-            'avg_response_time_ms' => 1, 'p95_response_time_ms' => 1,
-            'p99_response_time_ms' => 1, 'min_response_time_ms' => 1,
-            'max_response_time_ms' => 1,
-        ]);
+        $this->makeMetricsRow();
+        $this->makeMetricsRow(['period' => 'daily']);
 
-        $rows = (new ObservabilityService())->getMetrics('daily');
+        $rows = $this->service->getMetrics('daily');
 
         $this->assertCount(1, $rows);
         $this->assertSame('daily', $rows[0]['period']);
@@ -519,7 +453,7 @@ class ObservabilityServiceTest extends TestCase
      */
     public function test_system_health_disk_bytes_are_consistent_in_gigabytes(): void
     {
-        $health = (new ObservabilityService())->getSystemHealth();
+        $health = $this->service->getSystemHealth();
 
         $this->assertIsArray($health['disk']);
         $this->assertArrayHasKey('free_gb', $health['disk']);
@@ -549,7 +483,7 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_system_health_disk_values_rounded_to_2_decimals(): void
     {
-        $health = (new ObservabilityService())->getSystemHealth();
+        $health = $this->service->getSystemHealth();
 
         // Kills IncrementInteger on `round(..., 2)` -> `round(..., 3)`:
         // precision argument must be exactly 2 for free_gb / total_gb.
@@ -569,7 +503,7 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_system_health_memory_values_are_positive_megabytes(): void
     {
-        $health = (new ObservabilityService())->getSystemHealth();
+        $health = $this->service->getSystemHealth();
 
         $this->assertGreaterThan(0.0, $health['memory']['current_mb']);
         $this->assertGreaterThan(0.0, $health['memory']['peak_mb']);
@@ -597,7 +531,7 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_system_health_contains_php_and_laravel_version_and_env(): void
     {
-        $health = (new ObservabilityService())->getSystemHealth();
+        $health = $this->service->getSystemHealth();
 
         $this->assertSame(PHP_VERSION, $health['php_version']);
         $this->assertSame(app()->version(), $health['laravel_version']);
@@ -609,6 +543,15 @@ class ObservabilityServiceTest extends TestCase
      * Fixture-based test for the sqlite branch of getDatabaseSize()
      * (lines 271-277): we point the connection to a temp file with a
      * known byte-count and assert the rounded-MB return is correct.
+     *
+     * Kills: Identical (=== 'sqlite' flip), IfNegation on file_exists,
+     * Concat mutations on the key-builder, and the 0-default return
+     * when the file is absent.
+     */
+    /**
+     * Fixture-based test for the sqlite branch of getDatabaseSize():
+     * point the connection to a temp file with a known byte count and
+     * assert the rounded-MB return is correct.
      *
      * Kills: Identical (=== 'sqlite' flip), IfNegation on file_exists,
      * Concat mutations on the key-builder, and the 0-default return
@@ -629,14 +572,7 @@ class ObservabilityServiceTest extends TestCase
         config()->set('database.connections.sqlite.database', $tmp);
 
         try {
-            $svc = new class extends ObservabilityService {
-                public function callDbSize(): float
-                {
-                    return $this->getDatabaseSize();
-                }
-            };
-
-            $this->assertSame(2.0, $svc->callDbSize());
+            $this->assertSame(2.0, $this->exposedService()->callDbSize());
         } finally {
             config()->set('database.connections.sqlite.database', $originalPath);
             @unlink($tmp);
@@ -652,16 +588,9 @@ class ObservabilityServiceTest extends TestCase
         );
 
         try {
-            $svc = new class extends ObservabilityService {
-                public function callDbSize(): float
-                {
-                    return $this->getDatabaseSize();
-                }
-            };
-
             // Strict zero: kills Increment (-> 1), Decrement (-> -1)
-            // and ReturnRemoval (-> void) mutations on line 277.
-            $this->assertSame(0.0, $svc->callDbSize());
+            // and ReturnRemoval (-> void) mutations.
+            $this->assertSame(0.0, $this->exposedService()->callDbSize());
         } finally {
             config()->set('database.connections.sqlite.database', $originalPath);
         }
@@ -669,11 +598,10 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_database_size_non_sqlite_fallback_returns_zero_on_failure(): void
     {
-        // Simulate a non-sqlite driver where the information_schema
-        // SELECT throws. We use sqlite but swap the default name to
-        // something that has no live connection configured, triggering
-        // the try/catch path without breaking the RefreshDatabase
-        // transaction of the real sqlite test connection.
+        // Point the default driver at a non-sqlite connection whose
+        // information_schema SELECT will throw — the catch returns 0.
+        // Uses a non-default name so RefreshDatabase's live sqlite
+        // connection remains intact.
         $original = config('database.default');
         config()->set('database.default', 'mysql-nope');
         config()->set('database.connections.mysql-nope', [
@@ -686,14 +614,7 @@ class ObservabilityServiceTest extends TestCase
         ]);
 
         try {
-            $svc = new class extends ObservabilityService {
-                public function callDbSize(): float
-                {
-                    return $this->getDatabaseSize();
-                }
-            };
-
-            $this->assertSame(0.0, $svc->callDbSize());
+            $this->assertSame(0.0, $this->exposedService()->callDbSize());
         } finally {
             config()->set('database.default', $original);
         }
@@ -701,50 +622,20 @@ class ObservabilityServiceTest extends TestCase
 
     /**
      * Kills ArrayItemRemoval on getObservabilityTableSizes() — each of
-     * the four keys must be present in the returned array.
-     * Also kills ProtectedVisibility by reaching the method via subclass.
+     * the four keys must be present in the returned array. Also kills
+     * ProtectedVisibility by reaching the method via subclass.
      */
     public function test_observability_table_sizes_contain_each_documented_key(): void
     {
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/',
-            'status_code' => 200, 'response_time_ms' => 1,
-            'created_at' => now(),
-        ]);
-        ErrorLog::create([
-            'project' => 'hc', 'exception_class' => 'E', 'message' => 'm',
-            'file' => '/x', 'line' => 1, 'severity' => 'warning',
-            'fingerprint' => 'fp-' . uniqid(),
-            'last_occurred_at' => now(), 'created_at' => now(),
-        ]);
-        SlowQuery::create([
-            'project' => 'hc', 'query' => 'q', 'time_ms' => 1,
-            'connection' => 'mysql', 'created_at' => now(),
-        ]);
-        MetricsAggregated::create([
-            'project' => 'hc', 'period' => 'hourly', 'period_start' => now(),
-            'path' => null,
-            'request_count' => 1, 'error_count' => 0, 'server_error_count' => 0,
-            'avg_response_time_ms' => 1, 'p95_response_time_ms' => 1,
-            'p99_response_time_ms' => 1, 'min_response_time_ms' => 1,
-            'max_response_time_ms' => 1,
-        ]);
+        $this->makeRequest(['path' => '/']);
+        $this->makeError();
+        $this->makeSlowQuery(['query' => 'q', 'time_ms' => 1]);
+        $this->makeMetricsRow();
 
-        $svc = new class extends ObservabilityService {
-            public function callTableSizes(): array
-            {
-                return $this->getObservabilityTableSizes();
-            }
-        };
-
-        $sizes = $svc->callTableSizes();
+        $sizes = $this->exposedService()->callTableSizes();
 
         // Per-key === 1 assertions kill ArrayItemRemoval for ANY of
         // the four rows (removing a key makes that assertion fail).
-        $this->assertArrayHasKey('request_metrics', $sizes);
-        $this->assertArrayHasKey('error_logs', $sizes);
-        $this->assertArrayHasKey('slow_queries', $sizes);
-        $this->assertArrayHasKey('metrics_aggregated', $sizes);
         $this->assertSame(1, $sizes['request_metrics']);
         $this->assertSame(1, $sizes['error_logs']);
         $this->assertSame(1, $sizes['slow_queries']);
@@ -754,23 +645,11 @@ class ObservabilityServiceTest extends TestCase
     public function test_dashboard_slowest_endpoints_groups_by_path_with_avg(): void
     {
         // /fast: avg 10ms; /slow: avg 500ms. Must be ordered slow -> fast.
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/fast',
-            'status_code' => 200, 'response_time_ms' => 10,
-            'created_at' => now()->subMinutes(5),
-        ]);
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/fast',
-            'status_code' => 200, 'response_time_ms' => 10,
-            'created_at' => now()->subMinutes(10),
-        ]);
-        RequestMetric::create([
-            'project' => 'hc', 'method' => 'GET', 'path' => '/slow',
-            'status_code' => 200, 'response_time_ms' => 500,
-            'created_at' => now()->subMinutes(5),
-        ]);
+        $this->makeRequest(['path' => '/fast', 'response_time_ms' => 10, 'created_at' => now()->subMinutes(5)]);
+        $this->makeRequest(['path' => '/fast', 'response_time_ms' => 10, 'created_at' => now()->subMinutes(10)]);
+        $this->makeRequest(['path' => '/slow', 'response_time_ms' => 500, 'created_at' => now()->subMinutes(5)]);
 
-        $dashboard = (new ObservabilityService())->getDashboard();
+        $dashboard = $this->service->getDashboard();
 
         $paths = collect($dashboard['slowest_endpoints'])->pluck('path')->all();
         $this->assertSame(['/slow', '/fast'], $paths);
