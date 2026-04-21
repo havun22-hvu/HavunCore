@@ -2,6 +2,60 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 22 april 2026 (nacht-autonomie) — K&V systeem afgerond
+
+Henk sliep terwijl 3 agents + mijn werk parallel liepen. Plan volledig
+uitgevoerd. Eindstand HavunCore:
+
+**Brede `app/Services` MSI: 53,78 % → 74 %** (100 % mutation-coverage).
+Drempel verhoogd 48 → 60 → **70** (zie commits `2e8a5c5`, `27a3e03`;
+baseline-doc `reference/mutation-baseline-2026-04-22.md` bevat
+drempel-historie en pad-per-pad tabel).
+
+**K&V-systeem uitbreidingen (commit `9d36745` + `9581581`):**
+- **`Severity` backed-enum** (`App\Enums\Severity`) geïntroduceerd
+  (cases Critical/High/Medium/Low/Info, `icon()`, `sortWeight()`,
+  tolerant `safe()` parser). Hergebruikt in
+  `QualitySafetyScanner`, `ScanReportRenderer`, `ObservabilityService`,
+  `DocIssuesCommand`. Externe strings (DB/JSON/API) blijven identiek
+  via `->value`. 15 tests / tolerant parser dataprovider 12 rijen.
+- **`SecurityFindingsLogAppender` + `qv:log --append-log=<path>`**:
+  HIGH/CRIT findings worden vanaf nu automatisch geappend aan
+  `docs/kb/reference/security-findings-log.md` (header auto-gen,
+  historie geappend). `--no-append` voor opt-out. 7 tests dekken
+  alle paden (append-preserveert-historie, skip bij medium/low,
+  header-once).
+- **MySQL-fixture plan** (`runbooks/aiproxy-mysql-fixture-plan.md`):
+  onderzoek voor AIProxy 81 → 90 %; 3 opties afgewogen
+  (GH-service vs dual-driver vs query-mock), aanbeveling + schatting.
+
+**CI-uitbreiding (commit `1b4ffe5`):** per-pad matrix-job in
+`mutation-test.yml` met `--min-msi` per pad via
+`infection-critical-paths.json5`. Runs op elke PR die `app/`,
+`config/`, `tests/` of infection-configs raakt.
+
+**Commit-historie-anomalie:** commit `9d36745` ("chore(infection):
+full-scope baseline 74% + bump minMsi 60 -> 70") bevat in werkelijkheid
+de qv:log-agent-files. De daadwerkelijke infection.json5 + baseline-
+doc updates zitten in follow-up `27a3e03`. Git log + baseline-doc
+zijn de autoritatieve bron; de `9d36745` message is cosmetisch fout
+maar de commit-content is legit qv:log-work.
+
+**Test-validatie:** HC Unit-suite 630 tests / 1635 assertions groen na
+alle agent-wijzigingen. Geen regressie.
+
+**Resterende open items (niet-blokkerend):**
+- AIProxy 81 → 90 %: plan ligt klaar in
+  `aiproxy-mysql-fixture-plan.md` (optie GH-service met mysql:8 + fixture-
+  migratie, geschat 3-4 u CI + lokale-docker werk).
+- `minMsi` → 75 bij kwartaal-cron (01-07) als 74 % geen uitschieter
+  blijkt.
+- Severity-enum breder uitrollen naar `ErrorLog`, `IssueDetector`,
+  `DocIssue`-model, `DocIntelligenceController` (bewust buiten scope
+  gelaten wegens >10 files impact).
+
+---
+
 ## Sessie: 21-22 april 2026 (nacht) — 6 kritieke paden MSI-target gehaald
 
 Parallel-werk met agents (pad 4, 5, 7) + handmatige runs op pad 1
