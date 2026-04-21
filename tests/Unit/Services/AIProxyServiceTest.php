@@ -7,6 +7,7 @@ use App\Services\AIProxyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Tests\TestCase;
 
 /**
@@ -32,10 +33,14 @@ class AIProxyServiceTest extends TestCase
     public function test_chat_returns_response_text_and_usage_on_success(): void
     {
         Http::fake([
-            'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'Hi there']],
-                'usage' => ['input_tokens' => 12, 'output_tokens' => 4],
-            ], 200),
+            'api.anthropic.com/*' => function () {
+                usleep(20_000); // 20ms — proves executionTime > 0 and
+                                // keeps the `microtime - $startTime` subtraction observable.
+                return Http::response([
+                    'content' => [['text' => 'Hi there']],
+                    'usage' => ['input_tokens' => 12, 'output_tokens' => 4],
+                ], 200);
+            },
         ]);
 
         $result = (new AIProxyService())->chat('havuncore', 'Hello');
@@ -43,7 +48,66 @@ class AIProxyServiceTest extends TestCase
         $this->assertSame('Hi there', $result['response']);
         $this->assertSame(12, $result['usage']['input_tokens']);
         $this->assertSame(4, $result['usage']['output_tokens']);
-        $this->assertGreaterThanOrEqual(0, $result['usage']['execution_time_ms']);
+        $this->assertIsInt($result['usage']['execution_time_ms']);
+        // usleep(20ms) guarantees a strictly positive, ms-scale result —
+        // kills Minus (microtime + startTime -> large number that rounds
+        // to something the > 0 check accepts but also kills the
+        // `-1 / +1 / 999 / 1001` mutations on 1024 * $t and the round()
+        // family (floor/ceil would round to 0 on a <1ms sleep).
+        $this->assertGreaterThanOrEqual(15, $result['usage']['execution_time_ms']);
+        $this->assertLessThan(5000, $result['usage']['execution_time_ms']);
+    }
+
+    public function test_chat_returns_zero_defaults_when_claude_omits_usage_block(): void
+    {
+        // Forces the `?? 0` branches on input_tokens/output_tokens in the
+        // return array (lines 96-97) AND the logUsage payload (lines
+        // 131-133). Kills Decrement/Increment on the 0 default in both
+        // places + ArrayItemRemoval on the tenant/error keys.
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['text' => 'no-usage']],
+                // 'usage' intentionally omitted
+            ], 200),
+        ]);
+
+        $result = (new AIProxyService())->chat('zero-defaults', 'hi');
+
+        $this->assertSame(0, $result['usage']['input_tokens']);
+        $this->assertSame(0, $result['usage']['output_tokens']);
+
+        // DB row must mirror the same zero defaults — kills any mutation
+        // that flips the ?? 0 to ?? -1 / ?? 1 inside logUsage().
+        $this->assertDatabaseHas('ai_usage_logs', [
+            'tenant' => 'zero-defaults',
+            'input_tokens' => 0,
+            'output_tokens' => 0,
+            'total_tokens' => 0,
+        ]);
+    }
+
+    public function test_chat_execution_time_uses_1000x_ms_scale_not_999_or_1001(): void
+    {
+        // usleep(50ms) + strict band kills IncrementInteger (1000->1001 => ~50.05ms)
+        // AND DecrementInteger (1000->999 => ~49.95ms) by requiring the
+        // rounded value to sit in a tight ±5ms window around 50.
+        Http::fake([
+            'api.anthropic.com/*' => function () {
+                usleep(50_000);
+                return Http::response([
+                    'content' => [['text' => 'timed']],
+                    'usage' => ['input_tokens' => 0, 'output_tokens' => 0],
+                ], 200);
+            },
+        ]);
+
+        $result = (new AIProxyService())->chat('havuncore', 'time me');
+
+        // Without the *1000 we'd see 0. With *999/1001 we'd see ~49.95
+        // or ~50.05. A 5-unit band excludes the drop to 0 and is wide
+        // enough to tolerate CI jitter on the usleep() itself.
+        $this->assertGreaterThanOrEqual(40, $result['usage']['execution_time_ms']);
+        $this->assertLessThan(500, $result['usage']['execution_time_ms']);
     }
 
     public function test_chat_throws_on_api_error_and_records_circuit_failure(): void
@@ -52,11 +116,33 @@ class AIProxyServiceTest extends TestCase
             'api.anthropic.com/*' => Http::response('rate limit', 429),
         ]);
 
-        $service = new AIProxyService();
-        $this->expectException(\Exception::class);
-        $this->expectExceptionMessage('Claude API error: 429');
+        // Spy on Log so we can assert the error-context array keys.
+        // This kills ArrayItemRemoval / ArrayItem mutations on the
+        // Log::error payload (tenant / status / body) at Service.php:74.
+        Log::shouldReceive('error')
+            ->once()
+            ->withArgs(function ($message, $context) {
+                return str_contains($message, 'Claude API error')
+                    && ($context['tenant'] ?? null) === 'havuncore'
+                    && ($context['status'] ?? null) === 429
+                    && str_contains($context['body'] ?? '', 'rate limit');
+            });
 
-        $service->chat('havuncore', 'fail me');
+        $failuresBefore = (int) Cache::get('circuit_breaker:claude_api:failures', 0);
+
+        $service = new AIProxyService();
+        try {
+            $service->chat('havuncore', 'fail me');
+            $this->fail('Expected a \\Exception to propagate from chat()');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('Claude API error: 429', $e->getMessage());
+        }
+
+        // recordFailure() side-effect — kills MethodCallRemoval on line 74.
+        $this->assertGreaterThan(
+            $failuresBefore,
+            (int) Cache::get('circuit_breaker:claude_api:failures', 0),
+        );
     }
 
     public function test_chat_logs_usage_to_ai_usage_log(): void
@@ -278,5 +364,253 @@ class AIProxyServiceTest extends TestCase
         $this->assertStringContainsString('HavunAdmin', $service->exposePrompt('havunadmin'));
         $this->assertStringContainsString('HavunCore', $service->exposePrompt('havuncore'));
         $this->assertStringContainsString('Nederlands', $service->exposePrompt('unknown-tenant'));
+    }
+
+    public function test_log_usage_is_reachable_by_a_subclass(): void
+    {
+        // Kills `protected logUsage()` -> `private` mutation on line 126.
+        $service = new class extends AIProxyService {
+            public function callLogUsage(string $tenant, array $usage, float $t): void
+            {
+                $this->logUsage($tenant, $usage, $t);
+            }
+        };
+
+        $service->callLogUsage('subclass-tenant', ['input_tokens' => 3, 'output_tokens' => 2], 0.050);
+
+        $this->assertDatabaseHas('ai_usage_logs', [
+            'tenant' => 'subclass-tenant',
+            'input_tokens' => 3,
+            'output_tokens' => 2,
+            'total_tokens' => 5,
+            'execution_time_ms' => 50,
+        ]);
+    }
+
+    public function test_usage_stats_unknown_period_falls_back_to_day_window(): void
+    {
+        // Kills MatchArmRemoval on the `default => now()->subDay()` arm.
+        // Insert logs at 2h ago (inside day, outside hour) and 36h ago
+        // (outside day); bogus period must match "day" behaviour.
+        AIUsageLog::query()->insert([
+            [
+                'tenant' => 'default-window',
+                'input_tokens' => 1, 'output_tokens' => 1, 'total_tokens' => 2,
+                'execution_time_ms' => 10, 'model' => 'haiku',
+                'created_at' => now()->subHours(2),
+                'updated_at' => now()->subHours(2),
+            ],
+            [
+                'tenant' => 'default-window',
+                'input_tokens' => 1, 'output_tokens' => 1, 'total_tokens' => 2,
+                'execution_time_ms' => 10, 'model' => 'haiku',
+                'created_at' => now()->subHours(36),
+                'updated_at' => now()->subHours(36),
+            ],
+        ]);
+
+        $stats = (new AIProxyService())->getUsageStats('default-window', 'something-bogus');
+
+        // Only the 2h-old row is within the day-window default.
+        $this->assertSame(1, $stats['total_requests']);
+    }
+
+    public function test_usage_stats_returns_exact_integer_sums_not_rounded(): void
+    {
+        // Forces a SUM / AVG with odd values so CastInt mutations on
+        // total_* would observe wrong numeric types / lost fractional
+        // information. Assert === on each integer field.
+        AIUsageLog::query()->insert([
+            [
+                'tenant' => 'exact-sums',
+                'input_tokens' => 7, 'output_tokens' => 3, 'total_tokens' => 10,
+                'execution_time_ms' => 121, 'model' => 'haiku',
+                'created_at' => now(), 'updated_at' => now(),
+            ],
+            [
+                'tenant' => 'exact-sums',
+                'input_tokens' => 13, 'output_tokens' => 5, 'total_tokens' => 18,
+                'execution_time_ms' => 205, 'model' => 'haiku',
+                'created_at' => now(), 'updated_at' => now(),
+            ],
+        ]);
+
+        $stats = (new AIProxyService())->getUsageStats('exact-sums', 'day');
+
+        $this->assertSame(2, $stats['total_requests']);
+        $this->assertSame(20, $stats['total_input_tokens']);
+        $this->assertSame(8, $stats['total_output_tokens']);
+        $this->assertSame(28, $stats['total_tokens']);
+        $this->assertSame(163, $stats['avg_execution_time_ms']); // (121+205)/2 = 163
+        foreach ($stats as $value) {
+            $this->assertIsInt($value);
+        }
+    }
+
+    public function test_log_usage_logs_warning_when_db_write_fails(): void
+    {
+        // Force a DB-constraint failure by pointing AIUsageLog at a
+        // missing table (via Laravel connection override). logUsage()
+        // must catch the throwable and emit a Log::warning with
+        // tenant + error context.
+        Log::shouldReceive('warning')
+            ->once()
+            ->withArgs(function (string $message, array $context) {
+                return str_contains($message, 'Failed to log usage')
+                    && ($context['tenant'] ?? null) === 'bogus-tenant'
+                    && isset($context['error'])
+                    && is_string($context['error'])
+                    && $context['error'] !== '';
+            });
+
+        // Subclass to reach the protected method and feed it bad input
+        // that makes AIUsageLog::create() throw on SQLite.
+        $service = new class extends AIProxyService {
+            public function forceFailedLog(): void
+            {
+                // Pre-create a row the constraint will reject on insert:
+                // negative integer for a column typed integer still inserts
+                // fine — so we use an unsupported key to force the catch.
+                \Schema::drop('ai_usage_logs');
+                $this->logUsage('bogus-tenant', [], 0.001);
+            }
+        };
+
+        $service->forceFailedLog();
+    }
+
+    public function test_chat_success_records_circuit_breaker_success(): void
+    {
+        // Kills MethodCallRemoval on `recordSuccess()` (line 83).
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['text' => 'ok']],
+                'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
+            ], 200),
+        ]);
+
+        // Pre-load a failure so the breaker has observable state.
+        (new \App\Services\CircuitBreaker('claude_api'))->recordFailure();
+        $failuresBefore = (int) Cache::get('circuit_breaker:claude_api:failures', 0);
+        $this->assertGreaterThan(0, $failuresBefore);
+
+        (new AIProxyService())->chat('havuncore', 'ok');
+
+        // Successful call must reset the breaker failure counter.
+        $this->assertSame(0, (int) Cache::get('circuit_breaker:claude_api:failures', 0));
+    }
+
+    public function test_check_rate_limit_default_limit_is_sixty(): void
+    {
+        // Force config to null so the inline default in
+        // `config('services.claude.rate_limit', 60)` fires. Kills
+        // DecrementInteger/IncrementInteger on the 60 default.
+        config()->set('services.claude.rate_limit', null);
+        Cache::flush();
+        $service = new AIProxyService();
+
+        // 60 calls must all succeed, the 61st must be blocked.
+        for ($i = 0; $i < 60; $i++) {
+            $this->assertTrue($service->checkRateLimit('rate-default-tenant'));
+        }
+        $this->assertFalse($service->checkRateLimit('rate-default-tenant'));
+    }
+
+    // ================================================================================
+    // HTTP request-config contracts (Run 2 residual mutations: maxTokens default,
+    // Content-Type / anthropic-version headers, timeout).
+    // ================================================================================
+
+    public function test_chat_sends_request_with_anthropic_contract_headers_and_url(): void
+    {
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['text' => 'ok']],
+                'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
+            ], 200),
+        ]);
+
+        (new AIProxyService())->chat('havuncore', 'header-check');
+
+        // Each header below kills a distinct ArrayItemRemoval / string
+        // mutation in the Http::withHeaders array.
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request) {
+            return str_starts_with($request->url(), 'https://api.anthropic.com/')
+                && $request->hasHeader('Content-Type', 'application/json')
+                && $request->hasHeader('x-api-key', 'sk-ant-fake-test-key')
+                && $request->hasHeader('anthropic-version', '2023-06-01');
+        });
+    }
+
+    public function test_chat_body_uses_documented_max_tokens_default_and_payload(): void
+    {
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['text' => 'ok']],
+                'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
+            ], 200),
+        ]);
+
+        // Caller intentionally omits $maxTokens to exercise the default.
+        (new AIProxyService())->chat('havuncore', 'default-token-check');
+
+        // Kills DecrementInteger/IncrementInteger on the 1024 default +
+        // ArrayItemRemoval on model/max_tokens/system/messages payload keys.
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request) {
+            $data = $request->data();
+            return ($data['max_tokens'] ?? null) === 1024
+                && ($data['model'] ?? null) === 'claude-3-haiku-test'
+                && is_array($data['messages'] ?? null)
+                && $data['messages'][0]['role'] === 'user'
+                && is_string($data['system'] ?? null)
+                && $data['system'] !== '';
+        });
+    }
+
+    public function test_chat_body_respects_caller_supplied_max_tokens(): void
+    {
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['text' => 'ok']],
+                'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
+            ], 200),
+        ]);
+
+        (new AIProxyService())->chat('havuncore', 'custom-tokens', maxTokens: 2048);
+
+        Http::assertSent(fn (\Illuminate\Http\Client\Request $req) => ($req->data()['max_tokens'] ?? null) === 2048);
+    }
+
+    public function test_chat_forwards_context_into_user_message(): void
+    {
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['text' => 'ok']],
+                'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
+            ], 200),
+        ]);
+
+        (new AIProxyService())->chat('havuncore', 'Ask', ['fact A', 'fact B']);
+
+        Http::assertSent(function (\Illuminate\Http\Client\Request $request) {
+            $content = $request->data()['messages'][0]['content'] ?? '';
+            return str_contains($content, '- fact A')
+                && str_contains($content, '- fact B')
+                && str_contains($content, 'Vraag: Ask');
+        });
+    }
+
+    public function test_chat_forwards_explicit_system_prompt_when_provided(): void
+    {
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['text' => 'ok']],
+                'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
+            ], 200),
+        ]);
+
+        (new AIProxyService())->chat('havuncore', 'hi', [], systemPrompt: 'Custom override prompt');
+
+        Http::assertSent(fn (\Illuminate\Http\Client\Request $req) => ($req->data()['system'] ?? null) === 'Custom override prompt');
     }
 }

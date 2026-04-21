@@ -95,7 +95,7 @@ class AIProxyService
             'usage' => [
                 'input_tokens' => $usage['input_tokens'] ?? 0,
                 'output_tokens' => $usage['output_tokens'] ?? 0,
-                'execution_time_ms' => round($executionTime * 1000),
+                'execution_time_ms' => (int) round($executionTime * 1000),
             ],
         ];
     }
@@ -106,7 +106,9 @@ class AIProxyService
     public function checkRateLimit(string $tenant): bool
     {
         $key = "ai_rate_limit:{$tenant}";
-        $limit = config('services.claude.rate_limit', 60); // requests per minute
+        // `?? 60` rather than config()'s default arg because an explicit
+        // `null` in config is a valid state we still want to fall back from.
+        $limit = config('services.claude.rate_limit') ?? 60; // requests per minute
 
         $current = Cache::get($key, 0);
 
@@ -129,7 +131,7 @@ class AIProxyService
                 'input_tokens' => $usage['input_tokens'] ?? 0,
                 'output_tokens' => $usage['output_tokens'] ?? 0,
                 'total_tokens' => ($usage['input_tokens'] ?? 0) + ($usage['output_tokens'] ?? 0),
-                'execution_time_ms' => round($executionTime * 1000),
+                'execution_time_ms' => (int) round($executionTime * 1000),
                 'model' => $this->model,
             ]);
         } catch (\Exception $e) {
