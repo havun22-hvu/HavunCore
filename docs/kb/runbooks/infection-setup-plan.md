@@ -182,10 +182,10 @@ minder dan 7 dagen tot expiry".
 
 | Pad | Target MSI | Huidige meting | Eerste / volgende stap |
 |-----|-----------|----------------|-------------|
-| 1 Vault | 90 % | _nog niet los gemeten_ | filter-run op `app/Services/Vault` |
+| 1 Vault | 90 % | **91 %** (21-04, commit `1e3a78c` — 4 runs via `infection-critical-paths.json5`) | target gehaald |
 | 2 AIProxy | 90 % | **81 %** (21-04, commit `65b14f5` — 7 runs) | MySQL-integration fixture nodig voor SUM/COUNT CastInt-mutaties |
 | 3 AutoFix | 85 % | deel van baseline (53 %) | escaped-list uit baseline uitwerken |
-| 4 QR Auth / Device Trust | 90 % | **100 %** (21-04 sessie, commit pending) | — (target ruim gehaald, 67/67 killed) |
+| 4 QR Auth / Device Trust | 90 % | **100 %** (21-04 sessie, commit `0906ade` — 67/67 killed) | target ruim gehaald |
 | 5 Observability | 85 % | **100 %** (21-04, commits `f23b17d` + `40541fd` — 220/220 killed, 0 escaped) | — (target ruim gehaald; fixture-tests voor `getDatabaseSize()`, invariant-asserts voor `getSystemHealth()`) |
 | 7 Critical-paths audit | 85 % | buiten scope `app/Services` — aparte filter nodig | `infection.json5` scope uitbreiden met `app/Console` + `app/Services/CriticalPaths` |
 

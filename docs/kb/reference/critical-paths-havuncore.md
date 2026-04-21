@@ -51,7 +51,11 @@ Een bug = lek of uitval. Auth-bypass hier is een incident.
   enumeration / non-admin 403 / admin forward+user-resolver)
 
 **Mutation-score target:** 90 %.
-**Laatst geverifieerd:** _te meten — eerstvolgende mutation run._
+**Huidige meting:** **91 %** (21-04-2026, commit `1e3a78c` — 4 runs
+via `infection-critical-paths.json5`). Target gehaald. Resterende
+escapes zijn `PublicVisibility`-mutaties op `public static` model
+helpers (`generateToken`, `findByToken`) plus enkele Coalesce-false-
+positives zoals op AIProxy.
 
 ## Pad 2 — AI Proxy (`POST /api/ai/chat`)
 
