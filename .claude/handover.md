@@ -2,6 +2,41 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 21 april 2026 (ochtend) — HA padding-sanitization (~49 tests weg)
+
+Werk volgens `docs/kb/runbooks/coverage-padding-sanitization.md`. Alle
+verwijderingen zijn assertTrue-twice, class_exists, tri-alternative
+of `assertIsInt(Artisan::exitCode)` tautologieën — zero enforced
+behaviour verloren, alle overblijvende tests groen.
+
+| File | Voor | Na | Removed |
+|------|-----:|---:|--------:|
+| tests/Feature/CommandCoverageTest.php | 51 | 34 | -17 |
+| tests/Unit/ServiceCoverage6Test.php | 57 | 31 | -26 |
+| tests/Feature/Last825Test.php | 264 | 258 | -6 |
+| **HavunAdmin totaal** | | | **-49** |
+
+Commits: `3a5f7fd` → `b3104a2` (5 atomic commits).
+
+Bonus: HA `ProjectMatchingServiceTest` aangemaakt (12 tests / 25
+assertions — extractMemorialReference, findProjectForTransaction,
+createRule idempotency, getGeneralProject firstOrCreate,
+detectProject scoring-paths incl. memorial-prefix short-circuit en
+50-pt threshold).
+
+### Openstaand padding-werk
+
+- `tests/Feature/Push90Test.php` — 4072 regels, 245 tests, 87
+  `assertTrue(true)`. Te groot voor 1 sessie, per-segment review.
+- `tests/Unit/MaxServiceCoverageTest.php` — 1186 regels, 108 tests,
+  34 tautologieën, uses Reflection op private methods
+  (anti-pattern).
+- Resterende tests met `method_exists`-guards in Last825Test /
+  ServiceCoverage6Test — defensive per heuristiek, niet strikt weg
+  te halen zonder per-test validatie.
+
+---
+
 ## Sessie: 21 april 2026 (nacht, ~01:30) — Autonomous push: gap-tests + portfolio PHPUnit 12-ready
 
 > Henk is weg, opdracht: "fix alles volgens policy, ga door tot klaar".
