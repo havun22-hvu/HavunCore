@@ -125,14 +125,67 @@ returnde float; documentation en callers verwachten integer ms.
 - Assert op `Content-Type` + `anthropic-version` headers via
   `Http::assertSent(fn ($req) => $req->hasHeader(...))`.
 
+## 2b. Pilot-meting — DeviceTrustService (pad 4, 21-04-2026)
+
+### Run 1 (baseline)
+
+```
+vendor/bin/infection --filter=app/Services/DeviceTrustService.php \
+  --threads=4 --no-progress --no-interaction
+```
+
+| Metric | Waarde |
+|--------|--------|
+| Totaal mutaties | 66 |
+| **MSI baseline** | **83 %** |
+| Covered Code MSI | 83 % |
+| Escaped | 11 |
+| Duur | 3 min 56 s |
+
+### Run 2 (eind, commit `pending`)
+
+10 gerichte tests toegevoegd + 1 source-fix (zie hieronder).
+
+| Metric | Waarde |
+|--------|--------|
+| Totaal mutaties | 67 |
+| **MSI** | **100 %** (+17 pp) |
+| Escaped | 0 |
+
+### Source-fix (pad 4)
+
+`DeviceTrustService::verifyToken()` bevatte
+`$device->expires_at->diffInDays(now()) < 7`. Voor een niet-verlopen
+device is `expires_at` in de toekomst en Carbon geeft dan een negatief
+verschil (`-7`, `-30`, etc.). Een negatief getal is altijd `< 7`, dus
+de conditie was permanent true — elke verify extendde trust. Dit werd
+zichtbaar toen de 7-dag-boundary mutation-test beide takken probeerde
+te controleren. Gecorrigeerd naar
+`$device->expires_at->lt(now()->addDays(7))` — directe datum-
+vergelijking is robuust en leesbaar. Contract is nu echt "extend als
+minder dan 7 dagen tot expiry".
+
+### Killed escapes (tests toegevoegd)
+
+| Regel | Mutator | Test |
+|-------|---------|------|
+| 26 | MethodCallRemoval `touchUsed` | `..._calls_touch_used_updating_ip_and_last_used_at` |
+| 29 | LessThan (`< 7` / `<= 7`) | `..._extend_boundary_at_exactly_seven_days_does_not_extend` + `..._at_six_days_does_extend` |
+| 49 | ArrayItem (`=>` / `>`) | `..._response_contains_expires_at_as_iso_string_key` |
+| 66 | NullSafeMethodCall | `..._handles_null_last_used_at_without_crashing` |
+| 91 + 97 | MethodCallRemoval + ArrayItemRemoval (revokeDevice log) | `..._revoke_device_writes_access_log_with_device_id_metadata` |
+| 120 + 126 | idem (revokeAllDevices log) | `..._revoke_all_devices_writes_access_log_with_revoked_count_metadata` |
+| 155 | MethodCallRemoval (logout log) | `..._logout_writes_access_log_with_logout_action` |
+| 171 | Increment/Decrement `int $limit = 20` | `..._get_access_logs_default_limit_is_exactly_twenty` |
+
 ## 3. Vervolgstappen — per kritiek pad
 
 | Pad | Target MSI | Huidige meting | Eerste / volgende stap |
 |-----|-----------|----------------|-------------|
 | 1 Vault | 90 % | _nog niet los gemeten_ | filter-run op `app/Services/Vault` |
-| 2 AIProxy | 90 % | **58 %** (21-04 na quick-wins) | HTTP-config mutaties via `Http::assertSent` |
+| 2 AIProxy | 90 % | **81 %** (21-04, commit `65b14f5` — 7 runs) | MySQL-integration fixture nodig voor SUM/COUNT CastInt-mutaties |
 | 3 AutoFix | 85 % | deel van baseline (53 %) | escaped-list uit baseline uitwerken |
-| 4 QR Auth / Device Trust | 90 % | baseline noemt hotspots rond regel 309-419 | per-key assertions in device-update payload |
+| 4 QR Auth / Device Trust | 90 % | **100 %** (21-04 sessie, commit pending) | — (target ruim gehaald, 67/67 killed) |
 | 5 Observability | 85 % | baseline noemt `getSystemMetrics()` regels 178-179 | disk-bytes unit-test met fixture |
 | 7 Critical-paths audit | 85 % | buiten scope `app/Services` — aparte filter nodig | `infection.json5` scope uitbreiden met `app/Console` + `app/Services/CriticalPaths` |
 

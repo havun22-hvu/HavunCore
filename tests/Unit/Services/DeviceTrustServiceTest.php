@@ -2,10 +2,12 @@
 
 namespace Tests\Unit\Services;
 
+use App\Models\AuthAccessLog;
 use App\Models\AuthDevice;
 use App\Models\AuthUser;
 use App\Services\DeviceTrustService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Str;
 use Tests\TestCase;
 
@@ -214,5 +216,220 @@ class DeviceTrustServiceTest extends TestCase
             $this->assertArrayHasKey('ip_address', $entry);
             $this->assertArrayHasKey('created_at', $entry);
         }
+    }
+
+    // -----------------------------------------------------------------
+    // MSI-hardening (pad 4, Infection 21-04-2026 → 83 % baseline).
+    // De onderstaande tests sluiten de 11 geesels die Infection op de
+    // DeviceTrustService vond. Elke test voldoet aan test-quality-
+    // policy §3: echt contract, strict ===, geen padding.
+    // -----------------------------------------------------------------
+
+    public function test_verify_token_calls_touch_used_updating_ip_and_last_used_at(): void
+    {
+        // Kills: Line 26 MethodCallRemoval op `$device->touchUsed($ipAddress)`.
+        // Contract: verify MOET last_used_at bijwerken naar "nu" en ip_address
+        // vervangen door de aanroep-IP. Zonder touchUsed blijft de oude
+        // waarde staan.
+        [, $device, $token] = $this->makeUserWithDevice([
+            'last_used_at' => now()->subDays(5),
+            'ip_address' => '8.8.8.8',
+        ]);
+        $before = $device->last_used_at;
+
+        (new DeviceTrustService())->verifyToken($token, '203.0.113.42');
+
+        $device->refresh();
+        $this->assertSame('203.0.113.42', $device->ip_address,
+            'touchUsed MOET ip_address bijwerken naar de verify-aanroep IP');
+        $this->assertTrue($device->last_used_at->gt($before),
+            'touchUsed MOET last_used_at vooruit zetten');
+    }
+
+    public function test_verify_token_extend_boundary_at_exactly_seven_days_does_not_extend(): void
+    {
+        // Kills: Line 29 LessThan (`< 7` → `<= 7`).
+        // Contract: `diffInDays(now()) < 7` betekent "strict minder dan 7".
+        // Bij expires_at exact op 7 dagen (diffInDays == 7) MOET extend
+        // NIET gebeuren. Een `<= 7` mutant zou hier wel extenden.
+        $fixedNow = Carbon::parse('2026-04-21 12:00:00');
+        Carbon::setTestNow($fixedNow);
+
+        [, $device, $token] = $this->makeUserWithDevice([
+            // Exact 7 dagen in de toekomst → diffInDays == 7.
+            'expires_at' => $fixedNow->copy()->addDays(7),
+        ]);
+        $originalExpiry = $device->expires_at->copy();
+
+        (new DeviceTrustService())->verifyToken($token);
+
+        $device->refresh();
+        $this->assertTrue($device->expires_at->equalTo($originalExpiry),
+            'Bij diffInDays == 7 MOET extendTrust NIET worden aangeroepen');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_verify_token_extend_boundary_at_six_days_does_extend(): void
+    {
+        // Kills: samen met bovenstaande test de `< 7` → `<= 7` mutatie definitief.
+        // Contract: < 7 dagen MOET extenden. 6 dagen is binnen window.
+        $fixedNow = Carbon::parse('2026-04-21 12:00:00');
+        Carbon::setTestNow($fixedNow);
+
+        [, $device, $token] = $this->makeUserWithDevice([
+            'expires_at' => $fixedNow->copy()->addDays(6),
+        ]);
+        $originalExpiry = $device->expires_at->copy();
+
+        (new DeviceTrustService())->verifyToken($token);
+
+        $device->refresh();
+        $this->assertTrue($device->expires_at->gt($originalExpiry),
+            'Bij diffInDays < 7 MOET extendTrust wel worden aangeroepen');
+
+        Carbon::setTestNow();
+    }
+
+    public function test_verify_token_response_contains_expires_at_as_iso_string_key(): void
+    {
+        // Kills: Line 49 ArrayItem (`'expires_at' =>` → `'expires_at' >`).
+        // Contract: expires_at MOET in de device-payload zitten als ISO-string
+        // op key 'expires_at'. Een mutatie die `=>` naar `>` wijzigt zou de
+        // key laten verdwijnen.
+        [, $device, $token] = $this->makeUserWithDevice([
+            'expires_at' => now()->addDays(20),
+        ]);
+
+        $result = (new DeviceTrustService())->verifyToken($token);
+
+        $this->assertArrayHasKey('expires_at', $result['device']);
+        $this->assertSame(
+            $device->fresh()->expires_at->toISOString(),
+            $result['device']['expires_at'],
+        );
+    }
+
+    public function test_get_user_devices_handles_null_last_used_at_without_crashing(): void
+    {
+        // Kills: Line 66 NullSafeMethodCall (`?->` → `->`).
+        // Contract: last_used_at MAG null zijn (nieuw device zonder gebruik).
+        // De service MOET dat afhandelen met `?->toISOString()` → null in
+        // de output. Zonder `?->` zou `null->toISOString()` een TypeError/
+        // Error gooien.
+        [$user] = $this->makeUserWithDevice(['last_used_at' => null]);
+
+        $devices = (new DeviceTrustService())->getUserDevices($user);
+
+        $this->assertCount(1, $devices);
+        $this->assertNull($devices[0]['last_used_at'],
+            'null last_used_at MOET als null doorkomen via ?->');
+    }
+
+    public function test_revoke_device_writes_access_log_with_device_id_metadata(): void
+    {
+        // Kills: Line 91 MethodCallRemoval (verwijderen van AuthAccessLog::log).
+        // Kills: Line 97 ArrayItemRemoval (verwijderen van revoked_device_id).
+        // Contract: elke device-revoke MOET een audit-log entry schrijven
+        // met action=device_revoke en metadata.revoked_device_id = X.
+        [$user, $device] = $this->makeUserWithDevice();
+        $logsBefore = AuthAccessLog::count();
+
+        (new DeviceTrustService())->revokeDevice($user, $device->id, '198.51.100.9');
+
+        $this->assertSame($logsBefore + 1, AuthAccessLog::count(),
+            'revokeDevice MOET exact 1 audit-log schrijven');
+
+        $log = AuthAccessLog::where('user_id', $user->id)
+            ->where('action', AuthAccessLog::ACTION_DEVICE_REVOKE)
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log, 'audit-log met action=device_revoke MOET bestaan');
+        $this->assertSame($user->id, $log->user_id);
+        $this->assertSame($device->device_name, $log->device_name);
+        $this->assertSame('198.51.100.9', $log->ip_address);
+        $this->assertIsArray($log->metadata);
+        $this->assertSame($device->id, $log->metadata['revoked_device_id'] ?? null,
+            'metadata MOET revoked_device_id exact gelijk aan device->id bevatten');
+    }
+
+    public function test_revoke_all_devices_writes_access_log_with_revoked_count_metadata(): void
+    {
+        // Kills: Line 120 MethodCallRemoval (verwijderen AuthAccessLog::log).
+        // Kills: Line 126 ArrayItemRemoval (verwijderen revoked_count).
+        // Contract: revokeAll MOET een audit-log schrijven met exact het
+        // aantal gerevokete devices in metadata.revoked_count. Zonder log
+        // of zonder revoked_count is audit-spoor gebroken.
+        [$user, $deviceKeep] = $this->makeUserWithDevice();
+        [, $deviceDrop1] = $this->makeUserWithDevice();
+        [, $deviceDrop2] = $this->makeUserWithDevice();
+        $deviceDrop1->update(['user_id' => $user->id]);
+        $deviceDrop2->update(['user_id' => $user->id]);
+        $logsBefore = AuthAccessLog::count();
+
+        (new DeviceTrustService())->revokeAllDevices($user, $deviceKeep->id, '10.1.2.3');
+
+        $this->assertSame($logsBefore + 1, AuthAccessLog::count(),
+            'revokeAllDevices MOET exact 1 audit-log schrijven');
+
+        $log = AuthAccessLog::where('user_id', $user->id)
+            ->where('action', AuthAccessLog::ACTION_DEVICE_REVOKE)
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log);
+        $this->assertSame('All devices', $log->device_name);
+        $this->assertSame('10.1.2.3', $log->ip_address);
+        $this->assertIsArray($log->metadata);
+        $this->assertSame(2, $log->metadata['revoked_count'] ?? null,
+            'metadata MOET revoked_count exact gelijk aan gerevokete aantal bevatten');
+        $this->assertSame($deviceKeep->id, $log->metadata['except_device_id'] ?? null);
+    }
+
+    public function test_logout_writes_access_log_with_logout_action(): void
+    {
+        // Kills: Line 155 MethodCallRemoval (verwijderen AuthAccessLog::log).
+        // Contract: elke logout MOET een audit-log-entry schrijven met
+        // action=logout en device_name van het gerevokete device.
+        [$user, $device, $token] = $this->makeUserWithDevice();
+        $logsBefore = AuthAccessLog::count();
+
+        (new DeviceTrustService())->logout($token, '192.0.2.77');
+
+        $this->assertSame($logsBefore + 1, AuthAccessLog::count(),
+            'logout MOET exact 1 audit-log schrijven');
+
+        $log = AuthAccessLog::where('user_id', $user->id)
+            ->where('action', AuthAccessLog::ACTION_LOGOUT)
+            ->latest('id')
+            ->first();
+
+        $this->assertNotNull($log, 'audit-log met action=logout MOET bestaan');
+        $this->assertSame($device->device_name, $log->device_name);
+        $this->assertSame('192.0.2.77', $log->ip_address);
+    }
+
+    public function test_get_access_logs_default_limit_is_exactly_twenty(): void
+    {
+        // Kills: Line 171 Increment/Decrement op `int $limit = 20`.
+        // Contract: default limit = 20. Bij 25 logs MOET getAccessLogs()
+        // er exact 20 teruggeven. Mutaties naar 19 of 21 geven een
+        // verschillend aantal.
+        [$user] = $this->makeUserWithDevice();
+
+        for ($i = 0; $i < 25; $i++) {
+            AuthAccessLog::log(
+                AuthAccessLog::ACTION_LOGIN,
+                $user->id,
+                "dev-{$i}",
+                '10.0.0.1',
+            );
+        }
+
+        $logs = (new DeviceTrustService())->getAccessLogs($user);
+
+        $this->assertCount(20, $logs,
+            'Default limit MOET exact 20 zijn; 19 of 21 breken dit contract');
     }
 }

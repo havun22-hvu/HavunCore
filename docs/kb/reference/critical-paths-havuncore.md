@@ -145,6 +145,13 @@ in `isProjectFile()` / rate-limit logica moeilijker te isoleren.
 - `tests/Unit/Services/DeviceTrustServiceTest.php`
 
 **Mutation-score target:** 90 %.
+**Huidige meting:** **100 %** (21-04-2026, commit `pending` — 67/67
+mutaties gekilled op `DeviceTrustService.php`). Zie
+`runbooks/infection-setup-plan.md` §3 voor run-log. Source-fix in
+dezelfde run: `verifyToken()` gebruikte een foutieve
+`$expires_at->diffInDays(now()) < 7` check die voor niet-verlopen
+devices altijd true was (negatieve Carbon-diff) — gecorrigeerd naar
+`$expires_at->lt(now()->addDays(7))`.
 
 ## Pad 5 — Observability-events + K&V findings
 

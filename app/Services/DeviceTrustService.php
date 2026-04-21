@@ -25,8 +25,14 @@ class DeviceTrustService
         // Update last used
         $device->touchUsed($ipAddress);
 
-        // Extend trust if close to expiry (within 7 days)
-        if ($device->expires_at->diffInDays(now()) < 7) {
+        // Extend trust if close to expiry (within 7 days).
+        // NOTE (2026-04-21, mutation-run pad 4): de vorige versie gebruikte
+        // `$device->expires_at->diffInDays(now()) < 7` — voor niet-verlopen
+        // devices retourneert Carbon daar een negatief getal (expires_at is
+        // na nu), dus de conditie was altijd true en elke verify extendde
+        // trust onvoorwaardelijk. Contract is "alleen als binnen 7 dagen
+        // tot expiry", dus we vergelijken de expiry direct met now+7d.
+        if ($device->expires_at->lt(now()->addDays(7))) {
             $device->extendTrust();
         }
 
