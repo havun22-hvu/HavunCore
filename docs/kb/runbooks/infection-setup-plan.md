@@ -26,8 +26,8 @@ related:
 | Config-bestand | `infection.json5` aanwezig |
 | Scope | `app/Services` minus `Chaos` + `DocIntelligence` |
 | Logs | `storage/logs/infection.{log,html,json,summary.log}` |
-| Drempels | `minMsi=48`, `minCoveredMsi=48` (baseline +5pp marge lager) |
-| Baseline | `reference/mutation-baseline-2026-04-17.md` — 53,78 % MSI |
+| Drempels | `minMsi=60`, `minCoveredMsi=60` (22-04 opgehoogd van 48; zie baseline-doc §"Drempel-ophoging") |
+| Baseline | `reference/mutation-baseline-2026-04-22.md` — per-pad 81–100 % MSI (vorige: 53,78 % op 17-04) |
 
 **Conclusie:** er is geen installatie nodig. De taak is _verhogen_ van
 de MSI richting de pad-targets (85–90 %).

@@ -28,8 +28,10 @@
         "configDir": ".",
         "customPath": "vendor/bin/phpunit"
     },
-    "minMsi": 48,
-    "minCoveredMsi": 48,
+    // Zie `infection.json5` voor ratio-nale; deze config volgt dezelfde
+    // drempel zodat beide runs consistent regressies pakken.
+    "minMsi": 60,
+    "minCoveredMsi": 60,
     "mutators": {
         "@default": true,
         "global-ignoreSourceCodeByRegex": [
