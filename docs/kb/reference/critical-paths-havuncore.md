@@ -182,6 +182,14 @@ terwijl er iets stuk is, weten we het niet.
 - `tests/Unit/Services/QualitySafety/LatestRunFinderTest.php`
 
 **Mutation-score target:** 85 %.
+**Huidige meting:** **100 %** (21-04-2026, commits `f23b17d` + `40541fd`
+— 220 mutaties, 0 escapes op `ObservabilityService.php`). Baseline was
+68,91 % (60 escapes); de escape-set is volledig gesloten via fixture-
+gebaseerde tests voor `getDatabaseSize()` (sqlite-branch, missing-file,
+non-sqlite fallback), invariant-assertions voor `getSystemHealth()`
+(free <= total, used_percent 0..100, precision-2 rounding) en per-key
+`=== 1` assertions voor `getObservabilityTableSizes()`. Zie
+`runbooks/infection-setup-plan.md` §3 voor de tabel.
 
 ## Pad 6 — Session-cookie defaults (HavunCore-eigen scope)
 

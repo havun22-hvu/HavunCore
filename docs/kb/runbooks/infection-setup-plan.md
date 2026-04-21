@@ -186,7 +186,7 @@ minder dan 7 dagen tot expiry".
 | 2 AIProxy | 90 % | **81 %** (21-04, commit `65b14f5` — 7 runs) | MySQL-integration fixture nodig voor SUM/COUNT CastInt-mutaties |
 | 3 AutoFix | 85 % | deel van baseline (53 %) | escaped-list uit baseline uitwerken |
 | 4 QR Auth / Device Trust | 90 % | **100 %** (21-04 sessie, commit pending) | — (target ruim gehaald, 67/67 killed) |
-| 5 Observability | 85 % | baseline noemt `getSystemMetrics()` regels 178-179 | disk-bytes unit-test met fixture |
+| 5 Observability | 85 % | **100 %** (21-04, commits `f23b17d` + `40541fd` — 220/220 killed, 0 escaped) | — (target ruim gehaald; fixture-tests voor `getDatabaseSize()`, invariant-asserts voor `getSystemHealth()`) |
 | 7 Critical-paths audit | 85 % | buiten scope `app/Services` — aparte filter nodig | `infection.json5` scope uitbreiden met `app/Console` + `app/Services/CriticalPaths` |
 
 ## 4. CI-integratie (bestaand + uitbreiding)
