@@ -1,18 +1,29 @@
 name: Mutation Testing (Infection)
 
-# VP-16: kwartaalse mutation-test baseline op kritieke services.
-# Cron: 1e jan/apr/jul/okt om 03:00 UTC + handmatige trigger.
+# VP-16: kwartaalse mutation-test baseline op kritieke services (`mutation`)
+# + per-PR kritieke-pad gate (`critical-paths`).
+# Cron: 1e jan/apr/jul/okt om 03:00 UTC voor de brede baseline-run.
+# Per-pad jobs draaien bij elke push/PR — sneller + scherpere PR-gate.
 
 on:
   schedule:
     - cron: '0 3 1 1,4,7,10 *'
   workflow_dispatch:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'config/**'
+      - 'tests/**'
+      - 'infection*.json5'
+      - 'composer.lock'
 
 jobs:
+  # Brede baseline — alleen op cron/handmatig; langzaam maar compleet.
   mutation:
-    name: Infection Mutation Testing
+    name: Infection baseline (full scope)
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    if: github.event_name != 'pull_request'
 
     steps:
       - name: Checkout code
@@ -65,3 +76,79 @@ jobs:
           name: infection-logs
           path: storage/logs/infection*
           retention-days: 90
+
+  # Per-pad gates — run op elke PR, elk pad heeft eigen target uit
+  # critical-paths-havuncore.md. Sneller dan de full-scope run omdat
+  # Infection alleen tegen één service-file muteert.
+  critical-paths:
+    name: MSI gate — ${{ matrix.pad.name }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        pad:
+          - { name: vault,         filter: 'app/Http/Controllers/Api/VaultController.php,app/Models/VaultSecret.php,app/Models/VaultAccessLog.php,app/Models/VaultProject.php,app/Models/VaultConfig.php', min_msi: 85 }
+          - { name: aiproxy,       filter: 'app/Services/AIProxyService.php',       min_msi: 75 }
+          - { name: autofix,       filter: 'app/Services/AutoFixService.php',       min_msi: 82 }
+          - { name: devicetrust,   filter: 'app/Services/DeviceTrustService.php',   min_msi: 90 }
+          - { name: observability, filter: 'app/Services/ObservabilityService.php', min_msi: 90 }
+          - { name: criticalpaths, filter: 'app/Services/CriticalPaths,app/Console/Commands/CriticalPathsVerifyCommand.php', min_msi: 85 }
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache
+          mkdir -p storage/framework/{sessions,views,cache}
+          mkdir -p storage/logs
+          mkdir -p storage/framework/cache/infection-critical
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, sqlite3, pdo_sqlite
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Create .env
+        run: |
+          cp .env.example .env 2>/dev/null || touch .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "BROADCAST_CONNECTION=null" >> .env
+          echo "CACHE_STORE=array" >> .env
+          echo "CACHE_DRIVER=array" >> .env
+          echo "DB_CONNECTION=sqlite" >> .env
+          echo "DB_DATABASE=:memory:" >> .env
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run Infection — ${{ matrix.pad.name }}
+        run: |
+          vendor/bin/infection \
+            --configuration=infection-critical-paths.json5 \
+            --filter="${{ matrix.pad.filter }}" \
+            --threads=4 \
+            --min-msi=${{ matrix.pad.min_msi }} \
+            --min-covered-msi=${{ matrix.pad.min_msi }} \
+            --logger-github \
+            --no-progress --no-interaction
+
+      - name: Upload pad-logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: infection-${{ matrix.pad.name }}
+          path: storage/logs/infection-critical*
+          retention-days: 30

@@ -234,6 +234,21 @@ gekopieerd en daar getest. Zie die projecten' eigen
 **Mutation-score target:** 90 % — het is een klein config-bestand met
 duidelijke defaults; een gemuteerde `false` moet direct worden
 gevangen.
+**Huidige meting:** **n/a** (22-04-2026). `config/session.php` is een
+puur-data return-array zonder executable logic; Infection muteert
+alleen code en `infection-critical-paths.json5` sluit `config/` bewust
+uit. Het contract is op twee manieren pinned:
+
+1. Drie `assertStringContainsString`-tests matchen het exacte
+   `env('SESSION_X', <default>)`-literal in `config/session.php`.
+   Regressie van `true` → `false` of van `'lax'` → iets anders
+   faalt die assertion direct.
+2. `test_loaded_session_config_honours_defaults_in_non_local`
+   leest `config('session.http_only')` + `session.same_site` op
+   runtime — dekt de Laravel-loader-keten.
+
+Samen vervangen deze tests de rol van mutation-testing voor dit
+pad. Geen verdere actie.
 
 ## Pad 7 — Audit infrastructure (`critical-paths:verify`)
 
