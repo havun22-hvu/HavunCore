@@ -169,7 +169,7 @@ class AIProxyService
             'total_input_tokens' => (int) ($stats->total_input_tokens ?? 0),
             'total_output_tokens' => (int) ($stats->total_output_tokens ?? 0),
             'total_tokens' => (int) ($stats->total_tokens ?? 0),
-            'avg_execution_time_ms' => round($stats->avg_execution_time_ms ?? 0),
+            'avg_execution_time_ms' => (int) round($stats->avg_execution_time_ms ?? 0),
         ];
     }
 
