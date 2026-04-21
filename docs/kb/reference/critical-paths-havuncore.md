@@ -80,9 +80,12 @@ isolatie, kost geld per call, mag niet lekken.
 - `tests/Unit/Services/CircuitBreakerTest.php`
 
 **Mutation-score target:** 90 %.
-**Huidige meting:** 58 % (21-04-2026, commit `95fa044` — zie
-`runbooks/infection-setup-plan.md` §2). Resterende gap = HTTP-request-
-config mutaties (maxTokens default, timeout, headers).
+**Huidige meting:** **81 %** (21-04-2026, commit `65b14f5` — zie
+`runbooks/infection-setup-plan.md` §2 voor Runs 1–7). Resterende 9 pp
+gap is Infection's false-positive floor op deze service (SQLite vs
+MySQL type-coercing op SUM/COUNT, `Http::fake` zonder timeout-
+enforcement, en sub-ms RoundingFamily-verschillen). Echte target
+vereist MySQL-integration fixture — zie runbook §2.
 
 ## Pad 3 — AutoFix pipeline
 

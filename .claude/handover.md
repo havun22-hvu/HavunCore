@@ -2,24 +2,32 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Sessie: 21 april 2026 (laat) — Mutation-baseline start, AIProxy MSI +10pp
+## Sessie: 21 april 2026 (laat) — Mutation-baseline AIProxy +33pp
 
-Eerste Infection-iteratie na de portfolio-clean-up.
+Eerste Infection-iteratie na de portfolio-clean-up: 7 Infection-runs,
+13 nieuwe tests, 2 source-fixes.
 
-**AIProxyService (pad 2):** MSI 48 % → **58 %** (+10 pp), Mutation Code
-Coverage 100 %. Commit `95fa044`. 5 nieuwe tests, 1 source-fix
-(`(int) round(avg_execution_time_ms)`).
+**AIProxyService (pad 2):** MSI **48 % → 81 %** (+33 pp), Mutation
+Code Coverage 100 %. Commits `95fa044` + `65b14f5`.
 
-**Nog te doen voor 90 %-target (pad 2):** alleen HTTP-request-config
-mutaties — `maxTokens` default, `->timeout(60)`, `Content-Type` +
-`anthropic-version` headers. Kill via `Http::assertSent(fn ($req) =>
-...)` met body + header inspectie. Geschat <1 u werk.
+Source-fixes (beide echte contract-tightening, niet test-only):
+- `config('services.claude.rate_limit') ?? 60` (fallback-bug:
+  `config(..., 60)` default-arg werkt niet als key explicit null is).
+- `(int) round(...)` op alle ms-return-velden (methods documenteren
+  "integer milliseconds"; round() returnt float).
 
-**Runbook bijgewerkt:** `docs/kb/runbooks/infection-setup-plan.md` §2
-bevat nu Run 1 + Run 2 metrics en de afgeronde quick-win lijst.
+Resterende 9 pp tot 90 %-target = Infection's false-positive floor
+voor deze service (gedetailleerd in runbook §2):
+- SQLite retourneert al int voor SUM/COUNT → CastInt-mutaties harmless
+- Http::fake respecteert geen timeout → `timeout(60) ±1` niet killable
+- Laravel auto-injecteert Content-Type → ArrayItemRemoval harmless
+- Sub-ms RoundingFamily verschillen niet stabiel testbaar
 
-**Critical-paths doc bijgewerkt:** `critical-paths-havuncore.md` pad 2
-vermeldt huidige MSI 58 %.
+Voor 90 %-claim: MySQL-integration fixture nodig (~3-4 u).
+
+**Documenten bijgewerkt:**
+- `infection-setup-plan.md` §2 — Run-by-run tabel + false-positive floor
+- `critical-paths-havuncore.md` — pad 2 MSI 81 %
 
 ---
 

@@ -50,19 +50,41 @@ vendor/bin/infection --filter=app/Services/AIProxyService.php \
 
 ### Run 2 (21-04-2026, na quick-wins, commit `95fa044`)
 
-5 nieuwe tests toegevoegd op basis van de escaped-categorieën
-hieronder.
-
 | Metric | Waarde |
 |--------|--------|
-| **MSI na quick-wins** | **58 %** (+10 pp) |
+| **MSI** | **58 %** (+10 pp) |
 | Mutation Code Coverage | 100 % |
 
-**Resterende gap (58 → 90 % = 32 pp):** uitsluitend HTTP-request-
-config mutaties — `maxTokens = 1024 ±1`, `->timeout(60)`,
-`Content-Type`/`anthropic-version` header-keys. Deze killen vereist
-request-introspection via `Http::assertSent(fn (Request $r) => ...)`
-met body + header checks. Aparte vervolg-iteratie (<1 u werk).
+### Runs 3–7 (21-04-2026, commit `65b14f5`)
+
+8 aanvullende tests + 2 source-fixes. Iteratief gemeten:
+
+| Run | MSI | Δ | Focus |
+|-----|-----|--:|-------|
+| 3 | 62 % | +4 pp | HTTP headers + URL, maxTokens default, body payload keys |
+| 4 | 69 % | +7 pp | Log::error payload, CircuitBreaker failure counter reset, rate-limit default = 60 (source: `?? 60` i.p.v. config()-default-arg) |
+| 5 | 73 % | +4 pp | `?? 0` defaults in chat() return, execution-time `1000 ± 1` band |
+| 6 | 75 % | +2 pp | logUsage subclass-access, match default-arm, strict === on stats sums, Log::warning catch branch |
+| 7 | **81 %** | +6 pp | `?? 0` defaults in logUsage DB row (completed the zero-default mutation family) |
+
+**Totaal sessie: 48 % → 81 % (+33 pp). Gap tot target 90 % = 9 pp.**
+
+### Resterende ~19 escapes = Infection false-positive floor
+
+Deze mutaties kunnen niet stabiel gekilled worden zonder de
+test-harness te veranderen (niet gerechtvaardigd voor MSI-padding):
+
+| Regel | Mutator | Waarom niet killable |
+|-------|---------|----------------------|
+| 58 | `Content-Type` ArrayItemRemoval | Laravel injecteert auto op POST+array |
+| 63 | `timeout(60) ±1` | `Http::fake` honoreert geen timeouts |
+| 98, 134, 174 | RoundingFamily op `round($t * 1000)` | floor/ceil/round-verschil < 1ms, CI-jitter-instabiel |
+| 119 | `Cache::put(..., 60)` TTL ±1 | niet testbaar binnen unit-test zonder 60s wachten |
+| 170–173 | `(int)` casts op SUM/COUNT | SQLite returns al ints; alleen MySQL-test vangt dit |
+| 150 | MatchArmRemoval (resterend) | resterende arm na dataprovider-pass |
+
+Voor 90 % target: **accepteer 81 %** of investeer in MySQL-integration
+fixture (~3-4 u) voor pad-niveau MSI-claim richting 90 %.
 
 ### Escaped-categorieen (samenvatting uit de run-log)
 
