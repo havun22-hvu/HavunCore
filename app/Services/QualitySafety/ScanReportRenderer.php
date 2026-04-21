@@ -2,6 +2,8 @@
 
 namespace App\Services\QualitySafety;
 
+use App\Enums\Severity;
+
 class ScanReportRenderer
 {
     /**
@@ -15,7 +17,11 @@ class ScanReportRenderer
 
         $critHigh = array_filter(
             $findings,
-            fn ($f) => in_array($f['severity'] ?? '', ['critical', 'high'], true)
+            fn ($f) => in_array(
+                $f['severity'] ?? '',
+                [Severity::Critical->value, Severity::High->value],
+                true
+            )
         );
 
         $sections = [

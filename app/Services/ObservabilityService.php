@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Enums\Severity;
 use App\Models\ErrorLog;
 use App\Models\MetricsAggregated;
 use App\Models\RequestMetric;
@@ -117,8 +118,9 @@ class ObservabilityService
                 return null;
             }
 
+            $criticalHigh = [Severity::Critical->value, Severity::High->value];
             $findings = collect($data['findings'] ?? [])
-                ->filter(fn ($f) => in_array($f['severity'] ?? null, ['critical', 'high'], true))
+                ->filter(fn ($f) => in_array($f['severity'] ?? null, $criticalHigh, true))
                 ->map(fn ($f) => [
                     'severity' => $f['severity'],
                     'project' => $f['project'] ?? null,
@@ -131,8 +133,8 @@ class ObservabilityService
             return [
                 'last_scan_at' => CarbonImmutable::createFromTimestamp($disk->lastModified($latestPath))->toIso8601String(),
                 'totals' => [
-                    'critical' => (int) ($data['totals']['critical'] ?? 0),
-                    'high' => (int) ($data['totals']['high'] ?? 0),
+                    Severity::Critical->value => (int) ($data['totals'][Severity::Critical->value] ?? 0),
+                    Severity::High->value => (int) ($data['totals'][Severity::High->value] ?? 0),
                     'errors' => (int) ($data['totals']['errors'] ?? 0),
                 ],
                 'findings' => $findings,

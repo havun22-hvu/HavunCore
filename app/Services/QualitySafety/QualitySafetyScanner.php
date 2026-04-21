@@ -2,6 +2,7 @@
 
 namespace App\Services\QualitySafety;
 
+use App\Enums\Severity;
 use Illuminate\Contracts\Process\ProcessResult;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Http;
@@ -1109,11 +1110,15 @@ class QualitySafetyScanner
 
     private function normalizeSeverity(string $raw): string
     {
+        // Keep legacy 'informational' bucket as-is for backward compat with
+        // persisted scan JSON + downstream consumers. Known severities are
+        // resolved via Severity enum; everything else falls through to the
+        // legacy 'informational' label.
         return match (strtolower($raw)) {
-            'crit', 'critical' => 'critical',
-            'high' => 'high',
-            'med', 'medium', 'moderate' => 'medium',
-            'low' => 'low',
+            'crit', 'critical' => Severity::Critical->value,
+            'high' => Severity::High->value,
+            'med', 'medium', 'moderate' => Severity::Medium->value,
+            'low' => Severity::Low->value,
             default => 'informational',
         };
     }
@@ -1126,10 +1131,10 @@ class QualitySafetyScanner
     private function totals(array $findings, array $errors): array
     {
         $totals = [
-            'critical' => 0,
-            'high' => 0,
-            'medium' => 0,
-            'low' => 0,
+            Severity::Critical->value => 0,
+            Severity::High->value => 0,
+            Severity::Medium->value => 0,
+            Severity::Low->value => 0,
             'informational' => 0,
             'errors' => count($errors),
         ];

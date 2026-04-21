@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Severity;
 use App\Models\DocIntelligence\DocIssue;
 use App\Services\DocIntelligence\IssueDetector;
 use Illuminate\Console\Command;
@@ -53,7 +54,13 @@ class DocIssuesCommand extends Command
             $query->where('issue_type', $type);
         }
 
-        $issues = $query->orderByRaw("CASE severity WHEN 'high' THEN 1 WHEN 'medium' THEN 2 ELSE 3 END")
+        // Order by severity weight (High=1, Medium=2, rest=3) — matches Severity::sortWeight()
+        // DocIssue currently only persists low/medium/high, so critical/info get fallback weight 3.
+        $issues = $query->orderByRaw(sprintf(
+            "CASE severity WHEN '%s' THEN 1 WHEN '%s' THEN 2 ELSE 3 END",
+            Severity::High->value,
+            Severity::Medium->value
+        ))
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -67,12 +74,8 @@ class DocIssuesCommand extends Command
         $this->line('');
 
         foreach ($issues as $issue) {
-            $severityIcon = match($issue->severity) {
-                'high' => '🔴',
-                'medium' => '🟡',
-                'low' => '🟢',
-                default => '⚪',
-            };
+            $severityEnum = Severity::tryFrom((string) $issue->severity);
+            $severityIcon = $severityEnum?->icon() ?? '⚪';
 
             $typeIcon = match($issue->issue_type) {
                 'inconsistent' => '⚠️',
@@ -139,7 +142,9 @@ class DocIssuesCommand extends Command
         $this->line('───────────');
 
         foreach ($summary as $project => $data) {
-            $icon = $data['high'] > 0 ? '🔴' : ($data['medium'] > 0 ? '🟡' : '🟢');
+            $icon = $data[Severity::High->value] > 0
+                ? Severity::High->icon()
+                : ($data[Severity::Medium->value] > 0 ? Severity::Medium->icon() : Severity::Low->icon());
             $this->line("{$icon} {$project}: {$data['total']} issues");
 
             // Show breakdown by type
