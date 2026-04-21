@@ -119,11 +119,15 @@ Verkeerde check = verkeerde fix in production.
 - `tests/Feature/AutoFixApiTest.php`
 - `tests/Feature/AutoFixDeliveryModeTest.php`
 
-**Gap (TODO):** dedicated unit-level `AutoFixServiceTest` ontbreekt —
-service wordt nu alleen via API-feature tests gehit. Risico: edge-cases
-in `isProjectFile()` / rate-limit logica moeilijker te isoleren.
-
 **Mutation-score target:** 85 %.
+**Huidige meting:** **87 %** (22-04-2026, commit `9bc30df` — 6 runs,
+baseline 28 % → 87 %). `AutoFixDeliveryModeTest` uitgebreid tot
+dedicated unit-coverage (31 tests / 74 assertions) met subclass-
+helpers voor protected `buildPrompt` / `getSystemPrompt` /
+`assessRisk` / `sendNotification`. Source-fix als nevenresultaat:
+`AutofixProposal::isRateLimited()` accepteerde `string $file`, maar
+queue-job-exceptions leveren geen file — uitgebreid naar
+`?string $file`. Zie `runbooks/infection-setup-plan.md` §3.
 
 ## Pad 4 — QR Auth (device-binding)
 

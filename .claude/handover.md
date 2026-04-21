@@ -2,23 +2,29 @@
 
 > Laatste sessie info voor volgende Claude.
 
-## Sessie: 21 april 2026 (diep in de nacht) — 4 kritieke paden MSI-target gehaald
+## Sessie: 21-22 april 2026 (nacht) — 6 kritieke paden MSI-target gehaald
 
-Parallel-werk met 2 agents (pad 4 + pad 5) + handmatige run op pad 1
-(Vault). Eind-MSI per pad:
+Parallel-werk met agents (pad 4, 5, 7) + handmatige runs op pad 1
+(Vault), pad 2 (AIProxy) en pad 3 (AutoFix). Eind-MSI per pad:
 
 | Pad | Baseline | Eind | Target | Status |
 |-----|---------:|-----:|-------:|:-------|
 | 1 Vault | 85 % | **91 %** | 90 % | ✅ gehaald |
 | 2 AIProxy | 48 % | **81 %** | 90 % | ⚠️ false-positive floor (MySQL-integration fixture voor resterende 9pp) |
+| 3 AutoFix | 28 % | **87 %** | 85 % | ✅ gehaald (+ type-bug gevonden) |
 | 4 Device Trust | 83 % | **100 %** | 90 % | ✅ ruim gehaald (+ prod-bug gevonden) |
 | 5 Observability | 69 % | **100 %** | 85 % | ✅ ruim gehaald |
+| 7 Critical-paths audit | 84,85 % | **88,89 %** | 85 % | ✅ gehaald |
 
 **Echte bugs gevonden door mutation-testing:**
 - **Device Trust `diffInDays(now()) < 7`** — Carbon returnt negatief
   voor future dates, dus de conditie was permanent true voor
   niet-verlopen devices. Elke verify extendde trust onvoorwaardelijk.
   Gecorrigeerd naar `->lt(now()->addDays(7))`. Commit `0906ade`.
+- **AutoFix `isRateLimited(string $file)`** — methode vereiste string,
+  maar `analyze()` gaf `$errorData['file'] ?? null` door. Iedere
+  queue-job failure zonder file-frame was een `TypeError`.
+  Gecorrigeerd naar `?string $file`. Commit `9bc30df`.
 - **AIProxy `config('...', 60)` fallback** — returnt de `null`-set key
   i.p.v. default 60. Gecorrigeerd naar `?? 60`. Commit `65b14f5`.
 - **AIProxy `round(...)` returnt float** waar methods "integer ms"
@@ -31,9 +37,14 @@ Parallel-werk met 2 agents (pad 4 + pad 5) + handmatige run op pad 1
   passen.
 
 **Resterende werk (uit plan):**
-- Pad 3 AutoFix 53 % → 85 % (~2 u).
-- Pad 7 Critical-paths audit filter (pad 4 baseline).
-- AIProxy MySQL-integration fixture → echte 90 %.
+- AIProxy MySQL-integration fixture → echte 90 % (de gap bestaat uit
+  CastInt-mutaties op SUM/COUNT die SQLite niet kan onderscheiden).
+- Pad 6 Session-cookie defaults (nog niet los gemeten — klein scope,
+  waarschijnlijk 1 run naar target).
+- CI matrix-job: per-pad `--min-msi` als PR-gate activeren via
+  `infection-critical-paths.json5`.
+- `minMsi` globaal verhogen van 48 → 60 → 75 zodra alle paden
+  stabiel boven 85 % blijven.
 
 ---
 
