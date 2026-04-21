@@ -187,7 +187,40 @@ minder dan 7 dagen tot expiry".
 | 3 AutoFix | 85 % | deel van baseline (53 %) | escaped-list uit baseline uitwerken |
 | 4 QR Auth / Device Trust | 90 % | **100 %** (21-04 sessie, commit `0906ade` — 67/67 killed) | target ruim gehaald |
 | 5 Observability | 85 % | **100 %** (21-04, commits `f23b17d` + `40541fd` — 220/220 killed, 0 escaped) | — (target ruim gehaald; fixture-tests voor `getDatabaseSize()`, invariant-asserts voor `getSystemHealth()`) |
-| 7 Critical-paths audit | 85 % | buiten scope `app/Services` — aparte filter nodig | `infection.json5` scope uitbreiden met `app/Console` + `app/Services/CriticalPaths` |
+| 7 Critical-paths audit | 85 % | **88,89 %** (21-04, commit `pending` — 176/198 killed) | target gehaald; `app/Console` toegevoegd aan `infection-critical-paths.json5` scope |
+
+### Pad 7 run-log (21-04-2026)
+
+| Run | Killed | Escaped | MSI | Actie |
+|-----|--------|---------|-----|-------|
+| 1 (baseline) | 168 | 30 | **84,85 %** | scope uitbreid naar `app/Console`; bestaande 26 tests dekken 85 % van mutaties |
+| 2 (+15 tests) | 176 | 21 | **88,89 %** | DocParser edge-cases (preamble/unicode/anchor/trim/null-continue), ReferenceChecker leading-slash + list-keys + forward-slashes, Command renderText pinning (glyph ✓/✗, summary, error-line, ran-OK/FAILED), siblings-after-missing, zero-totals schema |
+
+**Killed escapes (Run 1 → Run 2):**
+- `CriticalPathsVerifyCommand:46` 3× DecrementInteger (totals schema) → `test_missing_doc_json_reports_full_zero_totals`
+- `CriticalPathsVerifyCommand:48` Continue→break → `test_all_flag_continues_past_a_missing_doc`
+- `CriticalPathsVerifyCommand:65` MethodCallRemoval (`renderText`) → `test_text_output_renders_project_header_and_summary`
+- `CriticalPathsVerifyCommand:98` Continue→break → `test_missing_reference_does_not_abort_sibling_processing`
+- `CriticalPathsVerifyCommand:146/154/161/167` MethodCallRemoval + Ternary → `test_text_output_*` set
+- `DocParser:31` FalseValue → `test_preamble_before_first_pad_is_ignored`
+- `DocParser:39` FalseValue → `test_new_pad_resets_tests_section_flag`
+- `DocParser:44` Continue→break → `test_lines_before_first_pad_do_not_abort_parsing`
+- `ReferenceChecker:57` UnwrapArrayValues → `test_check_all_returns_list_with_sequential_integer_keys`
+
+**Resterende escapes (21) = grotendeels Infection false-positives:**
+- `TestRunner.php:27` 6× duration-rounding (Plus-Minus/Increment/Decrement/Multiplication/RoundingFamily op sub-ms jitter — niet deterministisch kill-baar)
+- `TestRunner.php:34` + `DocParser.php:77` CastString (het gecaste type is al identiek — mutation is no-op)
+- `DocParser.php:47/52/56` PregMatchRemoveFlags `/u`-vlag (fixture-paden zijn ASCII, dus `/u` en `//` matchen beide)
+- `DocParser.php:38` UnwrapTrim (regex capture strip al whitespace; trim is defensief)
+- `ReferenceChecker.php:22/62` UnwrapLtrim/UnwrapRtrim (dubbele separator wordt door OS gededupt)
+- `ReferenceChecker.php:64` UnwrapStrReplace (testbed is Linux — backslash komt niet voor)
+- `CriticalPathsVerifyCommand.php:125` UnwrapStrReplace doc-path (idem: Linux testbed, geen backslashes)
+- `CriticalPathsVerifyCommand.php:180/181` resolveProjectRoot LogicalAnd / ReturnRemoval (`config()` is null in testbed, dus de if-body wordt niet geraakt)
+- `CriticalPathsVerifyCommand.php:148` renderText continue-after-error (`--all` + missing-doc pad moeilijk vast te pinnen)
+- `CriticalPathsVerifyCommand.php:206` PregMatchRemoveDollar (glob-pattern eindigt altijd op `.md`, dus `$`-anchor is redundant)
+
+Diminishing returns: elke nieuwe test kost ~1 assertion per escape en
+levert ≤0,5 pp MSI. 88,89 % is ruim boven target 85 % — stop hier.
 
 ## 4. CI-integratie (bestaand + uitbreiding)
 

@@ -156,4 +156,142 @@ MD;
             'src/utils/old-util.test.jsx',
         ], $result[0]['references']);
     }
+
+    /**
+     * Content before the first `## Pad` heading must be silently dropped.
+     * If the parser defaults `inTestsSection` to `true` (mutation), preamble
+     * bullet-references would leak into an empty path.
+     */
+    public function test_preamble_before_first_pad_is_ignored(): void
+    {
+        $md = <<<'MD'
+Some intro paragraph.
+
+**Tests die dit afdekken:**
+
+- `tests/Feature/ShouldNotLeak.php`
+
+## Pad 1 — Real
+
+**Tests die dit afdekken:**
+
+- `tests/Feature/Real.php`
+MD;
+
+        $result = (new DocParser)->parse($md);
+
+        $this->assertCount(1, $result);
+        $this->assertSame('Real', $result[0]['name']);
+        $this->assertSame(['tests/Feature/Real.php'], $result[0]['references']);
+    }
+
+    /**
+     * After a new `## Pad` heading, `inTestsSection` MUST reset to false.
+     * Otherwise bullets directly under the heading (before `**Tests:**`)
+     * would be captured as references.
+     */
+    public function test_new_pad_resets_tests_section_flag(): void
+    {
+        $md = <<<'MD'
+## Pad 1 — First
+
+**Tests die dit afdekken:**
+
+- `tests/Feature/First.php`
+
+## Pad 2 — Second
+
+- `tests/Feature/ShouldNotLeakFromSecondPreamble.php`
+
+**Tests die dit afdekken:**
+
+- `tests/Feature/Second.php`
+MD;
+
+        $result = (new DocParser)->parse($md);
+
+        $this->assertCount(2, $result);
+        $this->assertSame(['tests/Feature/First.php'], $result[0]['references']);
+        // Only the test listed after the `**Tests:**` header of Pad 2 survives.
+        $this->assertSame(['tests/Feature/Second.php'], $result[1]['references']);
+    }
+
+    /**
+     * The heading name is trimmed — if the trim() is removed (mutation),
+     * trailing whitespace from the regex capture would survive.
+     */
+    public function test_pad_name_is_trimmed_of_trailing_whitespace(): void
+    {
+        // Trailing tabs/spaces between the name and line-end must be stripped.
+        $md = "## Pad 1 — Vault   \t\n\n**Tests die dit afdekken:**\n\n- `tests/Feature/V.php`\n";
+
+        $result = (new DocParser)->parse($md);
+
+        $this->assertSame('Vault', $result[0]['name']);
+    }
+
+    /**
+     * The `**Tests:**` header regex uses the `^` anchor. Without it (mutation),
+     * a `**Tests...**` fragment appearing mid-line (e.g. inside a bullet)
+     * would wrongly flip `inTestsSection` on.
+     */
+    public function test_tests_header_must_anchor_at_line_start(): void
+    {
+        $md = <<<'MD'
+## Pad 1 — Anchor
+
+- note: **Tests die dit afdekken:** is normally on its own line
+
+- `tests/Feature/ShouldNotLeak.php`
+
+Paragraph end.
+MD;
+
+        $result = (new DocParser)->parse($md);
+
+        // Bullet reference must NOT have been captured: the `**Tests:**`
+        // fragment was not at line-start, so inTestsSection stays false.
+        $this->assertSame([], $result[0]['references']);
+    }
+
+    /**
+     * References use the `/u` (unicode) regex flag. Without it, a backtick
+     * containing a multi-byte char before `.php` would fail to match on
+     * non-unicode engines. We use an accented char in the path to verify.
+     */
+    public function test_reference_regex_handles_unicode_path(): void
+    {
+        $md = "## Pad 1 — Unicode\n\n**Tests die dit afdekken:**\n\n- `tests/Feature/Café.php`\n";
+
+        $result = (new DocParser)->parse($md);
+
+        $this->assertSame(['tests/Feature/Café.php'], $result[0]['references']);
+    }
+
+    /**
+     * When `$current === null` (i.e. before the first `## Pad` heading),
+     * the loop continues to the next line. A mutation that replaces
+     * `continue` with `break` would abort processing and yield no paths.
+     */
+    public function test_lines_before_first_pad_do_not_abort_parsing(): void
+    {
+        $md = <<<'MD'
+Line 1 of preamble.
+Line 2 of preamble.
+Line 3 of preamble.
+
+## Pad 1 — Reached
+
+**Tests die dit afdekken:**
+
+- `tests/Feature/Reached.php`
+MD;
+
+        $result = (new DocParser)->parse($md);
+
+        // If `break` replaced `continue`, we'd never reach the `## Pad` heading
+        // and this assertion would fail.
+        $this->assertCount(1, $result);
+        $this->assertSame('Reached', $result[0]['name']);
+    }
 }

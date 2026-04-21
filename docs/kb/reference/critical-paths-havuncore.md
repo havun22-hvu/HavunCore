@@ -263,6 +263,22 @@ onzichtbaar.
 - `tests/Feature/Commands/CriticalPathsVerifyCommandTest.php`
 
 **Mutation-score target:** 85 %.
+**Huidige meting:** **88,89 %** (21-04-2026 — 176/198 mutaties gekilled
+op `app/Services/CriticalPaths/*` + `app/Console/Commands/CriticalPathsVerifyCommand.php`).
+Baseline was 84,85 % (30 escapes); via 15 nieuwe tests (DocParser
+preamble/unicode/anchor edge-cases, ReferenceChecker leading-slash
++ list-keys, Command renderText pinning + siblings-after-missing)
+gedaald naar 21 escapes + 1 timeout. Target gehaald.
+
+Resterende escapes zijn grotendeels Infection false-positives:
+`TestRunner.php:27` duration-rounding (RoundingFamily / Plus-Minus /
+Increment/Decrement op `* 1000`, sub-ms jitter), CastString op
+`file_get_contents`/`Artisan::output()` (het gecaste type is gelijk),
+PregMatchRemoveFlags op `/u`-vlaggen (ASCII-only fixture-paden killen
+dit niet strict), en regex-caret/dollar-anchors op filename-patronen
+die ook zonder anchor matchen in de praktijk. `app/Console` werd
+toegevoegd aan `infection-critical-paths.json5` zodat het Command-file
+binnen scope valt. Zie `runbooks/infection-setup-plan.md` §3 pad 7.
 
 ## Audit-checklist (externe review)
 

@@ -8,7 +8,8 @@
             "app/Services",
             "app/Http/Controllers/Api",
             "app/Http/Middleware",
-            "app/Models"
+            "app/Models",
+            "app/Console"
         ],
         "excludes": [
             "Chaos",
