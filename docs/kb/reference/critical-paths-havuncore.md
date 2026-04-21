@@ -80,6 +80,9 @@ isolatie, kost geld per call, mag niet lekken.
 - `tests/Unit/Services/CircuitBreakerTest.php`
 
 **Mutation-score target:** 90 %.
+**Huidige meting:** 58 % (21-04-2026, commit `95fa044` — zie
+`runbooks/infection-setup-plan.md` §2). Resterende gap = HTTP-request-
+config mutaties (maxTokens default, timeout, headers).
 
 ## Pad 3 — AutoFix pipeline
 

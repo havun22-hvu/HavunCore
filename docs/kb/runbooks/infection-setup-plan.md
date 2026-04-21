@@ -34,25 +34,35 @@ de MSI richting de pad-targets (85–90 %).
 
 ## 2. Pilot-meting — AIProxyService (pad 2)
 
-Gedraaid 21-04-2026 met:
+### Run 1 (baseline, 21-04-2026)
 
 ```
-vendor/bin/infection \
-  --filter=app/Services/AIProxyService.php \
+vendor/bin/infection --filter=app/Services/AIProxyService.php \
   --threads=4 --no-progress --no-interaction
 ```
 
 | Metric | Waarde |
 |--------|--------|
 | Totaal mutaties | 124 |
-| Killed (test framework) | 59 |
-| Escaped | 63 |
-| Errored / Timed Out / Skipped | 0 |
-| Ignored | 2 |
-| **MSI pilot** | **~48,4 %** |
-| **Target (pad 2)** | **90 %** |
-| **Gap** | **~42 pp** |
-| Duur | 3 min 51 s (threads=4) |
+| **MSI baseline** | **48 %** |
+| Mutation Code Coverage | 100 % |
+| Duur | 3 min 51 s |
+
+### Run 2 (21-04-2026, na quick-wins, commit `95fa044`)
+
+5 nieuwe tests toegevoegd op basis van de escaped-categorieën
+hieronder.
+
+| Metric | Waarde |
+|--------|--------|
+| **MSI na quick-wins** | **58 %** (+10 pp) |
+| Mutation Code Coverage | 100 % |
+
+**Resterende gap (58 → 90 % = 32 pp):** uitsluitend HTTP-request-
+config mutaties — `maxTokens = 1024 ±1`, `->timeout(60)`,
+`Content-Type`/`anthropic-version` header-keys. Deze killen vereist
+request-introspection via `Http::assertSent(fn (Request $r) => ...)`
+met body + header checks. Aparte vervolg-iteratie (<1 u werk).
 
 ### Escaped-categorieen (samenvatting uit de run-log)
 
@@ -69,25 +79,36 @@ vendor/bin/infection \
 - **Sichtbaarheid (regel 191):** `getDefaultSystemPrompt()` mag van
   `protected` naar `private` zonder dat een test het merkt.
 
-### Quick-win test-lijst (pad 2 naar 90 %)
+### Quick-win test-lijst (afgerond in Run 2)
 
-1. `tests/Unit/Services/AIProxyServiceTest.php`: nieuwe datapoint-set
-   voor `execution_time_ms` — assert dat waarde een integer is **en**
-   in ms-schaal (`>= 1000` voor seconde-lange call).
-2. Losse test per match-arm: `hour/day/week/month` each produceren een
-   andere `since`-waarde (stub `now()`).
-3. Return-array hard-assertions: exact `0` voor lege stats, exact
-   verwachte integer voor gevulde stats; `is_int()` + `===` in plaats
-   van `>=`.
-4. Subclass-extensie-test die `getDefaultSystemPrompt()` overschrijft
-   — vangt `protected→private` mutatie.
+1. ✅ `test_chat_logs_execution_time_in_milliseconds_not_seconds` —
+   usleep(50ms) bewijst `round($t * 1000)` mutaties.
+2. ✅ `test_chat_logs_usage_record_contains_each_documented_key` —
+   per-key `===` op logUsage payload.
+3. ✅ `test_usage_stats_period_arms_resolve_correct_since_window` —
+   8-row data-provider dekt alle hour/day/week/month grenzen.
+4. ✅ `test_usage_stats_empty_window_returns_strict_zero_integers` —
+   `=== 0` + `assertIsInt` dekt CastInt / Increment / Decrement.
+5. ✅ `test_default_system_prompt_is_reachable_by_a_subclass` —
+   anonymous subclass vangt `protected→private` mutatie.
+
+**Source-fix (als nevenresultaat):** `AIProxyService::getUsageStats`
+cast nu `avg_execution_time_ms` expliciet naar `(int)`. `round()`
+returnde float; documentation en callers verwachten integer ms.
+
+### Nog openstaand voor 90 % (HTTP request-config)
+
+- Assert op `maxTokens` default via `Http::assertSent` body-check.
+- Assert op `timeout(60)` via request-introspection.
+- Assert op `Content-Type` + `anthropic-version` headers via
+  `Http::assertSent(fn ($req) => $req->hasHeader(...))`.
 
 ## 3. Vervolgstappen — per kritiek pad
 
-| Pad | Target MSI | Huidige meting | Eerste stap |
+| Pad | Target MSI | Huidige meting | Eerste / volgende stap |
 |-----|-----------|----------------|-------------|
 | 1 Vault | 90 % | _nog niet los gemeten_ | filter-run op `app/Services/Vault` |
-| 2 AIProxy | 90 % | 48 % (pilot 21-04) | quick-wins hierboven |
+| 2 AIProxy | 90 % | **58 %** (21-04 na quick-wins) | HTTP-config mutaties via `Http::assertSent` |
 | 3 AutoFix | 85 % | deel van baseline (53 %) | escaped-list uit baseline uitwerken |
 | 4 QR Auth / Device Trust | 90 % | baseline noemt hotspots rond regel 309-419 | per-key assertions in device-update payload |
 | 5 Observability | 85 % | baseline noemt `getSystemMetrics()` regels 178-179 | disk-bytes unit-test met fixture |

@@ -2,6 +2,84 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 21 april 2026 (laat) — Mutation-baseline start, AIProxy MSI +10pp
+
+Eerste Infection-iteratie na de portfolio-clean-up.
+
+**AIProxyService (pad 2):** MSI 48 % → **58 %** (+10 pp), Mutation Code
+Coverage 100 %. Commit `95fa044`. 5 nieuwe tests, 1 source-fix
+(`(int) round(avg_execution_time_ms)`).
+
+**Nog te doen voor 90 %-target (pad 2):** alleen HTTP-request-config
+mutaties — `maxTokens` default, `->timeout(60)`, `Content-Type` +
+`anthropic-version` headers. Kill via `Http::assertSent(fn ($req) =>
+...)` met body + header inspectie. Geschat <1 u werk.
+
+**Runbook bijgewerkt:** `docs/kb/runbooks/infection-setup-plan.md` §2
+bevat nu Run 1 + Run 2 metrics en de afgeronde quick-win lijst.
+
+**Critical-paths doc bijgewerkt:** `critical-paths-havuncore.md` pad 2
+vermeldt huidige MSI 58 %.
+
+---
+
+## Sessie: 21 april 2026 (avond/nacht) — Portfolio 100% padding-free
+
+**Alle 7 Laravel-projecten + 1 mobile: 0 code-padding.** Van oorspronkelijke
+591+ `assertTrue(true)`-family matches naar 0. Enige resterende hits zijn
+heredoc-fixtures binnen HavunCore's QualitySafetyScanner-tests (bedoelde
+voorbeeld-code voor de erosion-check zelf, geen echte padding).
+
+**Critical-paths:verify --all:** 48 paden / 158 refs / 158 OK.
+**qv:scan finale:** 0 critical, 2 known-accepted high (HP XrpPaymentServiceCoverage2Test
+deletion, JT forms 53% — beide pre-existing).
+
+## Sessie: 21 april 2026 (avond) — Volledige portfolio-padding sanitization (94% reductie)
+
+Sessie duurde ~8 uur. Gebruik gemaakt van 11 parallel-agents + handmatig
+werk + 3 Python sanitize-scripts (try/catch, trailing, catch-met-comment).
+
+**Portfolio-status code-only padding:**
+| Project | Start | Nu | Δ |
+|---------|-----:|---:|---:|
+| HavunCore | 0 | 0 | — |
+| HavunAdmin | 263 | ~14 | -249 (95%) |
+| Herdenkingsportaal | 328 | ~0-20 | -310+ (95%) |
+| JudoToernooi | 40 | 0 | ✅ |
+| SafeHavun | 1 | 0 | ✅ |
+| Infosyst | 4 | 0 | ✅ |
+| Studieplanner-api/mobile | 0 | 0 | ✅ |
+
+**Bugs gefixt tijdens sanitize (echte prod-bugs gemaskeerd door padding):**
+- Infosyst: Category import ontbrak in ContentImport command + PREG_OFFSET_CAPTURE refactor in WikiLinkService
+- HA: bunq:test-connection (command bestaat niet), claude:parse-pdfs (idem), ai:admin-review (idem), time-entries:consolidate-per-day (verkeerde naam), central:migrate --force option bestaat niet, bank:import miste type argument
+- HA: InvoiceFile schema column `filename` (niet `file_name`), `stored_filename` required; QrSession `token` required
+- HA: Tenant::setSetting is fluent (in-memory, geen save), test-assertie was verkeerd
+- JT: autofix_handle_excluded_file_pattern testte verkeerd scenario, max_attempts=2 niet 1
+- JT: StripePaymentProvider Http::response(closure) werkte niet
+- SafeHavun: Http::response(fn=>throw) nooit uitgevoerd
+- Mt940ImportService: empty file throws — contract nu expliciet
+
+**Scripts (NIET opgeruimd, staan in `D:/GitHub/HavunCore/_tmp_sanitize_*.py`):**
+- `_tmp_sanitize_trycatch.py` — strip try { body } catch { assertTrue(true) }
+- `_tmp_sanitize_trailing.py` — brace-same-line: trailing assertTrue → expectNotToPerformAssertions
+- `_tmp_sanitize_trailing_psr12.py` — PSR-12 variant (HP)
+- `_tmp_sanitize_catch_v2.py` — catch-with-comment + blank-lines-in-body
+
+**ControllerCoverage7Test (HA) NIET geautomatiseerd saneerbaar:**
+Agent heeft VP-17-conform afgebroken. De 14 try/catch-wrappers beschermen
+tegen echte DB-fixture / super_admin 500-issues. Eerst seed/route fixes,
+dan padding weg.
+
+**Resterende werk volgende sessie:**
+1. HA ControllerCoverage7Test: fixtures eerst, dan 14 try/catch weg
+2. Mutation-baseline per project (Infection install, kritieke paden)
+3. Mogelijke comment-cleanup: tientallen files hebben inmiddels
+   sanitization-tombstones van dit werk. Als tombstones te veel
+   zijn, een apart "remove-stale-sanitize-comments" commit per project.
+
+---
+
 ## Sessie: 21 april 2026 (ochtend/middag) — Cross-project padding-sanitization (75 tests weg)
 
 Doorloop van de ochtend. Totaal vandaag via 10 atomic commits, 0
