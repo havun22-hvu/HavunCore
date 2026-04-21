@@ -23,6 +23,16 @@ class DeviceTrustServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected function tearDown(): void
+    {
+        // Reset any Carbon::setTestNow() calls so test-time-freezes
+        // can never leak into neighbouring tests when an assertion fails
+        // mid-test and the inline reset is skipped.
+        Carbon::setTestNow();
+
+        parent::tearDown();
+    }
+
     private function makeUserWithDevice(array $deviceOverrides = []): array
     {
         $user = AuthUser::create([
@@ -266,8 +276,6 @@ class DeviceTrustServiceTest extends TestCase
         $device->refresh();
         $this->assertTrue($device->expires_at->equalTo($originalExpiry),
             'Bij diffInDays == 7 MOET extendTrust NIET worden aangeroepen');
-
-        Carbon::setTestNow();
     }
 
     public function test_verify_token_extend_boundary_at_six_days_does_extend(): void
@@ -287,8 +295,6 @@ class DeviceTrustServiceTest extends TestCase
         $device->refresh();
         $this->assertTrue($device->expires_at->gt($originalExpiry),
             'Bij diffInDays < 7 MOET extendTrust wel worden aangeroepen');
-
-        Carbon::setTestNow();
     }
 
     public function test_verify_token_response_contains_expires_at_as_iso_string_key(): void
