@@ -2,6 +2,67 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 21 april 2026 (ochtend/middag) — Cross-project padding-sanitization (75 tests weg)
+
+Doorloop van de ochtend. Totaal vandaag via 10 atomic commits, 0
+enforced behaviour verloren.
+
+| Project | File | -Tests |
+|---------|------|-------:|
+| HA | tests/Feature/CommandCoverageTest.php | -17 |
+| HA | tests/Unit/ServiceCoverage6Test.php | -26 |
+| HA | tests/Feature/Last825Test.php | -6 |
+| HP | tests/Unit/AutoFixServiceCoverage2Test.php | -7 |
+| HP | tests/Unit/AutoFixServiceCoverage3Test.php | -9 |
+| HP | tests/Unit/AutoFixServiceCoverage4Test.php | -2 |
+| HP | tests/Unit/AutoFixServiceCoverageTest.php | -2 |
+| HP | tests/Unit/ModelJobCoverageTest.php | -6 |
+| **Portfolio** | **8 files** | **-75** |
+
+Primaire padding-patronen weggehaald:
+- `try { run; assertTrue(true); } catch { assertTrue(true); }` — geen
+  exit-code check, altijd groen
+- `assertTrue(class_exists(X::class))` — PHP-internals-test, niet onze code
+- `assertNotNull(new X())` / `assertInstanceOf(X, new X)` — tautologie
+- Reflection-private-method calls met `assertTrue(true); // No exception`
+- `assertIsInt(Artisan::call(...))` — Artisan::call returnt altijd int
+- Tri-alternative `assertTrue($x === null || is_array($x) || is_object($x))`
+
+Restant op de ranking:
+
+| File | Padding | Tests | Regels |
+|------|--------:|------:|-------:|
+| `HP/Push90FinalTest.php` | 129 | 213 | 3134 |
+| `HP/UltimateCoverageTest.php` | 49 | 299 | 3399 |
+| `HP/Last82Test.php` | 37 | 234 | 3063 |
+| `HP/MoreCoverageTest.php` | 15 | 130 | 1489 |
+| `HP/CoverageBreadth1Test.php` | 14 | 67 | 1352 |
+| `HA/Push90Test.php` | 87 | 245 | 4072 |
+| `HA/MaxServiceCoverageTest.php` | 34 | 108 | 1186 |
+
+Deze zijn allemaal >1000 regels met gemengd (zinvolle + padding)
+inhoud. Per-file review vereist 1-2 sessies elk.
+
+Bonus vandaag: HA `ProjectMatchingServiceTest` (12 tests / 25
+assertions — extractMemorialReference, findProjectForTransaction,
+createRule idempotency, getGeneralProject firstOrCreate,
+detectProject scoring).
+
+### Niet aangeraakt (bewust):
+
+- `HP/FinalCoverageBoost2Test.php` — bleek 1 enkel
+  `assertTrue(true)` te bevatten in een try/fail-catch patroon
+  (legitimate "does not throw"-test).
+- `HP/CoverageHandlesMemorialImagesTest.php` — 5 "does-not-throw"
+  happy-path tests voor een trait. Zwak maar niet tautologie
+  (method-invocatie is enforced door falen bij exception).
+  Upgrade naar `expectNotToPerformAssertions()` is scope-creep.
+- `HA/MaxServiceCoverageTest.php` — grotendeels Reflection-on-private
+  methods met `assertIsString` of `assertInstanceOf(Carbon)`.
+  Structureel anti-pattern maar single-file rewrite vereist >1 sessie.
+
+---
+
 ## Sessie: 21 april 2026 (ochtend) — HA padding-sanitization (~49 tests weg)
 
 Werk volgens `docs/kb/runbooks/coverage-padding-sanitization.md`. Alle
