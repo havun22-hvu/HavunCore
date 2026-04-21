@@ -250,15 +250,12 @@ MD);
     }
 
     /**
-     * With `--all`, a mix of (a) doc-missing AND (b) real docs must yield an
-     * array of reports — one per project. If `continue` in the doc-missing
-     * branch is mutated to `break`, we never reach the second project and
-     * only get one report back.
+     * With two fixture docs present, the --all foreach must emit both
+     * reports. If the doc-missing `continue` is mutated to `break`, we'd
+     * stop after the first project and lose the second report.
      */
     public function test_all_flag_continues_past_a_missing_doc(): void
     {
-        // Ensure at least one real doc is present — we'll inject another
-        // slug via glob so the discoverAllProjects() list contains > 1 item.
         $this->writeFixtureDoc('fixture-keepgoing', <<<'MD'
 ## Pad 1 — Keep Going
 
@@ -267,9 +264,6 @@ MD);
 - `tests/Unit/Services/ObservabilityServiceTest.php`
 MD);
 
-        // We can't actually make a missing doc appear in discoverAllProjects,
-        // but we CAN verify the foreach reaches every real fixture doc in
-        // one pass by adding two separate fixtures.
         $this->writeFixtureDoc('fixture-keepgoing-2', <<<'MD'
 ## Pad 1 — Also Keep Going
 

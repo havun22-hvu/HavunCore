@@ -158,9 +158,8 @@ MD;
     }
 
     /**
-     * Content before the first `## Pad` heading must be silently dropped.
-     * If the parser defaults `inTestsSection` to `true` (mutation), preamble
-     * bullet-references would leak into an empty path.
+     * Kills `inTestsSection = true` mutation at line 31: if the default
+     * flips, preamble bullet-references would leak into an empty path.
      */
     public function test_preamble_before_first_pad_is_ignored(): void
     {
@@ -186,9 +185,9 @@ MD;
     }
 
     /**
-     * After a new `## Pad` heading, `inTestsSection` MUST reset to false.
-     * Otherwise bullets directly under the heading (before `**Tests:**`)
-     * would be captured as references.
+     * Kills `inTestsSection = true` mutation at line 39: after a new Pad
+     * heading, bullets before the next `**Tests:**` header must NOT be
+     * captured.
      */
     public function test_new_pad_resets_tests_section_flag(): void
     {
