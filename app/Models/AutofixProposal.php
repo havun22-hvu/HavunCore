@@ -37,8 +37,12 @@ class AutofixProposal extends Model
 
     /**
      * Check rate limit: max 1 proposal per error per hour.
+     *
+     * `$file` and `$line` are both nullable because some exception payloads
+     * (e.g. job failures with no framed file) arrive without them. AutoFix
+     * still rate-limits those on project + exception_class.
      */
-    public static function isRateLimited(string $project, string $exceptionClass, string $file, ?int $line): bool
+    public static function isRateLimited(string $project, string $exceptionClass, ?string $file, ?int $line): bool
     {
         return static::where('project', $project)
             ->where('exception_class', $exceptionClass)
