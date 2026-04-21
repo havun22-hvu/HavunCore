@@ -1,0 +1,41 @@
+{
+    // Infection PHP — kritieke-paden-config. Breder dan infection.json5
+    // zodat Vault (Controller + Models) en Auth/Middleware files mee
+    // genomen worden. Gebruik: `vendor/bin/infection --configuration=infection-critical-paths.json5 --filter=<file>`.
+    "$schema": "vendor/infection/infection/resources/schema.json",
+    "source": {
+        "directories": [
+            "app/Services",
+            "app/Http/Controllers/Api",
+            "app/Http/Middleware",
+            "app/Models"
+        ],
+        "excludes": [
+            "Chaos",
+            "DocIntelligence"
+        ]
+    },
+    "timeout": 30,
+    "logs": {
+        "text": "storage/logs/infection-critical.log",
+        "summary": "storage/logs/infection-critical-summary.log",
+        "perMutator": "storage/logs/infection-critical-per-mutator.md",
+        "github": true
+    },
+    "tmpDir": "storage/framework/cache/infection-critical",
+    "phpUnit": {
+        "configDir": ".",
+        "customPath": "vendor/bin/phpunit"
+    },
+    "minMsi": 48,
+    "minCoveredMsi": 48,
+    "mutators": {
+        "@default": true,
+        "global-ignoreSourceCodeByRegex": [
+            "Log::.*",
+            "report\\(.*\\)"
+        ]
+    },
+    "testFramework": "phpunit",
+    "testFrameworkOptions": "--testsuite=Feature,Unit --no-coverage"
+}

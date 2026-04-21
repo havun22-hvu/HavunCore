@@ -302,6 +302,8 @@ class VaultControllerExtendedTest extends TestCase
         $secret = VaultSecret::where('key', 'new_api_key')->first();
         $this->assertNotNull($secret);
         $this->assertEquals('new-secret-value', $secret->getDecryptedValue());
+        // Kills ArrayItemRemoval/ArrayItem on line 249-250 (secret.id key).
+        $response->assertJsonPath('secret.id', $secret->id);
     }
 
     public function test_admin_create_secret_validation_requires_key_and_value(): void
@@ -443,9 +445,63 @@ class VaultControllerExtendedTest extends TestCase
         $projects = $response->json('projects');
         $second = collect($projects)->firstWhere('project', 'second_project');
         $this->assertNotNull($second);
+        // Kills ArrayItem/ArrayItemRemoval mutations on lines 316-322
+        // (projects list response shape). `id` + `last_accessed_at`
+        // keys must both be present explicitly.
+        $this->assertArrayHasKey('id', $second);
+        $this->assertIsInt($second['id']);
         $this->assertFalse($second['is_active']);
         $this->assertEquals(['s1'], $second['secrets']);
         $this->assertEquals(['c1'], $second['configs']);
+        $this->assertArrayHasKey('last_accessed_at', $second);
+    }
+
+    public function test_admin_get_logs_limit_cap_is_five_hundred(): void
+    {
+        // Seed 510 rows so the `->limit(500)` cap (line 426) caps at 500.
+        // Kills IncrementInteger / DecrementInteger on the 500.
+        $rows = [];
+        $now = now();
+        for ($i = 0; $i < 510; $i++) {
+            $rows[] = [
+                'project' => 'bulk',
+                'action' => 'read',
+                'resource_type' => 'secret',
+                'resource_key' => "bulk_key_{$i}",
+                'ip_address' => '9.9.9.9',
+                'created_at' => $now->copy()->subMinutes($i),
+            ];
+        }
+        \App\Models\VaultAccessLog::query()->insert($rows);
+
+        $response = $this->getJson('/api/vault/admin/logs?days=30', $this->adminHeader());
+
+        $response->assertStatus(200);
+        $this->assertSame(500, count($response->json('logs')));
+    }
+
+    public function test_admin_get_logs_default_window_is_seven_days(): void
+    {
+        // Insert logs spanning a wide window to observe the default `days => 7`
+        // fallback when the request omits the parameter.
+        \App\Models\VaultAccessLog::log('proj1', 'read', 'secret', 'k1', '1.2.3.4');
+        \App\Models\VaultAccessLog::query()->update(['created_at' => now()->subDays(3)]);
+        \App\Models\VaultAccessLog::log('proj1', 'read', 'secret', 'k2', '1.2.3.4');
+        // Mark the second log as 10 days old — outside a 7-day window.
+        \App\Models\VaultAccessLog::where('resource_key', 'k2')
+            ->update(['created_at' => now()->subDays(10)]);
+
+        $response = $this->getJson('/api/vault/admin/logs', $this->adminHeader());
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true);
+        // Only the 3-day-old log must be returned — kills Increment/Decrement
+        // on the `$days = 7` default (line 423). If it mutated to 6 the 3-day
+        // log still shows; to 8 same. But mutating to 11 would expose the
+        // 10-day-old log; to 0 would expose nothing.
+        $keys = collect($response->json('logs'))->pluck('resource_key')->all();
+        $this->assertContains('k1', $keys);
+        $this->assertNotContains('k2', $keys);
     }
 
     // ========================================

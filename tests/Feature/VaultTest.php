@@ -241,7 +241,9 @@ class VaultTest extends TestCase
     {
         $response = $this->getJson('/api/vault/secrets');
 
-        $response->assertStatus(401);
+        // Kills ArrayItemRemoval on line 42/71 ('error' => 'Unauthorized').
+        $response->assertStatus(401)
+            ->assertJsonPath('error', 'Unauthorized');
     }
 
     public function test_vault_secrets_returns_secrets_with_valid_token(): void
@@ -284,6 +286,165 @@ class VaultTest extends TestCase
         ]);
 
         $response->assertStatus(403);
+    }
+
+    public function test_all_authenticated_endpoints_return_401_unauthorized_without_token(): void
+    {
+        // Each endpoint must emit the exact 'Unauthorized' error key. Kills
+        // ArrayItemRemoval mutations on lines 42, 71, 111, 140, 180 + the
+        // Coalesce on line 24 (no bearer, no X-Vault-Token = null path).
+        $routes = [
+            '/api/vault/secrets',
+            '/api/vault/secrets/anything',
+            '/api/vault/configs',
+            '/api/vault/configs/anything',
+            '/api/vault/bootstrap',
+        ];
+
+        foreach ($routes as $route) {
+            $response = $this->getJson($route);
+            $response->assertStatus(401);
+            $response->assertJsonPath('error', 'Unauthorized');
+        }
+    }
+
+public function test_authenticate_accepts_token_via_x_vault_token_header_fallback(): void
+    {
+        // Contract: VaultController::authenticateProject falls back from
+        // bearerToken() to the X-Vault-Token header. Kills the Coalesce
+        // mutation on line 24 (`?? null` / `?? ''`) by proving the fallback
+        // path actually reaches findByToken() with the header's value.
+        VaultSecret::create(['key' => 'hdr_only_key', 'value' => 'hdr-val', 'category' => 'api']);
+        $token = VaultProject::generateToken();
+        VaultProject::create([
+            'project' => 'hdr-auth',
+            'secrets' => ['hdr_only_key'],
+            'configs' => [],
+            'api_token' => $token,
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/vault/secrets/hdr_only_key', [
+            'X-Vault-Token' => $token,
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('value', 'hdr-val')
+            ->assertJsonPath('key', 'hdr_only_key');
+    }
+
+    public function test_secrets_list_response_includes_success_and_project_and_secrets_keys(): void
+    {
+        // Kills ArrayItemRemoval / ArrayItem mutations on lines 56-58 in
+        // VaultController::getSecrets (the response payload keys).
+        VaultSecret::create(['key' => 'list_key_1', 'value' => 'v1', 'category' => 'api']);
+        $token = VaultProject::generateToken();
+        VaultProject::create([
+            'project' => 'list-resp',
+            'secrets' => ['list_key_1'],
+            'configs' => [],
+            'api_token' => $token,
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/vault/secrets', ['Authorization' => "Bearer {$token}"]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('project', 'list-resp')
+            ->assertJsonStructure(['success', 'project', 'secrets'])
+            ->assertJsonPath('secrets.list_key_1', 'v1');
+    }
+
+    public function test_get_single_secret_response_shape(): void
+    {
+        // Kills ArrayItemRemoval on lines 95-98 (getSecret response keys).
+        VaultSecret::create(['key' => 'single_shape', 'value' => 'single-val', 'category' => 'db']);
+        $token = VaultProject::generateToken();
+        VaultProject::create([
+            'project' => 'single-shape',
+            'secrets' => ['single_shape'],
+            'configs' => [],
+            'api_token' => $token,
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/vault/secrets/single_shape', [
+            'Authorization' => "Bearer {$token}",
+        ]);
+
+        $response->assertStatus(200)
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('key', 'single_shape')
+            ->assertJsonPath('value', 'single-val')
+            ->assertJsonPath('category', 'db');
+    }
+
+    public function test_get_secret_forbidden_when_project_has_no_access(): void
+    {
+        // Kills ArrayItem mutation on line 75 (the 'Access denied...' message).
+        VaultSecret::create(['key' => 'locked', 'value' => 'no-access', 'category' => 'api']);
+        $token = VaultProject::generateToken();
+        VaultProject::create([
+            'project' => 'no-access-proj',
+            'secrets' => ['other_allowed'],
+            'configs' => [],
+            'api_token' => $token,
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/vault/secrets/locked', [
+            'Authorization' => "Bearer {$token}",
+        ]);
+
+        $response->assertStatus(403)
+            ->assertJsonPath('error', 'Access denied to this secret');
+    }
+
+    public function test_get_secret_returns_404_when_key_not_in_database(): void
+    {
+        // Kills ArrayItem mutation on line 81 (the 'Secret not found' message).
+        $token = VaultProject::generateToken();
+        VaultProject::create([
+            'project' => 'missing-secret-proj',
+            'secrets' => ['ghost_secret'],
+            'configs' => [],
+            'api_token' => $token,
+            'is_active' => true,
+        ]);
+
+        $response = $this->getJson('/api/vault/secrets/ghost_secret', [
+            'Authorization' => "Bearer {$token}",
+        ]);
+
+        $response->assertStatus(404)
+            ->assertJsonPath('error', 'Secret not found');
+    }
+
+    public function test_get_secret_touches_project_last_accessed_timestamp(): void
+    {
+        // Kills MethodCallRemoval on line 84 ($project->touchAccess()).
+        VaultSecret::create(['key' => 'touch_key', 'value' => 'tv', 'category' => 'api']);
+        $token = VaultProject::generateToken();
+        $project = VaultProject::create([
+            'project' => 'touch-proj',
+            'secrets' => ['touch_key'],
+            'configs' => [],
+            'api_token' => $token,
+            'is_active' => true,
+        ]);
+        // Force a non-null last_accessed_at in the past.
+        $project->last_accessed_at = now()->subDay();
+        $project->save();
+        $before = $project->last_accessed_at;
+
+        $this->getJson('/api/vault/secrets/touch_key', [
+            'Authorization' => "Bearer {$token}",
+        ])->assertStatus(200);
+
+        $fresh = $project->fresh();
+        $this->assertNotNull($fresh->last_accessed_at);
+        $this->assertTrue($fresh->last_accessed_at->greaterThan($before));
     }
 
     public function test_vault_bootstrap_returns_all_project_data(): void
