@@ -5,15 +5,7 @@
          colors="true"
          failOnRisky="true"
          failOnWarning="true">
-    <!--
-      MySQL-variant van phpunit.xml. Wordt aangeroepen door de
-      `aiproxy-mysql-msi` job in .github/workflows/mutation-test.yml om
-      Infection-mutaties te killen die SQLite niet kan onderscheiden
-      (CastInt op SUM/COUNT — mysqlnd levert die als string).
-
-      Zie docs/kb/runbooks/aiproxy-mysql-fixture-plan.md voor de volledige
-      rationale. Lokaal blijft `phpunit.xml` (SQLite, in-memory) leidend.
-    -->
+    <!-- MySQL variant — used by aiproxy-mysql-msi CI job. See runbook. -->
     <testsuites>
         <testsuite name="Feature">
             <directory>tests/Feature</directory>
