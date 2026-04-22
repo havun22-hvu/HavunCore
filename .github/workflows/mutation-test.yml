@@ -1,13 +1,13 @@
 name: Mutation Testing (Infection)
 
-# VP-16: kwartaalse mutation-test baseline op kritieke services (`mutation`)
+# VP-16: maandelijkse mutation-test baseline op kritieke services (`mutation`)
 # + per-PR kritieke-pad gate (`critical-paths`).
-# Cron: 1e jan/apr/jul/okt om 03:00 UTC voor de brede baseline-run.
+# Cron: 1e van elke maand om 03:00 UTC voor de brede baseline-run.
 # Per-pad jobs draaien bij elke push/PR — sneller + scherpere PR-gate.
 
 on:
   schedule:
-    - cron: '0 3 1 1,4,7,10 *'
+    - cron: '0 3 1 * *'
   workflow_dispatch:
   pull_request:
     paths:
