@@ -83,10 +83,12 @@ test-harness te veranderen (niet gerechtvaardigd voor MSI-padding):
 | 170–173 | `(int)` casts op SUM/COUNT | SQLite returns al ints; alleen MySQL-test vangt dit |
 | 150 | MatchArmRemoval (resterend) | resterende arm na dataprovider-pass |
 
-Voor 90 % target: MySQL-fixture geimplementeerd (commit `fc0985f`, 22-04).
-CI-job `aiproxy-mysql-msi` draait Infection tegen `phpunit.mysql.xml` met
-`--min-msi=85` (ramp naar 90 zodra eerste run groen is). De 8 SQLite-only
-CastInt-escapes worden door mysqlnd's string-coercion gekilled. Zie
+Voor 90 % target: MySQL-fixture LIVE en groen op **100 % MSI** (22-04,
+run `24766237747`). De CI-job `aiproxy-mysql-msi` draait Infection met
+`DB_CONNECTION=mysql` als job-level shell-env (overruled phpunit's
+`<env force=false>` defaults), waardoor mysqlnd's string-coercion op
+SUM/COUNT alle SQLite-only CastInt-escapes killed. Gate staat op 95 %
+met 5pp marge voor sub-mutation noise. Zie
 `aiproxy-mysql-fixture-plan.md` voor de volledige rationale.
 
 ### Escaped-categorieen (samenvatting uit de run-log)
@@ -186,7 +188,7 @@ minder dan 7 dagen tot expiry".
 | Pad | Target MSI | Huidige meting | Eerste / volgende stap |
 |-----|-----------|----------------|-------------|
 | 1 Vault | 90 % | **91 %** (21-04, commit `1e3a78c` — 4 runs via `infection-critical-paths.json5`) | target gehaald |
-| 2 AIProxy | 90 % | **81 %** SQLite (21-04, commit `65b14f5`) / **85 %** MySQL-gate live in CI (22-04, commit `fc0985f` + simplify `d0ac2e6`) | MySQL real-driver job ramp 85 → 90 na eerste groene run; zie `aiproxy-mysql-fixture-plan.md` §"Stap 6" |
+| 2 AIProxy | 90 % | **81 %** SQLite (floor) / **100 %** MySQL real-driver (22-04, run `24766237747`, gate 95) | Target ruim gehaald via MySQL fixture; zie `aiproxy-mysql-fixture-plan.md` |
 | 3 AutoFix | 85 % | **87 %** (22-04, commit `9bc30df` — 6 runs, +24 tests, type-fix in `AutofixProposal::isRateLimited`) | target gehaald |
 | 4 QR Auth / Device Trust | 90 % | **100 %** (21-04 sessie, commit `0906ade` — 67/67 killed) | target ruim gehaald |
 | 5 Observability | 85 % | **100 %** (21-04, commits `f23b17d` + `40541fd` — 220/220 killed, 0 escaped) | — (target ruim gehaald; fixture-tests voor `getDatabaseSize()`, invariant-asserts voor `getSystemHealth()`) |

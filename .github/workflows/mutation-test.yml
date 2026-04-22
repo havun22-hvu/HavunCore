@@ -239,16 +239,16 @@ jobs:
         run: php artisan migrate --force
 
       - name: Run Infection — aiproxy (MySQL real-driver)
-        # min-msi ramp 81 -> 85 -> 90, see runbook §"Stap 6".
-        # DB_* env vars set at job level (see top of job): phpunit.xml's <env>
-        # is force=false so shell env wins, otherwise Infection's tmp PHPUnit
-        # config would putenv(DB_CONNECTION=sqlite) before Laravel bootstrap.
+        # First green run (24766237747) reported 100% MSI — MySQL kills the
+        # CastInt mutations the SQLite job leaves behind. Gate at 95 leaves
+        # 5pp headroom for sub-mutation noise. DB_* set at job level so
+        # phpunit's <env force=false> doesn't override back to sqlite.
         run: |
           vendor/bin/infection \
             --configuration=infection-critical-paths.json5 \
             --filter="app/Services/AIProxyService.php" \
             --threads=4 \
-            --min-msi=85 --min-covered-msi=85 \
+            --min-msi=95 --min-covered-msi=95 \
             --logger-github --no-progress --no-interaction \
             --test-framework-options="--exclude-group=doc-intelligence --filter=AIProxy"
 

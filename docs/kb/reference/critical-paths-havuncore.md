@@ -84,14 +84,14 @@ isolatie, kost geld per call, mag niet lekken.
 - `tests/Unit/Services/CircuitBreakerTest.php`
 
 **Mutation-score target:** 90 %.
-**Huidige meting:** **81 % SQLite** (21-04, commit `65b14f5`) +
-**85 % MySQL-gate live** in CI (22-04, commit `fc0985f` + simplify
-`d0ac2e6`). De `aiproxy-mysql-msi` job in
-`.github/workflows/mutation-test.yml` draait Infection tegen
-`phpunit.mysql.xml` zodat mysqlnd's string-coercion op SUM/COUNT de
-8 SQLite-only CastInt-escapes killed; ramp naar 90 % zodra eerste run
-groen is. Zie `runbooks/aiproxy-mysql-fixture-plan.md` §"Stap 6" en
-`runbooks/infection-setup-plan.md` §2 voor de ramp-historie.
+**Huidige meting:** **81 % SQLite** (floor — onkillable CastInt op
+SUM/COUNT) + **100 % MySQL real-driver** (22-04, run `24766237747`,
+gate 95 met 5pp marge). De `aiproxy-mysql-msi` job in
+`.github/workflows/mutation-test.yml` zet `DB_CONNECTION=mysql` als
+job-level shell-env (phpunit's `<env force=false>` wordt zo overruled),
+waardoor mysqlnd's string-coercion op SUM/COUNT alle CastInt-escapes
+van de SQLite-job killed. Zie `runbooks/aiproxy-mysql-fixture-plan.md`
+en `runbooks/infection-setup-plan.md` §2.
 
 ## Pad 3 — AutoFix pipeline
 
