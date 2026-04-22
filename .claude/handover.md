@@ -2,6 +2,68 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 22 april 2026 (laat) — KB-onderhoud + Bootstrap-tool + Munus startklaar
+
+Marathon-sessie. Drie grote werkstromen voltooid:
+
+### 1. KB-onderhoud-systeem (cross-portfolio)
+
+Twee nieuwe lagen aan V&K:
+
+**Mechanisch — `php artisan docs:audit`** (commits `2bb3b96`, `e39f469`, `2291603`, `57b3225`):
+- 4 detectors: Obsolete (last_check + status DEPRECATED), Structure (frontmatter, H2-only empty-section, code-fences), Link (broken internal markdown links), Zombie (class/method/artisan refs vs codebase)
+- Globale whitelist (PHP/Laravel/Carbon types) + cross-project class-index (docs over JT in HavunCore = legitiem) + Laravel built-in artisan-prefix whitelist
+- Rapport in `docs/kb/reference/kb-audit-latest.md` + auto-historie `kb-audit-log.md` (nog niet uitgerold)
+- Wekelijkse cron: zo 04:30
+- Handover-integratie: totals zichtbaar in dagelijkse `docs/handover.md`
+
+**Semantic — `/kb-audit`** (commit `5166675` + 11× portfolio rollout):
+- Claude command, on-demand
+- Doet wat artisan niet kan: overlap-detectie, 6-Onschendbare-Regels-vergelijking met `.claude/rules.md`, cross-doc inconsistenties, batch-approval blok met `git status` safety-guard
+
+### 2. Cross-portfolio KB-opruiming (commit `85bb90f` + 7 sibling commits)
+
+Eerste grote sweep: **471 → 7 HIGH, 20 → 0 CRIT** over 8 projecten.
+- HavunCore: 7 broken links (verkeerde `/`-prefix) gefixt
+- HP: 13 CRIT in `archive/CLAUDE.old.md` → archive-dirs nu uit scope
+- 271 frontmatter additions cross-portfolio (auto-helper, daarna verwijderd)
+- 5 van 8 projecten **0 HIGH** na sweep (HP, JT, SafeHavun, Studieplanner, Studieplanner-mobile)
+- Resterende 7 HIGH = echte zombies waar docs verouderd zijn (Owner-class, content:import etc.)
+
+### 3. Bootstrap-tool `project:scaffold` (commits `6d46525`, `ede1c61`, `505ace6`)
+
+Nieuw artisan: `php artisan project:scaffold <slug> --stack=laravel`. Plant in nieuw project: CLAUDE.md (6 Onschendbare Regels), CONTRACTS.md, .claude/context.md (TODO-velden), .claude/rules.md, alle 11 standaard Claude commands, docs/kb/ structuur + INDEX.md, infection.json5. Plus copy-paste hint voor V&K-config (auto-edit bewust niet — fragiel zonder AST). MVP: alleen Laravel-stack. Node/Static = follow-up.
+
+### 4. Munus startklaar (HavunCore commit `b19a3b9` + Munus commit `4f3b070` lokaal)
+
+Eerste docs-only project geïntegreerd in Havun-werkwijze. Geen Laravel = composer/npm/SSL/Observatory checks auto-geskipt. **Audit-baseline 0/0/0/0**.
+- Munus heeft GEEN git-remote — commit `4f3b070` zit lokaal, bij `gh repo create` direct beschikbaar.
+
+### Ook: production-deploy (eind sessie)
+
+`git pull` + `composer install --no-dev` + `optimize:clear` op
+`/var/www/havuncore/production`. Productie HEAD = `b19a3b9`,
+Laravel 12.44.0. Geen migrations vandaag, dus geen DB-impact.
+
+### Belangrijke beslissingen / lessons learned
+
+- **Auto-edit van PHP-array-config zonder AST is fragiel** → projectScaffoldCommand doet alleen copy-paste hint voor `quality-safety.php`
+- **archive/ + worktrees/** staan nu in DocsAuditor's `EXCLUDED_PATH_SEGMENTS` — bedoeld-historische content moet niet als CRIT geflagd worden
+- **emptySections detector**: alleen H2 checken, NIET H3/H4 (false-positive bij H2-met-subsections)
+- **Unbalanced code-fences** zijn niet altijd parse-issue (KB-docs met FOUT-voorbeelden) → severity Low
+- **ZombieChecker classIndex** walkt ook `tests/`, niet alleen `app/` (test-class refs in critical-paths-docs zijn legitiem)
+- **Laravel built-in artisan commands** (cache:, route:, serve, etc.) hebben geen Command-class in app/ → whitelist nodig
+- **Handover-discipline**: docs/handover.md genereert automatisch dagelijks 04:00 uit git log + qv:scan + kb-audit totals — niet handmatig bewerken
+
+### Resterende open items (niet-blokkerend)
+
+- Munus: `CONTRACTS.md` invullen op basis van AUTH/DOMAIN/SECURITY-SETUP; `.claude/context.md` TODO-velden invullen; `gh repo create` voor remote
+- 7 echte zombie HIGH cross-portfolio (HavunCore Owner-class in plan-doc, HavunAdmin/Infosyst verouderde command-refs) — doc-update of feature-implementatie nodig
+- HavunClub + Havun: untracked/gemodificeerde files (niet uit deze sessie) staan nog open
+- `project:scaffold` uitbreiden met `--stack=docs` voor docs-only projecten zoals Munus — nu handmatig nabewerkt
+
+---
+
 ## Sessie: 22 april 2026 (avond) — Punt 1 + Punt 2 AFGEROND
 
 Beide laatste open items uit middag-sessie afgerond via Infection's

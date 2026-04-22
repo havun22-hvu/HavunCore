@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Apr 22, 2026 6:25 PM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Apr 22, 2026 11:25 PM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,17 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-04-22 | `b19a3b9` | feat(qv): registreer Munus in V&K config |
+| 2026-04-22 | `505ace6` | docs(kb): document project:scaffold in V&K landing page |
+| 2026-04-22 | `ede1c61` | chore(simplify): ProjectScaffoldCommand review fixes |
+| 2026-04-22 | `6d46525` | feat(project:scaffold): bootstrap nieuw Havun-project met werkwijze-inpakt |
+| 2026-04-22 | `57b3225` | chore(simplify): ZombieChecker dedup — extract indexClassesIn() helper |
+| 2026-04-22 | `2291603` | fix(docsaudit): Zombie + Structure detector verbeteringen — 471→7 HIGH |
+| 2026-04-22 | `85bb90f` | refactor(docs): cross-portfolio KB onderhoud — 296→48 HIGH, 20→0 CRIT |
+| 2026-04-22 | `5d66ac2` | docs(kb): document docs:audit + /kb-audit in V&K landing page |
+| 2026-04-22 | `5166675` | feat(claude): /kb-audit command met 2-lagen-aanpak (artisan + semantic) |
+| 2026-04-22 | `e39f469` | chore(simplify): DocsAudit review fixes van 3 agents |
+| 2026-04-22 | `2bb3b96` | feat(docs:audit): artisan KB auditor met 4 detectors + handover integratie |
 | 2026-04-22 | `0c1ac9f` | test(meta): guard that Infection ignores keep their WHY-comments |
 | 2026-04-22 | `e5e1f31` | docs(kb): werkwijze-verslag V&K HavunCore — point-in-time 22-04 |
 | 2026-04-22 | `f443733` | test(docintel): enforce Http::preventStrayRequests in trait setUp |
@@ -229,7 +240,7 @@ _Snapshot timestamp: 2026-04-22T16:38:17+02:00_
 
 ## KB audit (laatste wekelijkse run)
 
-**Totals:** critical 7 | high 175 | medium 2 | low 238
+**Totals:** critical 0 | high 1 | medium 0 | low 8
 
 _Zie `docs/kb/reference/kb-audit-latest.md` voor detail._
 
