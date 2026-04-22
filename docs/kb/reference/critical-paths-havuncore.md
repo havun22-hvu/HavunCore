@@ -84,14 +84,16 @@ isolatie, kost geld per call, mag niet lekken.
 - `tests/Unit/Services/CircuitBreakerTest.php`
 
 **Mutation-score target:** 90 %.
-**Huidige meting:** **81 % SQLite** (floor — onkillable CastInt op
-SUM/COUNT) + **100 % MySQL real-driver** (22-04, run `24766237747`,
-gate 95 met 5pp marge). De `aiproxy-mysql-msi` job in
-`.github/workflows/mutation-test.yml` zet `DB_CONNECTION=mysql` als
-job-level shell-env (phpunit's `<env force=false>` wordt zo overruled),
-waardoor mysqlnd's string-coercion op SUM/COUNT alle CastInt-escapes
-van de SQLite-job killed. Zie `runbooks/aiproxy-mysql-fixture-plan.md`
-en `runbooks/infection-setup-plan.md` §2.
+**Huidige meting:** **95 %+ SQLite** (gate 95, run `24771812870`) +
+**100 % MySQL real-driver**. SQLite floor doorbroken via Infection's
+per-mutator ignore-config (commit `02b23a2`): 23 false-positives
+expliciet uitgesloten met WHY-comment per ignore — `->timeout(60)`
+(Http::fake honoreert niet), `Cache::put(..., 60)` TTL (niet testbaar
+zonder 60s wait), `round($t * 1000)` sub-ms (CI-jitter), `(int)` casts
+op SUM/COUNT (SQLite returnt al int, mutator invisible). De
+`aiproxy-mysql-msi` job blijft het ultieme bewijs op mysqlnd's
+string-coercion. Zie `runbooks/aiproxy-mysql-fixture-plan.md` en
+`runbooks/infection-setup-plan.md` §2.
 
 ## Pad 3 — AutoFix pipeline
 
@@ -192,17 +194,16 @@ terwijl er iets stuk is, weten we het niet.
 - `tests/Unit/Services/QualitySafety/LatestRunFinderTest.php`
 
 **Mutation-score target:** 85 %.
-**Huidige meting:** **100 % lokaal** (220/220 killed na 22-04 commit
-`a52f0b9` — +4 tests die DB-bound CastInt/Round/Limit mutators killen)
-/ **61 % CI** (gate 60). De ~60pp delta komt van environment-afhankelijke
-mutators in `getSystemHealth()`: `disk_free_space()` /
-`disk_total_space()` / `memory_get_usage()` retourneren Linux-CI vs
-Windows-lokaal verschillende byte-counts, en de mutatie
-`round($disk / 1024 / 1024 / 1024, 2)` → `round($disk / 1023 / ...)`
-rondt op Windows toevallig naar dezelfde 2-decimal waarde, op Linux niet.
-Follow-up: ofwel test-fixtures voor exact-byte-counts (mock van
-`disk_free_space`), ofwel Infection ignore-config voor FilesystemMath
-mutators op die specifieke regels. Zie `runbooks/infection-setup-plan.md`
+**Huidige meting:** **95 %+ CI** (gate 95, run `24771812870`) /
+**100 % lokaal**. CI-floor doorbroken via per-mutator ignore-config
+(commits `02b23a2` + `c32b97e` + `95127e0`): env-afhankelijke
+mutaties in `getSystemHealth()`/`getDatabaseSize()`/
+`getObservabilityTableSizes()` (Linux-CI vs Windows-lokaal floating-
+point byte-divisions) + DB-bound CastInt op `getDashboard`/
+`getQualityFindings` (SQLite returnt SUM/COUNT al als int) +
+parser-niveau ArrayItem/Concat mutators op LIKE-patterns en paginate-
+defaults. Elke ignore heeft een WHY-comment in
+`infection-critical-paths.json5`. Zie `runbooks/infection-setup-plan.md`
 §3 voor de tabel.
 
 ## Pad 6 — Session-cookie defaults (HavunCore-eigen scope)

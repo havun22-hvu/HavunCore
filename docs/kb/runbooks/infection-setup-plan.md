@@ -188,10 +188,10 @@ minder dan 7 dagen tot expiry".
 | Pad | Target MSI | Huidige meting | Eerste / volgende stap |
 |-----|-----------|----------------|-------------|
 | 1 Vault | 90 % | **91 %** (21-04, commit `1e3a78c` — 4 runs via `infection-critical-paths.json5`) | target gehaald |
-| 2 AIProxy | 90 % | **81 %** SQLite (floor) / **100 %** MySQL real-driver (22-04, run `24766237747`, gate 95) | Target ruim gehaald via MySQL fixture; zie `aiproxy-mysql-fixture-plan.md` |
+| 2 AIProxy | 90 % | **95 %+** SQLite (gate 95, run `24771812870`) / **100 %** MySQL real-driver | SQLite floor doorbroken via per-mutator ignore-config voor 23 unkillable false-positives; zie commit `02b23a2`. MySQL-job blijft het ultieme bewijs. |
 | 3 AutoFix | 85 % | **87 %** (22-04, commit `9bc30df` — 6 runs, +24 tests, type-fix in `AutofixProposal::isRateLimited`) | target gehaald |
 | 4 QR Auth / Device Trust | 90 % | **100 %** (21-04 sessie, commit `0906ade` — 67/67 killed) | target ruim gehaald |
-| 5 Observability | 85 % | **100 %** lokaal (220/220, 22-04 commit `a52f0b9` +4 tests) / **61 %** CI (gate 60) | Lokaal-CI delta = `getSystemHealth()` `disk_free_space`/`memory_get_usage` mutators die op Windows toevallig naar dezelfde rounded value oplossen, op Linux niet. Follow-up: exact-disk-size fixture of Infection-ignore voor FilesystemMath-mutators. |
+| 5 Observability | 85 % | **95 %+** CI (gate 95, run `24771812870`) / **100 %** lokaal | CI-floor doorbroken via per-mutator ignore-config voor env-bound mutaties op `getSystemHealth`/`getDatabaseSize`/`getObservabilityTableSizes` + DB-bound CastInt op `getDashboard`/`getQualityFindings`. Zie commits `02b23a2` + `c32b97e` + `95127e0`. |
 | 7 Critical-paths audit | 85 % | **88,89 %** (21-04, commit `pending` — 176/198 killed) | target gehaald; `app/Console` toegevoegd aan `infection-critical-paths.json5` scope |
 
 ### Pad 7 run-log (21-04-2026)
