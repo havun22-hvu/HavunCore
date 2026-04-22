@@ -417,7 +417,6 @@ class AIProxyServiceTest extends TestCase
 
     // mysqlnd stringifies SUM/COUNT, so the (int) casts in getUsageStats()
     // only die under MySQL. See docs/kb/runbooks/aiproxy-mysql-fixture-plan.md.
-    #[\PHPUnit\Framework\Attributes\Group('mysql-fixture')]
     public function test_usage_stats_returns_exact_integer_sums_not_rounded(): void
     {
         AIUsageLog::query()->insert([

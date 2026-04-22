@@ -243,7 +243,7 @@ jobs:
             --threads=4 \
             --min-msi=85 --min-covered-msi=85 \
             --logger-github --no-progress --no-interaction \
-            --test-framework-options="--configuration=phpunit.mysql.xml --exclude-group=doc-intelligence --filter=AIProxy"
+            --test-framework-options="--exclude-group=doc-intelligence --filter=AIProxy"
 
       - name: Upload MySQL pad-logs
         if: always()
