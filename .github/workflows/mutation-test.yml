@@ -168,6 +168,16 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    # Job-level shell env so phpunit's <env force=false> doesn't override
+    # back to sqlite. See run 24765349203 (81.75% MSI = SQLite floor) and
+    # the comment on the Run Infection step below.
+    env:
+      DB_CONNECTION: mysql
+      DB_HOST: 127.0.0.1
+      DB_PORT: 3306
+      DB_DATABASE: havuncore_test
+      DB_USERNAME: root
+      DB_PASSWORD: root
     services:
       mysql:
         image: mysql:8.0
@@ -225,30 +235,14 @@ jobs:
         # irrelevant to the AIProxy mutation run).
         run: touch database/doc_intelligence.sqlite
 
-      # DB vars set as shell env (not via .env): phpunit.xml's <env> block
-      # uses force=false which means shell env wins. Without this, Infection's
-      # tmp PHPUnit config would putenv(DB_CONNECTION=sqlite) before Laravel
-      # boots, masking the .env file via Dotenv immutability — and the MSI
-      # would equal the SQLite floor (verified in run 24765349203: 81.75%).
       - name: Migrate on MySQL
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: havuncore_test
-          DB_USERNAME: root
-          DB_PASSWORD: root
         run: php artisan migrate --force
 
       - name: Run Infection — aiproxy (MySQL real-driver)
-        env:
-          DB_CONNECTION: mysql
-          DB_HOST: 127.0.0.1
-          DB_PORT: 3306
-          DB_DATABASE: havuncore_test
-          DB_USERNAME: root
-          DB_PASSWORD: root
         # min-msi ramp 81 -> 85 -> 90, see runbook §"Stap 6".
+        # DB_* env vars set at job level (see top of job): phpunit.xml's <env>
+        # is force=false so shell env wins, otherwise Infection's tmp PHPUnit
+        # config would putenv(DB_CONNECTION=sqlite) before Laravel bootstrap.
         run: |
           vendor/bin/infection \
             --configuration=infection-critical-paths.json5 \
