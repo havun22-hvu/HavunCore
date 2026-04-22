@@ -179,23 +179,28 @@ class ZombieChecker
     /**
      * Standard Laravel/PHP built-in artisan commands die altijd bestaan,
      * ook al staat er geen Command-class voor in app/Console/Commands.
-     * Stub-prefix scan: `migrate`, `make:foo`, `db:seed` etc. variants.
+     * Twee groepen voor leesbaarheid: exacte namen en namespace-prefixes.
      */
+    private const ARTISAN_BUILTIN_NAMES = [
+        'about', 'clear-compiled', 'down', 'env', 'help', 'inspire', 'list',
+        'migrate', 'optimize', 'serve', 'test', 'tinker', 'up',
+    ];
+
     private const ARTISAN_BUILTIN_PREFIXES = [
-        'about', 'cache:', 'clear-compiled', 'config:', 'db:', 'down', 'env',
-        'event:', 'help', 'inspire', 'key:', 'lang:', 'list', 'migrate',
-        'model:', 'optimize', 'package:', 'queue:', 'route:', 'sail:',
-        'schedule:', 'serve', 'session:', 'storage:', 'stub:', 'test',
-        'tinker', 'up', 'vendor:', 'view:', 'make:', 'install:',
+        'cache:', 'config:', 'db:', 'event:', 'install:', 'key:', 'lang:',
+        'make:', 'model:', 'package:', 'queue:', 'route:', 'sail:',
+        'schedule:', 'session:', 'storage:', 'stub:', 'vendor:', 'view:',
     ];
 
     private function artisanCommandExists(string $signature): bool
     {
         $name = preg_split('/\s+/', $signature)[0] ?? $signature;
 
-        // Built-in/standard Laravel artisan commands — altijd OK.
+        if (in_array($name, self::ARTISAN_BUILTIN_NAMES, true)) {
+            return true;
+        }
         foreach (self::ARTISAN_BUILTIN_PREFIXES as $prefix) {
-            if ($name === rtrim($prefix, ':') || str_starts_with($name, $prefix)) {
+            if (str_starts_with($name, $prefix)) {
                 return true;
             }
         }
@@ -277,10 +282,10 @@ class ZombieChecker
     }
 
     /**
-     * Bouwt de class-index lazy on first call. Walk app/ + tests/ één keer,
-     * regex-extract alle declared types, basename → true map. Tests zitten
-     * erbij omdat docs legitiem refereren aan Test-class namen
-     * (kritieke paden doc, mutation-baseline docs, etc.).
+     * Bouwt de class-index lazy on first call. Walk app/ + tests/ van
+     * `codebaseRoot`, regex-extract alle declared types, basename → true.
+     * Tests zitten erbij omdat docs legitiem refereren aan Test-class
+     * namen (kritieke paden doc, mutation-baseline docs, etc.).
      *
      * @return array<string,true>
      */
@@ -290,32 +295,10 @@ class ZombieChecker
             return $this->classIndex;
         }
 
-        $index = [];
-        foreach (['app', 'tests'] as $sub) {
-            $dir = $this->codebaseRoot . '/' . $sub;
-            if (! is_dir($dir)) {
-                continue;
-            }
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
-            );
-            foreach ($iterator as $file) {
-                if (! $file->isFile() || $file->getExtension() !== 'php') {
-                    continue;
-                }
-                $src = @file_get_contents($file->getPathname());
-                if ($src === false) {
-                    continue;
-                }
-                if (preg_match_all('/\b(?:class|interface|trait|enum)\s+([A-Z][A-Za-z0-9_]*)/', $src, $m)) {
-                    foreach ($m[1] as $name) {
-                        $index[$name] = true;
-                    }
-                }
-            }
-        }
-
-        return $this->classIndex = $index;
+        return $this->classIndex = $this->indexClassesIn([
+            $this->codebaseRoot . '/app',
+            $this->codebaseRoot . '/tests',
+        ]);
     }
 
     /**
@@ -347,36 +330,54 @@ class ZombieChecker
             if ($root === '' || $root === $this->codebaseRoot) {
                 continue;
             }
-            foreach (['app', 'tests'] as $sub) {
-                $dir = $root . '/' . $sub;
-                if (! is_dir($dir)) {
-                    continue;
-                }
-                try {
-                    $iterator = new \RecursiveIteratorIterator(
-                        new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
-                    );
-                    foreach ($iterator as $file) {
-                        if (! $file->isFile() || $file->getExtension() !== 'php') {
-                            continue;
-                        }
-                        $src = @file_get_contents($file->getPathname());
-                        if ($src === false) {
-                            continue;
-                        }
-                        if (preg_match_all('/\b(?:class|interface|trait|enum)\s+([A-Z][A-Za-z0-9_]*)/', $src, $m)) {
-                            foreach ($m[1] as $name) {
-                                $index[$name] = true;
-                            }
-                        }
-                    }
-                } catch (\Throwable) {
-                    // Project-tree onbereikbaar → skippen, geen crash.
-                }
-            }
+            $index = array_merge($index, $this->indexClassesIn([
+                $root . '/app',
+                $root . '/tests',
+            ]));
         }
 
         return $this->crossProjectIndex = $index;
+    }
+
+    /**
+     * Walks de gegeven directories en bouwt een basename-set van alle
+     * class/interface/trait/enum-declaraties. Onbereikbare dirs worden
+     * stil overgeslagen — geen crash bij een offline portfolio-project.
+     *
+     * @param  array<int,string>  $dirs
+     * @return array<string,true>
+     */
+    private function indexClassesIn(array $dirs): array
+    {
+        $index = [];
+        foreach ($dirs as $dir) {
+            if (! is_dir($dir)) {
+                continue;
+            }
+            try {
+                $iterator = new \RecursiveIteratorIterator(
+                    new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+                );
+                foreach ($iterator as $file) {
+                    if (! $file->isFile() || $file->getExtension() !== 'php') {
+                        continue;
+                    }
+                    $src = @file_get_contents($file->getPathname());
+                    if ($src === false) {
+                        continue;
+                    }
+                    if (preg_match_all('/\b(?:class|interface|trait|enum)\s+([A-Z][A-Za-z0-9_]*)/', $src, $m)) {
+                        foreach ($m[1] as $name) {
+                            $index[$name] = true;
+                        }
+                    }
+                }
+            } catch (\Throwable) {
+                // dir onbereikbaar → skippen
+            }
+        }
+
+        return $index;
     }
 
     /**
