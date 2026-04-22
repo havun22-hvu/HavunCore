@@ -46,10 +46,15 @@ class StructureChecker
         }
 
         if ($this->unbalancedCodeFences($content)) {
-            $findings[] = $this->finding($absolutePath, Severity::Medium, 'Oneven aantal ```-fences', 'Sluit code-block(s)');
+            // Low i.p.v. Medium: demo-content in KB-docs (voorbeelden van
+            // FOUT-patronen) kan legitiem unbalanced fences hebben.
+            // Markdown-renderers handlen dit meestal door tot EOF te lopen.
+            $findings[] = $this->finding($absolutePath, Severity::Low, 'Oneven aantal ```-fences', 'Controleer of dit bewust is (demo); sluit anders code-block(s)');
         }
 
         if ($lineCount > self::BIG_FILE_LINES) {
+            // Low i.p.v. High — een grote file is geen quality-breuk, alleen
+            // een ergonomic hint voor leesbaarheid/onderhoud.
             $findings[] = $this->finding($absolutePath, Severity::Low, "File is {$lineCount} regels (> " . self::BIG_FILE_LINES . ')', 'Overweeg splitsing');
         } elseif ($lineCount < self::TINY_FILE_LINES) {
             $findings[] = $this->finding($absolutePath, Severity::Info, "File is {$lineCount} regels (< " . self::TINY_FILE_LINES . ')', 'Overweeg inline verwerking');
@@ -74,12 +79,15 @@ class StructureChecker
      */
     private function emptySections(array $lines): array
     {
+        // Alleen H2-secties checken. Een H2 met H3/H4-subsecties heeft
+        // inhoud via zijn kinderen; dat mag geen "leeg" melden. Een H3
+        // zonder body valt onder zijn H2-ouder en is geen eigen section.
         $empty = [];
         $currentHeader = null;
         $currentHasBody = false;
 
         foreach ($lines as $line) {
-            if (preg_match('/^##+\s+(.+)$/', $line, $m)) {
+            if (preg_match('/^##\s+(.+)$/', $line, $m)) {
                 if ($currentHeader !== null && ! $currentHasBody) {
                     $empty[] = $currentHeader;
                 }
@@ -87,6 +95,7 @@ class StructureChecker
                 $currentHasBody = false;
                 continue;
             }
+            // Any non-empty line (including H3/H4/text/code) = content.
             if (trim($line) !== '') {
                 $currentHasBody = true;
             }

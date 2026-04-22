@@ -22,6 +22,35 @@ use App\Enums\Severity;
 class ZombieChecker
 {
     /**
+     * Globale PHP/Laravel/standard-library klassen die nooit "zombies" zijn
+     * al staan ze niet in app/. Voorkomt false-positives op common types
+     * die overal in docs voorkomen.
+     */
+    private const GLOBAL_WHITELIST = [
+        // PHP built-ins
+        'PDO', 'PDOException', 'Throwable', 'Exception', 'Error', 'TypeError',
+        'RuntimeException', 'LogicException', 'InvalidArgumentException',
+        'ArrayIterator', 'DateTime', 'DateTimeImmutable', 'DateTimeZone',
+        'Generator', 'Closure', 'Iterator', 'IteratorAggregate', 'Countable',
+        'ArrayAccess', 'JsonSerializable', 'ReflectionClass', 'ReflectionMethod',
+        // Laravel / Carbon / common packages
+        'Carbon', 'CarbonImmutable', 'Collection', 'Str', 'Arr',
+        'Log', 'Cache', 'DB', 'Schema', 'Storage', 'Http', 'Mail',
+        'Queue', 'Event', 'Gate', 'Auth', 'Session', 'Request', 'Response',
+        'View', 'Route', 'Artisan', 'Broadcast', 'Validator', 'Hash',
+        'Model', 'Builder', 'Controller', 'Command', 'Rule', 'FormRequest',
+        'Mockery', 'RefreshDatabase', 'Storage', 'Process',
+        // Laravel concerns/traits/contracts
+        'Dispatchable', 'InteractsWithQueue', 'Queueable', 'SerializesModels',
+        'ShouldQueue', 'Notifiable', 'HasFactory', 'HasApiTokens', 'SoftDeletes',
+        'PersonalAccessToken', 'Sanctum', 'HasRoles', 'HasPermissions',
+        // Eloquent types
+        'HasOne', 'HasMany', 'BelongsTo', 'BelongsToMany', 'MorphTo',
+        // Livewire
+        'Component', 'Computed',
+    ];
+
+    /**
      * Basename-set van alle class/interface/trait/enum-declaraties in app/.
      * Geïnitialiseerd in de constructor via één tree-walk; daarna O(1)
      * membership-test per check(). Voorkomt O(refs × files_php) per doc
@@ -30,6 +59,16 @@ class ZombieChecker
      * @var array<string,true>|null  null tot lazy-init
      */
     private ?array $classIndex = null;
+
+    /**
+     * Cross-project class-index: basenames van alle classes in andere
+     * portfolio-projecten (via config/quality-safety.php paden). HavunCore-
+     * docs refereren legitimately aan JudoToernooi/HP/etc. klassen —
+     * whitelist die zodat ze geen HIGH zombie-finding krijgen.
+     *
+     * @var array<string,true>|null
+     */
+    private ?array $crossProjectIndex = null;
 
     /**
      * @param  string  $codebaseRoot  Absolute project root (e.g. D:/GitHub/HavunCore)
@@ -105,43 +144,131 @@ class ZombieChecker
 
     private function classExists(string $ref): bool
     {
-        // FQN: check direct.
+        $basename = str_contains($ref, '\\')
+            ? substr($ref, strrpos($ref, '\\') + 1)
+            : $ref;
+
+        // Globale/built-in whitelist (PHP/Laravel/Carbon etc.) — nooit zombie.
+        if (in_array($basename, self::GLOBAL_WHITELIST, true)) {
+            return true;
+        }
+
+        // FQN: check direct via autoloader.
         if (str_contains($ref, '\\')) {
             if (class_exists($ref) || interface_exists($ref) || trait_exists($ref) || enum_exists($ref)) {
                 return true;
             }
-
-            // Fallback: grep op class-basename in codebase (handles
-            // PSR-4 + autoload-class-map + facades die elders bestaan).
-            $basename = substr($ref, strrpos($ref, '\\') + 1);
-
-            return $this->grepClassName($basename);
+        } else {
+            // Bareword — probeer Laravel facade-alias.
+            $aliases = $this->loadFacadeAliases();
+            if (isset($aliases[$ref]) && class_exists($aliases[$ref])) {
+                return true;
+            }
         }
 
-        // Bareword (e.g. "Log", "Cache") — probeer facade-alias resolve.
-        $aliases = $this->loadFacadeAliases();
-        if (isset($aliases[$ref]) && class_exists($aliases[$ref])) {
+        // Fallback laag 1: grep in deze app/.
+        if ($this->grepClassName($basename)) {
             return true;
         }
 
-        // Fallback: grep op class-name in codebase.
-        return $this->grepClassName($ref);
+        // Fallback laag 2: cross-portfolio check — doc mag legitiem refereren
+        // naar een class in een ander Havun-project.
+        return isset($this->crossProjectIndex()[$basename]);
     }
+
+    /**
+     * Standard Laravel/PHP built-in artisan commands die altijd bestaan,
+     * ook al staat er geen Command-class voor in app/Console/Commands.
+     * Stub-prefix scan: `migrate`, `make:foo`, `db:seed` etc. variants.
+     */
+    private const ARTISAN_BUILTIN_PREFIXES = [
+        'about', 'cache:', 'clear-compiled', 'config:', 'db:', 'down', 'env',
+        'event:', 'help', 'inspire', 'key:', 'lang:', 'list', 'migrate',
+        'model:', 'optimize', 'package:', 'queue:', 'route:', 'sail:',
+        'schedule:', 'serve', 'session:', 'storage:', 'stub:', 'test',
+        'tinker', 'up', 'vendor:', 'view:', 'make:', 'install:',
+    ];
 
     private function artisanCommandExists(string $signature): bool
     {
-        // Probeer de geregistreerde commands. Kan alleen in Laravel-bootstrapped
-        // context — we staan in artisan dus we kunnen de Artisan-facade gebruiken.
-        // Bare vergelijking op command-name (alles voor spatie of eind).
         $name = preg_split('/\s+/', $signature)[0] ?? $signature;
 
-        try {
-            $all = array_keys(\Illuminate\Support\Facades\Artisan::all());
-
-            return in_array($name, $all, true);
-        } catch (\Throwable) {
-            return true; // Kan niet verifieren → geen false-positive finding.
+        // Built-in/standard Laravel artisan commands — altijd OK.
+        foreach (self::ARTISAN_BUILTIN_PREFIXES as $prefix) {
+            if ($name === rtrim($prefix, ':') || str_starts_with($name, $prefix)) {
+                return true;
+            }
         }
+
+        // Grep in target project's Commands/ directly — HavunCore's Artisan::all()
+        // geeft alleen HavunCore-commands, nutteloos voor cross-project audits.
+        if ($this->greppedInTargetProject($name)) {
+            return true;
+        }
+
+        // Fallback: andere Havun-projecten (doc in HP kan refereren aan een
+        // HavunAdmin command bijv.).
+        return $this->greppedInOtherProjects($name);
+    }
+
+    private function greppedInTargetProject(string $commandName): bool
+    {
+        $cmdDir = $this->codebaseRoot . '/app/Console/Commands';
+        if (! is_dir($cmdDir)) {
+            return false;
+        }
+
+        return $this->grepCommandInDir($cmdDir, $commandName);
+    }
+
+    private function greppedInOtherProjects(string $commandName): bool
+    {
+        try {
+            $projects = (array) config('quality-safety.projects', []);
+        } catch (\Throwable) {
+            return true;
+        }
+
+        foreach ($projects as $entry) {
+            if (! is_array($entry) || ($entry['enabled'] ?? false) !== true) {
+                continue;
+            }
+            $root = (string) ($entry['path'] ?? '');
+            if ($root === '' || $root === $this->codebaseRoot) {
+                continue;
+            }
+            $cmdDir = $root . '/app/Console/Commands';
+            if (is_dir($cmdDir) && $this->grepCommandInDir($cmdDir, $commandName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function grepCommandInDir(string $cmdDir, string $commandName): bool
+    {
+        $escaped = preg_quote($commandName, '/');
+        $pattern = "/\\\$signature\\s*=\\s*['\"]{$escaped}\\b/";
+
+        try {
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($cmdDir, \FilesystemIterator::SKIP_DOTS)
+            );
+            foreach ($iterator as $file) {
+                if (! $file->isFile() || $file->getExtension() !== 'php') {
+                    continue;
+                }
+                $src = @file_get_contents($file->getPathname());
+                if ($src !== false && preg_match($pattern, $src)) {
+                    return true;
+                }
+            }
+        } catch (\Throwable) {
+            // unreadable dir
+        }
+
+        return false;
     }
 
     private function grepClassName(string $basename): bool
@@ -150,9 +277,10 @@ class ZombieChecker
     }
 
     /**
-     * Bouwt de class-index lazy on first call. Walk app/ één keer, regex-
-     * extract alle declared types, basename → true map. Geen FOLLOW_SYMLINKS
-     * (default) zodat een symlink-loop de walk niet kan ophangen.
+     * Bouwt de class-index lazy on first call. Walk app/ + tests/ één keer,
+     * regex-extract alle declared types, basename → true map. Tests zitten
+     * erbij omdat docs legitiem refereren aan Test-class namen
+     * (kritieke paden doc, mutation-baseline docs, etc.).
      *
      * @return array<string,true>
      */
@@ -162,31 +290,93 @@ class ZombieChecker
             return $this->classIndex;
         }
 
-        $appDir = $this->codebaseRoot . '/app';
-        if (! is_dir($appDir)) {
-            return $this->classIndex = [];
-        }
-
         $index = [];
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($appDir, \FilesystemIterator::SKIP_DOTS)
-        );
-        foreach ($iterator as $file) {
-            if (! $file->isFile() || $file->getExtension() !== 'php') {
+        foreach (['app', 'tests'] as $sub) {
+            $dir = $this->codebaseRoot . '/' . $sub;
+            if (! is_dir($dir)) {
                 continue;
             }
-            $src = @file_get_contents($file->getPathname());
-            if ($src === false) {
-                continue;
-            }
-            if (preg_match_all('/\b(?:class|interface|trait|enum)\s+([A-Z][A-Za-z0-9_]*)/', $src, $m)) {
-                foreach ($m[1] as $name) {
-                    $index[$name] = true;
+            $iterator = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+            );
+            foreach ($iterator as $file) {
+                if (! $file->isFile() || $file->getExtension() !== 'php') {
+                    continue;
+                }
+                $src = @file_get_contents($file->getPathname());
+                if ($src === false) {
+                    continue;
+                }
+                if (preg_match_all('/\b(?:class|interface|trait|enum)\s+([A-Z][A-Za-z0-9_]*)/', $src, $m)) {
+                    foreach ($m[1] as $name) {
+                        $index[$name] = true;
+                    }
                 }
             }
         }
 
         return $this->classIndex = $index;
+    }
+
+    /**
+     * Bouwt de cross-project class-index door alle Havun-projecten uit
+     * quality-safety.php te walk'en. Lazy, één keer per ZombieChecker-
+     * instance. Grote projecten → klein aantal ms per initialisatie.
+     *
+     * @return array<string,true>
+     */
+    private function crossProjectIndex(): array
+    {
+        if ($this->crossProjectIndex !== null) {
+            return $this->crossProjectIndex;
+        }
+
+        $projects = [];
+        try {
+            $projects = (array) config('quality-safety.projects', []);
+        } catch (\Throwable) {
+            // Fallback naar lege config in niet-Laravel context.
+        }
+
+        $index = [];
+        foreach ($projects as $entry) {
+            if (! is_array($entry) || ($entry['enabled'] ?? false) !== true) {
+                continue;
+            }
+            $root = (string) ($entry['path'] ?? '');
+            if ($root === '' || $root === $this->codebaseRoot) {
+                continue;
+            }
+            foreach (['app', 'tests'] as $sub) {
+                $dir = $root . '/' . $sub;
+                if (! is_dir($dir)) {
+                    continue;
+                }
+                try {
+                    $iterator = new \RecursiveIteratorIterator(
+                        new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS)
+                    );
+                    foreach ($iterator as $file) {
+                        if (! $file->isFile() || $file->getExtension() !== 'php') {
+                            continue;
+                        }
+                        $src = @file_get_contents($file->getPathname());
+                        if ($src === false) {
+                            continue;
+                        }
+                        if (preg_match_all('/\b(?:class|interface|trait|enum)\s+([A-Z][A-Za-z0-9_]*)/', $src, $m)) {
+                            foreach ($m[1] as $name) {
+                                $index[$name] = true;
+                            }
+                        }
+                    }
+                } catch (\Throwable) {
+                    // Project-tree onbereikbaar → skippen, geen crash.
+                }
+            }
+        }
+
+        return $this->crossProjectIndex = $index;
     }
 
     /**

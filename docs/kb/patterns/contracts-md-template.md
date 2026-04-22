@@ -45,6 +45,7 @@ Een contract is een gedragsregel die los staat van de implementatie. De code mag
 ### C-02: ...
 
 (5-10 contracten in totaal)
+```
 
 ---
 
