@@ -80,8 +80,12 @@ jobs:
           # Huidige meting (22-04-2026): 75.2 % statements / 70.8 % methods.
           # Gate op 70 % geeft 5pp marge onder echte coverage — vangt echte
           # regressies (>5pp drop) zonder normale fluctuatie te raken.
-          # Volgende ramp 70 → 75 na 2 stabiele maanden, dan 75 → 80 via
-          # nieuwe tests (geen coverage-padding).
+          #
+          # Naar 80 % vereist een structurele fix: doc-intelligence tests
+          # zijn ge-excluded (#[Group('doc-intelligence')] hangt op CI's
+          # :memory: SQLite, commit e97d096). Daardoor scoren 8 DocIntel
+          # files 0 % in deze meting, wat de top ~5pp blokkeert. Eerst die
+          # SQLite-hang oplossen, dán --exclude-group droppen, dán naar 80.
           MIN_COVERAGE: '70'
         run: |
           COVERAGE=$(php -r "\$xml = simplexml_load_file('coverage.xml'); echo round((float)\$xml->project->metrics['coveredstatements'] / max(1, (float)\$xml->project->metrics['statements']) * 100, 1);")
