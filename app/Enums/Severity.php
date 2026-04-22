@@ -7,6 +7,10 @@ namespace App\Enums;
  * observability findings. Kept backward compatible with existing string
  * values ('critical', 'high', 'medium', 'low', 'info') via the backed
  * enum value, so persisted DB strings and API payloads remain stable.
+ *
+ * Distinct from `App\Enums\LogLevel` (runtime errors) and
+ * `App\Enums\Priority` (task scheduling). See
+ * docs/kb/runbooks/severity-loglevel-priority-taxonomies.md.
  */
 enum Severity: string
 {
