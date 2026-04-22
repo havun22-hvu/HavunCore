@@ -3,15 +3,24 @@
 namespace Tests;
 
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 
 /**
  * Trait for tests that need the doc_intelligence database tables.
  * Creates tables via raw SQL instead of artisan migrate (which hangs in CI).
+ *
+ * Also enforces Http::preventStrayRequests() — DocIndexer roept Ollama
+ * aan via Http::timeout(30)->post(...). Zonder fake zou die 30s hangen
+ * per call op CI runners (Ollama niet bereikbaar). Met prevent faalt
+ * het direct + verplicht elke test een Http::fake() te hebben.
  */
 trait CreatesDocIntelligenceTables
 {
     protected function setUpDocIntelligenceTables(): void
     {
+        Http::preventStrayRequests();
+
+
         // Use a temp file instead of :memory: to avoid connection issues in CI.
         $dbPath = sys_get_temp_dir() . '/doc_intelligence_test_' . getmypid() . '.sqlite';
         if (! file_exists($dbPath)) {
