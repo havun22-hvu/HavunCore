@@ -71,8 +71,8 @@ class ProjectScaffoldCommand extends Command
             return self::FAILURE;
         }
 
-        $this->writeFiles($plan, $slug);
-        $this->registerInQualitySafety($slug, $projectPath, (string) $this->option('url'));
+        $this->writeFiles($plan, $projectPath);
+        $this->printQualitySafetyHint($slug, $projectPath, (string) $this->option('url'));
         $this->summary($slug, $projectPath);
 
         return self::SUCCESS;
@@ -84,7 +84,9 @@ class ProjectScaffoldCommand extends Command
     private function buildFilePlan(string $slug, string $projectPath): array
     {
         $today = date('Y-m-d');
-        $title = ucfirst(str_replace(['-', '_'], ' ', $slug));
+        // ucwords ipv ucfirst — voor 'mijn-project' → 'Mijn Project' (title-case)
+        // ipv 'Mijn project'.
+        $title = ucwords(str_replace(['-', '_'], ' ', $slug));
 
         $plan = [];
 
@@ -96,10 +98,15 @@ class ProjectScaffoldCommand extends Command
         // Alle Claude commands uit HavunCore naar het nieuwe project.
         $havunCoreCommands = base_path('.claude/commands');
         if (is_dir($havunCoreCommands)) {
-            foreach (scandir($havunCoreCommands) as $file) {
-                if (str_ends_with($file, '.md')) {
-                    $plan['.claude/commands/' . $file] = File::get($havunCoreCommands . '/' . $file);
+            $entries = scandir($havunCoreCommands);
+            if (is_array($entries)) {
+                foreach ($entries as $file) {
+                    if (str_ends_with($file, '.md')) {
+                        $plan['.claude/commands/' . $file] = File::get($havunCoreCommands . '/' . $file);
+                    }
                 }
+            } else {
+                $this->warn('Kon .claude/commands/ niet lezen — Claude commands worden NIET gekopieerd.');
             }
         }
 
@@ -331,10 +338,8 @@ JSON;
     /**
      * @param  array<string,string>  $plan
      */
-    private function writeFiles(array $plan, string $slug): void
+    private function writeFiles(array $plan, string $projectPath): void
     {
-        $projectPath = (string) ($this->option('path') ?: $this->defaultProjectPath($slug));
-        $projectPath = rtrim(str_replace('\\', '/', $projectPath), '/');
         $written = 0;
         $skipped = 0;
         foreach ($plan as $rel => $content) {
@@ -351,31 +356,33 @@ JSON;
         $this->info("Geschreven: {$written} | Geskipt (bestonden): {$skipped}");
     }
 
-    private function registerInQualitySafety(string $slug, string $projectPath, string $url): void
+    /**
+     * Print een kopieer-en-plak hint voor handmatige V&K-registratie in
+     * config/quality-safety.php. Auto-edit is bewust NIET geïmplementeerd:
+     * PHP-array edits zonder AST-parser zijn fragiel bij formatting-verschillen.
+     */
+    private function printQualitySafetyHint(string $slug, string $projectPath, string $url): void
     {
         $cfgPath = base_path('config/quality-safety.php');
         if (! File::exists($cfgPath)) {
-            $this->warn('config/quality-safety.php bestaat niet — sla V&K-registratie over.');
+            $this->warn('config/quality-safety.php bestaat niet — sla V&K-hint over.');
 
             return;
         }
 
-        $cfg = File::get($cfgPath);
-        if (str_contains($cfg, "'{$slug}' =>")) {
+        if (str_contains(File::get($cfgPath), "'{$slug}' =>")) {
             $this->info("V&K: project '{$slug}' al geregistreerd, skip.");
 
             return;
         }
 
-        // Vind de laatste project-entry sluit-bracket en insert ervoor.
-        // Simpele anchor: de 'projects' array-key regel; we voegen toe na
-        // het openen ervan. Voor MVP: alleen een hint geven (niet auto-edit
-        // — te fragiel zonder AST).
+        $envPrefix = strtoupper(str_replace('-', '_', $slug));
+
         $this->warn('');
         $this->warn('V&K: voeg handmatig toe aan config/quality-safety.php:');
         $this->line("    '{$slug}' => [");
-        $this->line("        'enabled' => env('QV_" . strtoupper(str_replace('-', '_', $slug)) . "_ENABLED', true),");
-        $this->line("        'path' => env('" . strtoupper(str_replace('-', '_', $slug)) . "_LOCAL_PATH', '{$projectPath}'),");
+        $this->line("        'enabled' => env('QV_{$envPrefix}_ENABLED', true),");
+        $this->line("        'path' => env('{$envPrefix}_LOCAL_PATH', '{$projectPath}'),");
         if ($url !== '') {
             $this->line("        'url' => '{$url}',");
         }
@@ -386,7 +393,7 @@ JSON;
     private function summary(string $slug, string $projectPath): void
     {
         $this->newLine();
-        $this->info("✓ Project '{$slug}' scaffolded in: {$projectPath}");
+        $this->info("[OK] Project '{$slug}' scaffolded in: {$projectPath}");
         $this->newLine();
         $this->line('Volgende stappen:');
         $this->line("  1. Vul .claude/context.md in (credentials/server-info)");
