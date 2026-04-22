@@ -89,7 +89,7 @@ jobs:
       matrix:
         pad:
           - { name: vault,         filter: 'app/Http/Controllers/Api/VaultController.php,app/Models/VaultSecret.php,app/Models/VaultAccessLog.php,app/Models/VaultProject.php,app/Models/VaultConfig.php', min_msi: 85 }
-          - { name: aiproxy,       filter: 'app/Services/AIProxyService.php',       min_msi: 75 }
+          - { name: aiproxy,       filter: 'app/Services/AIProxyService.php',       min_msi: 81 }
           - { name: autofix,       filter: 'app/Services/AutoFixService.php',       min_msi: 82 }
           - { name: devicetrust,   filter: 'app/Services/DeviceTrustService.php',   min_msi: 90 }
           - { name: observability, filter: 'app/Services/ObservabilityService.php', min_msi: 90 }
@@ -150,5 +150,109 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: infection-${{ matrix.pad.name }}
+          path: storage/logs/infection-critical*
+          retention-days: 30
+
+  # AIProxy MSI 90% gate via real MySQL — closes the 9pp SQLite-int-coercion
+  # floor documented in docs/kb/runbooks/aiproxy-mysql-fixture-plan.md.
+  # Runs in parallel with the SQLite gates above; fail-fast disabled so a
+  # MySQL container hiccup doesn't kill the SQLite jobs.
+  aiproxy-mysql-msi:
+    name: MSI gate — aiproxy (MySQL real-driver)
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    if: github.event_name == 'pull_request' || github.event_name == 'workflow_dispatch'
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: havuncore_test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -proot --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create required directories
+        run: |
+          mkdir -p bootstrap/cache
+          mkdir -p storage/framework/{sessions,views,cache}
+          mkdir -p storage/logs
+          mkdir -p storage/framework/cache/infection-critical
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          extensions: mbstring, sqlite3, pdo_sqlite, mysql, pdo_mysql
+          coverage: pcov
+          tools: composer:v2
+
+      - name: Wait for MySQL ready
+        run: |
+          for i in {1..30}; do
+            if mysqladmin ping -h 127.0.0.1 -P 3306 -uroot -proot --silent; then
+              echo "MySQL ready after ${i}s"
+              break
+            fi
+            sleep 1
+          done
+
+      - name: Create .env (MySQL)
+        run: |
+          cp .env.example .env 2>/dev/null || touch .env
+          echo "APP_KEY=base64:$(openssl rand -base64 32)" >> .env
+          echo "BROADCAST_CONNECTION=null" >> .env
+          echo "CACHE_STORE=array" >> .env
+          echo "CACHE_DRIVER=array" >> .env
+          echo "DB_CONNECTION=mysql" >> .env
+          echo "DB_HOST=127.0.0.1" >> .env
+          echo "DB_PORT=3306" >> .env
+          echo "DB_DATABASE=havuncore_test" >> .env
+          echo "DB_USERNAME=root" >> .env
+          echo "DB_PASSWORD=root" >> .env
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.composer/cache
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
+
+      - name: Install dependencies
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Migrate central + per-tenant on MySQL
+        run: |
+          php artisan migrate --force
+          # The mutation run reads ai_usage_logs via Eloquent, no tenant
+          # context needed — the central migrations cover it.
+
+      - name: Run Infection — aiproxy (MySQL real-driver)
+        # min-msi target ramps incrementally per the plan §"Stap 6":
+        # 81 (current floor on SQLite) -> 85 -> 90. We start at 85 here
+        # because MySQL kills the CastInt mutations the SQLite job leaves
+        # behind. If the run is green at 85, the next PR can bump to 90.
+        run: |
+          vendor/bin/infection \
+            --configuration=infection-critical-paths.json5 \
+            --filter="app/Services/AIProxyService.php" \
+            --threads=4 \
+            --min-msi=85 --min-covered-msi=85 \
+            --logger-github --no-progress --no-interaction \
+            --test-framework-options="--configuration=phpunit.mysql.xml"
+
+      - name: Upload MySQL pad-logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: infection-aiproxy-mysql
           path: storage/logs/infection-critical*
           retention-days: 30

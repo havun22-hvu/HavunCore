@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="vendor/phpunit/phpunit/phpunit.xsd"
+         bootstrap="vendor/autoload.php"
+         colors="true"
+         failOnRisky="true"
+         failOnWarning="true">
+    <!--
+      MySQL-variant van phpunit.xml. Wordt aangeroepen door de
+      `aiproxy-mysql-msi` job in .github/workflows/mutation-test.yml om
+      Infection-mutaties te killen die SQLite niet kan onderscheiden
+      (CastInt op SUM/COUNT — mysqlnd levert die als string).
+
+      Zie docs/kb/runbooks/aiproxy-mysql-fixture-plan.md voor de volledige
+      rationale. Lokaal blijft `phpunit.xml` (SQLite, in-memory) leidend.
+    -->
+    <testsuites>
+        <testsuite name="Feature">
+            <directory>tests/Feature</directory>
+        </testsuite>
+        <testsuite name="Unit">
+            <directory>tests/Unit</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <directory>app</directory>
+        </include>
+        <exclude>
+            <directory>app/Providers</directory>
+            <file>app/Http/Kernel.php</file>
+        </exclude>
+    </source>
+    <php>
+        <env name="APP_ENV" value="testing"/>
+        <env name="DB_CONNECTION" value="mysql"/>
+        <env name="DB_HOST" value="127.0.0.1"/>
+        <env name="DB_PORT" value="3306"/>
+        <env name="DB_DATABASE" value="havuncore_test"/>
+        <env name="DB_USERNAME" value="root"/>
+        <env name="DB_PASSWORD" value="root"/>
+        <env name="CACHE_DRIVER" value="array"/>
+        <env name="QUEUE_CONNECTION" value="sync"/>
+        <env name="SESSION_DRIVER" value="array"/>
+        <env name="BROADCAST_CONNECTION" value="log"/>
+    </php>
+</phpunit>

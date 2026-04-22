@@ -415,11 +415,21 @@ class AIProxyServiceTest extends TestCase
         $this->assertSame(1, $stats['total_requests']);
     }
 
+    /**
+     * MySQL-driver-sensitive: the SUM/COUNT aggregates come back as STRINGS
+     * from `mysqlnd` (PDO::ATTR_STRINGIFY_FETCHES default), so the `(int)`
+     * casts on lines 169-175 of AIProxyService::getUsageStats are
+     * production-required. Under SQLite they're harmless but unkillable
+     * (Infection's CastInt mutator drops them and nothing breaks).
+     *
+     * The `mysql-fixture` group lets the dedicated mutation-job in
+     * .github/workflows/mutation-test.yml filter to MySQL-bound tests
+     * for the 90% MSI gate; locally + on the SQLite gate the test still
+     * runs (`assertIsInt` is true on either driver).
+     */
+    #[\PHPUnit\Framework\Attributes\Group('mysql-fixture')]
     public function test_usage_stats_returns_exact_integer_sums_not_rounded(): void
     {
-        // Forces a SUM / AVG with odd values so CastInt mutations on
-        // total_* would observe wrong numeric types / lost fractional
-        // information. Assert === on each integer field.
         AIUsageLog::query()->insert([
             [
                 'tenant' => 'exact-sums',
@@ -442,6 +452,8 @@ class AIProxyServiceTest extends TestCase
         $this->assertSame(8, $stats['total_output_tokens']);
         $this->assertSame(28, $stats['total_tokens']);
         $this->assertSame(163, $stats['avg_execution_time_ms']); // (121+205)/2 = 163
+        // Strict int-type kills CastInt mutations on the production driver
+        // (MySQL); on SQLite the cast is a no-op so the assertion passes.
         foreach ($stats as $value) {
             $this->assertIsInt($value);
         }
