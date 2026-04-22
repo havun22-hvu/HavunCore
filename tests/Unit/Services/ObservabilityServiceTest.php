@@ -654,4 +654,69 @@ class ObservabilityServiceTest extends TestCase
         $paths = collect($dashboard['slowest_endpoints'])->pluck('path')->all();
         $this->assertSame(['/slow', '/fast'], $paths);
     }
+
+    public function test_dashboard_integer_fields_are_strict_int_type(): void
+    {
+        $this->makeRequest(['path' => '/a', 'status_code' => 500, 'response_time_ms' => 10, 'created_at' => now()->subMinutes(5)]);
+        $this->makeError(['severity' => 'critical', 'last_occurred_at' => now()->subHour(), 'created_at' => now()->subHour()]);
+        $this->makeSlowQuery(['time_ms' => 1500, 'created_at' => now()->subHours(2)]);
+
+        $dashboard = $this->service->getDashboard();
+
+        $this->assertIsInt($dashboard['requests']['last_hour']);
+        $this->assertIsInt($dashboard['requests']['last_24h']);
+        $this->assertIsInt($dashboard['errors']['last_24h']);
+        $this->assertIsInt($dashboard['errors']['critical']);
+        $this->assertIsInt($dashboard['slow_queries']['last_24h']);
+    }
+
+    public function test_dashboard_slowest_endpoints_capped_at_exactly_five(): void
+    {
+        foreach (['/a', '/b', '/c', '/d', '/e', '/f', '/g'] as $path) {
+            $this->makeRequest(['path' => $path, 'response_time_ms' => 100, 'created_at' => now()->subMinutes(5)]);
+        }
+
+        $dashboard = $this->service->getDashboard();
+
+        $this->assertCount(5, $dashboard['slowest_endpoints']);
+    }
+
+    public function test_dashboard_error_rate_uses_round_not_floor_or_ceil(): void
+    {
+        // 1 error / 3 requests * 100 = 33.333... — round(2) = 33.33, floor = 33.33,
+        // ceil = 33.34. So pick a fraction where the three differ at 2 decimals.
+        // 2 errors / 7 requests * 100 = 28.5714 — round(2) = 28.57, floor = 28.57.
+        // Use 1/8 * 100 = 12.5 — clean value, but kills RoundingFamily because
+        // any +1 or -1 increment to 100 changes the number, and cast/division
+        // mutations produce a different float.
+        $now = now();
+        $this->makeRequest(['path' => '/ok1', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => $now->copy()->subMinutes(10)]);
+        $this->makeRequest(['path' => '/ok2', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => $now->copy()->subMinutes(10)]);
+        $this->makeRequest(['path' => '/ok3', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => $now->copy()->subMinutes(10)]);
+        $this->makeRequest(['path' => '/err', 'status_code' => 500, 'response_time_ms' => 10, 'created_at' => $now->copy()->subMinutes(10)]);
+
+        $dashboard = $this->service->getDashboard();
+
+        // 1/4 = 25.0 exactly — kills Division/Multiplication/RoundingFamily
+        // because any of +/-1 on operands or floor/ceil swap changes the value.
+        $this->assertSame(25.0, $dashboard['requests']['error_rate_1h']);
+        $this->assertSame(25.0, $dashboard['requests']['error_rate_24h']);
+    }
+
+    public function test_quality_findings_totals_are_strict_int_type(): void
+    {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        $today = now()->toDateString();
+        $disk->put("qv-scans/{$today}/run.json", json_encode([
+            'findings' => [],
+            'totals' => ['critical' => 3, 'high' => 5, 'errors' => 7],
+        ]));
+
+        $result = $this->service->getQualityFindings();
+
+        $this->assertIsInt($result['totals']['critical']);
+        $this->assertIsInt($result['totals']['high']);
+        $this->assertIsInt($result['totals']['errors']);
+    }
 }
