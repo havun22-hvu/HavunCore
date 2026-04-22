@@ -2,9 +2,9 @@
 
 namespace App\Models;
 
+use App\Enums\LogLevel;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 
 /**
  * Error Log
@@ -91,19 +91,13 @@ class ErrorLog extends Model
     }
 
     /**
-     * Determine severity based on exception type.
+     * Determine log-level based on exception type. Returns the string-value
+     * of the LogLevel enum so the existing DB column (string) stays
+     * backward-compatible with existing rows.
      */
     protected static function determineSeverity(\Throwable $e): string
     {
-        if ($e instanceof \Error) {
-            return 'critical';
-        }
-
-        if ($e instanceof HttpException) {
-            return $e->getStatusCode() >= 500 ? 'error' : 'warning';
-        }
-
-        return 'error';
+        return LogLevel::fromException($e)->value;
     }
 
     /**
