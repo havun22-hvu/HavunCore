@@ -2,26 +2,35 @@
 
 namespace App\Console\Commands;
 
+use App\Services\QualitySafety\LatestRunFinder;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Process;
 
 class DocsHandoverCommand extends Command
 {
+    /**
+     * Cap on findings shown in the handover. Beyond this we render a
+     * "+N meer" hint so silent truncation can't hide HIGH/CRIT escapes.
+     */
+    private const MAX_FINDINGS = 10;
+
     protected $signature = 'docs:handover
                             {--days=7 : Aantal dagen aan git-historie meenemen}
                             {--output=docs/handover.md : Pad naar de handover-file}';
 
     protected $description = 'Genereer een publieke handover.md uit recente git-commits + V&K state.';
 
-    public function handle(): int
+    public function handle(LatestRunFinder $latestRunFinder): int
     {
         $days = (int) $this->option('days');
-        $output = base_path((string) $this->option('output'));
+        $rawOutput = (string) $this->option('output');
+        $output = $this->isAbsolutePath($rawOutput) ? $rawOutput : base_path($rawOutput);
 
         $commits = $this->recentCommits($days);
-        $qvSummary = $this->latestQvSummary();
+        $qvSummary = $this->latestQvSummary($latestRunFinder);
         $generatedAt = CarbonImmutable::now()->toDayDateTimeString();
 
         $body = $this->renderHandover($commits, $qvSummary, $days, $generatedAt);
@@ -32,6 +41,11 @@ class DocsHandoverCommand extends Command
         $this->info("Handover bijgewerkt: {$this->option('output')} ({$generatedAt})");
 
         return self::SUCCESS;
+    }
+
+    private function isAbsolutePath(string $path): bool
+    {
+        return str_starts_with($path, '/') || preg_match('#^[A-Za-z]:[/\\\\]#', $path) === 1;
     }
 
     /**
@@ -64,44 +78,44 @@ class DocsHandoverCommand extends Command
     }
 
     /**
-     * @return array{generated_at:?string,totals:?array<string,int>,findings:list<string>}
+     * Reads the latest qv:scan run-JSON directly (same source-of-truth as
+     * qv:log). Avoids the format-drift trap of regex-parsing the rendered
+     * markdown — if ScanReportRenderer changes its layout, this still works.
+     *
+     * @return array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int}
      */
-    protected function latestQvSummary(): array
+    protected function latestQvSummary(LatestRunFinder $finder): array
     {
-        $path = base_path('docs/kb/reference/qv-scan-latest.md');
-        if (! File::exists($path)) {
-            return ['generated_at' => null, 'totals' => null, 'findings' => []];
+        $disk = (string) config('quality-safety.storage.disk', 'local');
+        $latest = $finder->findPath($disk);
+        if ($latest === null) {
+            return ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0];
         }
 
-        $raw = File::get($path);
-
-        // Pull totals line: "0 critical, 2 high, 0 medium..."
-        $totals = null;
-        if (preg_match('/critical:\s*(\d+).*?high:\s*(\d+).*?medium:\s*(\d+).*?low:\s*(\d+)/i', $raw, $m)) {
-            $totals = [
-                'critical' => (int) $m[1],
-                'high' => (int) $m[2],
-                'medium' => (int) $m[3],
-                'low' => (int) $m[4],
-            ];
+        $raw = Storage::disk($disk)->get($latest);
+        $data = is_string($raw) ? json_decode($raw, true) : null;
+        if (! is_array($data)) {
+            return ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0];
         }
 
-        // Pull HIGH/CRITICAL one-liners.
-        preg_match_all('/^[-*]\s*(\[(?:high|critical)\][^\n]+)/im', $raw, $hits);
-        $findings = $hits[1] ?? [];
+        $highCrit = array_values(array_filter(
+            $data['findings'] ?? [],
+            fn ($f) => is_array($f) && in_array($f['severity'] ?? null, ['high', 'critical'], true)
+        ));
 
-        // Pull "generated at" stamp if present.
-        $generatedAt = null;
-        if (preg_match('/(?:scan|generated)[^0-9]*([0-9]{4}-[0-9]{2}-[0-9]{2}[T 0-9:+-]+)/i', $raw, $m)) {
-            $generatedAt = $m[1];
-        }
-
-        return ['generated_at' => $generatedAt, 'totals' => $totals, 'findings' => array_slice($findings, 0, 10)];
+        return [
+            'generated_at' => $data['started_at'] ?? null,
+            'totals' => isset($data['totals']) && is_array($data['totals'])
+                ? array_map('intval', $data['totals'])
+                : null,
+            'findings' => array_slice($highCrit, 0, self::MAX_FINDINGS),
+            'findings_total' => count($highCrit),
+        ];
     }
 
     /**
      * @param  list<array{hash:string,subject:string,date:string}>  $commits
-     * @param  array{generated_at:?string,totals:?array<string,int>,findings:list<string>}  $qv
+     * @param  array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int}  $qv
      */
     protected function renderHandover(array $commits, array $qv, int $days, string $generatedAt): string
     {
@@ -144,7 +158,15 @@ class DocsHandoverCommand extends Command
                 $lines[] = '**HIGH/CRITICAL findings:**';
                 $lines[] = '';
                 foreach ($qv['findings'] as $f) {
-                    $lines[] = "- {$f}";
+                    $sev = strtoupper((string) ($f['severity'] ?? '?'));
+                    $proj = (string) ($f['project'] ?? '?');
+                    $check = (string) ($f['check'] ?? '?');
+                    $msg = (string) ($f['message'] ?? $f['title'] ?? '');
+                    $lines[] = "- **[{$sev}]** `{$proj}/{$check}` — {$msg}";
+                }
+                $hidden = $qv['findings_total'] - count($qv['findings']);
+                if ($hidden > 0) {
+                    $lines[] = "- _… +{$hidden} meer (zie `docs/kb/reference/qv-scan-latest.md`)_";
                 }
             }
         }

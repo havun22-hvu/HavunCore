@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Apr 22, 2026 1:45 PM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Apr 22, 2026 1:51 PM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,7 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-04-22 | `aeaab1e` | feat(docs): auto-generated handover.md + V&K landing page modernized |
 | 2026-04-22 | `32f2fb6` | chore(qv): refresh KB snapshot — 2 HIGH (beide bekend, geen actie) |
 | 2026-04-22 | `e5890de` | ci(infection): switch baseline cron from quarterly to monthly |
 | 2026-04-22 | `f245965` | docs: punt 1+2 afgerond — aiproxy SQLite + observability beide @ 95% gate |
@@ -201,7 +202,14 @@
 
 ## V&K status (laatste qv:scan)
 
-_Nog geen `qv:scan` snapshot beschikbaar._
+**Totals:** critical 0 | high 2 | medium 0 | low 0
+
+_Snapshot timestamp: 2026-04-22T12:39:51+02:00_
+
+**HIGH/CRITICAL findings:**
+
+- **[HIGH]** `herdenkingsportaal/test-erosion` — Recently deleted: tests/Unit/XrpPaymentServiceCoverage2Test.php
+- **[HIGH]** `judotoernooi/forms` — 53% form-validation coverage (7 FormRequest + 105 inline ::validate vs 213 write-routes)
 
 ## Verdiepende bronnen
 
