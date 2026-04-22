@@ -62,6 +62,7 @@ last_check: 2026-04-22
 | **Test-policy** | `reference/test-quality-policy.md` | 3-laags model: critical 100 % / business 70-85 % / glue 20-40 % |
 | **Policies** | `CLAUDE.md` — 6 Onschendbare Regels | Gedragsregels voor Claude |
 | **Detectie** | `qv:scan` (artisan) + Laravel scheduler | 11 checks dagelijks/wekelijks (zie tabel hieronder) |
+| **Bootstrap** | `project:scaffold <slug>` (artisan, on-demand) | Nieuw project inrichten met werkwijze-MD + 11 Claude commands + V&K-hint — zie sectie *Nieuw project bootstrappen* |
 | **KB onderhoud** | `docs:audit` (artisan, wekelijks) + `/kb-audit` (Claude, on-demand) | Markdown-docs auditen op obsolete/zombie/structure/links — zie sectie *KB-onderhoud* |
 | **Bewijs** | Infection mutation-testing CI | Per-pad MSI gates op kritieke paden (zie sectie *Mutation-testing*) |
 | **Logs (auto)** | `reference/security-findings-log.md` | Auto-append van `qv:log` na elke scheduled scan |
@@ -150,6 +151,54 @@ Off-minuten (`:07`, `:17`, `:27`, `:37`, `:47`) voorkomen dat Havun-cron samenva
 - **Markdown-rapport**: `docs/kb/reference/qv-scan-latest.md` (overschreven door `qv:log` na elke scheduled scan — bevat HIGH/CRIT findings + totals + errors)
 - **Curated post-mortem**: `docs/kb/reference/security-findings.md` — handmatig onderhouden met prose, lessen en fix-statussen. Auto-rapport is **alleen** raw data, de human log is de single source of truth voor post-mortem.
 - **Geen e-mail** (zie `feedback_no_email_notifications.md`) — in-app notificaties/observability zijn de norm.
+
+## Nieuw project bootstrappen
+
+Een nieuw Havun-project moet vanaf dag 1 op de hoogte zijn van de
+werkwijze, KB-systeem, GitHub-conventies en V&K eisen. De artisan
+`project:scaffold <slug>` regelt dat in één commando:
+
+```bash
+php artisan project:scaffold mijnproject \
+    --path=D:/GitHub/MijnProject \
+    --stack=laravel \
+    --url=https://mijnproject.havun.nl
+```
+
+**Wat het automatisch genereert in het nieuwe project:**
+
+- `CLAUDE.md` met de **6 Onschendbare Regels** + verwijzing naar
+  HavunCore canonical
+- `CONTRACTS.md` template (onveranderlijke regels placeholder)
+- `.claude/context.md` met TODO-velden voor server/GitHub/paden
+- `.claude/rules.md` (verwijst naar HavunCore canonical)
+- `.claude/commands/*.md` — **alle 11 standaard Claude commands** uit
+  HavunCore (`/start`, `/end`, `/kb`, `/kb-audit`, `/mpc`, `/audit`,
+  `/lint`, `/test`, `/errors`, `/update`, `/f`)
+- `docs/kb/` directory-structuur (runbooks/, reference/, decisions/,
+  patterns/) met INDEX.md
+- `infection.json5` (Laravel-stack template)
+
+**Wat NIET auto-gekopieerd wordt** (bewuste keuze):
+
+- Credentials/API keys/server-credentials — gevoelig, handmatig invullen
+  in `.claude/context.md` na bootstrap
+- GitHub repository — gebruik `gh repo create` apart
+- V&K-config registratie — command print copy-paste hint voor
+  `config/quality-safety.php` (auto-edit van PHP-array zonder AST is
+  fragiel)
+
+**Vervolgstappen na bootstrap:**
+
+1. Vul `.claude/context.md` in (server-info, deploy-paden)
+2. Plak de V&K-hint in `config/quality-safety.php`
+3. Run vanuit HavunCore: `php artisan docs:audit --project=<slug>`
+4. Run vanuit HavunCore: `php artisan qv:scan --project=<slug>`
+
+**MVP-beperkingen:**
+
+- Alleen `--stack=laravel` ondersteund. Node/Static/Mobile = follow-up.
+- Idempotent: bestaande files worden geskipt (geen overschrijven).
 
 ## KB-onderhoud (docs als product)
 
