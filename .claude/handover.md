@@ -2,6 +2,51 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 22 april 2026 (ochtend) — AIProxy MySQL-fixture LIVE in CI
+
+Laatste open item uit nacht-sessie afgerond. Plan uit
+`aiproxy-mysql-fixture-plan.md` (Optie A: GH service container)
+geïmplementeerd en gepusht.
+
+**Wijzigingen (commit `fc0985f` + simplify `d0ac2e6`):**
+- **Nieuwe CI-job** `aiproxy-mysql-msi` in
+  `.github/workflows/mutation-test.yml`: spint `mysql:8.0` service
+  op met health-check (geen handmatige wait-loop — GitHub blokkeert
+  tot containers healthy zijn), draait `migrate --force`, daarna
+  Infection met `--min-msi=85` tegen `phpunit.mysql.xml`. Gate is
+  conditioneel op `pull_request || workflow_dispatch`.
+- **Nieuwe** `phpunit.mysql.xml` (root): identiek aan `phpunit.xml`
+  maar met `DB_CONNECTION=mysql` env block. Lokaal blijft SQLite
+  in-memory leidend.
+- **SQLite aiproxy gate** opgehoogd 75 → 81 (matcht huidige floor).
+- **Test-tag** `#[Group('mysql-fixture')]` op
+  `test_usage_stats_returns_exact_integer_sums_not_rounded` plus
+  korte WHY-comment (mysqlnd stringifies SUM/COUNT, runbook-link).
+
+**Ramp-strategie (uit plan §"Stap 6"):** start CI op 85, na eerste
+groene run verhogen naar 90. De 8 SQLite-only CastInt-escapes uit
+de baseline worden door MySQL gekilled; resterende ~11 escapes zijn
+sub-ms RoundingFamily + cache-TTL die niet zonder test-harness wijziging
+killable zijn.
+
+**Doc-updates (commit `pending`):**
+- `runbooks/infection-setup-plan.md` — pad 2-rij in §3 + §2-conclusie
+  bijgewerkt; `last_reviewed` → 22-04.
+- `reference/critical-paths-havuncore.md` — pad 2 meting bijgewerkt
+  met MySQL-gate referentie; `last_reviewed` → 22-04.
+
+**Test-validatie:** geen lokale test-run nodig — alle wijzigingen zijn
+CI-config + 1 test-tag. PR-trigger draait de eerste MySQL-job; bij
+groen kan de min-msi naar 90.
+
+**Resterende open items:**
+- Eerste groene `aiproxy-mysql-msi` run afwachten, dan PR met
+  `--min-msi=90` (volgende sessie).
+- Severity enum broader rollout (>10 files) — nog steeds niet-blokkerend.
+- minMsi 70 → 75 na kwartaal-cron run (01-07).
+
+---
+
 ## Sessie: 22 april 2026 (nacht-autonomie) — K&V systeem afgerond
 
 Henk sliep terwijl 3 agents + mijn werk parallel liepen. Plan volledig

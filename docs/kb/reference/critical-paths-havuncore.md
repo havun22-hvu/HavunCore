@@ -3,7 +3,7 @@ title: HavunCore — kritieke paden (audit-bewijs)
 type: reference
 scope: havuncore
 status: BINDING
-last_reviewed: 2026-04-20
+last_reviewed: 2026-04-22
 follows: "test-quality-policy.md"
 ---
 
@@ -84,12 +84,14 @@ isolatie, kost geld per call, mag niet lekken.
 - `tests/Unit/Services/CircuitBreakerTest.php`
 
 **Mutation-score target:** 90 %.
-**Huidige meting:** **81 %** (21-04-2026, commit `65b14f5` — zie
-`runbooks/infection-setup-plan.md` §2 voor Runs 1–7). Resterende 9 pp
-gap is Infection's false-positive floor op deze service (SQLite vs
-MySQL type-coercing op SUM/COUNT, `Http::fake` zonder timeout-
-enforcement, en sub-ms RoundingFamily-verschillen). Echte target
-vereist MySQL-integration fixture — zie runbook §2.
+**Huidige meting:** **81 % SQLite** (21-04, commit `65b14f5`) +
+**85 % MySQL-gate live** in CI (22-04, commit `fc0985f` + simplify
+`d0ac2e6`). De `aiproxy-mysql-msi` job in
+`.github/workflows/mutation-test.yml` draait Infection tegen
+`phpunit.mysql.xml` zodat mysqlnd's string-coercion op SUM/COUNT de
+8 SQLite-only CastInt-escapes killed; ramp naar 90 % zodra eerste run
+groen is. Zie `runbooks/aiproxy-mysql-fixture-plan.md` §"Stap 6" en
+`runbooks/infection-setup-plan.md` §2 voor de ramp-historie.
 
 ## Pad 3 — AutoFix pipeline
 
