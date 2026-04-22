@@ -11,7 +11,7 @@ last_check: 2026-04-22
 
 ## Samenvatting
 
-- Files gescand: **184**
+- Files gescand: **181**
 - 🔴 Critical: **7**
 - 🟠 High: **175**
 - 🟡 Medium: **2**

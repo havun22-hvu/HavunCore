@@ -17,18 +17,17 @@ use Carbon\CarbonImmutable;
  */
 class ObsoleteChecker
 {
+    private const STALE_MEDIUM_MONTHS = 6;
+
+    private const STALE_HIGH_MONTHS = 12;
+
+    private const STALE_CRITICAL_MONTHS = 24;
+
     /**
      * @return list<array<string,mixed>>
      */
     public function check(string $absolutePath): array
     {
-        // Self-exclude: auto-generated rapport-files moeten niet zichzelf flaggen.
-        if (str_ends_with($absolutePath, 'kb-audit-latest.md')
-            || str_ends_with($absolutePath, 'qv-scan-latest.md')
-            || str_ends_with($absolutePath, 'handover.md')) {
-            return [];
-        }
-
         $content = @file_get_contents($absolutePath);
         if ($content === false) {
             return [];
@@ -46,13 +45,14 @@ class ObsoleteChecker
         }
 
         $monthsOld = CarbonImmutable::now()->diffInMonths($lastCheck, true);
+        $detail = sprintf('last_check %s (%.0f mnd oud)', $lastCheck->toDateString(), $monthsOld);
 
-        if ($monthsOld > 24) {
-            $findings[] = $this->finding($absolutePath, Severity::Critical, sprintf('last_check %s (%.0f mnd oud)', $lastCheck->toDateString(), $monthsOld), 'Handmatige review of verwijdering');
-        } elseif ($monthsOld > 12) {
-            $findings[] = $this->finding($absolutePath, Severity::High, sprintf('last_check %s (%.0f mnd oud)', $lastCheck->toDateString(), $monthsOld), 'Update last_check of review inhoud');
-        } elseif ($monthsOld > 6) {
-            $findings[] = $this->finding($absolutePath, Severity::Medium, sprintf('last_check %s (%.0f mnd oud)', $lastCheck->toDateString(), $monthsOld), 'Binnenkort reviewen');
+        if ($monthsOld > self::STALE_CRITICAL_MONTHS) {
+            $findings[] = $this->finding($absolutePath, Severity::Critical, $detail, 'Handmatige review of verwijdering');
+        } elseif ($monthsOld > self::STALE_HIGH_MONTHS) {
+            $findings[] = $this->finding($absolutePath, Severity::High, $detail, 'Update last_check of review inhoud');
+        } elseif ($monthsOld > self::STALE_MEDIUM_MONTHS) {
+            $findings[] = $this->finding($absolutePath, Severity::Medium, $detail, 'Binnenkort reviewen');
         }
 
         return $findings;

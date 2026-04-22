@@ -24,13 +24,6 @@ class StructureChecker
      */
     public function check(string $absolutePath): array
     {
-        // Self-exclude auto-generated rapports.
-        if (str_ends_with($absolutePath, 'kb-audit-latest.md')
-            || str_ends_with($absolutePath, 'qv-scan-latest.md')
-            || str_ends_with($absolutePath, 'handover.md')) {
-            return [];
-        }
-
         $content = @file_get_contents($absolutePath);
         if ($content === false) {
             return [];

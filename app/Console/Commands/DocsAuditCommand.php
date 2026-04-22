@@ -20,58 +20,8 @@ class DocsAuditCommand extends Command
     {
         $projectArg = (string) ($this->option('project') ?? 'current');
 
-        if ($projectArg === 'current') {
-            return $this->auditCurrentProject($auditor, $renderer);
-        }
-
-        return $this->auditConfiguredProject($auditor, $renderer, $projectArg);
-    }
-
-    private function auditCurrentProject(DocsAuditor $auditor, AuditReportRenderer $renderer): int
-    {
-        $root = base_path();
-        $result = $auditor->audit(
-            $this->scanRootsFor($root),
-            $root
-        );
-
-        if ($this->option('json')) {
-            $this->output->writeln(json_encode($result, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-
-            return $this->exitCodeFor($result);
-        }
-
-        $report = $renderer->render($result, 'havuncore', $root);
-        $output = $this->option('output') ?: $root . '/docs/kb/reference/kb-audit-latest.md';
-        File::ensureDirectoryExists(dirname($output));
-        File::put($output, $report);
-
-        $this->info(sprintf(
-            'KB audit (havuncore): %d files, %d critical, %d high, %d medium, %d low',
-            $result['scanned'],
-            $result['totals']['critical'] ?? 0,
-            $result['totals']['high'] ?? 0,
-            $result['totals']['medium'] ?? 0,
-            $result['totals']['low'] ?? 0,
-        ));
-
-        return $this->exitCodeFor($result);
-    }
-
-    private function auditConfiguredProject(DocsAuditor $auditor, AuditReportRenderer $renderer, string $projectSlug): int
-    {
-        $projects = (array) config('quality-safety.projects', []);
-        $entry = $projects[$projectSlug] ?? null;
-        if (! is_array($entry) || ($entry['enabled'] ?? false) !== true) {
-            $this->error("Onbekend of uitgeschakeld project: {$projectSlug}");
-
-            return self::FAILURE;
-        }
-
-        $root = (string) ($entry['path'] ?? '');
-        if ($root === '' || ! is_dir($root)) {
-            $this->error("Pad bestaat niet voor {$projectSlug}: {$root}");
-
+        [$slug, $root] = $this->resolveProject($projectArg);
+        if ($root === null) {
             return self::FAILURE;
         }
 
@@ -83,20 +33,49 @@ class DocsAuditCommand extends Command
             return $this->exitCodeFor($result);
         }
 
-        $report = $renderer->render($result, $projectSlug, $root);
-        $output = $root . '/docs/kb/reference/kb-audit-latest.md';
+        $report = $renderer->render($result, $slug, $root);
+        $output = $this->option('output') ?: $root . '/docs/kb/reference/kb-audit-latest.md';
         File::ensureDirectoryExists(dirname($output));
         File::put($output, $report);
 
         $this->info(sprintf(
-            'KB audit (%s): %d files, %d critical, %d high',
-            $projectSlug,
+            'KB audit (%s): %d files, %d critical, %d high, %d medium, %d low',
+            $slug,
             $result['scanned'],
             $result['totals']['critical'] ?? 0,
             $result['totals']['high'] ?? 0,
+            $result['totals']['medium'] ?? 0,
+            $result['totals']['low'] ?? 0,
         ));
 
         return $this->exitCodeFor($result);
+    }
+
+    /**
+     * @return array{0:string,1:?string}  [slug, root] — root is null bij fout
+     */
+    private function resolveProject(string $projectArg): array
+    {
+        if ($projectArg === 'current') {
+            return ['havuncore', base_path()];
+        }
+
+        $projects = (array) config('quality-safety.projects', []);
+        $entry = $projects[$projectArg] ?? null;
+        if (! is_array($entry) || ($entry['enabled'] ?? false) !== true) {
+            $this->error("Onbekend of uitgeschakeld project: {$projectArg}");
+
+            return [$projectArg, null];
+        }
+
+        $root = (string) ($entry['path'] ?? '');
+        if ($root === '' || ! is_dir($root)) {
+            $this->error("Pad bestaat niet voor {$projectArg}: {$root}");
+
+            return [$projectArg, null];
+        }
+
+        return [$projectArg, $root];
     }
 
     /**

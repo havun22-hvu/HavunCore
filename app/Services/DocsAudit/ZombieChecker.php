@@ -22,6 +22,16 @@ use App\Enums\Severity;
 class ZombieChecker
 {
     /**
+     * Basename-set van alle class/interface/trait/enum-declaraties in app/.
+     * Geïnitialiseerd in de constructor via één tree-walk; daarna O(1)
+     * membership-test per check(). Voorkomt O(refs × files_php) per doc
+     * wanneer het project groeit.
+     *
+     * @var array<string,true>|null  null tot lazy-init
+     */
+    private ?array $classIndex = null;
+
+    /**
      * @param  string  $codebaseRoot  Absolute project root (e.g. D:/GitHub/HavunCore)
      */
     public function __construct(private readonly string $codebaseRoot)
@@ -35,13 +45,6 @@ class ZombieChecker
     {
         $content = @file_get_contents($absolutePath);
         if ($content === false) {
-            return [];
-        }
-
-        // Self-exclude en auto-gen files (geen waarde zombies daar te checken).
-        if (str_ends_with($absolutePath, 'kb-audit-latest.md')
-            || str_ends_with($absolutePath, 'qv-scan-latest.md')
-            || str_ends_with($absolutePath, 'handover.md')) {
             return [];
         }
 
@@ -90,7 +93,9 @@ class ZombieChecker
     private function extractArtisanCommands(string $content): array
     {
         $sigs = [];
-        preg_match_all('/`php artisan ([a-z][a-z0-9:_\-]+)/', $content, $m);
+        // Begrens op closing-backtick zodat `php artisan foo:bar args` niet
+        // als ongeldige "foo:bar args" wordt geparsed.
+        preg_match_all('/`php artisan ([a-z][a-z0-9:_\-]+)[^`]*`/', $content, $m);
         foreach ($m[1] as $sig) {
             $sigs[] = $sig;
         }
@@ -141,27 +146,47 @@ class ZombieChecker
 
     private function grepClassName(string $basename): bool
     {
-        // Quick file-based grep: find files die "class Basename" of
-        // "interface Basename" of "trait Basename" of "enum Basename" bevatten.
-        $pattern = '/\b(?:class|interface|trait|enum)\s+' . preg_quote($basename, '/') . '\b/';
+        return isset($this->classIndex()[$basename]);
+    }
 
+    /**
+     * Bouwt de class-index lazy on first call. Walk app/ één keer, regex-
+     * extract alle declared types, basename → true map. Geen FOLLOW_SYMLINKS
+     * (default) zodat een symlink-loop de walk niet kan ophangen.
+     *
+     * @return array<string,true>
+     */
+    private function classIndex(): array
+    {
+        if ($this->classIndex !== null) {
+            return $this->classIndex;
+        }
+
+        $appDir = $this->codebaseRoot . '/app';
+        if (! is_dir($appDir)) {
+            return $this->classIndex = [];
+        }
+
+        $index = [];
         $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(
-                $this->codebaseRoot . '/app',
-                \FilesystemIterator::SKIP_DOTS
-            )
+            new \RecursiveDirectoryIterator($appDir, \FilesystemIterator::SKIP_DOTS)
         );
         foreach ($iterator as $file) {
             if (! $file->isFile() || $file->getExtension() !== 'php') {
                 continue;
             }
             $src = @file_get_contents($file->getPathname());
-            if ($src !== false && preg_match($pattern, $src)) {
-                return true;
+            if ($src === false) {
+                continue;
+            }
+            if (preg_match_all('/\b(?:class|interface|trait|enum)\s+([A-Z][A-Za-z0-9_]*)/', $src, $m)) {
+                foreach ($m[1] as $name) {
+                    $index[$name] = true;
+                }
             }
         }
 
-        return false;
+        return $this->classIndex = $index;
     }
 
     /**

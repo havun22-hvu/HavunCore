@@ -40,8 +40,14 @@ class AuditReportRenderer
         }
         $lines[] = '';
 
+        // Groepeer één keer; voorkomt 5× array_filter over alle findings.
+        $grouped = [];
+        foreach ($result['findings'] as $f) {
+            $grouped[$f['severity'] ?? 'medium'][] = $f;
+        }
+
         foreach (Severity::cases() as $sev) {
-            $group = array_values(array_filter($result['findings'], fn ($f) => ($f['severity'] ?? '') === $sev->value));
+            $group = $grouped[$sev->value] ?? [];
             if ($group === []) {
                 continue;
             }

@@ -16,6 +16,19 @@ use App\Enums\Severity;
 class DocsAuditor
 {
     /**
+     * Auto-gegenereerde rapport-files skippen — ze zouden zichzelf als HIGH
+     * flaggen (missende frontmatter, korte lengte, etc.) en dat is geen
+     * actionable finding. Filtert in de orchestrator zodat detectors dumb
+     * blijven (single responsibility per check).
+     */
+    private const SELF_EXCLUDED_BASENAMES = [
+        'kb-audit-latest.md',
+        'qv-scan-latest.md',
+        'handover.md',
+    ];
+
+
+    /**
      * @param  array<int,string>  $scanRoots  Absolute directories to recurse (e.g. ['/path/docs', '/path/.claude'])
      * @param  string              $codebaseRoot  Absolute project root for zombie-check code-lookup
      * @return array{findings:list<array<string,mixed>>,totals:array<string,int>,scanned:int}
@@ -60,9 +73,13 @@ class DocsAuditor
                 new \RecursiveDirectoryIterator($root, \FilesystemIterator::SKIP_DOTS)
             );
             foreach ($iterator as $file) {
-                if ($file->isFile() && strtolower($file->getExtension()) === 'md') {
-                    $files[] = $file->getPathname();
+                if (! $file->isFile() || strtolower($file->getExtension()) !== 'md') {
+                    continue;
                 }
+                if (in_array($file->getFilename(), self::SELF_EXCLUDED_BASENAMES, true)) {
+                    continue;
+                }
+                $files[] = $file->getPathname();
             }
         }
         sort($files);
