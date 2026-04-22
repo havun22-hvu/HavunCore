@@ -2,8 +2,9 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
+use App\Enums\Priority;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 
 class ClaudeTask extends Model
 {
@@ -57,7 +58,13 @@ class ClaudeTask extends Model
 
     public function scopeByPriority(Builder $query): Builder
     {
-        return $query->orderByRaw("CASE priority WHEN 'urgent' THEN 1 WHEN 'high' THEN 2 WHEN 'normal' THEN 3 WHEN 'low' THEN 4 ELSE 5 END");
+        // Build the CASE expression from Priority enum so adding a new
+        // case (e.g. Critical) auto-extends the sort without touching SQL.
+        $whens = collect(Priority::cases())
+            ->map(fn (Priority $p) => "WHEN '{$p->value}' THEN {$p->sortWeight()}")
+            ->implode(' ');
+
+        return $query->orderByRaw("CASE priority {$whens} ELSE 5 END");
     }
 
     /**
