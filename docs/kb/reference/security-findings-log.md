@@ -16,3 +16,8 @@ scope: alle-projecten
 
 - [HIGH] **[high]** herdenkingsportaal/—: 1 test file(s) deleted in last 30 days
 - [HIGH] **[high]** judotoernooi/—: Form validation coverage 53% (112/213 write-routes)
+
+## 2026-04-22 16:38
+
+- [HIGH] **[high]** herdenkingsportaal/—: 1 test file(s) deleted in last 30 days
+- [HIGH] **[high]** judotoernooi/—: Form validation coverage 53% (112/213 write-routes)
