@@ -65,6 +65,15 @@ return [
             'path' => env('STUDIEPLANNER_MOBILE_LOCAL_PATH', 'D:/GitHub/Studieplanner'),
         ],
 
+        // Munus — docs-only specificatie/planning project. Geen Laravel,
+        // geen composer/npm/SSL/Observatory checks (auto-geskipt door
+        // afwezigheid van composer.json/package.json). Wel: docs:audit voor
+        // KB-onderhoud (markdown structure/links/zombie-refs).
+        'munus' => [
+            'enabled' => env('QV_MUNUS_ENABLED', true),
+            'path' => env('MUNUS_LOCAL_PATH', 'D:/GitHub/Munus'),
+        ],
+
         // Server-only entry: triggers the `server` health check (no path/url).
         // composer/npm/ssl/observatory are skipped automatically.
         'server-prod' => [
