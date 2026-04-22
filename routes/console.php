@@ -48,3 +48,6 @@ Schedule::command('qv:scan --only=debug-mode --json')->dailyAt('03:57');
 Schedule::command('qv:log')->dailyAt('03:27');
 // Verify critical-paths docs still point at existing tests (link-check only; no --run).
 Schedule::command('critical-paths:verify --all --json')->dailyAt('03:52');
+// Auto-refresh public handover.md from recent git log + latest qv:scan snapshot.
+// Runs after qv:log (03:27) so the V&K state reflects today's scheduled scans.
+Schedule::command('docs:handover')->dailyAt('04:00');

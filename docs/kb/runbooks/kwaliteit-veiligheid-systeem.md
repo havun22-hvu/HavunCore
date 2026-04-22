@@ -2,7 +2,7 @@
 title: Kwaliteit & Veiligheid (K&V) systeem
 type: runbook
 scope: alle-projecten
-last_check: 2026-04-19
+last_check: 2026-04-22
 ---
 
 # K&V-systeem (Kwaliteit & Veiligheid)
@@ -10,17 +10,62 @@ last_check: 2026-04-19
 > **Doel:** centrale, geautomatiseerde borging van kwaliteits- en veiligheidsnormen
 > voor **alle Havun-projecten**, zodat regressies én externe kwetsbaarheden niet
 > onopgemerkt blijven tussen sessies door.
+>
+> **Single source of truth.** Alle V&K-onderdelen worden hier vanaf gelinkt.
+> Vermijd duplicatie — werk de bron bij, niet kopieën.
+
+## Architectuur in één blik
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  NORMEN (wat is goed?)                                       │
+│  → havun-quality-standards.md (coverage, FormRequest, CSP)   │
+│  → test-quality-policy.md (3-laags model: critical/biz/glue) │
+│  → CLAUDE.md (6 Onschendbare Regels)                         │
+└─────────────────────────────────────────────────────────────┘
+                           │
+        ┌──────────────────┴──────────────────┐
+        ▼                                     ▼
+┌──────────────────┐                ┌──────────────────────────┐
+│ DETECTIE         │                │ BEWIJS / METING          │
+│ (vinden van      │                │ (test-kwaliteit per      │
+│  problemen)      │                │  kritieke pad)           │
+├──────────────────┤                ├──────────────────────────┤
+│ qv:scan (11 chk) │                │ Mutation-testing         │
+│ + scheduler      │                │ (Infection, CI matrix)   │
+│ + composer audit │                │ + per-pad MSI gates      │
+│ + npm audit      │                │ + maandelijkse cron      │
+│ + SSL/Observa-   │                │ + AIProxy MySQL real-    │
+│   tory/server/…  │                │   driver fixture-job     │
+└────────┬─────────┘                └─────────┬────────────────┘
+         │                                    │
+         ▼                                    ▼
+┌──────────────────┐                ┌──────────────────────────┐
+│ FINDINGS-LOGS    │                │ MUTATION-BASELINE        │
+│ • auto-append:   │                │ • critical-paths-        │
+│   security-      │                │   havuncore.md (gates)   │
+│   findings-      │                │ • infection-setup-       │
+│   log.md         │                │   plan.md (historie)     │
+│ • manueel cura-  │                │ • mutation-baseline-     │
+│   ted post-      │                │   2026-04-22.md          │
+│   mortem:        │                │   (per-pad MSI)          │
+│   security-      │                │                          │
+│   findings.md    │                │                          │
+└──────────────────┘                └──────────────────────────┘
+```
 
 ## Onderdelen (laagsgewijs)
 
 | Laag | Bestand / Systeem | Rol |
 |------|-------------------|-----|
-| **Normen** | `docs/kb/reference/havun-quality-standards.md` | Enterprise-baseline (coverage >80 %, Form Requests, CSP, etc.) |
+| **Normen** | `reference/havun-quality-standards.md` | Enterprise-baseline (coverage > 80 %, FormRequest, CSP, etc.) |
+| **Test-policy** | `reference/test-quality-policy.md` | 3-laags model: critical 100 % / business 70-85 % / glue 20-40 % |
 | **Policies** | `CLAUDE.md` — 6 Onschendbare Regels | Gedragsregels voor Claude |
-| **Findings-log** | `docs/kb/reference/security-findings.md` | Chronologische lijst van CVE's + fixes |
-| **Incidenten** | `docs/kb/reference/incidents.md` | Productie-incidenten + post-mortem |
-| **Runbooks** | `security-headers-check.md`, `security-findings-logging.md`, deze file | Hoe-te-doen-checks |
-| **Geautomatiseerd** | `qv:scan` (artisan) + Laravel scheduler | Dagelijkse/wekelijkse scans |
+| **Detectie** | `qv:scan` (artisan) + Laravel scheduler | 11 checks dagelijks/wekelijks (zie tabel hieronder) |
+| **Bewijs** | Infection mutation-testing CI | Per-pad MSI gates op kritieke paden (zie sectie *Mutation-testing*) |
+| **Logs (auto)** | `reference/security-findings-log.md` | Auto-append van `qv:log` na elke scheduled scan |
+| **Logs (manueel)** | `reference/security-findings.md` | Curated prose + lessen (single source voor post-mortem) |
+| **Incidenten** | `reference/incidents.md` | Productie-incidenten + post-mortem |
 | **Backups** | `config/havun-backup.php` | Data-veiligheid per project |
 | **Sessie-hooks** | `/start` command | Ad-hoc `composer audit` + `docs:issues` |
 
@@ -105,10 +150,47 @@ Off-minuten (`:07`, `:17`, `:27`, `:37`, `:47`) voorkomen dat Havun-cron samenva
 - **Curated post-mortem**: `docs/kb/reference/security-findings.md` — handmatig onderhouden met prose, lessen en fix-statussen. Auto-rapport is **alleen** raw data, de human log is de single source of truth voor post-mortem.
 - **Geen e-mail** (zie `feedback_no_email_notifications.md`) — in-app notificaties/observability zijn de norm.
 
+## Mutation-testing (bewijs-laag)
+
+Apart van `qv:scan` (detectie van bekende kwetsbaarheden) draait er een
+**Infection mutation-testing** pijplijn die meet of de bestaande tests
+wel echt regressies vangen. Coverage-% zegt of code geraakt wordt;
+MSI (Mutation Score Indicator) zegt of het ook getést wordt.
+
+**Per-pad gates** in `.github/workflows/mutation-test.yml` (matrix-job
+draait op elke PR + maandelijks via cron `0 3 1 * *`):
+
+| Pad | Gate | Bewijs |
+|-----|------|--------|
+| Vault | 85 | matrix-job groen |
+| AIProxy SQLite | **95** | per-mutator ignore-config voor 23 false-positives |
+| AIProxy MySQL real-driver | **95** (100 % feitelijk) | dedicated `mysql:8.0` service-job |
+| AutoFix | 82 | matrix-job groen |
+| DeviceTrust | 90 | 100 % MSI sinds 21-04 |
+| Observability | **95** | uitgebreide ignore-config voor env-bound mutators |
+| CriticalPaths-audit | 85 | 88-90 % range |
+| Baseline (full `app/Services`) | 60 / 65 covered | env-bound floor |
+
+**Ignore-config** in `infection-critical-paths.json5`: per-mutator + per-method
+ignores voor mutaties die **niet killable zijn** zonder externe mocks
+(Http timeouts, Cache TTL, sub-ms timing, env-bound floating-point,
+SQLite SUM/COUNT type-coercion). Elke ignore heeft een `//`-comment met
+WAAROM en WAAR alternatief bewijs zit. **Geen coverage-padding** — alleen
+documenteren wat technisch unkillable is.
+
+**Cadans:**
+- Elke PR die `app/`/`config/`/`tests/` raakt → matrix-jobs (snel, scherpe gate)
+- 1e van elke maand 03:00 UTC → full-scope baseline (cron, breed beeld)
+
+**Detail-runbooks:**
+- `reference/critical-paths-havuncore.md` — wat is kritiek + per-pad target
+- `runbooks/infection-setup-plan.md` — historie + per-pad scores
+- `runbooks/aiproxy-mysql-fixture-plan.md` — MySQL real-driver rationale
+- `reference/mutation-baseline-2026-04-22.md` — laatste full baseline-meting
+
 ## Wat scant `qv:scan` (nog) niet?
 
 - OWASP ZAP / Burp automated DAST — ad-hoc via runbook
-- PHPUnit mutation-score — apart traject (`mutation-baseline-2026-04-17.md`)
 - Memory / CPU baselines — al gedekt door `observability:baseline`
 
 ## Server health — vereisten
@@ -129,7 +211,22 @@ Drempelwaardes en mount-filters (`/snap`, `/dev`, `/proc`, …) staan in `config
 
 ## Zie ook
 
-- `docs/kb/reference/havun-quality-standards.md` — waarom deze normen
-- `docs/kb/runbooks/security-findings-logging.md` — wat loggen, hoe structureren
-- `docs/kb/runbooks/security-headers-check.md` — CSP / Mozilla Observatory-detail
-- `config/havun-backup.php` — data-veiligheid (complement)
+**Normen & policies:**
+- `reference/havun-quality-standards.md` — waarom deze normen
+- `reference/test-quality-policy.md` — 3-laags test-model
+- `CLAUDE.md` — 6 Onschendbare Regels
+
+**Detectie (qv:scan):**
+- `runbooks/security-findings-logging.md` — wat loggen, hoe structureren
+- `runbooks/security-headers-check.md` — CSP / Mozilla Observatory-detail
+
+**Bewijs (mutation-testing):**
+- `reference/critical-paths-havuncore.md` — kritieke paden + targets
+- `runbooks/infection-setup-plan.md` — setup-status & historie
+- `runbooks/aiproxy-mysql-fixture-plan.md` — MySQL real-driver rationale
+
+**Data-veiligheid:**
+- `config/havun-backup.php` — backup-config per project
+
+**Governance (apart):**
+- `reference/security.md` — credentials/repos/GitGuardian status
