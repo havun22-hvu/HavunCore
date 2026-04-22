@@ -62,6 +62,7 @@ last_check: 2026-04-22
 | **Test-policy** | `reference/test-quality-policy.md` | 3-laags model: critical 100 % / business 70-85 % / glue 20-40 % |
 | **Policies** | `CLAUDE.md` — 6 Onschendbare Regels | Gedragsregels voor Claude |
 | **Detectie** | `qv:scan` (artisan) + Laravel scheduler | 11 checks dagelijks/wekelijks (zie tabel hieronder) |
+| **KB onderhoud** | `docs:audit` (artisan, wekelijks) + `/kb-audit` (Claude, on-demand) | Markdown-docs auditen op obsolete/zombie/structure/links — zie sectie *KB-onderhoud* |
 | **Bewijs** | Infection mutation-testing CI | Per-pad MSI gates op kritieke paden (zie sectie *Mutation-testing*) |
 | **Logs (auto)** | `reference/security-findings-log.md` | Auto-append van `qv:log` na elke scheduled scan |
 | **Logs (manueel)** | `reference/security-findings.md` | Curated prose + lessen (single source voor post-mortem) |
@@ -149,6 +150,50 @@ Off-minuten (`:07`, `:17`, `:27`, `:37`, `:47`) voorkomen dat Havun-cron samenva
 - **Markdown-rapport**: `docs/kb/reference/qv-scan-latest.md` (overschreven door `qv:log` na elke scheduled scan — bevat HIGH/CRIT findings + totals + errors)
 - **Curated post-mortem**: `docs/kb/reference/security-findings.md` — handmatig onderhouden met prose, lessen en fix-statussen. Auto-rapport is **alleen** raw data, de human log is de single source of truth voor post-mortem.
 - **Geen e-mail** (zie `feedback_no_email_notifications.md`) — in-app notificaties/observability zijn de norm.
+
+## KB-onderhoud (docs als product)
+
+Markdown-documentatie verdient dezelfde discipline als code: geen
+museum-stukken, geen broken links, geen obsolete versie-claims. Twee
+samenwerkende lagen:
+
+### Mechanische laag — `php artisan docs:audit`
+
+Wekelijkse cron (zondag 04:30 UTC). Detector-passes per MD-file:
+
+| Detector | Vindt | Severity-mapping |
+|----------|-------|-----|
+| `ObsoleteChecker` | `last_check:` te oud | 6-12 mnd = Medium, 12-24 mnd = High, > 24 mnd of `status: DEPRECATED` = Critical |
+| `StructureChecker` | Missende frontmatter, geen H1, lege sections, unbalanced code-fences, te grote/kleine files | High / Low / Medium |
+| `LinkChecker` | Broken interne markdown-links | Critical |
+| `ZombieChecker` | Backtick-quoted class/method/artisan refs die niet meer in codebase bestaan | High |
+
+Self-exclude: `kb-audit-latest.md`, `qv-scan-latest.md`, `handover.md`
+worden gefilterd op collect-niveau (zouden zichzelf flaggen).
+
+Output:
+- Per project: `docs/kb/reference/kb-audit-latest.md` (overschreven)
+- Totals zichtbaar in dagelijkse `docs/handover.md` (DocsHandover leest het)
+- Bij CRIT/HIGH: batch-approval blok met `rm`-commands + git-status guard
+
+CLI:
+```bash
+php artisan docs:audit                       # current project (HavunCore)
+php artisan docs:audit --project=havunadmin  # cross-portfolio
+php artisan docs:audit --json                # voor scripting
+```
+
+### Semantic laag — `/kb-audit` (Claude command)
+
+On-demand door Henk. Doet wat artisan niet kan:
+- Overlap-detectie tussen docs (business-vs-tech is OK, echte
+  duplicatie markeren)
+- Referentie-integriteit: vergelijken `.claude/rules.md` met de canonical
+  6 Onschendbare Regels in `CLAUDE.md`
+- Cross-doc inconsistenties (versies, poorten, paden) tegen canonical sources
+
+Combineert met artisan-output tot rapport + batch-approval voor delete-acties.
+Verspreid in alle 11 portfolio-projecten (`.claude/commands/kb-audit.md`).
 
 ## Mutation-testing (bewijs-laag)
 
