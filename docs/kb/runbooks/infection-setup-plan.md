@@ -191,7 +191,7 @@ minder dan 7 dagen tot expiry".
 | 2 AIProxy | 90 % | **81 %** SQLite (floor) / **100 %** MySQL real-driver (22-04, run `24766237747`, gate 95) | Target ruim gehaald via MySQL fixture; zie `aiproxy-mysql-fixture-plan.md` |
 | 3 AutoFix | 85 % | **87 %** (22-04, commit `9bc30df` — 6 runs, +24 tests, type-fix in `AutofixProposal::isRateLimited`) | target gehaald |
 | 4 QR Auth / Device Trust | 90 % | **100 %** (21-04 sessie, commit `0906ade` — 67/67 killed) | target ruim gehaald |
-| 5 Observability | 85 % | **100 %** (21-04, commits `f23b17d` + `40541fd` — 220/220 killed, 0 escaped) | — (target ruim gehaald; fixture-tests voor `getDatabaseSize()`, invariant-asserts voor `getSystemHealth()`) |
+| 5 Observability | 85 % | **100 %** lokaal (220/220, 22-04 commit `a52f0b9` +4 tests) / **61 %** CI (gate 60) | Lokaal-CI delta = `getSystemHealth()` `disk_free_space`/`memory_get_usage` mutators die op Windows toevallig naar dezelfde rounded value oplossen, op Linux niet. Follow-up: exact-disk-size fixture of Infection-ignore voor FilesystemMath-mutators. |
 | 7 Critical-paths audit | 85 % | **88,89 %** (21-04, commit `pending` — 176/198 killed) | target gehaald; `app/Console` toegevoegd aan `infection-critical-paths.json5` scope |
 
 ### Pad 7 run-log (21-04-2026)

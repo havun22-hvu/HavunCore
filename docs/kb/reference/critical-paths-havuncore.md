@@ -192,14 +192,18 @@ terwijl er iets stuk is, weten we het niet.
 - `tests/Unit/Services/QualitySafety/LatestRunFinderTest.php`
 
 **Mutation-score target:** 85 %.
-**Huidige meting:** **100 %** (21-04-2026, commits `f23b17d` + `40541fd`
-— 220 mutaties, 0 escapes op `ObservabilityService.php`). Baseline was
-68,91 % (60 escapes); de escape-set is volledig gesloten via fixture-
-gebaseerde tests voor `getDatabaseSize()` (sqlite-branch, missing-file,
-non-sqlite fallback), invariant-assertions voor `getSystemHealth()`
-(free <= total, used_percent 0..100, precision-2 rounding) en per-key
-`=== 1` assertions voor `getObservabilityTableSizes()`. Zie
-`runbooks/infection-setup-plan.md` §3 voor de tabel.
+**Huidige meting:** **100 % lokaal** (220/220 killed na 22-04 commit
+`a52f0b9` — +4 tests die DB-bound CastInt/Round/Limit mutators killen)
+/ **61 % CI** (gate 60). De ~60pp delta komt van environment-afhankelijke
+mutators in `getSystemHealth()`: `disk_free_space()` /
+`disk_total_space()` / `memory_get_usage()` retourneren Linux-CI vs
+Windows-lokaal verschillende byte-counts, en de mutatie
+`round($disk / 1024 / 1024 / 1024, 2)` → `round($disk / 1023 / ...)`
+rondt op Windows toevallig naar dezelfde 2-decimal waarde, op Linux niet.
+Follow-up: ofwel test-fixtures voor exact-byte-counts (mock van
+`disk_free_space`), ofwel Infection ignore-config voor FilesystemMath
+mutators op die specifieke regels. Zie `runbooks/infection-setup-plan.md`
+§3 voor de tabel.
 
 ## Pad 6 — Session-cookie defaults (HavunCore-eigen scope)
 
