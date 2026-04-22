@@ -27,11 +27,18 @@ class SeverityTest extends TestCase
         $this->assertLessThan(Severity::Info->sortWeight(), Severity::Low->sortWeight());
     }
 
-    public function test_icon_returns_non_empty_string_for_every_case(): void
+    public function test_icon_returns_distinct_value_per_case(): void
     {
-        foreach (Severity::cases() as $case) {
-            $this->assertNotSame('', $case->icon(), "Icon missing for {$case->name}");
-        }
+        // Distinct icons per severity — kills MatchArmRemoval mutations
+        // and prevents accidental collapse of two cases to the same icon.
+        $this->assertSame('🔴', Severity::Critical->icon());
+        $this->assertSame('🟠', Severity::High->icon());
+        $this->assertSame('🟡', Severity::Medium->icon());
+        $this->assertSame('🔵', Severity::Low->icon());
+        $this->assertSame('⚪', Severity::Info->icon());
+
+        $icons = array_map(fn (Severity $s) => $s->icon(), Severity::cases());
+        $this->assertCount(count($icons), array_unique($icons), 'Each severity must have a unique icon');
     }
 
     #[DataProvider('safeProvider')]

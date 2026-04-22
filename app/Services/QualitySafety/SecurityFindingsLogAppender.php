@@ -2,6 +2,7 @@
 
 namespace App\Services\QualitySafety;
 
+use App\Enums\Severity;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -41,7 +42,7 @@ MD;
 
         $critHigh = array_values(array_filter(
             $findings,
-            fn ($f) => in_array($f['severity'] ?? '', ['critical', 'high'], true)
+            fn ($f) => in_array($f['severity'] ?? '', [Severity::Critical->value, Severity::High->value], true)
         ));
 
         if (empty($critHigh)) {
@@ -89,7 +90,7 @@ MD;
     private function renderFindingLine(array $f): string
     {
         $severity = (string) ($f['severity'] ?? 'unknown');
-        $icon = $severity === 'critical' ? '[CRIT]' : '[HIGH]';
+        $icon = $severity === Severity::Critical->value ? '[CRIT]' : '[HIGH]';
 
         $project = (string) ($f['project'] ?? '—');
         $subject = (string) ($f['package'] ?? $f['host'] ?? '—');

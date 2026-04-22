@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\Severity;
 use App\Services\QualitySafety\QualitySafetyScanner;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -89,13 +90,7 @@ class QualitySafetyScanCommand extends Command
         $this->newLine();
 
         foreach ($run['findings'] as $finding) {
-            $icon = match ($finding['severity']) {
-                'critical' => '🔴',
-                'high' => '🟠',
-                'medium' => '🟡',
-                'low' => '🔵',
-                default => '⚪',
-            };
+            $icon = Severity::safe((string) ($finding['severity'] ?? ''))->icon();
             $this->line("{$icon} [{$finding['severity']}] {$finding['project']}/{$finding['check']}: {$finding['message']}");
         }
 

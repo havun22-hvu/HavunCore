@@ -22,9 +22,11 @@ enum Severity: string
     public function icon(): string
     {
         return match ($this) {
-            self::Critical, self::High => '🔴',
+            self::Critical => '🔴',
+            self::High => '🟠',
             self::Medium => '🟡',
-            self::Low, self::Info => '🟢',
+            self::Low => '🔵',
+            self::Info => '⚪',
         };
     }
 
