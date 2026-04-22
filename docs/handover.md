@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Apr 22, 2026 1:51 PM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Apr 22, 2026 5:58 PM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,21 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-04-22 | `e5e1f31` | docs(kb): werkwijze-verslag V&K HavunCore — point-in-time 22-04 |
+| 2026-04-22 | `f443733` | test(docintel): enforce Http::preventStrayRequests in trait setUp |
+| 2026-04-22 | `a045428` | revert(ci): re-add --exclude-group — doc-intel hang persists after first fix |
+| 2026-04-22 | `9a15248` | fix(ci): root-cause doc-intel CI-hang — Http::fake missing in old test |
+| 2026-04-22 | `ce2887a` | revert(ci): re-add --exclude-group=doc-intelligence — CI hang reproduced |
+| 2026-04-22 | `1ff1a66` | ci(coverage): unlock doc-intel tests + ramp gate 70 -> 90 (actual 93.4%) |
+| 2026-04-22 | `a466ce2` | docs(coverage): document why 70 -> 80 ramp is blocked by doc-intel hang |
+| 2026-04-22 | `41b3441` | refactor(observability): re-apply Severity enum rollout (now MSI-safe) |
+| 2026-04-22 | `e1a0f12` | docs(enums): mark severity/loglevel/priority taxonomies COMPLETED |
+| 2026-04-22 | `78fa93d` | refactor(enums): extract Priority enum from ClaudeTask::scopeByPriority |
+| 2026-04-22 | `59a6c83` | refactor(enums): extract LogLevel enum from ErrorLog::determineSeverity |
+| 2026-04-22 | `2459570` | docs(kb): publish HavunAdmin Alpine CSP migration plan |
+| 2026-04-22 | `7493ddc` | ci(coverage): ramp HavunCore minimum 50 -> 70 (actual is 75.2%) |
+| 2026-04-22 | `ac25d20` | refactor(severity): unify icon-mapping in Severity enum + roll into 2 callers |
+| 2026-04-22 | `aa1c375` | fix(docs:handover): read JSON snapshot directly + add overflow indicator |
 | 2026-04-22 | `aeaab1e` | feat(docs): auto-generated handover.md + V&K landing page modernized |
 | 2026-04-22 | `32f2fb6` | chore(qv): refresh KB snapshot — 2 HIGH (beide bekend, geen actie) |
 | 2026-04-22 | `e5890de` | ci(infection): switch baseline cron from quarterly to monthly |
@@ -204,7 +219,7 @@
 
 **Totals:** critical 0 | high 2 | medium 0 | low 0
 
-_Snapshot timestamp: 2026-04-22T12:39:51+02:00_
+_Snapshot timestamp: 2026-04-22T16:38:17+02:00_
 
 **HIGH/CRITICAL findings:**
 

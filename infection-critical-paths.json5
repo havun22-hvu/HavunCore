@@ -63,6 +63,8 @@
         },
         "DecrementInteger": {
             "ignore": [
+                // Mirror van IncrementInteger — dezelfde reasons gelden voor
+                // -1 zoals voor +1 op die literal-defaults/timeouts/TTLs.
                 "App\\Services\\AIProxyService::chat",
                 "App\\Services\\AIProxyService::checkRateLimit",
                 "App\\Services\\AIProxyService::logUsage",
@@ -133,6 +135,8 @@
         },
         "ConcatOperandRemoval": {
             "ignore": [
+                // Mirror van Concat — `'%' . $val` operand droppen leidt
+                // tot hetzelfde syntactisch-invalide LIKE-pattern.
                 "App\\Services\\ObservabilityService::getErrors"
             ]
         },
