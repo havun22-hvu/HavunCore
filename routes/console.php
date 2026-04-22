@@ -51,3 +51,6 @@ Schedule::command('critical-paths:verify --all --json')->dailyAt('03:52');
 // Auto-refresh public handover.md from recent git log + latest qv:scan snapshot.
 // Runs after qv:log (03:27) so the V&K state reflects today's scheduled scans.
 Schedule::command('docs:handover')->dailyAt('04:00');
+// Wekelijkse KB-audit (zondag 04:30 — na za test-erosion 05:37 op zaterdag,
+// voor ma-SSL 04:07). Rapport in docs/kb/reference/kb-audit-latest.md.
+Schedule::command('docs:audit')->weeklyOn(0, '04:30');

@@ -49,6 +49,32 @@ class DocsHandoverCommand extends Command
     }
 
     /**
+     * Extract totals uit kb-audit-latest.md frontmatter/samenvatting zodat
+     * handover direct toont of er CRIT/HIGH KB-issues zijn. Zelfde pattern
+     * als latestQvSummary maar dan voor het wekelijkse audit-rapport.
+     *
+     * @return array{critical:int,high:int,medium:int,low:int}|null
+     */
+    private function latestKbAuditTotals(): ?array
+    {
+        $path = base_path('docs/kb/reference/kb-audit-latest.md');
+        if (! File::exists($path)) {
+            return null;
+        }
+        $raw = File::get($path);
+
+        $totals = ['critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0];
+        foreach ($totals as $sev => $_) {
+            $pattern = sprintf('/- .*%s: \*\*(\d+)\*\*/i', preg_quote($sev, '/'));
+            if (preg_match($pattern, $raw, $m)) {
+                $totals[$sev] = (int) $m[1];
+            }
+        }
+
+        return $totals;
+    }
+
+    /**
      * @return list<array{hash:string,subject:string,date:string}>
      */
     protected function recentCommits(int $days): array
@@ -171,6 +197,24 @@ class DocsHandoverCommand extends Command
             }
         }
         $lines[] = '';
+
+        $auditTotals = $this->latestKbAuditTotals();
+        if ($auditTotals !== null) {
+            $lines[] = '## KB audit (laatste wekelijkse run)';
+            $lines[] = '';
+            $lines[] = sprintf(
+                '**Totals:** critical %d | high %d | medium %d | low %d',
+                $auditTotals['critical'],
+                $auditTotals['high'],
+                $auditTotals['medium'],
+                $auditTotals['low']
+            );
+            if ($auditTotals['critical'] + $auditTotals['high'] > 0) {
+                $lines[] = '';
+                $lines[] = '_Zie `docs/kb/reference/kb-audit-latest.md` voor detail._';
+            }
+            $lines[] = '';
+        }
 
         $lines[] = '## Verdiepende bronnen';
         $lines[] = '';

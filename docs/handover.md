@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Apr 22, 2026 5:58 PM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Apr 22, 2026 6:25 PM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,7 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-04-22 | `0c1ac9f` | test(meta): guard that Infection ignores keep their WHY-comments |
 | 2026-04-22 | `e5e1f31` | docs(kb): werkwijze-verslag V&K HavunCore — point-in-time 22-04 |
 | 2026-04-22 | `f443733` | test(docintel): enforce Http::preventStrayRequests in trait setUp |
 | 2026-04-22 | `a045428` | revert(ci): re-add --exclude-group — doc-intel hang persists after first fix |
@@ -225,6 +226,12 @@ _Snapshot timestamp: 2026-04-22T16:38:17+02:00_
 
 - **[HIGH]** `herdenkingsportaal/test-erosion` — Recently deleted: tests/Unit/XrpPaymentServiceCoverage2Test.php
 - **[HIGH]** `judotoernooi/forms` — 53% form-validation coverage (7 FormRequest + 105 inline ::validate vs 213 write-routes)
+
+## KB audit (laatste wekelijkse run)
+
+**Totals:** critical 7 | high 175 | medium 2 | low 238
+
+_Zie `docs/kb/reference/kb-audit-latest.md` voor detail._
 
 ## Verdiepende bronnen
 
