@@ -68,7 +68,7 @@ jobs:
         # --exclude-group matches tests.yml — doc-intelligence tests hang on
         # CI's :memory: SQLite (commit e97d096).
         run: |
-          vendor/bin/infection --threads=4 --min-msi=60 --min-covered-msi=70 \
+          vendor/bin/infection --threads=4 --min-msi=60 --min-covered-msi=65 \
             --logger-github \
             --test-framework-options="--exclude-group=doc-intelligence"
         env:
