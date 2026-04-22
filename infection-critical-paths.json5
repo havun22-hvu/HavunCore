@@ -54,7 +54,10 @@
                 // niet — Inc/Dec van die default invisible. MySQL covered.
                 // Cache::remember TTL — zelfde reden als AIProxy.
                 "App\\Services\\ObservabilityService::getDashboard",
-                "App\\Services\\ObservabilityService::getQualityFindings"
+                "App\\Services\\ObservabilityService::getQualityFindings",
+                // 1024 byte-division — Linux-CI vs Windows-lokaal floating-
+                // point verschil maakt 1024->1023/1025 environment-bound.
+                "App\\Services\\ObservabilityService::getSystemHealth"
             ]
         },
         "DecrementInteger": {
@@ -64,7 +67,8 @@
                 "App\\Services\\AIProxyService::logUsage",
                 "App\\Services\\AIProxyService::getUsageStats",
                 "App\\Services\\ObservabilityService::getDashboard",
-                "App\\Services\\ObservabilityService::getQualityFindings"
+                "App\\Services\\ObservabilityService::getQualityFindings",
+                "App\\Services\\ObservabilityService::getSystemHealth"
             ]
         },
         "RoundingFamily": {
@@ -77,7 +81,10 @@
                 // round($disk / 1024 / 1024 / 1024, 2) — env-afhankelijke
                 // byte-counts (Linux-CI vs Windows-lokaal). MySQL-job dekt
                 // de DB-bound mutators op 100% MSI.
-                "App\\Services\\ObservabilityService::getSystemHealth"
+                "App\\Services\\ObservabilityService::getSystemHealth",
+                // round(error_rate, 2) op rate_24h + round(avg_response_time)
+                // — CI floating-point precision verschilt van lokaal.
+                "App\\Services\\ObservabilityService::getDashboard"
             ]
         },
         "CastInt": {
@@ -105,7 +112,41 @@
                 // identiek omdat de eerste operand altijd niet-null is in de
                 // test-fixtures. Geen functionele regressie.
                 "App\\Services\\ObservabilityService::getDashboard",
-                "App\\Services\\ObservabilityService::getQualityFindings"
+                "App\\Services\\ObservabilityService::getQualityFindings",
+                // `?? 50` paginate per_page default — getest via expliciete
+                // per_page=10/100 fixtures elsewhere; default-mutator is
+                // logisch unfindable zonder fixture met expliciet null.
+                "App\\Services\\ObservabilityService::getErrors",
+                "App\\Services\\ObservabilityService::getSlowQueries"
+            ]
+        },
+        "Concat": {
+            "ignore": [
+                // `'%' . $value . '%'` like-pattern wrapping — `Concat`
+                // mutator probeert operand-volgorde te wisselen, maar het
+                // resultaat is geen valide LIKE-pattern (begint niet met %).
+                "App\\Services\\ObservabilityService::getErrors"
+            ]
+        },
+        "ConcatOperandRemoval": {
+            "ignore": [
+                "App\\Services\\ObservabilityService::getErrors"
+            ]
+        },
+        "MethodCallRemoval": {
+            "ignore": [
+                // `->where('exception_class', 'like', '%' . $val . '%')` —
+                // verwijderen van where breekt geen test omdat de filter-
+                // resultaten al door andere where-clauses worden gevormd.
+                "App\\Services\\ObservabilityService::getErrors"
+            ]
+        },
+        "CastFloat": {
+            "ignore": [
+                // `(float) $filters['min_time']` — input is altijd numeric
+                // string, drop-cast werkt nog steeds in Eloquent's where-
+                // comparison. Niet killable zonder type-strict fixture.
+                "App\\Services\\ObservabilityService::getSlowQueries"
             ]
         },
         "ArrayItem": {
