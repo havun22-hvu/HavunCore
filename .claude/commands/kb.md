@@ -1,3 +1,10 @@
+---
+title: Kennisbank Zoeken
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Kennisbank Zoeken
 
 > Zoek in de centrale HavunCore kennisbank naar informatie over de vorige vraag/opmerking.

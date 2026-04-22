@@ -1,3 +1,10 @@
+---
+title: Knowledge Base Index
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Knowledge Base Index
 
 > HavunCore bevat ALLEEN gedeelde resources.

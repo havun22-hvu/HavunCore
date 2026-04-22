@@ -1,3 +1,10 @@
+---
+title: Controller Splitting Pattern
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Controller Splitting Pattern
 
 > **Probleem:** Fat controller met 800+ regels is ononderhoudbaar en moeilijk testbaar.

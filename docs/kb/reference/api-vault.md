@@ -1,3 +1,10 @@
+---
+title: Vault API Reference
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Vault API Reference
 
 > Centraal secrets & config management
@@ -63,4 +70,4 @@ Content-Type: application/json
 ## Related
 
 - HavunCore - Host van Vault
-- [.claude/context.md](/.claude/context.md) - Credentials
+- [.claude/context.md](../../../.claude/context.md) - Credentials

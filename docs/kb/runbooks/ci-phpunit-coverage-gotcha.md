@@ -1,3 +1,10 @@
+---
+title: CI Gotcha: PHPUnit 11 Auto-Coverage Timeout
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # CI Gotcha: PHPUnit 11 Auto-Coverage Timeout
 
 > **Datum:** 13 april 2026  

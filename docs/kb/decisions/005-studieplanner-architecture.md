@@ -1,3 +1,10 @@
+---
+title: Decision 005: Studieplanner Architecture
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Decision 005: Studieplanner Architecture
 
 **Datum:** 22 december 2025

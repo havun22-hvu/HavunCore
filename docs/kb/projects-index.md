@@ -1,3 +1,10 @@
+---
+title: Projects Index
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Projects Index
 
 > Overzicht van alle Havun projecten (bijgewerkt: 11 maart 2026)

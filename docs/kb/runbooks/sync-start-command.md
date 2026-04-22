@@ -1,3 +1,10 @@
+---
+title: Runbook: Start-command sync naar alle projecten
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Start-command sync naar alle projecten
 
 > **Doel:** Alle projecten gebruiken dezelfde /start command.

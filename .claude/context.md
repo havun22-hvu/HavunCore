@@ -1,3 +1,10 @@
+---
+title: HavunCore Context
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # HavunCore Context
 
 > Overzicht van het project. Details in aparte bestanden.

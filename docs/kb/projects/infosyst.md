@@ -1,3 +1,10 @@
+---
+title: Project: Infosyst
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Project: Infosyst
 
 **URL:** https://infosyst.havun.nl (read-only wiki)

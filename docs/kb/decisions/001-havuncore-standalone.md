@@ -1,3 +1,10 @@
+---
+title: ADR-001: HavunCore als Standalone App
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # ADR-001: HavunCore als Standalone App
 
 > Architecture Decision Record

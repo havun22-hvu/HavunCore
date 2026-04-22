@@ -1,3 +1,10 @@
+---
+title: Havun Software Development — Werkwijze & Kwaliteitsborging
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Havun Software Development — Werkwijze & Kwaliteitsborging
 
 **Document:** Ter beoordeling door technische derde partij

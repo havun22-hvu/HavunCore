@@ -1,3 +1,10 @@
+---
+title: Verbeterplan Q2 2026 — Havun Software Development
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Verbeterplan Q2 2026 — Havun Software Development
 
 > **Status (17-04-2026):** Cadans omgezet van kwartaal-deadlines naar **wekelijks

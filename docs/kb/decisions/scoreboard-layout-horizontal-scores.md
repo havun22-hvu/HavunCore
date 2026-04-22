@@ -1,3 +1,10 @@
+---
+title: Beslissing: Scoreboard layout — horizontale scores in landscape/LCD
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Beslissing: Scoreboard layout — horizontale scores in landscape/LCD
 
 **Datum:** 2026-04-01

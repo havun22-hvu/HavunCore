@@ -1,3 +1,10 @@
+---
+title: Unified Login System
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Unified Login System
 
 > **Status:** Production (alle Havun-applicaties: web + native)

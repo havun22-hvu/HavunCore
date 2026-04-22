@@ -1,3 +1,10 @@
+---
+title: Runbook: Security Headers & Mozilla Observatory
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Security Headers & Mozilla Observatory
 
 > **Frequentie:** Bij elke deploy + kwartaallijkse volledige check

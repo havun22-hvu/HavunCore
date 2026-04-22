@@ -1,3 +1,10 @@
+---
+title: Update Command - Tussentijdse MD Check
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Update Command - Tussentijdse MD Check
 
 > **Gebruik:** Tijdens langere sessies of na significante wijzigingen

@@ -1,3 +1,10 @@
+---
+title: Runbook: Deploy
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Deploy
 
 > Hoe deploy ik naar production?

@@ -1,3 +1,10 @@
+---
+title: Runbook: Op reis werkwijze (USB)
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Op reis werkwijze (USB)
 
 > **Doel:** Op een willekeurige PC Cursor installeren, repos pullen en direct aan de slag — zonder Bitwarden of andere lookups. Alles wat nodig is vloeit vanaf de USB in één keer in.

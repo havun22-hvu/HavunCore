@@ -1,3 +1,10 @@
+---
+title: Unified Login Procedure - Laravel Projecten
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Unified Login Procedure - Laravel Projecten
 
 > **Status:** Actieve standaard voor alle Havun Laravel-projecten

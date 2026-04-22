@@ -1,3 +1,10 @@
+---
+title: Model Traits Pattern
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Model Traits Pattern
 
 > **Probleem:** Fat model met 500+ regels en meerdere concerns door elkaar.

@@ -1,3 +1,10 @@
+---
+title: EU Compliance Checklist — Online Diensten
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # EU Compliance Checklist — Online Diensten
 
 > Wettelijke verplichtingen voor Havun projecten met online diensten/betalingen.

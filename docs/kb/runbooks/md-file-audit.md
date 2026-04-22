@@ -1,3 +1,10 @@
+---
+title: MD File Audit - Runbook
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # MD File Audit - Runbook
 
 > **Frequentie:** 2x per week + op verzoek

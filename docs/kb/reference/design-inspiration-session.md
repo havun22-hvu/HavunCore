@@ -1,3 +1,10 @@
+---
+title: Design Inspiratie: Session.org
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Design Inspiratie: Session.org
 
 > Minimalistisch, rustig design met moderne uitstraling

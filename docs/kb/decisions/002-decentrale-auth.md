@@ -1,3 +1,10 @@
+---
+title: ADR-002: Decentrale Authenticatie
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # ADR-002: Decentrale Authenticatie
 
 > Architecture Decision Record

@@ -1,3 +1,10 @@
+---
+title: Decision: Reverb Broadcasting Safeguards
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Decision: Reverb Broadcasting Safeguards
 
 **Datum:** 5 april 2026

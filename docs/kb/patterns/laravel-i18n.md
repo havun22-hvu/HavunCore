@@ -1,3 +1,10 @@
+---
+title: Laravel i18n Pattern — Meertaligheid
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Laravel i18n Pattern — Meertaligheid
 
 > **Status:** Bewezen in productie (JudoToernooi)

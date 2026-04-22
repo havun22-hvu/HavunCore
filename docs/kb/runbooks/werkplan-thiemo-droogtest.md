@@ -1,3 +1,10 @@
+---
+title: Noodplan Websites — Thiemo & Mawin
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Noodplan Websites — Thiemo & Mawin
 
 > **Wat is dit?** Stap-voor-stap instructies voor als papa niet bereikbaar is en er iets mis is met de websites.

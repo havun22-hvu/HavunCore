@@ -1,3 +1,10 @@
+---
+title: PostcodeService - Adres Lookup
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # PostcodeService - Adres Lookup
 
 > Nederlandse postcode + huisnummer → volledig adres

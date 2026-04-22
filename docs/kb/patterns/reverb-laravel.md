@@ -1,3 +1,10 @@
+---
+title: Pattern: Laravel Reverb WebSockets (Self-hosted)
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Laravel Reverb WebSockets (Self-hosted)
 
 > Herbruikbaar pattern voor real-time communicatie via Laravel Reverb.

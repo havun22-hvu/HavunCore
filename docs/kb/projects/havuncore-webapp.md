@@ -1,3 +1,10 @@
+---
+title: Project: HavunCore Webapp
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Project: HavunCore Webapp
 
 **URL:** http://localhost:8000 (lokaal) / https://havuncore.havun.nl (server)

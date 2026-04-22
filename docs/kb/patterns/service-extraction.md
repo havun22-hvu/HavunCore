@@ -1,3 +1,10 @@
+---
+title: Service Extraction Pattern
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Service Extraction Pattern
 
 > **Probleem:** Fat service met 600+ regels bevat te veel verantwoordelijkheden.

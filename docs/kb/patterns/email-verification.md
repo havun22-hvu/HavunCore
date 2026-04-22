@@ -1,3 +1,10 @@
+---
+title: Pattern: Email Verificatie met Code
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Email Verificatie met Code
 
 **Gebruikt in:** Herdenkingsportaal (account verificatie, password reset)

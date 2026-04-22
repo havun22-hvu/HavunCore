@@ -1,3 +1,10 @@
+---
+title: End Session Command
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # End Session Command
 
 > **VERPLICHT** bij elke sessie-afsluiting - laat het project netjes achter!

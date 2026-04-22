@@ -1,3 +1,10 @@
+---
+title: Project Cleanup Runbook
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Project Cleanup Runbook
 
 > Periodieke audit om code schoon te houden.

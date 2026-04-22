@@ -1,3 +1,10 @@
+---
+title: Wat mag jij doen — Thiemo & Mawin
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Wat mag jij doen — Thiemo & Mawin
 
 > **Doel:** Helder onderscheid tussen "doen", "alleen onder begeleiding", en "echt niet".

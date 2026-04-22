@@ -1,3 +1,10 @@
+---
+title: AIProxy MySQL-fixture plan — Infection MSI 81 → 90 %
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # AIProxy MySQL-fixture plan — Infection MSI 81 → 90 %
 
 > **Status:** Plan (geen code) — 2026-04-21

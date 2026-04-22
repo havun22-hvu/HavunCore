@@ -1,3 +1,10 @@
+---
+title: Enterprise Quality Standards
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Enterprise Quality Standards
 
 > Architecture Decision Record

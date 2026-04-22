@@ -1,3 +1,10 @@
+---
+title: Runbook: Mutation Testing met Infection PHP
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Mutation Testing met Infection PHP
 
 > **Doel:** Verifiëren dat de tests werkelijk regressies vangen — niet alleen "code-statements raken".

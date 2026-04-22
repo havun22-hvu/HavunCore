@@ -1,3 +1,10 @@
+---
+title: Pattern: Mollie Betalingen
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Mollie Betalingen
 
 > iDEAL, creditcard en andere betaalmethodes via Mollie API.

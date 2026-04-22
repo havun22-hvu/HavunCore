@@ -1,3 +1,10 @@
+---
+title: KB Verbeterplan — 5 Verbeterpunten Ollama/KB Systeem
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # KB Verbeterplan — 5 Verbeterpunten Ollama/KB Systeem
 
 > **Datum:** 7 april 2026

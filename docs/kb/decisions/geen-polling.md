@@ -1,3 +1,10 @@
+---
+title: Beslissing: Geen Polling — Altijd WebSocket/Reverb
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Beslissing: Geen Polling — Altijd WebSocket/Reverb
 
 > **Geldt voor:** ALLE Havun projecten

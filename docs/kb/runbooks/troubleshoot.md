@@ -1,3 +1,10 @@
+---
+title: Runbook: Troubleshooting
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Troubleshooting
 
 > Veelvoorkomende problemen oplossen

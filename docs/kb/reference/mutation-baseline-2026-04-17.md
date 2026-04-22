@@ -1,3 +1,10 @@
+---
+title: Mutation Testing Baseline — 17-04-2026
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Mutation Testing Baseline — 17-04-2026
 
 > **Bron:** VP-16 — eerste lokale baseline-meting met Infection PHP 0.32.6

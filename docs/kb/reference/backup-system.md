@@ -1,3 +1,10 @@
+---
+title: Backup System Reference
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Backup System Reference
 
 > Complete backup architectuur voor alle Havun projecten.
@@ -155,4 +162,4 @@ Zie Hetzner Console/facturen voor actuele prijzen.
 
 - [backup.md](../runbooks/backup.md) - Dagelijkse operaties
 - Project-specifieke info in elk project
-- [context.md](/.claude/context.md) - Credentials
+- [context.md](../../../.claude/context.md) - Credentials

@@ -1,3 +1,10 @@
+---
+title: Regression Guard Tests Pattern
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Regression Guard Tests Pattern
 
 > **Probleem:** Kritieke code wordt herhaaldelijk per ongeluk verwijderd of gebroken bij refactors.

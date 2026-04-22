@@ -1,3 +1,10 @@
+---
+title: AI Proxy API
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # AI Proxy API
 
 > Centrale Claude API proxy voor alle Havun projecten.

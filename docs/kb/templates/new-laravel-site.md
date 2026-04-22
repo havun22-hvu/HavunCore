@@ -1,3 +1,10 @@
+---
+title: Template: Nieuwe Laravel Site
+type: template
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Template: Nieuwe Laravel Site
 
 > Stappen om een nieuwe Laravel site op te zetten op de Havun server

@@ -1,3 +1,10 @@
+---
+title: Beslissing: Vector-based Search via Ollama Embeddings — Evaluatie
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Beslissing: Vector-based Search via Ollama Embeddings — Evaluatie
 
 > **Bron:** VP-03.4 (verbeterplan-q2-2026.md)

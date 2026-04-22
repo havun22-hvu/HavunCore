@@ -1,3 +1,10 @@
+---
+title: Mutation Testing Baseline — 22-04-2026
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Mutation Testing Baseline — 22-04-2026
 
 > **Bron:** VP-16 — tweede baseline-meting na 21/22-04-sessie.

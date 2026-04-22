@@ -1,3 +1,10 @@
+---
+title: AutoFix System
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # AutoFix System
 
 > Automatische error fixing via Claude AI voor production errors.

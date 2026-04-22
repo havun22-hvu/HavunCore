@@ -1,3 +1,10 @@
+---
+title: Runbook: Reverb WebSocket Troubleshooting
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Reverb WebSocket Troubleshooting
 
 > Stappenplan voor diagnose en herstel van Reverb broadcasting problemen.

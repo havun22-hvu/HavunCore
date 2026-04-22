@@ -1,3 +1,10 @@
+---
+title: [PROJECT NAAM] - Claude Instructions
+type: template
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # [PROJECT NAAM] - Claude Instructions
 
 ```

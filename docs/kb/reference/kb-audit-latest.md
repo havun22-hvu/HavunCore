@@ -12,189 +12,13 @@ last_check: 2026-04-22
 ## Samenvatting
 
 - Files gescand: **181**
-- 🔴 Critical: **7**
-- 🟠 High: **175**
+- 🔴 Critical: **0**
+- 🟠 High: **24**
 - 🟡 Medium: **2**
 - 🔵 Low: **238**
 - ⚪ Info: **0**
 
-## 🔴 Critical findings
-
-### `docs/kb/reference/api-vault.md` _(detector: link)_
-
-**Probleem:** Broken link: [.claude/context.md](/.claude/context.md)
-
-**Voorstel:** Corrigeer of verwijder link
-
-### `docs/kb/reference/backup-system.md` _(detector: link)_
-
-**Probleem:** Broken link: [context.md](/.claude/context.md)
-
-**Voorstel:** Corrigeer of verwijder link
-
-### `docs/kb/reference/security.md` _(detector: link)_
-
-**Probleem:** Broken link: [context.md](/.claude/context.md)
-
-**Voorstel:** Corrigeer of verwijder link
-
-### `docs/kb/reference/security.md` _(detector: link)_
-
-**Probleem:** Broken link: [backup.md](/docs/kb/runbooks/backup.md)
-
-**Voorstel:** Corrigeer of verwijder link
-
-### `docs/kb/reference/server.md` _(detector: link)_
-
-**Probleem:** Broken link: [.claude/context.md](/.claude/context.md)
-
-**Voorstel:** Corrigeer of verwijder link
-
-### `docs/kb/runbooks/backup.md` _(detector: link)_
-
-**Probleem:** Broken link: [.claude/context.md](/.claude/context.md)
-
-**Voorstel:** Corrigeer of verwijder link
-
-### `docs/kb/templates/context-template.md` _(detector: link)_
-
-**Probleem:** Broken link: [docs/](docs/)
-
-**Voorstel:** Corrigeer of verwijder link
-
 ## 🟠 High findings
-
-### `.claude/PERMISSIONS-GUIDE.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/audit.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/end.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/errors.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/f.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/kb-audit.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/kb.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/lint.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/mpc.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/start.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/test.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/commands/update.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/context.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/credentials.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/doc-audit-notes.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/rules.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/server.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/smallwork.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `.claude/working-in-projects.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/audit/archief/werkwijze-v1.0-2026-03-29.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/audit/implementatieplan-vp11-vp17.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/audit/verbeterplan-q2-2026.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
 
 ### `docs/audit/verbeterplan-q2-2026.md` _(detector: zombie)_
 
@@ -213,102 +37,6 @@ last_check: 2026-04-22
 **Probleem:** Class-ref bestaat niet: `SecurityHeadersTest`
 
 **Voorstel:** Update doc of herstel class/command
-
-### `docs/audit/werkwijze-beoordeling-derden.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/cv-havuncore.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/internal/architecture.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/internal/context-filter-flow.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/INDEX.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/OVERZICHT.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/audit-rapport-2026-01-20.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/claude-workflow-enforcement.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/contracts/memorial-reference.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/001-havuncore-standalone.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/002-decentrale-auth.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/003-security-incident-ssh-key.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/004-vision-orchestration.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/005-studieplanner-architecture.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/auth-same-origin.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/autofix-hardening-2026-03-15.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
 
 ### `docs/kb/decisions/critical-paths-verify-plan.md` _(detector: zombie)_
 
@@ -334,215 +62,17 @@ last_check: 2026-04-22
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/decisions/csp-nonce-migration-plan.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/enterprise-quality-standards.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/geen-polling.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/indexer-roadmap.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/kb-verbeterplan-2026-04.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/qdrant-migration-plan.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/reverb-safeguards-2026-04-05.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
 ### `docs/kb/decisions/reverb-safeguards-2026-04-05.md` _(detector: zombie)_
 
 **Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/decisions/scoreboard-layout-horizontal-scores.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/decisions/vector-search-evaluatie.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/arweave-upload.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/contracts-md-template.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/controller-splitting.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/crypto-payments.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/csrf-token-refresh.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/email-verification.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/error-handling-strategies.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/integrity-check.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/invoice-numbering.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/laravel-i18n.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/magic-link-auth.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/model-traits.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/mollie-payments.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/password-hashing.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/pdf-to-image-conversion.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/pusher-realtime.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/qr-code-url-matching.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/regression-guard-tests.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/reverb-laravel.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
 ### `docs/kb/patterns/reverb-laravel.md` _(detector: zombie)_
 
 **Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
 
 **Voorstel:** Update doc of herstel class/command
-
-### `docs/kb/patterns/runtime-vs-static-pitfalls.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/service-extraction.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/universal-login-screen.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/website-builder.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/patterns/zinvolle-tests.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
 
 ### `docs/kb/patterns/zinvolle-tests.md` _(detector: zombie)_
 
@@ -580,12 +110,6 @@ last_check: 2026-04-22
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/plans/jt-coverage-push-zinvol-2026-04-20.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
 ### `docs/kb/plans/jt-coverage-push-zinvol-2026-04-20.md` _(detector: zombie)_
 
 **Probleem:** Class-ref bestaat niet: `App\Services\AutoFix\GitOperations`
@@ -598,71 +122,11 @@ last_check: 2026-04-22
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/projects-index.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/projects/doc-intelligence-system.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/projects/havunadmin.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/projects/havuncore-webapp.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/projects/herdenkingsportaal.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/projects/infosyst.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/projects/judoscoreboard.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/projects/judotoernooi.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
 ### `docs/kb/projects/judotoernooi.md` _(detector: zombie)_
 
 **Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
 
 **Voorstel:** Update doc of herstel class/command
-
-### `docs/kb/projects/safehavun.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/projects/studieplanner.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
 
 ### `docs/kb/projects/studieplanner.md` _(detector: zombie)_
 
@@ -670,149 +134,11 @@ last_check: 2026-04-22
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/reference/ai-proxy.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/api-kb-search.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/api-taskqueue.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/api-vault.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/authentication-methods.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/autofix.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/backup-system.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
 ### `docs/kb/reference/critical-paths-judotoernooi.md` _(detector: zombie)_
 
 **Probleem:** Class-ref bestaat niet: `Wedstrijd`
 
 **Voorstel:** Update doc of herstel class/command
-
-### `docs/kb/reference/design-inspiration-session.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/development-workflow.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/external-services.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/havun-ai-bridge.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/havun-quality-standards.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/havun-workflow-flowchart.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/ideal-wero-transitie.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/mutation-baseline-2026-04-17.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/mutation-baseline-2026-04-22.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/postcode-service.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/security.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/server.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/software-quality-levels.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/unified-login-system.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/reference/urenregistratie-2026.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/aiproxy-mysql-fixture-plan.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
 
 ### `docs/kb/runbooks/aiproxy-mysql-fixture-plan.md` _(detector: zombie)_
 
@@ -826,293 +152,17 @@ last_check: 2026-04-22
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/runbooks/alpine-csp-migratie.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/autofix-branch-model.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/backup.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/chrome-testing.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/ci-phpunit-coverage-gotcha.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/claude-werkwijze.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/deploy-safehavun.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/deploy.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/doc-intelligence-setup.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/droogtest-schema-2026-2027.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/emergency-runbook.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/error-flow.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/eu-compliance-checklist.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/expo-android-app-setup.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/ggshield-setup.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/github-actions-ci.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/github-testing-plan.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/md-file-audit.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/mutation-testing-infection.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/noodcontactpersoon-protocol.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/op-reis-workflow.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/project-cleanup.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/reverb-troubleshoot.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
 ### `docs/kb/runbooks/reverb-troubleshoot.md` _(detector: zombie)_
 
 **Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/runbooks/security-headers-check.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
 ### `docs/kb/runbooks/security-headers-check.md` _(detector: zombie)_
 
 **Probleem:** Artisan command bestaat niet: `php artisan gtag:refresh`
 
 **Voorstel:** Update doc of herstel class/command
-
-### `docs/kb/runbooks/server-verhuizingen-2026-03-18.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/ssl-monitoring.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/sync-start-command.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/test-coverage-normen.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/test-repair-anti-pattern.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/troubleshoot.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/unified-login-procedure.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/unified-login-system.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/uptime-monitoring.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/wat-mag-noodcontact.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/runbooks/werkplan-thiemo-droogtest.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/standards/unified-auth-strategy.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/templates/CLAUDE-template.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/templates/context-template.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/templates/new-laravel-site.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/templates/recent-regressions.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/kb/werkzaamheden-overzicht.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/projects/HAVUNADMIN.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/projects/HAVUNCORE.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/projects/HERDENKINGSPORTAAL.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/projects/INDEX.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
-
-### `docs/projects/VPDUPDATE.md` _(detector: structure)_
-
-**Probleem:** Ontbrekende frontmatter
-
-**Voorstel:** Voeg `---` block toe met title/type/scope
 
 ## 🟡 Medium findings
 
@@ -1217,12 +267,6 @@ last_check: 2026-04-22
 ### `.claude/commands/kb-audit.md` _(detector: structure)_
 
 **Probleem:** Lege section: Uit te voeren
-
-**Voorstel:** Vul aan of verwijder
-
-### `.claude/commands/kb-audit.md` _(detector: structure)_
-
-**Probleem:** Lege section: Findings
 
 **Voorstel:** Vul aan of verwijder
 
@@ -1360,7 +404,7 @@ last_check: 2026-04-22
 
 ### `docs/audit/archief/werkwijze-v1.0-2026-03-29.md` _(detector: structure)_
 
-**Probleem:** File is 692 regels (> 500)
+**Probleem:** File is 699 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 
@@ -1369,6 +413,12 @@ last_check: 2026-04-22
 **Probleem:** Lege section: Samenvatting externe beoordelingen
 
 **Voorstel:** Vul aan of verwijder
+
+### `docs/audit/verbeterplan-q2-2026.md` _(detector: structure)_
+
+**Probleem:** File is 507 regels (> 500)
+
+**Voorstel:** Overweeg splitsing
 
 ### `docs/audit/werkwijze-beoordeling-derden.md` _(detector: structure)_
 
@@ -1450,7 +500,7 @@ last_check: 2026-04-22
 
 ### `docs/audit/werkwijze-beoordeling-derden.md` _(detector: structure)_
 
-**Probleem:** File is 898 regels (> 500)
+**Probleem:** File is 905 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 
@@ -1684,7 +734,7 @@ last_check: 2026-04-22
 
 ### `docs/kb/decisions/004-vision-orchestration.md` _(detector: structure)_
 
-**Probleem:** File is 1426 regels (> 500)
+**Probleem:** File is 1433 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 
@@ -2044,7 +1094,7 @@ last_check: 2026-04-22
 
 ### `docs/kb/reference/havun-workflow-flowchart.md` _(detector: structure)_
 
-**Probleem:** File is 1187 regels (> 500)
+**Probleem:** File is 1194 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 
@@ -2122,7 +1172,7 @@ last_check: 2026-04-22
 
 ### `docs/kb/reference/unified-login-system.md` _(detector: structure)_
 
-**Probleem:** File is 594 regels (> 500)
+**Probleem:** File is 601 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 

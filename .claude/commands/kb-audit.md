@@ -1,3 +1,10 @@
+---
+title: KB Audit — documentatie-review
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # KB Audit — documentatie-review
 
 > Review alle markdown-docs in dit project op obsolete info, overlap,

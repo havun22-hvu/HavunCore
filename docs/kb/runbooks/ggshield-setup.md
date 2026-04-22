@@ -1,3 +1,10 @@
+---
+title: ggshield Setup (Pre-commit Secret Scanning)
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # ggshield Setup (Pre-commit Secret Scanning)
 
 > Voorkomt dat secrets in git commits terechtkomen

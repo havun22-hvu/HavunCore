@@ -1,3 +1,10 @@
+---
+title: CSP Nonce Migratie Plan
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # CSP Nonce Migratie Plan
 
 > Alle inline `<script>` tags omzetten naar nonce-based CSP.

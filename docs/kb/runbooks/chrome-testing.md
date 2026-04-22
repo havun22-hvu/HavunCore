@@ -1,3 +1,10 @@
+---
+title: Runbook: Chrome Testing met Claude Code
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Chrome Testing met Claude Code
 
 > Browser testing, console errors lezen en debuggen via Claude for Chrome extensie

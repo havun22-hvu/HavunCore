@@ -1,3 +1,10 @@
+---
+title: Runbook: Test Coverage Normen
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Test Coverage Normen
 
 > Verplichte Havun normen voor code coverage en hoe te meten/verbeteren.

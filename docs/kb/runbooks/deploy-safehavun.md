@@ -1,3 +1,10 @@
+---
+title: Runbook: SafeHavun Deployment
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: SafeHavun Deployment
 
 > **BELANGRIJK:** Altijd deployen via GitHub (git push → git pull).

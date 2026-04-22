@@ -1,3 +1,10 @@
+---
+title: Security Overzicht
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Security Overzicht
 
 > Centrale security status voor alle Havun projecten
@@ -233,5 +240,5 @@ Uitzondering: apps zonder Laravel middleware (havuncore, vpdupdate) gebruiken ng
 
 ## Related
 
-- [context.md](/.claude/context.md) - Actuele credentials
-- [backup.md](/docs/kb/runbooks/backup.md) - Backup procedures
+- [context.md](../../../.claude/context.md) - Actuele credentials
+- [backup.md](../runbooks/backup.md) - Backup procedures

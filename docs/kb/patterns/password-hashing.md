@@ -1,3 +1,10 @@
+---
+title: Password Hashing Pattern
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Password Hashing Pattern
 
 > **Geldt voor:** Alle Laravel 11 projecten met `'password' => 'hashed'` cast

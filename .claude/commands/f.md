@@ -1,3 +1,10 @@
+---
+title: Focus Command
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Focus Command
 
 > Laad alle relevante kennis over een onderwerp VOORDAT je code schrijft.

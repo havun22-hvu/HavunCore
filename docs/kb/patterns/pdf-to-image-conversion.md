@@ -1,3 +1,10 @@
+---
+title: PDF to Image Conversion Pattern
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # PDF to Image Conversion Pattern
 
 > Convert PDF pages to JPEG images using Imagick (ImageMagick)

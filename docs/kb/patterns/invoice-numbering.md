@@ -1,3 +1,10 @@
+---
+title: Factuurnummering - Havun Standaard
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Factuurnummering - Havun Standaard
 
 ## Formaat

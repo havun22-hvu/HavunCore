@@ -1,3 +1,10 @@
+---
+title: Implementatieplan VP-11 t/m VP-17
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Implementatieplan VP-11 t/m VP-17
 
 > **Status:** Plan — wacht op gebruikersgoedkeuring voordat Fase 3 (code) start

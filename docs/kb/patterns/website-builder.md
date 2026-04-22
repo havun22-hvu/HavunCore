@@ -1,3 +1,10 @@
+---
+title: Pattern: Website Builder (Pagina Builder)
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Website Builder (Pagina Builder)
 
 > **Status:** VERWIJDERD uit JudoToernooi (14 feb 2026, verplaatst naar Havunity project).

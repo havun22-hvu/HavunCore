@@ -1,3 +1,10 @@
+---
+title: MPC — MD, Plan, Codering
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # MPC — MD, Plan, Codering
 
 > Gefaseerde werkwijze: eerst documenteren, dan plannen, dan pas coderen.

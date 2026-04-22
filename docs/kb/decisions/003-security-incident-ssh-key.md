@@ -1,3 +1,10 @@
+---
+title: 🚨 SECURITY INCIDENT - SSH Key zonder overleg
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # 🚨 SECURITY INCIDENT - SSH Key zonder overleg
 
 **Datum:** 23 november 2025, 00:48 uur

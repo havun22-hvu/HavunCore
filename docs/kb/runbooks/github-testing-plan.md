@@ -1,3 +1,10 @@
+---
+title: GitHub Testing Plan
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # GitHub Testing Plan
 
 > **Status:** Fase 1 actief, overige geparkeerd

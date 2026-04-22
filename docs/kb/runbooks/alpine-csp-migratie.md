@@ -1,3 +1,10 @@
+---
+title: Alpine.js CSP Migratie — Conversie Patronen
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Alpine.js CSP Migratie — Conversie Patronen
 
 > **Doel:** `'unsafe-eval'` uit CSP verwijderen door `@alpinejs/csp` build te gebruiken.

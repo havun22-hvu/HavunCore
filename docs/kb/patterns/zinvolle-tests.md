@@ -1,3 +1,10 @@
+---
+title: Pattern: Zinvolle Tests
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Zinvolle Tests
 
 > **Status:** Accepted — 20-04-2026

@@ -1,3 +1,10 @@
+---
+title: Project: JudoToernooi
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Project: JudoToernooi
 
 **URL:** https://judotournament.org

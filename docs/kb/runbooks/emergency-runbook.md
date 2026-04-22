@@ -1,3 +1,10 @@
+---
+title: Emergency Runbook — Voor Noodgevallen
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Emergency Runbook — Voor Noodgevallen
 
 > **Bron:** Externe audit Q1 2026 (VP-07)

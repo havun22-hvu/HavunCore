@@ -1,3 +1,10 @@
+---
+title: Roadmap: DocIndexer Optimalisaties
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Roadmap: DocIndexer Optimalisaties
 
 > Aanbevelingen van Gemini — verwerkt 2026-03-11

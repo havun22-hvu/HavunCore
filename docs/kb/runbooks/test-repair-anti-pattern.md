@@ -1,3 +1,10 @@
+---
+title: Runbook: Wat te doen bij een falende test
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Wat te doen bij een falende test
 
 > **Wanneer toepassen:** Bij elke `phpunit`/`jest`/`pytest` run waarbij één of meer tests rood worden.

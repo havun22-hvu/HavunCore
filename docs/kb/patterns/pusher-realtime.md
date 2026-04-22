@@ -1,3 +1,10 @@
+---
+title: Pattern: Pusher Real-time WebSockets
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Pusher Real-time WebSockets
 
 > Herbruikbaar pattern voor real-time communicatie in Havun projecten.

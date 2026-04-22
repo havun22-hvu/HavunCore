@@ -1,3 +1,10 @@
+---
+title: Pattern: Error Handling Strategies
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Error Handling Strategies
 
 > Wanneer tests, wanneer try/catch, wanneer iets anders?

@@ -1,3 +1,10 @@
+---
+title: MD File Audit Command
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # MD File Audit Command
 
 > Systematische analyse van codebase: obsolete code verwijderen, code vereenvoudigen en verbeteren.

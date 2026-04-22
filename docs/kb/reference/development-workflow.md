@@ -1,3 +1,10 @@
+---
+title: Development Workflow — Van Cursor tot Productie
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Development Workflow — Van Cursor tot Productie
 
 > Compleet overzicht van de Havun ontwikkelworkflow.

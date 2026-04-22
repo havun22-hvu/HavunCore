@@ -1,6 +1,13 @@
+---
+title: [PROJECT NAAM] - Context
+type: template
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # [PROJECT NAAM] - Context
 
-> Overzicht van het project. Details in de [docs/](docs/) map.
+> Overzicht van het project. Details in de `docs/` map.
 
 ## Wat is het?
 

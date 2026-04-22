@@ -1,3 +1,10 @@
+---
+title: Werkzaamheden Overzicht
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Werkzaamheden Overzicht
 
 > **Doel:** Kort overzicht voor urenregistratie (belastingen). Bijwerken per dag.

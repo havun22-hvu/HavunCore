@@ -1,3 +1,10 @@
+---
+title: Curriculum Vitae — HavunCore AI
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Curriculum Vitae — HavunCore AI
 
 > *"Kwaliteit boven snelheid. Eerst lezen, dan denken, dan doen."*

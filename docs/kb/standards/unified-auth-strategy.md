@@ -1,3 +1,10 @@
+---
+title: Unified Auth Strategy
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Unified Auth Strategy
 
 > **Laatst bijgewerkt:** 31 maart 2026

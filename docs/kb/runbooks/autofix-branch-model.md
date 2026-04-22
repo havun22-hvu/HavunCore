@@ -1,3 +1,10 @@
+---
+title: Runbook: AutoFix Branch-Model + Dry-Run
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: AutoFix Branch-Model + Dry-Run
 
 > **Bron:** VP-01 (verbeterplan-q2-2026.md)

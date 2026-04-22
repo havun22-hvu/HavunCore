@@ -1,3 +1,10 @@
+---
+title: Pattern: Crypto Betalingen
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Crypto Betalingen
 
 > Cryptocurrency betalingen met XRP, ADA (Cardano) en SOL (Solana).

@@ -1,3 +1,10 @@
+---
+title: Pattern: Shadow File Integrity Check
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Shadow File Integrity Check
 
 > Bewaakt kritieke UI-componenten en code-elementen via een `.integrity.json` bestand,

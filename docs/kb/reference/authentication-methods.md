@@ -1,3 +1,10 @@
+---
+title: Authenticatie Methodes — Alle Havun Projecten
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Authenticatie Methodes — Alle Havun Projecten
 
 > **Status:** Vastgelegd — geldt voor ALLE projecten

@@ -1,3 +1,10 @@
+---
+title: SSL Certificate Monitoring
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # SSL Certificate Monitoring
 
 > Automatische controle van alle SSL certificaten op de server

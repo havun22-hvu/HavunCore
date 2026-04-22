@@ -1,3 +1,10 @@
+---
+title: iDEAL → iDEAL | Wero → Wero Transitie
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # iDEAL → iDEAL | Wero → Wero Transitie
 
 > Verplichte rebranding van iDEAL naar Wero (European Payments Initiative).

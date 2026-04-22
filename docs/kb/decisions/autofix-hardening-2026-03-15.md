@@ -1,3 +1,10 @@
+---
+title: Decision: AutoFix Hardening — Kennis-drift & Validatie
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Decision: AutoFix Hardening — Kennis-drift & Validatie
 
 > **Datum:** 15 maart 2026

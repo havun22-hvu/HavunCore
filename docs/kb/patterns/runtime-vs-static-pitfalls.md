@@ -1,3 +1,10 @@
+---
+title: Runtime-vs-Static Pitfalls (Laravel + Alpine + Tailwind + CSP)
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runtime-vs-Static Pitfalls (Laravel + Alpine + Tailwind + CSP)
 
 > Deze fouten lijken verschillend, maar hebben dezelfde wortel: iets

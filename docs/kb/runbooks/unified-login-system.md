@@ -1,3 +1,10 @@
+---
+title: Unified Login System - Runbook
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Unified Login System - Runbook
 
 > **VERPLAATST** — Dit document is geconsolideerd in:

@@ -1,3 +1,10 @@
+---
+title: KB Search API Reference
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # KB Search API Reference
 
 > Remote toegang tot de HavunCore kennisbank voor Claude sessies op andere locaties.

@@ -1,3 +1,10 @@
+---
+title: Runbook: Backup
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Backup
 
 > Backup systeem beheren - ALLE Havun projecten
@@ -199,4 +206,4 @@ Endpoint: `GET /health/backup` op de webapp backend.
 ## Related
 
 - [backup-system.md](../reference/backup-system.md) - Volledige referentie
-- [.claude/context.md](/.claude/context.md) - Hetzner credentials
+- [.claude/context.md](../../../.claude/context.md) - Hetzner credentials

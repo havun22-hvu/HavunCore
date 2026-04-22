@@ -1,3 +1,10 @@
+---
+title: Runbook: Noodprotocol-Droogtest Schema 2026-2027
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Noodprotocol-Droogtest Schema 2026-2027
 
 > **Doel:** Voorkomen dat noodprotocol-kennis bij Thiemo en Mawin verwatert. Eén droogtest per kalenderkwartaal.

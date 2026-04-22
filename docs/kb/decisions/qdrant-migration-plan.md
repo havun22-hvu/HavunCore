@@ -1,3 +1,10 @@
+---
+title: Plan: Qdrant Vector DB Migratie
+type: decision
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Plan: Qdrant Vector DB Migratie
 
 > **Status:** On hold — uitvoeren als KB > ~5000 bestanden

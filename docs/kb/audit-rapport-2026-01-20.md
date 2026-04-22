@@ -1,3 +1,10 @@
+---
+title: Documentatie Audit Rapport - Alle Havun Projecten
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Documentatie Audit Rapport - Alle Havun Projecten
 
 > **Datum:** 20 januari 2026

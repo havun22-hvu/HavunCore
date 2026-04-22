@@ -1,3 +1,10 @@
+---
+title: Magic Link Authentication Pattern (Laravel)
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Magic Link Authentication Pattern (Laravel)
 
 > **Status:** Standaard voor alle Havun projecten

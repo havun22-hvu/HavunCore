@@ -1,3 +1,10 @@
+---
+title: Error Flow — Van fout tot oplossing
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Error Flow — Van fout tot oplossing
 
 > Hoe errors worden opgevangen, doorgestuurd, opgelost en gerapporteerd.

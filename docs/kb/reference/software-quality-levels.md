@@ -1,3 +1,10 @@
+---
+title: Software Kwaliteitsniveaus
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Software Kwaliteitsniveaus
 
 > Van cowboy coding tot formele verificatie — waar sta je en waar wil je naartoe?

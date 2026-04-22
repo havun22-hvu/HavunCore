@@ -1,3 +1,10 @@
+---
+title: Pattern: QR Code URL Matching
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: QR Code URL Matching
 
 > **Probleem:** Scanner herkent QR codes niet door hardcoded URLs

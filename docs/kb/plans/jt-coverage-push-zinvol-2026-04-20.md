@@ -1,3 +1,10 @@
+---
+title: Plan: JudoToernooi Coverage Push (zinvolle tests only)
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Plan: JudoToernooi Coverage Push (zinvolle tests only)
 
 > **Status:** Fase 2 — voor akkoord

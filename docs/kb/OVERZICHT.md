@@ -1,3 +1,10 @@
+---
+title: HavunCore Bibliotheek - Compleet Overzicht
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # HavunCore Bibliotheek - Compleet Overzicht
 
 > Laatst bijgewerkt: 2026-03-11

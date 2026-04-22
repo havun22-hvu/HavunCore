@@ -1,3 +1,10 @@
+---
+title: Server Reference
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Server Reference
 
 > Hetzner VPS configuratie
@@ -166,5 +173,5 @@ Zie [backup.md](../runbooks/backup.md).
 
 ## Related
 
-- [.claude/context.md](/.claude/context.md) - Credentials
+- [.claude/context.md](../../../.claude/context.md) - Credentials
 - [troubleshoot.md](../runbooks/troubleshoot.md) - Problemen oplossen

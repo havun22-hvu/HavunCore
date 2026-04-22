@@ -27,6 +27,17 @@ class DocsAuditor
         'handover.md',
     ];
 
+    /**
+     * Directory-niveau exclusies. `archive/` is een portfolio-conventie
+     * voor bedoeld-historische documentatie (broken links etc. horen daar
+     * vaak bij en zijn geen actionable finding). `worktrees/` is Claude's
+     * eigen git-worktree tijdelijke opslag.
+     */
+    private const EXCLUDED_PATH_SEGMENTS = [
+        DIRECTORY_SEPARATOR . 'archive' . DIRECTORY_SEPARATOR,
+        DIRECTORY_SEPARATOR . 'worktrees' . DIRECTORY_SEPARATOR,
+    ];
+
 
     /**
      * @param  array<int,string>  $scanRoots  Absolute directories to recurse (e.g. ['/path/docs', '/path/.claude'])
@@ -77,6 +88,17 @@ class DocsAuditor
                     continue;
                 }
                 if (in_array($file->getFilename(), self::SELF_EXCLUDED_BASENAMES, true)) {
+                    continue;
+                }
+                $normalized = str_replace(['/', '\\'], DIRECTORY_SEPARATOR, $file->getPathname());
+                $skipDueToPath = false;
+                foreach (self::EXCLUDED_PATH_SEGMENTS as $segment) {
+                    if (str_contains($normalized, $segment)) {
+                        $skipDueToPath = true;
+                        break;
+                    }
+                }
+                if ($skipDueToPath) {
                     continue;
                 }
                 $files[] = $file->getPathname();

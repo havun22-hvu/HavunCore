@@ -1,3 +1,10 @@
+---
+title: Project: HavunCore
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Project: HavunCore
 
 **Type:** Laravel 11 - Centraal orchestration platform

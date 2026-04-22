@@ -1,3 +1,10 @@
+---
+title: Havun Kwaliteits- & Veiligheidsnormen (VERPLICHT)
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Havun Kwaliteits- & Veiligheidsnormen (VERPLICHT)
 
 > **Dé centrale norm voor alle Havun projecten.**

@@ -1,3 +1,10 @@
+---
+title: Runbook: Android App bouwen met Expo (React Native)
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Android App bouwen met Expo (React Native)
 
 > Standaard procedure voor het bouwen van een Android app met Expo.

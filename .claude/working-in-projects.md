@@ -1,3 +1,10 @@
+---
+title: Werken in andere projecten
+type: claude
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Werken in andere projecten
 
 > Instructies voor HavunCore Claude bij werken in Herdenkingsportaal, HavunAdmin, VPDUpdate, etc.

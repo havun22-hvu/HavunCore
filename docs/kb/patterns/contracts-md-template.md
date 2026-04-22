@@ -1,3 +1,10 @@
+---
+title: Pattern: CONTRACTS.md per Project
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: CONTRACTS.md per Project
 
 > **Probleem:** Tests kunnen drift verbergen — ze blijven groen terwijl een refactor stilletjes een business-rule schendt. Een AI die failing tests "fixt" door assertions aan te passen kan zo een hele testsuite waardeloos maken zonder dat iemand het opvalt.

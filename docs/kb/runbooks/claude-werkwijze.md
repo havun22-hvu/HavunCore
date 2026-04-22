@@ -1,3 +1,10 @@
+---
+title: Claude Werkwijze - Alle Projecten
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Claude Werkwijze - Alle Projecten
 
 > **Doel:** Kwaliteit boven snelheid. Eerst lezen, dan denken, dan doen.

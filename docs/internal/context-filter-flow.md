@@ -1,3 +1,10 @@
+---
+title: Tap 1: Context Filter (Command-R → Claude)
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Tap 1: Context Filter (Command-R → Claude)
 
 In de Node.js backend (webapp) zorgt deze flow ervoor dat Command-R (Ollama) de context eerst "voorkauwt". Daardoor stuur je geen duizenden dure, irrelevante tokens naar Claude.

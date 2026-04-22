@@ -1,3 +1,10 @@
+---
+title: Universal Login Screen Pattern
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Universal Login Screen Pattern
 
 > **Status:** Standaard voor alle Havun projecten

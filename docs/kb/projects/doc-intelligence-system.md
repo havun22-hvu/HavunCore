@@ -1,3 +1,10 @@
+---
+title: Doc Intelligence System - Plan & Handleiding
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Doc Intelligence System - Plan & Handleiding
 
 > **Status:** Planning

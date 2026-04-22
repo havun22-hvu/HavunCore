@@ -1,3 +1,10 @@
+---
+title: Project: HavunAdmin
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Project: HavunAdmin
 
 **Type:** Laravel 11 - Boekhoud/Administratie systeem

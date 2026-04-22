@@ -1,3 +1,10 @@
+---
+title: Pattern: Arweave Permanente Opslag
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Pattern: Arweave Permanente Opslag
 
 > Data permanent opslaan op de Arweave blockchain (200+ jaar gegarandeerd).

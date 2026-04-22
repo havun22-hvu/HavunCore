@@ -1,3 +1,10 @@
+---
+title: CSRF Token Refresh Pattern
+type: pattern
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # CSRF Token Refresh Pattern
 
 > **Probleem:** Laravel CSRF tokens verlopen na ~2 uur. Gebruikers krijgen 419 error na inactiviteit.

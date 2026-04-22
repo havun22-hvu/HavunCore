@@ -1,3 +1,10 @@
+---
+title: Recent Regressions
+type: template
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Recent Regressions
 
 > Fouten van de afgelopen 7 dagen. Verwijder entries ouder dan 7 dagen.

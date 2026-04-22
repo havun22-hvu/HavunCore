@@ -1,3 +1,10 @@
+---
+title: Urenregistratie 2026 - Havun
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Urenregistratie 2026 - Havun
 
 > **Handmatige bron:** `HavunCore/urenregistratie-2026.csv` (formaat: Datum;Uren;Project;Onderdeel) — jij vult zelf in, onderbouwd door /end sessie-overzicht. Projectnamen met hoofdletter: JudoToernooi, Infosyst, HavunClub.

@@ -1,3 +1,10 @@
+---
+title: HavunCore Database & Metadata Architectuur
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # HavunCore Database & Metadata Architectuur
 
 > **Zie ook:** `docs/kb/projects/havuncore-webapp.md` voor de volledige webapp/Command Center architectuur.

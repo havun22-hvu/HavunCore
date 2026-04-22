@@ -1,3 +1,10 @@
+---
+title: Noodprotocol — Thiemo & Mawin
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Noodprotocol — Thiemo & Mawin
 
 > **Doel:** Als Henk langere tijd niet bereikbaar is, zorgen dat de systemen blijven draaien.

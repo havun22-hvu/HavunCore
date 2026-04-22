@@ -1,3 +1,10 @@
+---
+title: Task Queue API Reference
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Task Queue API Reference
 
 > Central orchestration - remote code execution

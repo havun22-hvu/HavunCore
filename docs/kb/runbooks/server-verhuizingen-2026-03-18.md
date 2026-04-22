@@ -1,3 +1,10 @@
+---
+title: Server Verhuizingen — 18 maart 2026
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Server Verhuizingen — 18 maart 2026
 
 > **Doel:** Consistente directory structuur op de server. Alle projecten volgen het patroon `/var/www/{project}/{omgeving}`.

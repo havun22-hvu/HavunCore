@@ -1,3 +1,10 @@
+---
+title: Doc Intelligence System - Setup & Gebruikshandleiding
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Doc Intelligence System - Setup & Gebruikshandleiding
 
 > Volledig overzicht van het Doc Intelligence systeem: vector embeddings, code-indexering, structuur-analyse en auto-sync.

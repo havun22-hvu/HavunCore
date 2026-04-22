@@ -1,3 +1,10 @@
+---
+title: External Services Reference
+type: reference
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # External Services Reference
 
 > Hoe toegang te krijgen tot externe service dashboards en API keys

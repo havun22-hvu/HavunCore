@@ -1,3 +1,10 @@
+---
+title: Runbook: GitHub Actions CI/CD
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: GitHub Actions CI/CD
 
 > Automatische tests bij elke push/PR. Voorkomt dat kapotte code op master terechtkomt.

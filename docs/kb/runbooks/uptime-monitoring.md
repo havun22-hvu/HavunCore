@@ -1,3 +1,10 @@
+---
+title: Runbook: Uptime Monitoring & SLA
+type: runbook
+scope: havuncore
+last_check: 2026-04-22
+---
+
 # Runbook: Uptime Monitoring & SLA
 
 > **Bron:** Externe audit Q1 2026 (VP-09)
