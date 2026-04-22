@@ -8,6 +8,7 @@ use App\Models\RequestMetric;
 use App\Models\SlowQuery;
 use App\Services\ObservabilityService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 /**
@@ -180,15 +181,15 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_quality_findings_returns_null_when_no_scans(): void
     {
-        \Illuminate\Support\Facades\Storage::fake('local');
+        Storage::fake('local');
 
         $this->assertNull($this->service->getQualityFindings());
     }
 
     public function test_quality_findings_reads_latest_scan_and_filters_high_critical(): void
     {
-        \Illuminate\Support\Facades\Storage::fake('local');
-        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        Storage::fake('local');
+        $disk = Storage::disk('local');
         $today = now()->toDateString();
 
         $disk->put("qv-scans/2025-01-01/run-older.json", json_encode([
@@ -683,30 +684,22 @@ class ObservabilityServiceTest extends TestCase
 
     public function test_dashboard_error_rate_uses_round_not_floor_or_ceil(): void
     {
-        // 1 error / 3 requests * 100 = 33.333... — round(2) = 33.33, floor = 33.33,
-        // ceil = 33.34. So pick a fraction where the three differ at 2 decimals.
-        // 2 errors / 7 requests * 100 = 28.5714 — round(2) = 28.57, floor = 28.57.
-        // Use 1/8 * 100 = 12.5 — clean value, but kills RoundingFamily because
-        // any +1 or -1 increment to 100 changes the number, and cast/division
-        // mutations produce a different float.
-        $now = now();
-        $this->makeRequest(['path' => '/ok1', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => $now->copy()->subMinutes(10)]);
-        $this->makeRequest(['path' => '/ok2', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => $now->copy()->subMinutes(10)]);
-        $this->makeRequest(['path' => '/ok3', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => $now->copy()->subMinutes(10)]);
-        $this->makeRequest(['path' => '/err', 'status_code' => 500, 'response_time_ms' => 10, 'created_at' => $now->copy()->subMinutes(10)]);
+        // 1/4 = 25.0 exact — kills round/floor/ceil + division mutants in one assertion.
+        $this->makeRequest(['path' => '/ok1', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => now()->subMinutes(10)]);
+        $this->makeRequest(['path' => '/ok2', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => now()->subMinutes(10)]);
+        $this->makeRequest(['path' => '/ok3', 'status_code' => 200, 'response_time_ms' => 10, 'created_at' => now()->subMinutes(10)]);
+        $this->makeRequest(['path' => '/err', 'status_code' => 500, 'response_time_ms' => 10, 'created_at' => now()->subMinutes(10)]);
 
         $dashboard = $this->service->getDashboard();
 
-        // 1/4 = 25.0 exactly — kills Division/Multiplication/RoundingFamily
-        // because any of +/-1 on operands or floor/ceil swap changes the value.
         $this->assertSame(25.0, $dashboard['requests']['error_rate_1h']);
         $this->assertSame(25.0, $dashboard['requests']['error_rate_24h']);
     }
 
     public function test_quality_findings_totals_are_strict_int_type(): void
     {
-        \Illuminate\Support\Facades\Storage::fake('local');
-        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        Storage::fake('local');
+        $disk = Storage::disk('local');
         $today = now()->toDateString();
         $disk->put("qv-scans/{$today}/run.json", json_encode([
             'findings' => [],
