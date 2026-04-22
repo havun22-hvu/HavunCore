@@ -65,7 +65,12 @@ jobs:
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
       - name: Run Infection
-        run: vendor/bin/infection --threads=4 --min-msi=60 --min-covered-msi=70 --logger-github
+        # --exclude-group matches tests.yml — doc-intelligence tests hang on
+        # CI's :memory: SQLite (commit e97d096).
+        run: |
+          vendor/bin/infection --threads=4 --min-msi=60 --min-covered-msi=70 \
+            --logger-github \
+            --test-framework-options="--exclude-group=doc-intelligence"
         env:
           INFECTION_BADGE_API_KEY: ${{ secrets.INFECTION_BADGE_API_KEY }}
 
@@ -143,7 +148,8 @@ jobs:
             --min-msi=${{ matrix.pad.min_msi }} \
             --min-covered-msi=${{ matrix.pad.min_msi }} \
             --logger-github \
-            --no-progress --no-interaction
+            --no-progress --no-interaction \
+            --test-framework-options="--exclude-group=doc-intelligence"
 
       - name: Upload pad-logs
         if: always()
@@ -219,6 +225,12 @@ jobs:
       - name: Install dependencies
         run: composer install --no-interaction --prefer-dist --optimize-autoloader
 
+      - name: Prepare doc_intelligence sqlite file
+        # Hardcoded SQLite file in config/database.php; touch to satisfy the
+        # doc-intel migration during migrate --force (the table itself is
+        # irrelevant to the AIProxy mutation run).
+        run: touch database/doc_intelligence.sqlite
+
       - name: Migrate on MySQL
         run: php artisan migrate --force
 
@@ -231,7 +243,7 @@ jobs:
             --threads=4 \
             --min-msi=85 --min-covered-msi=85 \
             --logger-github --no-progress --no-interaction \
-            --test-framework-options="--configuration=phpunit.mysql.xml"
+            --test-framework-options="--configuration=phpunit.mysql.xml --exclude-group=doc-intelligence"
 
       - name: Upload MySQL pad-logs
         if: always()
