@@ -100,22 +100,37 @@ Support, Key Exchange, Cipher Strength).
   → `ECDH, secp384r1, 384 bits` (NIET `X25519`).
 - **Bron**: `runbooks/openssl-upgrade-2026-04-23.md`.
 
-### 1.5 Session resumption aan
+### 1.5 Session resumption aan (caching + tickets)
 
-- **Waarom**: SSL Labs "Session resumption: No" geeft losse penalty.
-  TLS 1.3 PSK resumption vereist tickets aan.
-- **Hoe**:
+- **Waarom**: SSL Labs test twee mechanismen apart:
+  1. **Tickets** (RFC 5077, ook TLS 1.3 PSK).
+  2. **Session-IDs** (klassieke cache). Als IDs uitgedeeld worden maar niet
+     geaccepteerd → SSL Labs meldt: _"IDs assigned but not accepted"_ (oranje).
+- **Hoe**: directives op **http-level** in `/etc/nginx/nginx.conf` (NIET per
+  server), anders faalt ID-resumption bij worker-wissel of dubbele
+  zone-declaraties:
   ```nginx
-  ssl_session_cache shared:SSL:10m;
+  # in http { } block:
+  ssl_session_cache shared:SSL:50m;
   ssl_session_timeout 1d;
   ssl_session_tickets on;
   ```
-- **Verifieer**:
+  De hardened-snippet mag GEEN session directives meer bevatten — alleen
+  protocols, ciphers en conf_command.
+- **Verifieer (tickets)**:
   ```bash
-  echo | openssl s_client -connect <domain>:443 -tls1_2 -sess_out /tmp/s
-  echo | openssl s_client -connect <domain>:443 -tls1_2 -sess_in /tmp/s | grep Reused
+  echo | openssl s_client -connect <domain>:443 -tls1_2 -sess_out /tmp/s1
+  echo | openssl s_client -connect <domain>:443 -tls1_2 -sess_in /tmp/s1 | grep Reused
   ```
-  → `Reused, TLSv1.2`.
+- **Verifieer (IDs — belangrijker voor SSL Labs)**:
+  ```bash
+  echo | openssl s_client -connect <domain>:443 -tls1_2 -no_ticket -sess_out /tmp/s2
+  echo | openssl s_client -connect <domain>:443 -tls1_2 -no_ticket -sess_in /tmp/s2 | grep Reused
+  ```
+  → beide tests moeten `Reused, TLSv1.2` tonen.
+- **Anti-pattern**: Let's Encrypt's `options-ssl-nginx.conf` include in
+  vhosts. Die zet `ssl_session_tickets off` + andere zone-naam → vervangen
+  door de hardened-snippet.
 
 ### 1.6 DNS CAA records
 

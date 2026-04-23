@@ -96,6 +96,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
         foreach ([
             'nginx-ssl-hardened-snippet.conf',
+            'nginx-http-level-ssl.conf',
             'openssl-restricted.cnf',
             'systemd-nginx-openssl-override.conf',
             'nginx-vhost-hardened.conf.template',

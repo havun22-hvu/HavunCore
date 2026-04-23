@@ -167,22 +167,26 @@ Internet.nl.
 | File | Target op server |
 |------|------------------|
 | `nginx-ssl-hardened-snippet.conf` | `/etc/nginx/snippets/ssl-hardened.conf` |
+| `nginx-http-level-ssl.conf` | Inline toevoegen in `/etc/nginx/nginx.conf` http-block |
 | `openssl-restricted.cnf` | `/etc/nginx/openssl-restricted.cnf` |
 | `systemd-nginx-openssl-override.conf` | `/etc/systemd/system/nginx.service.d/openssl-restricted.conf` |
 | `nginx-vhost-hardened.conf.template` | `/etc/nginx/sites-available/{$slug}` (placeholders invullen) |
 
 ## Deploy-stappen (eerste keer, per productie-server)
 
-1. Kopieer de 3 snippet/config files naar genoemde locaties
-2. `systemctl daemon-reload` (voor systemd-override)
-3. Werk `nginx-vhost-hardened.conf.template` uit: vervang `__DOMAIN__`,
+1. Kopieer de snippet/config files naar genoemde locaties
+2. Voeg inhoud van `nginx-http-level-ssl.conf` toe aan het `http { }` block
+   van `/etc/nginx/nginx.conf` (vervangt per-server session directives —
+   nodig voor betrouwbare ID-based resumption)
+3. `systemctl daemon-reload` (voor systemd-override)
+4. Werk `nginx-vhost-hardened.conf.template` uit: vervang `__DOMAIN__`,
    `__WEBROOT__`, `__PHP_SOCK__` met projectwaarden
-4. Plaats uitgewerkte vhost in `/etc/nginx/sites-available/{$slug}`
-5. `ln -s` naar `sites-enabled/`
-6. ECDSA cert: `certbot certonly --nginx --key-type ecdsa --elliptic-curve secp384r1 -d <domain>`
-7. DNS CAA records bij DNS-provider (mijnhost.nl voor Havun)
-8. `nginx -t && systemctl restart nginx`
-9. Verifieer via `docs/kb/reference/productie-deploy-eisen.md` §Verificatie-sequence
+5. Plaats uitgewerkte vhost in `/etc/nginx/sites-available/{$slug}`
+6. `ln -s` naar `sites-enabled/`
+7. ECDSA cert: `certbot certonly --nginx --key-type ecdsa --elliptic-curve secp384r1 -d <domain>`
+8. DNS CAA records bij DNS-provider (mijnhost.nl voor Havun)
+9. `nginx -t && systemctl restart nginx`
+10. Verifieer via `docs/kb/reference/productie-deploy-eisen.md` §Verificatie-sequence
 
 ## Canonical requirements
 
