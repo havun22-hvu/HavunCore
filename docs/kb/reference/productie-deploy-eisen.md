@@ -226,15 +226,41 @@ Alle 6 **recommended headers** aanwezig met strikte waarden.
 - **Verifieer**: alle `<script src="https://..."` regels moeten
   integrity-attr hebben.
 
-### 3.3 Secure cookies
+### 3.3 Secure cookies + `__Host-` prefix
 
-- **Hoe (Laravel)**: `config/session.php`:
+- **Waarom**: SecurityHeaders warning _"There is no Cookie Prefix on this
+  cookie"_ en _"domain attribute set"_ → cookie voldoet niet aan modern
+  best-practice. `__Host-` prefix verplicht: `secure` + `path=/` +
+  **geen** `domain` attribute.
+- **Hoe (Laravel)** — productie `.env`:
+  ```
+  SESSION_COOKIE=__Host-<slug>-session
+  SESSION_DOMAIN=
+  SESSION_SECURE_COOKIE=true
+  SESSION_SAME_SITE=lax
+  ```
+  `SESSION_DOMAIN` expliciet leeg (niet `null` als string). Dit bricked
+  cross-subdomain-sessies — acceptabel, want elk Havun-project heeft
+  z'n eigen (sub)domein + eigen app-instance.
+- **Default in `config/session.php`**:
   ```php
   'secure' => env('SESSION_SECURE_COOKIE', true),
   'http_only' => true,
-  'same_site' => 'strict',
+  'same_site' => 'lax',
+  'domain' => env('SESSION_DOMAIN'),  // default null = no domain attr
   ```
-  Env: `SESSION_SECURE_COOKIE=true` in productie .env.
+- **Verifieer**:
+  ```
+  curl -skI -L https://<domain>/login | grep -i '^set-cookie:'
+  ```
+  → `__Host-<slug>-session=...; path=/; secure; httponly; samesite=lax`
+  (GEEN `domain=` attribute).
+- **Bijwerking**: bestaande sessies worden ongeldig bij naamswijziging
+  → users loggen één keer opnieuw in. Plan rollout buiten piek.
+- **Open**: XSRF-TOKEN cookie heeft `XSRF-TOKEN` naam hardcoded in
+  Laravel's `VerifyCsrfToken` middleware. Prefix `__Secure-XSRF-TOKEN`
+  vereist custom middleware-override per project + axios-defaults
+  aanpassing. Separate follow-up.
 
 ### 3.4 Object-src 'none' + base-uri 'self'
 
