@@ -168,6 +168,7 @@ Internet.nl.
 |------|------------------|
 | `nginx-ssl-hardened-snippet.conf` | `/etc/nginx/snippets/ssl-hardened.conf` |
 | `nginx-http-level-ssl.conf` | Inline toevoegen in `/etc/nginx/nginx.conf` http-block |
+| `nginx-security-headers-baseline.conf` | `/etc/nginx/snippets/security-headers-baseline.conf` (alleen voor vhosts zonder eigen app-middleware) |
 | `openssl-restricted.cnf` | `/etc/nginx/openssl-restricted.cnf` |
 | `systemd-nginx-openssl-override.conf` | `/etc/systemd/system/nginx.service.d/openssl-restricted.conf` |
 | `nginx-vhost-hardened.conf.template` | `/etc/nginx/sites-available/{$slug}` (placeholders invullen) |
