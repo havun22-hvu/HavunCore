@@ -244,9 +244,11 @@ Alle 6 **recommended headers** aanwezig met strikte waarden.
   (c) data-eigenaar legt AVG-compliance vast (DPA, cookie-consent).
   Zo nee: GA mag niet.
 - **Alternatieven (cookieless)**:
-  - **Niks** (default)
-  - **Umami** (self-host op Hetzner, €0)
-  - **Plausible** (hosted, €9/mnd)
+  - **Niks** (default voor tools/admin-panels)
+  - **Umami self-host** op `umami.havun.nl` — LIVE sinds 2026-04-23,
+    zie `runbooks/umami-analytics-setup-2026-04-23.md` voor setup +
+    integratie + nieuwe site toevoegen
+  - **Plausible** (hosted, €9/mnd, niet in gebruik)
 - **Beslissingshistorie**: 2026-04-23 verwijderd uit JudoToernooi (tool,
   geen zin) + Herdenkingsportaal (AVG-risk overleden-data).
 
