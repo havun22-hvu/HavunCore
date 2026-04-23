@@ -225,6 +225,30 @@ Alle 6 **recommended headers** aanwezig met strikte waarden.
 - **Hoe**: `<script src="https://cdn..." integrity="sha384-..." crossorigin="anonymous"></script>`
 - **Verifieer**: alle `<script src="https://..."` regels moeten
   integrity-attr hebben.
+- **Uitzondering**: Google-scripts (gtag.js, cast_sender.js) roteren
+  inhoud → geen stabiele SRI-hash mogelijk. **Oplossing**: weghalen of
+  self-hosten (zie §3.2.1).
+
+### 3.2.1 Analytics-policy — Google Analytics default WEG
+
+- **Default**: geen Google Analytics in nieuwe Havun-projecten.
+- **Reden**:
+  1. SRI niet mogelijk op externe gtag.js → -5 Observatory penalty
+  2. AVG-risico: GA stuurt IP/sessiedata naar Google (VS)
+  3. Cookie-banner verplicht zodra actief → UX-last
+  4. Voor tools/admin-panels: marketing-analytics heeft geen functie
+- **Beoordeling per project**: GA mag alleen wanneer
+  (a) site is expliciet content/marketing-gericht, EN
+  (b) geen gevoelige persoonsgegevens (minderjarigen, overlijdens,
+      medisch, financieel), EN
+  (c) data-eigenaar legt AVG-compliance vast (DPA, cookie-consent).
+  Zo nee: GA mag niet.
+- **Alternatieven (cookieless)**:
+  - **Niks** (default)
+  - **Umami** (self-host op Hetzner, €0)
+  - **Plausible** (hosted, €9/mnd)
+- **Beslissingshistorie**: 2026-04-23 verwijderd uit JudoToernooi (tool,
+  geen zin) + Herdenkingsportaal (AVG-risk overleden-data).
 
 ### 3.3 Secure cookies + `__Host-` prefix
 
