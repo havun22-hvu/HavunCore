@@ -62,7 +62,8 @@ last_check: 2026-04-22
 | **Test-policy** | `reference/test-quality-policy.md` | 3-laags model: critical 100 % / business 70-85 % / glue 20-40 % |
 | **Policies** | `CLAUDE.md` — 6 Onschendbare Regels | Gedragsregels voor Claude |
 | **Detectie** | `qv:scan` (artisan) + Laravel scheduler | 11 checks dagelijks/wekelijks (zie tabel hieronder) |
-| **Bootstrap** | `project:scaffold <slug>` (artisan, on-demand) | Nieuw project inrichten met werkwijze-MD + 11 Claude commands + V&K-hint — zie sectie *Nieuw project bootstrappen* |
+| **Bootstrap** | `project:scaffold <slug> [--deploy=production]` (artisan, on-demand) | Nieuw project inrichten met werkwijze-MD + 11 Claude commands + V&K-hint + optioneel nginx/SSL-hardening templates — zie sectie *Nieuw project bootstrappen* |
+| **Deploy-eisen** | `docs/kb/reference/productie-deploy-eisen.md` + templates in `docs/kb/templates/server-configs/` | Canonieke eisen voor A+ / 100 op SSL Labs + SecurityHeaders + Mozilla Observatory + Hardenize + Internet.nl. Elke nieuwe productie-deploy werkt deze checklist af. |
 | **KB onderhoud** | `docs:audit` (artisan, wekelijks) + `/kb-audit` (Claude, on-demand) | Markdown-docs auditen op obsolete/zombie/structure/links — zie sectie *KB-onderhoud* |
 | **Bewijs** | Infection mutation-testing CI | Per-pad MSI gates op kritieke paden (zie sectie *Mutation-testing*) |
 | **Logs (auto)** | `reference/security-findings-log.md` | Auto-append van `qv:log` na elke scheduled scan |

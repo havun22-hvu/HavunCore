@@ -85,6 +85,41 @@ class ProjectScaffoldCommandTest extends TestCase
         $this->assertSame(1, $exit);
     }
 
+    public function test_deploy_production_generates_nginx_server_configs(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'deployproj',
+            '--path' => $this->tmpProject,
+            '--deploy' => 'production',
+            '--force' => true,
+        ])->run();
+
+        foreach ([
+            'nginx-ssl-hardened-snippet.conf',
+            'openssl-restricted.cnf',
+            'systemd-nginx-openssl-override.conf',
+            'nginx-vhost-hardened.conf.template',
+            'README.md',
+        ] as $f) {
+            $this->assertFileExists($this->tmpProject . '/deploy/nginx/' . $f);
+        }
+
+        // README moet naar canonical requirements wijzen
+        $readme = File::get($this->tmpProject . '/deploy/nginx/README.md');
+        $this->assertStringContainsString('productie-deploy-eisen.md', $readme);
+    }
+
+    public function test_default_deploy_does_not_generate_server_configs(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'nodeployproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        $this->assertDirectoryDoesNotExist($this->tmpProject . '/deploy');
+    }
+
     public function test_skips_existing_files_idempotent_run(): void
     {
         $firstRun = $this->artisan('project:scaffold', [

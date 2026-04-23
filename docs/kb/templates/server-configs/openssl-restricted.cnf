@@ -1,0 +1,27 @@
+# Havun nginx-only OpenSSL config — restrict TLS groups.
+# Target: /etc/nginx/openssl-restricted.cnf op productie-server.
+# Activatie: via systemd OPENSSL_CONF env var (nginx-service override).
+#
+# Waarom: OpenSSL 3.0.2 (Ubuntu 22.04) heeft bug waardoor
+# `ssl_conf_command Groups secp384r1:secp521r1;` in nginx genegeerd wordt.
+# x25519 blijft dan in offered curves list → SSL Labs Key Exchange = 90.
+# Per-process config via systemd env var omzeilt die bug.
+#
+# Scope: alleen nginx-proces gebruikt deze config. Andere apps
+# (PHP/Composer/MySQL outbound) blijven /etc/ssl/openssl.cnf default
+# met x25519 ondersteuning — geen risk voor outbound TLS.
+
+openssl_conf = openssl_init
+
+[openssl_init]
+ssl_conf = ssl_sect
+
+[ssl_sect]
+system_default = ssl_default_sect
+
+[ssl_default_sect]
+# Alleen curves die ≥ ECDSA P-384 cert-key strength matchen.
+# secp384r1 = 192-bit security (matches P-384 cert).
+# secp521r1 = 256-bit security (future-proof).
+# x25519 (128-bit) expliciet uit deze lijst.
+Groups = secp384r1:secp521r1

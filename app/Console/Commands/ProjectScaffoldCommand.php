@@ -30,6 +30,7 @@ class ProjectScaffoldCommand extends Command
                             {--path= : Absolute project-pad (default: D:/GitHub/<Slug>)}
                             {--stack=laravel : Project-stack (laravel|node|static). Alleen laravel in MVP.}
                             {--url= : Production URL voor V&K registratie (optioneel)}
+                            {--deploy= : Deploy-target ("production" kopieert server-config templates naar deploy/nginx/)}
                             {--force : Sla confirmatie over (CI-modus)}';
 
     protected $description = 'Bootstrap een nieuw project met Havun werkwijze, Claude commands, V&K registratie.';
@@ -118,7 +119,76 @@ class ProjectScaffoldCommand extends Command
 
         $plan['infection.json5'] = $this->renderInfectionConfig();
 
+        // Server-config templates (alleen als --deploy=production).
+        // Plaatst de 4 nginx/SSL-hardening templates uit HavunCore in
+        // deploy/nginx/ van het nieuwe project zodat prod-deploy de
+        // canonieke config kan gebruiken en automatisch A+ / 100 haalt
+        // op alle externe testsites (SSL Labs, SecurityHeaders, Mozilla
+        // Observatory, Hardenize, Internet.nl) — zie
+        // `docs/kb/reference/productie-deploy-eisen.md`.
+        if ($this->option('deploy') === 'production') {
+            $templates = base_path('docs/kb/templates/server-configs');
+            if (is_dir($templates)) {
+                $entries = scandir($templates);
+                if (is_array($entries)) {
+                    foreach ($entries as $file) {
+                        if ($file === '.' || $file === '..' || is_dir($templates . '/' . $file)) {
+                            continue;
+                        }
+                        $plan['deploy/nginx/' . $file] = File::get($templates . '/' . $file);
+                    }
+                }
+            }
+            $plan['deploy/nginx/README.md'] = $this->renderDeployReadme($slug);
+        }
+
         return $plan;
+    }
+
+    private function renderDeployReadme(string $slug): string
+    {
+        return <<<MD
+---
+title: Nginx deploy-config — {$slug}
+type: runbook
+scope: {$slug}
+last_check: TODO
+---
+
+# Nginx deploy-config
+
+Templates uit HavunCore's `docs/kb/templates/server-configs/`. Elk nieuw
+Havun productie-project start met deze config om automatisch A+ / 100
+te halen op SSL Labs + SecurityHeaders + Mozilla Observatory + Hardenize +
+Internet.nl.
+
+## Bestanden
+
+| File | Target op server |
+|------|------------------|
+| `nginx-ssl-hardened-snippet.conf` | `/etc/nginx/snippets/ssl-hardened.conf` |
+| `openssl-restricted.cnf` | `/etc/nginx/openssl-restricted.cnf` |
+| `systemd-nginx-openssl-override.conf` | `/etc/systemd/system/nginx.service.d/openssl-restricted.conf` |
+| `nginx-vhost-hardened.conf.template` | `/etc/nginx/sites-available/{$slug}` (placeholders invullen) |
+
+## Deploy-stappen (eerste keer, per productie-server)
+
+1. Kopieer de 3 snippet/config files naar genoemde locaties
+2. `systemctl daemon-reload` (voor systemd-override)
+3. Werk `nginx-vhost-hardened.conf.template` uit: vervang `__DOMAIN__`,
+   `__WEBROOT__`, `__PHP_SOCK__` met projectwaarden
+4. Plaats uitgewerkte vhost in `/etc/nginx/sites-available/{$slug}`
+5. `ln -s` naar `sites-enabled/`
+6. ECDSA cert: `certbot certonly --nginx --key-type ecdsa --elliptic-curve secp384r1 -d <domain>`
+7. DNS CAA records bij DNS-provider (mijnhost.nl voor Havun)
+8. `nginx -t && systemctl restart nginx`
+9. Verifieer via `docs/kb/reference/productie-deploy-eisen.md` §Verificatie-sequence
+
+## Canonical requirements
+
+Zie HavunCore `docs/kb/reference/productie-deploy-eisen.md` voor alle
+eisen per testsite + hoe te verifiëren.
+MD;
     }
 
     private function renderClaudeMd(string $slug, string $title): string
