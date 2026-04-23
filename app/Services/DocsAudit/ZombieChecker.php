@@ -87,6 +87,14 @@ class ZombieChecker
             return [];
         }
 
+        // Plan/audit-docs mogen toekomstige class/command-refs hebben.
+        // Detector skippt files met `status: PLANNED|TODO|DRAFT` of pad
+        // dat 'audit/' of 'plans/' bevat (portfolio-conventie voor
+        // forward-looking content).
+        if ($this->isPlanningDoc($absolutePath, $content)) {
+            return [];
+        }
+
         $findings = [];
 
         foreach ($this->extractClassRefs($content) as $classRef) {
@@ -188,8 +196,9 @@ class ZombieChecker
 
     private const ARTISAN_BUILTIN_PREFIXES = [
         'cache:', 'config:', 'db:', 'event:', 'install:', 'key:', 'lang:',
-        'make:', 'model:', 'package:', 'queue:', 'route:', 'sail:',
-        'schedule:', 'session:', 'storage:', 'stub:', 'vendor:', 'view:',
+        'make:', 'migrate:', 'model:', 'package:', 'queue:', 'route:',
+        'sail:', 'schedule:', 'session:', 'storage:', 'stub:', 'vendor:',
+        'view:',
     ];
 
     private function artisanCommandExists(string $signature): bool
@@ -392,6 +401,21 @@ class ZombieChecker
         } catch (\Throwable) {
             return [];
         }
+    }
+
+    private function isPlanningDoc(string $absolutePath, string $content): bool
+    {
+        $normalized = str_replace(['/', '\\'], '/', $absolutePath);
+        if (str_contains($normalized, '/audit/') || str_contains($normalized, '/plans/')) {
+            return true;
+        }
+        if (preg_match('/^---\n.*?\n---/s', $content, $m)) {
+            if (preg_match('/^status:\s*(PLANNED|TODO|DRAFT|PROPOSED)\s*$/im', $m[0])) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function finding(string $path, string $detail): array

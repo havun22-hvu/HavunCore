@@ -2,7 +2,7 @@
 title: KB audit — havuncore
 type: reference
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-04-23
 ---
 
 # KB audit — havuncore
@@ -11,20 +11,12 @@ last_check: 2026-04-22
 
 ## Samenvatting
 
-- Files gescand: **181**
+- Files gescand: **183**
 - 🔴 Critical: **0**
-- 🟠 High: **1**
+- 🟠 High: **0**
 - 🟡 Medium: **0**
 - 🔵 Low: **8**
 - ⚪ Info: **0**
-
-## 🟠 High findings
-
-### `docs/audit/verbeterplan-q2-2026.md` _(detector: zombie)_
-
-**Probleem:** Class-ref bestaat niet: `Owner`
-
-**Voorstel:** Update doc of herstel class/command
 
 ## 🔵 Low findings
 
@@ -75,19 +67,4 @@ last_check: 2026-04-22
 **Probleem:** File is 601 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
-
-## Batch-approval commands
-
-> Deze commands zijn **kandidaten voor verwijdering** (obsolete + zombie).
-> Scan de lijst, controleer, en voer uit met **"Uitvoeren"** als akkoord.
->
-> **SAFETY-GUARD:** het blok begint met `git status` — als de working
-> tree niet clean is, stopt het. Dat voorkomt dat een `rm` onbedoeld
-> samen met andere wijzigingen gecommit wordt.
-
-```bash
-git status --porcelain | grep -q . && { echo "Working tree not clean — abort"; exit 1; }
-# Class-ref bestaat niet: Owner
-rm "docs/audit/verbeterplan-q2-2026.md"
-```
 
