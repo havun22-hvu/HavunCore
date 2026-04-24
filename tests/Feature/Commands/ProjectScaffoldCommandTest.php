@@ -156,6 +156,21 @@ class ProjectScaffoldCommandTest extends TestCase
         $this->assertStringContainsString('SecurityHeadersTest', $ci);
     }
 
+    public function test_scaffolds_post_install_runbook_with_middleware_registration(): void
+    {
+        $this->scaffold('postinstallproj');
+
+        $this->assertFileExists($this->tmpProject . '/docs/kb/runbooks/post-install.md');
+        $this->assertFileExists($this->tmpProject . '/docs/kb/reference/kb-audit-latest.md');
+
+        // Runbook moet BEIDE Laravel middleware-registratie stijlen noemen,
+        // anders is de scaffold onbruikbaar afhankelijk van Laravel versie.
+        $runbook = File::get($this->tmpProject . '/docs/kb/runbooks/post-install.md');
+        $this->assertStringContainsString('bootstrap/app.php', $runbook, 'Laravel 11+ pad');
+        $this->assertStringContainsString('Kernel.php', $runbook, 'Laravel 10 pad');
+        $this->assertStringContainsString('SecurityHeaders', $runbook);
+    }
+
     public function test_kb_index_links_to_skeleton_docs(): void
     {
         $this->scaffold('indexproj');

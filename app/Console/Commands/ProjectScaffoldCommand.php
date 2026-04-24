@@ -135,6 +135,17 @@ class ProjectScaffoldCommand extends Command
         $plan['.gitignore'] = $this->renderGitignore();
         $plan['.github/workflows/ci.yml'] = $this->renderCiWorkflow($slug);
 
+        // Post-install runbook — brug tussen scaffold-output en werkend
+        // project. Geeft stappen om Laravel te installeren, middleware te
+        // registreren, dependencies toe te voegen. Zonder deze doc is de
+        // SecurityHeaders middleware een dode bestand.
+        $plan['docs/kb/runbooks/post-install.md'] = $this->renderPostInstallRunbook($slug);
+
+        // KB-audit placeholder — CLAUDE.md en INDEX.md verwijzen naar
+        // kb-audit-latest.md. Zonder placeholder is dat een broken link
+        // tot de eerste `docs:audit` run.
+        $plan['docs/kb/reference/kb-audit-latest.md'] = $this->renderKbAuditPlaceholder($slug, $today);
+
         // Server-config templates (alleen als --deploy=production).
         // Plaatst de 4 nginx/SSL-hardening templates uit HavunCore in
         // deploy/nginx/ van het nieuwe project zodat prod-deploy de
@@ -1038,6 +1049,148 @@ jobs:
               run: php artisan test --filter=SecurityHeadersTest --no-coverage
 
 YAML;
+    }
+
+    private function renderPostInstallRunbook(string $slug): string
+    {
+        return <<<MD
+---
+title: Post-install — eerste werkende staat
+type: runbook
+scope: {$slug}
+last_check: TODO
+---
+
+# Post-install runbook
+
+> **Context:** scaffold heeft configuratie + boilerplate geplaatst, maar
+> Laravel zelf is nog niet geïnstalleerd in deze map. Doorloop deze
+> stappen om van scaffold-output naar draaiend project te gaan.
+
+## 1. Laravel installeren
+
+```bash
+composer create-project laravel/laravel:^11 .
+```
+
+Bevestig "overwrite" voor scaffold-bestanden waar Laravel ook iets heeft
+(`.env.example`, `.gitignore`, `tests/TestCase.php` e.d.) **met "no"** —
+de scaffold-versies hebben onze security-defaults.
+
+## 2. SecurityHeaders middleware registreren
+
+### Laravel 11+ (`bootstrap/app.php`)
+
+```php
+->withMiddleware(function (Middleware \$middleware) {
+    \$middleware->web(append: [
+        \\App\\Http\\Middleware\\SecurityHeaders::class,
+    ]);
+})
+```
+
+### Laravel 10 (`app/Http/Kernel.php`)
+
+Voeg toe aan de `\$middleware` array:
+
+```php
+protected \$middleware = [
+    // ... bestaande middleware
+    \\App\\Http\\Middleware\\SecurityHeaders::class,
+];
+```
+
+Zonder deze registratie doet de middleware NIKS — de regression-tests
+falen dan direct, wat een goede veiligheid is tegen vergeten.
+
+## 3. Alpine + plugins installeren
+
+```bash
+npm install alpinejs @alpinejs/csp @alpinejs/collapse
+```
+
+De scaffold heeft `resources/js/app.js` en `alpine-components.js` al
+klaarstaan — na `npm install` kan `npm run build`.
+
+## 4. Env-config
+
+```bash
+cp .env.example .env
+php artisan key:generate
+```
+
+Vul daarna DB credentials in en draai migrations:
+
+```bash
+php artisan migrate
+```
+
+## 5. Eerste test-run
+
+```bash
+php artisan test
+```
+
+Verwacht: alle tests groen, inclusief `SecurityHeadersTest` (9
+asserties). Als SecurityHeadersTest faalt → middleware-registratie uit
+stap 2 gecheckt.
+
+## 6. CI op GitHub
+
+Push de eerste commit. `.github/workflows/ci.yml` draait dan automatisch
+bij elke PR/push. Controleer dat MySQL-credentials in de workflow
+matchen met je schema.
+
+## 7. Eerste deploy (productie)
+
+Zie [`runbooks/deploy.md`](deploy.md). Scaffold-templates in
+`deploy/nginx/` zorgen voor de SSL-hardening; DNS-records via HavunCore's
+mijn.host API (zie `reference/security-eisen.md`).
+
+## Klaar
+
+Na stap 7 scoort het project automatisch A+ op alle 5 testsites. Elke
+verdere feature start vanaf `docs/kb/INDEX.md` — docs-first.
+
+MD;
+    }
+
+    private function renderKbAuditPlaceholder(string $slug, string $today): string
+    {
+        return <<<MD
+---
+title: KB-audit — {$slug}
+type: reference
+scope: {$slug}
+last_check: {$today}
+status: PLACEHOLDER
+---
+
+# KB-audit (nog niet gedraaid)
+
+Dit is een placeholder. De eerste audit genereert de echte rapport-inhoud
+en overschrijft dit bestand.
+
+## Eerste audit draaien
+
+Vanuit HavunCore:
+
+```bash
+cd D:/GitHub/HavunCore
+php artisan docs:audit {$slug}
+```
+
+## Wat de audit checkt
+
+- Broken links in docs/kb/
+- Inconsistente frontmatter
+- Outdated `last_check` (> 90 dagen)
+- Duplicate-content detection
+- Coverage van kritieke onderwerpen (security-eisen, deploy, tests)
+
+Resultaat komt terug in dit bestand.
+
+MD;
     }
 
     private function renderDecisionDocsFirst(string $title): string
