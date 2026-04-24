@@ -129,6 +129,12 @@ class ProjectScaffoldCommand extends Command
         $plan['resources/js/alpine-components.js'] = $this->renderAlpineComponentsBoilerplate();
         $plan['resources/js/app.js'] = $this->renderAppJs();
 
+        // Project-root essentials — .env.example met secure defaults,
+        // .gitignore met security-kritische excludes, GitHub Actions CI.
+        $plan['.env.example'] = $this->renderEnvExample($slug);
+        $plan['.gitignore'] = $this->renderGitignore();
+        $plan['.github/workflows/ci.yml'] = $this->renderCiWorkflow($slug);
+
         // Server-config templates (alleen als --deploy=production).
         // Plaatst de 4 nginx/SSL-hardening templates uit HavunCore in
         // deploy/nginx/ van het nieuwe project zodat prod-deploy de
@@ -397,10 +403,19 @@ last_check: {$today}
 
 > Project-lokale kennisbank. Canonical cross-project KB: `D:/GitHub/HavunCore/docs/kb/`.
 
+## Start hier
+
+Elk nieuw werk start met lezen van deze docs (in volgorde):
+
+1. [`reference/security-eisen.md`](reference/security-eisen.md) — A+ score-targets per testsite + regression-tests
+2. [`reference/test-quality-policy.md`](reference/test-quality-policy.md) — coverage + MSI targets, anti-patterns
+3. [`decisions/0001-docs-first-development.md`](decisions/0001-docs-first-development.md) — workflow waarom
+4. [`runbooks/deploy.md`](runbooks/deploy.md) — eerste + reguliere deploy-procedure
+
 ## Structuur
 
 - **runbooks/** — hoe-te-doen-procedures (deploy, troubleshoot)
-- **reference/** — feit-lookups (API's, configs, paden)
+- **reference/** — feit-lookups (API's, configs, paden, eisen)
 - **decisions/** — ADR's (waarom-keuzes zijn gemaakt)
 - **patterns/** — herbruikbare patterns/solutions
 
@@ -837,6 +852,192 @@ php artisan config:clear && php artisan view:clear && php artisan cache:clear
 - Controleer application logs op errors eerste 5 min na deploy
 
 MD;
+    }
+
+    private function renderEnvExample(string $slug): string
+    {
+        return <<<ENV
+APP_NAME="{$slug}"
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_TIMEZONE=Europe/Amsterdam
+APP_URL=http://localhost
+
+APP_LOCALE=nl
+APP_FALLBACK_LOCALE=nl
+APP_FAKER_LOCALE=nl_NL
+
+LOG_CHANNEL=stack
+LOG_LEVEL=debug
+
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE={$slug}
+DB_USERNAME=
+DB_PASSWORD=
+
+# Sessions — secure defaults per docs/kb/reference/security-eisen.md.
+# __Host- prefix requires secure + path=/ + NO domain attribute.
+SESSION_DRIVER=database
+SESSION_LIFETIME=120
+SESSION_ENCRYPT=false
+SESSION_PATH=/
+SESSION_DOMAIN=
+SESSION_COOKIE=__Host-{$slug}-session
+SESSION_SECURE_COOKIE=true
+SESSION_SAME_SITE=lax
+
+CACHE_STORE=database
+QUEUE_CONNECTION=database
+
+# Mail — fill in at deploy time with Brevo/Mailgun credentials
+MAIL_MAILER=log
+MAIL_FROM_ADDRESS=noreply@{$slug}.havun.nl
+MAIL_FROM_NAME="\${APP_NAME}"
+
+# Trusted proxies — uncomment + set IP when behind a proxy/LB on production.
+# TRUSTED_PROXIES=188.245.159.115
+
+ENV;
+    }
+
+    private function renderGitignore(): string
+    {
+        return <<<'GITIGNORE'
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/vendor
+.phpunit.result.cache
+.phpstorm.meta.php
+.vscode/
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+/.idea
+/.nova
+/.vscode
+/.zed
+
+# .env — NEVER commit. Includes .bak/.backup/.local to prevent accidentally
+# committing temporary copies made during secret rotation.
+.env
+.env.*
+!.env.example
+
+# Test + coverage artifacts — never commit generated output.
+/tests/coverage
+/coverage_output.txt
+.phpunit.cache
+/infection.log
+
+# Security-audit local caches (ggshield, etc).
+.cache_ggshield
+.cache/
+
+# OS files
+.DS_Store
+Thumbs.db
+GITIGNORE;
+    }
+
+    private function renderCiWorkflow(string $slug): string
+    {
+        return <<<YAML
+name: CI
+
+on:
+    push:
+        branches: [main, master]
+    pull_request:
+        branches: [main, master]
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+
+        services:
+            mysql:
+                image: mysql:8
+                env:
+                    MYSQL_ROOT_PASSWORD: root
+                    MYSQL_DATABASE: {$slug}_test
+                ports:
+                    - 3306:3306
+                options: >-
+                    --health-cmd="mysqladmin ping -h localhost -u root --password=root"
+                    --health-interval=10s
+                    --health-timeout=5s
+                    --health-retries=5
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Setup PHP
+              uses: shivammathur/setup-php@v2
+              with:
+                  php-version: '8.3'
+                  extensions: mbstring, bcmath, intl, pdo_mysql
+                  tools: composer
+
+            - name: Setup Node
+              uses: actions/setup-node@v4
+              with:
+                  node-version: '20'
+                  cache: 'npm'
+
+            - name: Composer install
+              run: composer install --prefer-dist --no-progress --no-interaction
+
+            - name: Composer audit (fail on CVE)
+              run: composer audit --no-interaction
+
+            - name: NPM install + audit (production deps)
+              run: |
+                  npm ci
+                  npm audit --audit-level=high --omit=dev
+
+            - name: Build assets
+              run: npm run build
+
+            - name: Copy .env for testing
+              run: cp .env.example .env
+
+            - name: Generate key
+              run: php artisan key:generate
+
+            - name: Run migrations
+              env:
+                  DB_HOST: 127.0.0.1
+                  DB_DATABASE: {$slug}_test
+                  DB_USERNAME: root
+                  DB_PASSWORD: root
+              run: php artisan migrate --force
+
+            - name: Run test suite
+              env:
+                  DB_HOST: 127.0.0.1
+                  DB_DATABASE: {$slug}_test
+                  DB_USERNAME: root
+                  DB_PASSWORD: root
+              run: php artisan test --no-coverage
+
+            - name: SecurityHeaders regression-set
+              env:
+                  DB_HOST: 127.0.0.1
+                  DB_DATABASE: {$slug}_test
+                  DB_USERNAME: root
+                  DB_PASSWORD: root
+              run: php artisan test --filter=SecurityHeadersTest --no-coverage
+
+YAML;
     }
 
     private function renderDecisionDocsFirst(string $title): string

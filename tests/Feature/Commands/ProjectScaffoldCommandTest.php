@@ -115,6 +115,78 @@ class ProjectScaffoldCommandTest extends TestCase
         $this->assertStringContainsString('Internet.nl', $sec);
     }
 
+    public function test_scaffolds_env_example_with_secure_defaults(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'envproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        $this->assertFileExists($this->tmpProject . '/.env.example');
+        $env = File::get($this->tmpProject . '/.env.example');
+
+        $this->assertStringContainsString('SESSION_COOKIE=__Host-envproj-session', $env);
+        $this->assertStringContainsString('SESSION_DOMAIN=', $env);
+        $this->assertStringContainsString('SESSION_SECURE_COOKIE=true', $env);
+        $this->assertStringContainsString('APP_TIMEZONE=Europe/Amsterdam', $env);
+    }
+
+    public function test_scaffolds_gitignore_with_env_protection(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'gitproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        $this->assertFileExists($this->tmpProject . '/.gitignore');
+        $gi = File::get($this->tmpProject . '/.gitignore');
+
+        // .env protection (incl. backups from rotation)
+        $this->assertStringContainsString('.env', $gi);
+        $this->assertStringContainsString('.env.*', $gi);
+        $this->assertStringContainsString('!.env.example', $gi, 'Example must be tracked');
+        // Vendor + node_modules + build artifacts
+        $this->assertStringContainsString('/vendor', $gi);
+        $this->assertStringContainsString('/node_modules', $gi);
+        $this->assertStringContainsString('/public/build', $gi);
+    }
+
+    public function test_scaffolds_ci_workflow(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'ciproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        $this->assertFileExists($this->tmpProject . '/.github/workflows/ci.yml');
+        $ci = File::get($this->tmpProject . '/.github/workflows/ci.yml');
+
+        // CI must run composer audit, npm audit, test suite and security regression-set.
+        $this->assertStringContainsString('composer audit', $ci);
+        $this->assertStringContainsString('npm audit', $ci);
+        $this->assertStringContainsString('php artisan test', $ci);
+        $this->assertStringContainsString('SecurityHeadersTest', $ci);
+    }
+
+    public function test_kb_index_links_to_skeleton_docs(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'indexproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        $index = File::get($this->tmpProject . '/docs/kb/INDEX.md');
+
+        $this->assertStringContainsString('security-eisen.md', $index);
+        $this->assertStringContainsString('test-quality-policy.md', $index);
+        $this->assertStringContainsString('0001-docs-first-development.md', $index);
+        $this->assertStringContainsString('runbooks/deploy.md', $index);
+    }
+
     public function test_claude_md_documents_docs_first_principles(): void
     {
         $this->artisan('project:scaffold', [
