@@ -2,6 +2,48 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 25 april 2026 — Cipher Strength 90→100 + canonical naked rollout
+
+### Wat gedaan:
+
+**SSL Labs Cipher Strength fix (cross-portfolio):**
+- SSL Labs API check toonde `TLS_AES_128_GCM_SHA256` in suites lijst voor herdenkingsportaal.nl, terwijl onze hardened-snippet alleen 256-bit toelaat. Eigen openssl tests gaven handshake_failure op AES_128 — discrepantie.
+- **Root cause**: SSL Labs scant ook **zonder SNI** (om SNI-vereiste te detecteren). Nginx valt dan terug op het alfabetisch eerste 443-vhost. Drie geparkeerde vhosts (`havunclub.havun.nl`, `staging.havunclub.havun.nl`, `staging.havunvet.havun.nl`) hadden nog Let's Encrypt's `options-ssl-nginx.conf` met de default TLS 1.3 cipher list (incl. AES_128). `havunclub.*` is alfabetisch eerst → werd default → SSL Labs zag AES_128 → score 90 voor ALLE 7 productie-domeinen.
+- **Fix**: alle 3 vhosts op server (188.245.159.115) gemigreerd naar `ssl-hardened.conf`, `ssl_dhparam` regels verwijderd. `nginx -t` ✅ + reload ✅. Backup: `/root/nginx-vhost-backup-2026-04-25.tar.gz`.
+- Verificatie: AES_128 nu overal handshake_failure, ook via no-SNI path.
+- Runbook `docs/kb/runbooks/ssl-100-100-2026-04-23.md` aangevuld met "iter 4" sectie.
+- **Henk moet zelf**: SSL Labs "Clear cache" klikken voor herdenkingsportaal.nl + 6 andere domeinen om herscan te triggeren. Verwacht: 100/100 op alle.
+
+**Cross-portfolio les voor scaffold/deploy:**
+ELKE 443-vhost op de server moet de hardened-snippet includen, ook geparkeerde projecten — anders ondermijnt 1 zwakke fallback de score van álle domeinen. `productie-deploy-eisen.md` sectie 1.7 (`ssl_reject_handshake`) is een betere architecturale fix maar vereist nginx ≥ 1.19.4 + nieuwe default_server vhost. Voor nu: hardened-include als verplichte check.
+
+**Herdenkingsportaal canonical naked URL rollout:**
+- APP_URL op production server gewijzigd naar `https://herdenkingsportaal.nl` (was www.)
+- 3 PHP-files gerefactord (SitemapController, MemorialHtmlGenerator, ChatKnowledgeService) om `config('app.url')` te gebruiken ipv hardcoded www
+- 2 test-files aangepast met explicit `config(['app.url'=>...])` voor determinisme
+- 6 user-facing MD-docs bulk-replaced (`README.md`, `EMAIL-TEMPLATES`, `VISITEKAARTJE`, `CHATBOT-CLAUDE`, `PAYMENT-SYSTEM`, `SEO-MEASUREMENT`, `1-GETTING-STARTED/README`)
+- `SEO-WWW-REDIRECT-FIX.md` volledig herschreven naar nieuwe canonical policy (was leesbaar als "draai het terug naar www")
+- Herdenkingsportaal `CLAUDE.md`, `context.md`, `handover.md` bijgewerkt — verouderde CSP-regels (`'unsafe-eval' niet verwijderen`, `@alpinejs/csp werkt niet`) gefixt
+- Sitemap-tests: 17/17 groen (39 assertions)
+- **Niet gedeployed** — code-wijzigingen wachten op `git push` + server `git pull`
+
+### Openstaand voor morgen:
+
+- [ ] Herdenkingsportaal: code naar production deployen (3 PHP-files, APP_URL al gezet)
+- [ ] SSL Labs scans triggeren voor 7 productie-domeinen (handmatig "Clear cache")
+- [ ] Mozilla Observatory rescan voor herdenkingsportaal.nl (verwacht A+ na canonical fix)
+- [ ] OG image 1200×630 voor herdenkingsportaal.nl (social sharing)
+- [ ] havun.nl en judotournament.org soortgelijke "klaar voor promo" pass: alle testsites doorlopen, inconsistenties cross-propageren
+- [ ] Volledige Herdenkingsportaal testsuite afronden (Sitemap-filter was 17/17 groen, full suite hing op pipe — niet bevestigd)
+
+### Belangrijke context:
+
+- Cipher Strength fix raakt alle Havun productie-domeinen tegelijk (1 gedeelde fallback vhost).
+- Canonical-policy is portfolio-breed naked: havun.nl, herdenkingsportaal.nl, judotournament.org allemaal zonder www.
+- Henks waarschuwing: docs moeten 100% klakkeloos terugdraaien voorkomen — vandaar de uitvoerige refactor van Herdenkingsportaal-MD's.
+
+---
+
 ## Sessie: 24-25 april 2026 — Bedrijfsgegevens + sessie-afronding
 
 ### Wat gedaan:
