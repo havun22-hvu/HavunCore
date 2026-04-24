@@ -47,6 +47,91 @@ class ProjectScaffoldCommandTest extends TestCase
         }
     }
 
+    public function test_scaffolds_laravel_security_boilerplate(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'secproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        // SecurityHeaders middleware + regression-test altijd aanwezig
+        $this->assertFileExists($this->tmpProject . '/app/Http/Middleware/SecurityHeaders.php');
+        $this->assertFileExists($this->tmpProject . '/tests/Feature/Middleware/SecurityHeadersTest.php');
+
+        // Middleware heeft de verplichte CSP clauses
+        $mw = File::get($this->tmpProject . '/app/Http/Middleware/SecurityHeaders.php');
+        $this->assertStringContainsString('X-Content-Type-Options', $mw);
+        $this->assertStringContainsString("'nonce-{", $mw, 'Nonce-based CSP required');
+        $this->assertStringNotContainsString("'unsafe-eval'", $mw, 'No unsafe-eval in scaffold default CSP');
+        $this->assertStringContainsString('includeSubDomains; preload', $mw);
+
+        // Test heeft de kern-asserties
+        $test = File::get($this->tmpProject . '/tests/Feature/Middleware/SecurityHeadersTest.php');
+        $this->assertStringContainsString('test_csp_does_not_allow_unsafe_eval', $test);
+        $this->assertStringContainsString('test_hsts_header_includes_preload_over_https', $test);
+    }
+
+    public function test_scaffolds_alpine_csp_setup(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'alpineproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        $this->assertFileExists($this->tmpProject . '/resources/js/app.js');
+        $this->assertFileExists($this->tmpProject . '/resources/js/alpine-components.js');
+
+        $app = File::get($this->tmpProject . '/resources/js/app.js');
+        $this->assertStringContainsString("import Alpine from '@alpinejs/csp'", $app);
+        $this->assertStringContainsString("import './alpine-components'", $app);
+
+        $components = File::get($this->tmpProject . '/resources/js/alpine-components.js');
+        $this->assertStringContainsString("Alpine.data('toggle'", $components);
+        $this->assertStringContainsString("Alpine.data('dropdown'", $components);
+    }
+
+    public function test_scaffolds_hierarchical_kb_docs(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'kbproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        // Project-lokale referentie-docs als entry-points
+        $this->assertFileExists($this->tmpProject . '/docs/kb/reference/security-eisen.md');
+        $this->assertFileExists($this->tmpProject . '/docs/kb/reference/test-quality-policy.md');
+        $this->assertFileExists($this->tmpProject . '/docs/kb/runbooks/deploy.md');
+        $this->assertFileExists($this->tmpProject . '/docs/kb/decisions/0001-docs-first-development.md');
+
+        // Security-eisen doc bevat de 5 testsite-targets
+        $sec = File::get($this->tmpProject . '/docs/kb/reference/security-eisen.md');
+        $this->assertStringContainsString('SSL Labs', $sec);
+        $this->assertStringContainsString('SecurityHeaders.com', $sec);
+        $this->assertStringContainsString('Mozilla Observatory', $sec);
+        $this->assertStringContainsString('Hardenize', $sec);
+        $this->assertStringContainsString('Internet.nl', $sec);
+    }
+
+    public function test_claude_md_documents_docs_first_principles(): void
+    {
+        $this->artisan('project:scaffold', [
+            'slug' => 'docsfirstproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        $claude = File::get($this->tmpProject . '/CLAUDE.md');
+        $this->assertStringContainsString('Docs-first', $claude);
+        $this->assertStringContainsString('/start', $claude);
+        $this->assertStringContainsString('/end', $claude);
+        $this->assertStringContainsString('A+', $claude, 'Security target must be explicit');
+        $this->assertStringContainsString('SSL Labs', $claude);
+        $this->assertStringContainsString('Coverage', $claude);
+    }
+
     public function test_copies_claude_commands_from_havuncore(): void
     {
         $this->artisan('project:scaffold', [
