@@ -2,6 +2,19 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 24-25 april 2026 — Bedrijfsgegevens + sessie-afronding
+
+### Wat gedaan:
+- **Bedrijfsgegevens bijgewerkt:** Mollie IBAN `NL12MLLE0707598745` toegevoegd naast bestaande Bunq IBAN (`NL75BUNQ2167592531`) in `docs/kb/projects/havunadmin.md`. Bunq blijft voorlopig actief — overschakeling loopt.
+- **KvK-vraag beantwoord:** Havun ingeschreven onder KvK 98516000 (eigenaar Henk van Unen). SBI-code/activiteiten staan NIET in docs — op te vragen via kvk.nl of de ingebouwde HavunAdmin KvK-lookup.
+
+### Openstaand voor morgen:
+- SBI-code/werkzaamheden bij KvK vastleggen in docs (optioneel)
+- Bunq → Mollie overschakeling afronden; daarna Bunq-regel schrappen uit bedrijfsgegevens
+- Lopende items uit vorige sessies (KB-onderhoud, Munus, etc. — zie hieronder)
+
+---
+
 ## Sessie: 22 april 2026 (laat) — KB-onderhoud + Bootstrap-tool + Munus startklaar
 
 Marathon-sessie. Drie grote werkstromen voltooid:
