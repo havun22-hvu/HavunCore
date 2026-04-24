@@ -23,15 +23,24 @@ class ProjectScaffoldCommandTest extends TestCase
         parent::tearDown();
     }
 
-    public function test_scaffolds_required_artefacts_for_valid_slug(): void
+    /**
+     * Run the scaffold command against the temp path with --force.
+     * Centralised so individual tests stay focused on assertions.
+     *
+     * @param  array<string,mixed>  $extraArgs
+     */
+    private function scaffold(string $slug, array $extraArgs = []): int
     {
-        $exit = $this->artisan('project:scaffold', [
-            'slug' => 'testproject',
+        return $this->artisan('project:scaffold', array_merge([
+            'slug' => $slug,
             '--path' => $this->tmpProject,
             '--force' => true,
-        ])->run();
+        ], $extraArgs))->run();
+    }
 
-        $this->assertSame(0, $exit);
+    public function test_scaffolds_required_artefacts_for_valid_slug(): void
+    {
+        $this->assertSame(0, $this->scaffold('testproject'));
 
         // Kern-artefacten moeten bestaan:
         $this->assertFileExists($this->tmpProject . '/CLAUDE.md');
@@ -49,11 +58,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_scaffolds_laravel_security_boilerplate(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'secproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('secproj');
 
         // SecurityHeaders middleware + regression-test altijd aanwezig
         $this->assertFileExists($this->tmpProject . '/app/Http/Middleware/SecurityHeaders.php');
@@ -74,11 +79,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_scaffolds_alpine_csp_setup(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'alpineproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('alpineproj');
 
         $this->assertFileExists($this->tmpProject . '/resources/js/app.js');
         $this->assertFileExists($this->tmpProject . '/resources/js/alpine-components.js');
@@ -94,11 +95,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_scaffolds_hierarchical_kb_docs(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'kbproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('kbproj');
 
         // Project-lokale referentie-docs als entry-points
         $this->assertFileExists($this->tmpProject . '/docs/kb/reference/security-eisen.md');
@@ -117,11 +114,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_scaffolds_env_example_with_secure_defaults(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'envproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('envproj');
 
         $this->assertFileExists($this->tmpProject . '/.env.example');
         $env = File::get($this->tmpProject . '/.env.example');
@@ -134,11 +127,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_scaffolds_gitignore_with_env_protection(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'gitproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('gitproj');
 
         $this->assertFileExists($this->tmpProject . '/.gitignore');
         $gi = File::get($this->tmpProject . '/.gitignore');
@@ -155,11 +144,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_scaffolds_ci_workflow(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'ciproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('ciproj');
 
         $this->assertFileExists($this->tmpProject . '/.github/workflows/ci.yml');
         $ci = File::get($this->tmpProject . '/.github/workflows/ci.yml');
@@ -173,11 +158,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_kb_index_links_to_skeleton_docs(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'indexproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('indexproj');
 
         $index = File::get($this->tmpProject . '/docs/kb/INDEX.md');
 
@@ -189,11 +170,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_claude_md_documents_docs_first_principles(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'docsfirstproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('docsfirstproj');
 
         $claude = File::get($this->tmpProject . '/CLAUDE.md');
         $this->assertStringContainsString('Docs-first', $claude);
@@ -206,11 +183,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_copies_claude_commands_from_havuncore(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'testproj2',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('testproj2');
 
         // Kern Claude commands die in HavunCore bestaan en gekopieerd zijn:
         $this->assertFileExists($this->tmpProject . '/.claude/commands/start.md');
@@ -222,6 +195,7 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_rejects_invalid_slug(): void
     {
+        // --path omitted so the scaffold bails before touching the tmp dir.
         $exit = $this->artisan('project:scaffold', [
             'slug' => 'UPPERCASE', // invalid: uppercase
             '--force' => true,
@@ -232,24 +206,12 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_rejects_non_laravel_stack_in_mvp(): void
     {
-        $exit = $this->artisan('project:scaffold', [
-            'slug' => 'nodetestproj',
-            '--path' => $this->tmpProject,
-            '--stack' => 'node',
-            '--force' => true,
-        ])->run();
-
-        $this->assertSame(1, $exit);
+        $this->assertSame(1, $this->scaffold('nodetestproj', ['--stack' => 'node']));
     }
 
     public function test_deploy_production_generates_nginx_server_configs(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'deployproj',
-            '--path' => $this->tmpProject,
-            '--deploy' => 'production',
-            '--force' => true,
-        ])->run();
+        $this->scaffold('deployproj', ['--deploy' => 'production']);
 
         foreach ([
             'nginx-ssl-hardened-snippet.conf',
@@ -270,34 +232,19 @@ class ProjectScaffoldCommandTest extends TestCase
 
     public function test_default_deploy_does_not_generate_server_configs(): void
     {
-        $this->artisan('project:scaffold', [
-            'slug' => 'nodeployproj',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
+        $this->scaffold('nodeployproj');
 
         $this->assertDirectoryDoesNotExist($this->tmpProject . '/deploy');
     }
 
     public function test_skips_existing_files_idempotent_run(): void
     {
-        $firstRun = $this->artisan('project:scaffold', [
-            'slug' => 'idempotent',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
-        $this->assertSame(0, $firstRun);
+        $this->assertSame(0, $this->scaffold('idempotent'));
 
         // Wijzig een bestand om te verifieren dat run #2 het niet overschrijft.
         File::put($this->tmpProject . '/CLAUDE.md', '# Custom content — must not be overwritten');
 
-        $secondRun = $this->artisan('project:scaffold', [
-            'slug' => 'idempotent',
-            '--path' => $this->tmpProject,
-            '--force' => true,
-        ])->run();
-
-        $this->assertSame(0, $secondRun);
+        $this->assertSame(0, $this->scaffold('idempotent'));
         $this->assertSame(
             '# Custom content — must not be overwritten',
             File::get($this->tmpProject . '/CLAUDE.md')
