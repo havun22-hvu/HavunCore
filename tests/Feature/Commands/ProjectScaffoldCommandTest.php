@@ -193,7 +193,9 @@ class ProjectScaffoldCommandTest extends TestCase
         $this->assertStringContainsString('/end', $claude);
         $this->assertStringContainsString('A+', $claude, 'Security target must be explicit');
         $this->assertStringContainsString('SSL Labs', $claude);
-        $this->assertStringContainsString('Coverage', $claude);
+        // Tests-regel: zinvolheid primair, coverage-% secundair (Henk 2026-04-20)
+        $this->assertStringContainsString('Zinvolheid', $claude);
+        $this->assertStringContainsString('Kritieke paden', $claude);
     }
 
     public function test_copies_claude_commands_from_havuncore(): void

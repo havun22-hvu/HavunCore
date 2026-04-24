@@ -266,10 +266,13 @@ Dit project volgt **docs-first development**:
 ## Kwaliteitseisen — NIET onderhandelbaar
 
 ### Tests
-- Coverage **>80% methods** op nieuwe code (enterprise-niveau)
-- Kritieke paden **100% gedekt** + mutation-score hoog
-- Alleen **zinvolle, duurzame tests** — geen coverage-padding of
-  implementation-detail tests (zie `feedback_durable_tests_only`)
+- **Zinvolheid eerst, coverage-% is bijproduct.** Als een test geschrapt
+  kan worden zonder dat de codebase-kwaliteit zakt → weg ermee,
+  ongeacht wat het met coverage-% doet.
+- **Kritieke paden 100% gedekt** + mutation-score hoog (MSI ≥ 90%) —
+  dat is de feitelijke meting van bescherming
+- Geen coverage-padding, geen implementation-detail tests die bij elke
+  refactor breken
 - **SecurityHeadersTest** regression-set altijd aanwezig + groen
   (zie `app/Http/Middleware/SecurityHeaders.php` + test)
 
@@ -786,10 +789,15 @@ last_check: TODO
 
 ## Doelen (niet-onderhandelbaar)
 
-- **Methods coverage >80%** op nieuwe code
-- **Kritieke paden 100% gedekt** + hoge mutation-score (MSI ≥ 90%)
-- **Alleen duurzame tests** — geen coverage-padding, geen
-  implementation-detail tests die meebewegen met refactors
+- **Zinvolheid is primair, coverage-% is secundair.** Een test bestaat
+  alleen als hij een concrete regressie vangt die een mens anders mist.
+- **Kritieke paden 100% gedekt** + hoge mutation-score (MSI ≥ 90%) —
+  dit is de feitelijke maatstaf, niet een coverage-getal
+- **Alleen duurzame tests** — als een test geschrapt kan worden zonder
+  dat codebase-kwaliteit zakt → weg ermee (regel 2026-04-20, zie
+  `feedback_durable_tests_only`)
+- Geen coverage-padding, geen implementation-detail tests die meebewegen
+  met refactors
 
 ## Wat is "kritiek pad"?
 
