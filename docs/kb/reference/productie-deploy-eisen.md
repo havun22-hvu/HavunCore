@@ -23,6 +23,29 @@ last_check: 2026-04-23
   expliciet een andere overrulend.
 - Per sub-eis staat een template-file of runbook voor implementatie.
 
+## Verplichte regression-tests (per Laravel-project)
+
+Elk project met een `SecurityHeaders` middleware MOET deze 4 regression-
+tests hebben in `tests/Feature/Middleware/SecurityHeadersTest.php` (of
+gelijkwaardig). Doel: voorkom silent regressies op Mozilla Observatory /
+SSL Labs scoring.
+
+1. **`hsts_header_includes_preload_over_https`** — verifieert dat HSTS
+   `max-age=31536000; includeSubDomains; preload` op HTTPS wordt gestuurd
+   (`URL::forceScheme('https')` in test om secure-request te simuleren).
+2. **`hsts_header_absent_on_http`** — geen HSTS over plain HTTP (anti
+   mixed-content lockout).
+3. **`csp_does_not_allow_unsafe_eval`** (of `..._after_alpine_csp_migration`
+   als skipped TODO) — Mozilla Observatory penalty -10 wanneer
+   `unsafe-eval` staat in CSP. Voor projecten in Alpine-migratie:
+   `markTestSkipped()` met TODO-message; verwijderen na switch naar
+   `@alpinejs/csp`.
+4. **`csp_does_not_allow_unsafe_inline_in_script_src`** — script-src mag
+   geen `unsafe-inline` bevatten (alleen `'nonce-...'`).
+
+Status (24-04-2026): geactiveerd op HavunAdmin, Herdenkingsportaal,
+JudoToernooi, Infosyst. Bij scaffold van nieuw project — toevoegen.
+
 ---
 
 ## 1. SSL Labs → A+ / 100 / 100 / 100 / 100
