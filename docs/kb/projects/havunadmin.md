@@ -254,7 +254,8 @@ Dit project kan taken ontvangen van HavunCore:
 - **KvK:** 98516000
 - **BTW-ID:** NL002995910B70
 - **Tax-nr:** 195200305B01
-- **IBAN:** NL75BUNQ2167592531
+- **IBAN (Bunq):** NL75BUNQ2167592531
+- **IBAN (Mollie):** NL12MLLE0707598745 — toegevoegd 2026-04-24
 - **BTW-Status:** Klein Ondernemersregeling (KOR), actief, onder 20k
 - **Belasting 2025:** Omzet 10,10 / Kosten 1.550,41 / Verlies -1.540,31
 
