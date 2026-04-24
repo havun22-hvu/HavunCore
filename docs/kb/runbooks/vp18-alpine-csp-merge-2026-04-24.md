@@ -57,6 +57,33 @@ curl -skI https://judotournament.org/ | grep -i 'content-security-policy'
 
 ## Open follow-ups
 
-- `ClubControllerCoverageTest` regex-faal — pre-existing, niet VP-18 gerelateerd. Separaat onderzoeken bij regulier testwerk.
-- staging mist HSTS header (proxy `$request->secure()` detectie) — niet-kritiek want productie correct.
-- HavunAdmin Alpine CSP migratie — nog aparte MPC-sessie nodig voor 2 grote in-view functions (invoiceProcessor + reconciliation)
+### ✅ Afgerond — ClubControllerTest regex-faal
+
+`clubs/index.blade.php` gebruikte `@json()` directive met multi-line
+closure die een array returned. Blade's haakjes-teller in de `@json()`
+macro kan nested `[` + `fn($c) => [...]` niet correct parsen; gecompileerde
+PHP ontbrak de sluitende `]` waardoor elke route die de view rendert een
+`ParseError: Unclosed '[' on line 220 does not match ')'` gaf. 4
+ClubController tests faalden op main vóór de fix (pre-existing — niet
+veroorzaakt door VP-18).
+
+**Fix** (commit `8dc7a617`): bouw JSON eerst in `@php` block, emit met
+`{!! !!}`:
+```blade
+@php $clubsLookupJson = $clubs->keyBy('id')->map(fn($c) => [...])->toJson(); @endphp
+const clubsLookup = {!! $clubsLookupJson !!};
+```
+
+Resultaat: alle 25 ClubController tests groen.
+
+### ✅ Afgerond — staging mist HSTS (by design)
+
+Middleware check is `app()->environment('production') && $request->secure()`
+— staging (APP_ENV=staging) krijgt bewust geen HSTS. Dit voorkomt
+permanent-lockout als staging-SSL-cert verloopt of HTTPS breekt tijdens
+test-iteraties. **Niet fixen** — ontworpen security-trade-off.
+
+### ⏳ Open
+
+- HavunAdmin Alpine CSP migratie — nog aparte MPC-sessie nodig voor 2
+  grote in-view functions (invoiceProcessor + reconciliation)
