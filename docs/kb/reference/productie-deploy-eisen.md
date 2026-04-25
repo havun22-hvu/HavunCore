@@ -55,11 +55,20 @@ Support, Key Exchange, Cipher Strength).
 
 ### 1.1 Certificate: ECDSA P-384
 
-- **Waarom**: RSA 2048 geeft max 90 Key Exchange. ECDSA P-384 (secp384r1)
-  geeft 100. Kleiner + sneller dan RSA 4096, zelfde security-level.
-- **Hoe**: certbot met `--key-type ecdsa --elliptic-curve secp384r1`.
-  Bij re-issue van bestaande cert: ook `--no-reuse-key --force-renewal`.
-- **Verifieer**: `certbot certificates --cert-name <domain>` → "Key Type: ECDSA".
+- **Waarom**: RSA 2048 geeft max 90 Key Exchange + internet.nl flag als
+  "uit te faseren". ECDSA P-384 (secp384r1) geeft 100. Kleiner + sneller
+  dan RSA 4096, zelfde security-level.
+- **Hoe (nieuw cert)**: certbot met `--key-type ecdsa --elliptic-curve secp384r1`.
+- **Hoe (RSA → ECDSA migratie)**: `certbot certonly --nginx --cert-name <name>
+  --key-type ecdsa --elliptic-curve secp384r1 --no-reuse-key --force-renewal
+  --non-interactive` daarna `systemctl reload nginx`. Geen nginx-config
+  wijziging nodig — certbot vervangt fullchain.pem op zelfde pad.
+- **Apex + www in 1 cert**: bij apex-domeinen die ook `www` subdomain
+  serveren MOET het cert beide dekken (anders faalt HSTS preload-eligibility
+  check op hstspreload.org). Gebruik `-d <apex> -d www.<apex> --expand`.
+- **Verifieer**: `certbot certificates --cert-name <domain>` → "Key Type: ECDSA",
+  of `openssl s_client ... | openssl x509 -text | grep "Public Key"` →
+  `id-ecPublicKey (384 bit)` + `ASN1 OID: secp384r1`.
 
 ### 1.2 Protocol: TLS 1.2 + 1.3 only
 
@@ -435,10 +444,12 @@ Voor Herdenkingsportaal/JT/havun.nl na deploy:
   (GEEN `domain=` attribute).
 - **Bijwerking**: bestaande sessies worden ongeldig bij naamswijziging
   → users loggen één keer opnieuw in. Plan rollout buiten piek.
-- **Open**: XSRF-TOKEN cookie heeft `XSRF-TOKEN` naam hardcoded in
-  Laravel's `VerifyCsrfToken` middleware. Prefix `__Secure-XSRF-TOKEN`
-  vereist custom middleware-override per project + axios-defaults
-  aanpassing. Separate follow-up.
+- **XSRF-TOKEN prefix opgelost (2026-04-25)**: per-project middleware
+  `app/Http/Middleware/RenameXsrfCookie.php` hernoemt de Laravel-cookie
+  naar `__Secure-XSRF-TOKEN` en frontend `axios.defaults.xsrfCookieName`
+  is bijgewerkt. CSRF-validatie blijft werken via `X-XSRF-TOKEN` header
+  (cookie-naam doet niet mee in vergelijk). HttpOnly blijft uit — Laravel
+  CSRF vereist JS-toegang tot de cookie-waarde.
 
 ### 3.4 Object-src 'none' + base-uri 'self'
 
@@ -460,7 +471,11 @@ Voor Herdenkingsportaal/JT/havun.nl na deploy:
 - **SPF**: `v=spf1 include:<provider> ~all` (bij email-provider, bv. Brevo).
 - **DKIM**: CNAME-records naar provider (Brevo/Mailgun/SendGrid).
 - **DMARC**: start met `v=DMARC1; p=none; rua=mailto:dmarc@<domain>`.
-  Na weken monitoring → `p=quarantine` → `p=reject`.
+  Na weken monitoring → `p=quarantine; pct=10` → `pct=50` → `pct=100` →
+  `p=reject`. Per 2026-04-25 staan alle 3 zones (havun.nl,
+  herdenkingsportaal.nl, judotournament.org) op `p=quarantine; pct=10` met
+  `rua=mailto:rua@dmarc.brevo.com` (Brevo aggregeert rapporten).
+  Volgende stap (~2026-05-25 na 4 weken monitoring): `pct=50`.
 
 ### 4.3 CAA (zie 1.6) + HSTS (zie 2.2)
 
