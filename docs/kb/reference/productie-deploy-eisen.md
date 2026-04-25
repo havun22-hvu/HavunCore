@@ -413,11 +413,32 @@ Voor Herdenkingsportaal/JT/havun.nl na deploy:
 
 ## 5. Internet.nl → 100%
 
-### 5.1 IPv6 AAAA-record
+### 5.1 IPv6 AAAA-record + nginx IPv6 listen
 
-- **Hoe**: bij DNS-provider AAAA record toevoegen met server IPv6.
-  Hetzner VPS heeft standaard IPv6 beschikbaar.
-- **Verifieer**: `dig AAAA <domain> +short` → IPv6-adres (niet leeg).
+- **Eis**: zowel DNS AAAA-record als nginx vhost IPv6 listen. Eén zonder de
+  ander = "site niet bereikbaar over IPv6" op internet.nl.
+- **Server IPv6**: `2a01:4f8:1c1a:457f::1` (Hetzner /64-prefix host).
+- **DNS hoe**: AAAA-record per (sub)domein bij mijnhost.nl. Wildcard
+  `AAAA *.<zone>.` werkt alleen voor namen die geen expliciete A-record
+  hebben — voor expliciete subdomeinen ook expliciete AAAA toevoegen.
+  CNAME-value MOET een hostname zijn, nooit een IPv6-string (DNS-fout).
+- **nginx hoe**: per vhost in `/etc/nginx/sites-enabled/`:
+  ```nginx
+  listen 443 ssl;
+  listen [::]:443 ssl;   # IPv6 — verplicht naast IPv4
+  listen 80;
+  listen [::]:80;
+  ```
+- **Verifieer (DNS)**: `dig @1.1.1.1 +short AAAA <domain>` → IPv6-adres.
+- **Verifieer (TCP/HTTPS)**: vanaf externe host:
+  ```bash
+  curl -sk --resolve <domain>:443:[2a01:4f8:1c1a:457f::1] https://<domain>/
+  ```
+  → HTTP/200 (of 302 bij login-redirect). Geen connection-error.
+- **Watch out**: `getent ahosts <domain>` op de server zelf kan tijdelijk
+  alleen IPv4 tonen door glibc resolver-cache. Niet relevant voor externe
+  tests; lost vanzelf op na TTL (typisch 15 min) of via
+  `systemd-resolve --flush-caches`.
 
 ### 5.2 STARTTLS + DANE (als domain mail verstuurt)
 
