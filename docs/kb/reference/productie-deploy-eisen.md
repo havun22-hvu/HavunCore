@@ -334,11 +334,19 @@ Voor Herdenkingsportaal/JT/havun.nl na deploy:
 
 ## 3. Mozilla Observatory → A+ (score 100)
 
-### 3.1 CSP zonder unsafe-inline
+### 3.1 CSP zonder unsafe-inline (ook style-src-attr)
 
 - **Eis**: script-src en style-src met nonce of sha-hash, **nooit**
-  unsafe-inline.
+  unsafe-inline. Ook **geen `style-src-attr 'unsafe-inline'`** —
+  internet.nl flag elke `'unsafe-inline'` als aanbeveling-tegen.
 - **Technisch**: zie sectie 2.1 + per-inline `<script nonce="{$nonce}">`.
+- **Alpine.js compatibility**: Alpine 3.x zet inline styles voor
+  `x-show`/`x-transition` via DOM API (`element.style.x = 'y'`), niet via
+  HTML `style=""`-attribuut. CSP3's `style-src-attr` controlt alleen het
+  laatste, dus de directive kan worden weggelaten zonder Alpine te breken.
+  Bij andere libraries (flatpickr, chart.js) idem — die zetten styles ook
+  via DOM API. Bij twijfel: pilot 1 project + browser-test (DevTools
+  console moet vrij van `Refused to apply inline style` errors zijn).
 
 ### 3.2 Subresource Integrity (SRI) op externe CDN-scripts
 
