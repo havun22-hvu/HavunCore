@@ -255,10 +255,23 @@ Alle 6 **recommended headers** aanwezig met strikte waarden.
 - **Hoe**: `X-Frame-Options: SAMEORIGIN` (of `DENY` als niet iframed wordt).
 - **Waarom**: clickjacking-bescherming.
 
+### 2.4b X-XSS-Protection: 0
+
+- **Hoe**: `X-XSS-Protection: 0` (expliciet uitgezet).
+- **Waarom**: legacy XSS Auditor (alleen Safari draait 'm nog) kan misbruikt
+  worden door aanvallers om JS selectief uit te schakelen. Hardenize-warning.
+  Modern XSS-defense is CSP-nonce. Onze CSP doet dat al — geen additionele
+  bescherming nodig + auditor is meer attack-surface dan -winst.
+
 ### 2.5 Referrer-Policy
 
-- **Hoe**: `Referrer-Policy: strict-origin-when-cross-origin`
-- **Waarom**: geen leak van interne URLs via referrer.
+- **Hoe**: `Referrer-Policy: same-origin` (niet meer
+  `strict-origin-when-cross-origin` — die is internet.nl categorie
+  "Waarschuwing" omdat 'ie nog wel origin lekt naar derden).
+- **Waarom**: `same-origin` lekt geen referrer naar third parties. Categorie
+  "Goed" op internet.nl. Veilig voor onze use cases (geen cross-origin
+  analytics-dependency; Mollie return-flow gebruikt query-string ipv
+  referrer).
 
 ### 2.6 Permissions-Policy
 

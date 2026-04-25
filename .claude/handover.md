@@ -2,6 +2,59 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 25-26 april 2026 — Cross-portfolio security marathon → judotournament.org Hall of Fame (100% internet.nl)
+
+### Wat gedaan
+**Cross-project (alle 4 prod-projecten):**
+- CORP/COOP headers (intern: same-origin · publiek: cross-origin/allow-popups)
+- `'strict-dynamic'` toegevoegd aan CSP script-src
+- XSRF-cookie hernoemd → `__Secure-XSRF-TOKEN` via `RenameXsrfCookie` middleware
+- Magic strings → class constants (post-/simplify must-fix)
+- Referrer-Policy: `strict-origin-when-cross-origin` → `same-origin`
+- X-XSS-Protection: `1; mode=block` → `0` (Hardenize fix, legacy auditor)
+- SRI op @vite-emitted assets via `vite-plugin-manifest-sri`
+- `style-src-attr 'unsafe-inline'` weg (HavunAdmin + SP-api)
+- `img-src https:` weg (HavunAdmin + SP-api intern)
+- Pusher script @nonce fix (alleen JT)
+
+**Server-wide:**
+- HTTP/2 globaal aan (`/etc/nginx/conf.d/http2.conf`)
+- SHA-224 weg uit TLS 1.2 sigalgs (NCSC-conform)
+- AAAA records 7 prod-domeinen + nginx IPv6 listen 6 vhosts
+- DNS-bug fix: `CNAME www.havun.nl. → IPv6-string` opgeruimd
+- Verkeerde wildcard AAAA op herdenkingsportaal.nl gecorrigeerd
+- Centrale `security.txt` (RFC 9116) op alle 7 prod-domeinen via snippet
+- 6 RSA prod-certs → ECDSA P-384
+- `www.havun.nl` SAN toegevoegd aan havun.nl cert (was HSTS-preload blocker)
+- DMARC: `p=none` → `p=quarantine; pct=10` op alle 3 zones
+- HSTS preload submitted: havun.nl, herdenkingsportaal.nl, judotournament.org
+
+### Resultaat
+- **judotournament.org → 100% op internet.nl** (Hall of Fame)
+- Alle 7 prod-domeinen: ECDSA P-384, IPv6 bereikbaar, security.txt live, X-XSS=0
+- Stash op productie: `prod-og-banner-2026-04-25-pre-corp-deploy` (HP) en `prod-pkg-lock-*` (HavunAdmin, JT) — bij twijfel `git stash list` op server
+
+### Openstaand voor morgen / volgende sessie
+- [ ] DMARC: pct=10 → pct=50 over ~4 weken (rua-rapporten via Brevo eerst analyseren)
+- [ ] HSTS preload cascade afwachten 6-12 weken (geen actie nodig)
+- [ ] Mozilla Observatory v2: HP scoort 125/130 — 5 punten kosten waarschijnlijk in COOP/COEP trade-off (publieke site requirement). Bij volgende ronde diagnose, kan acceptabel zijn.
+- [ ] Andere prod-sites (HP, havun.nl, HavunAdmin) door 5 testsites halen — zelfde patterns, zou vergelijkbare scores moeten geven
+- [ ] havunadmin.havun.nl HSTS preload apart submitten (optioneel — apex-includeSubDomains regelt het al)
+- [ ] OG image 1200×630 voor herdenkingsportaal.nl (uit eerdere handover, nog open)
+
+### Bewust niet gedaan
+- DANE TLSA: optioneel + browsers ondersteunen geen web-DANE
+- security.txt PGP-signing: optioneel, veel werk voor minimale bonus
+- ImprovMX STARTTLS: niet onze infrastructuur, ImprovMX cuts test-connectie af
+- COOP `same-origin` op publieke sites: zou social/share popups breken
+
+### Belangrijke context
+- Memory: zie `project_security_sprint_2026_04_25.md` voor compleet overzicht
+- KB: `docs/kb/reference/productie-deploy-eisen.md` is volledig bijgewerkt — secties 1.1, 1.4b, 2.4b, 2.5, 2.7, 3.1, 3.2b, 3.3, 4.2, 4.4, 5.1
+- Server backups: `/root/nginx-backup-2026-04-25-ocsp-http2.tar.gz` + diverse `*-pre-ipv6.conf` files
+
+---
+
 ## Sessie: 25 april 2026 — Cipher Strength 90→100 + canonical naked rollout
 
 ### Wat gedaan:
