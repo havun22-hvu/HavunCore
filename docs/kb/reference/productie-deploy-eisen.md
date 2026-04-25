@@ -357,6 +357,30 @@ Voor Herdenkingsportaal/JT/havun.nl na deploy:
   inhoud → geen stabiele SRI-hash mogelijk. **Oplossing**: weghalen of
   self-hosten (zie §3.2.1).
 
+### 3.2b SRI op @vite-emitted scripts/styles (same-origin bonus)
+
+- **Waarom**: Mozilla Observatory geeft bonus-punten voor SRI op
+  same-origin scripts ook al is het strict niet vereist.
+- **Hoe (Laravel + Vite)**:
+  1. `npm install -D vite-plugin-manifest-sri`
+  2. `vite.config.js`:
+     ```js
+     import manifestSRI from 'vite-plugin-manifest-sri';
+     plugins: [..., manifestSRI()]
+     ```
+  3. `app/Providers/AppServiceProvider.php` boot():
+     ```php
+     use Illuminate\Support\Facades\Vite;
+     Vite::useIntegrityKey('integrity');
+     ```
+  4. `npm run build` → `manifest.json` krijgt nu `integrity` velden,
+     `@vite('...')` directive emit `<script integrity="sha384-...">`.
+- **Verifieer**:
+  ```bash
+  curl -sk https://<domain>/<page-with-vite> | grep -oP 'integrity="[^"]+"' | head -2
+  ```
+  → 2 sha384-hashes (CSS + JS).
+
 ### 3.2.1 Analytics-policy — Google Analytics default WEG
 
 - **Default**: geen Google Analytics in nieuwe Havun-projecten.
