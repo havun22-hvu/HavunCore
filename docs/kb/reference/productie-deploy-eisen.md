@@ -434,6 +434,32 @@ Voor Herdenkingsportaal/JT/havun.nl na deploy:
 
 ---
 
+## 4.4 security.txt (RFC 9116) — beveiligingscontact
+
+- **Eis**: `/.well-known/security.txt` op elke productie-(sub)domein.
+- **Hoe (centraal patroon)**:
+  - `/var/www/security.txt` met `Contact:`, `Expires:` (max 1 jaar in de
+    toekomst), `Preferred-Languages:`, `Canonical:` (lijst van alle URI's
+    waar dit bestand wordt geserveerd).
+  - `/etc/nginx/snippets/security-txt.conf`:
+    ```nginx
+    location = /.well-known/security.txt {
+        alias /var/www/security.txt;
+        default_type "text/plain; charset=utf-8";
+    }
+    ```
+  - In elke 443-vhost: `include /etc/nginx/snippets/security-txt.conf;`
+    (na de `ssl-hardened.conf` include).
+- **Verifieer**:
+  ```bash
+  curl -sk https://<domain>/.well-known/security.txt | head -3
+  ```
+  → Contact: + Expires: regels.
+- **Onderhoud**: vóór `Expires`-datum (typisch 1 jaar) bestand verlengen.
+  Eerstvolgende rotatie: zie de header van `/var/www/security.txt`.
+
+---
+
 ## 5. Internet.nl → 100%
 
 ### 5.1 IPv6 AAAA-record + nginx IPv6 listen
