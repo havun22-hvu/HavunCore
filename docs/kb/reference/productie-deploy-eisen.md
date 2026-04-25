@@ -123,6 +123,29 @@ Support, Key Exchange, Cipher Strength).
   → `ECDH, secp384r1, 384 bits` (NIET `X25519`).
 - **Bron**: `runbooks/openssl-upgrade-2026-04-23.md`.
 
+### 1.4b Signature algorithms (TLS 1.2): SHA-256 / 384 / 512 only
+
+- **Waarom**: internet.nl flag SHA-224 als "uit te faseren" per NCSC TLS
+  2025-05. OpenSSL 3 default lijst bevat SHA-224 voor backward compat.
+- **Hoe**: in hardened snippet:
+  ```nginx
+  ssl_conf_command SignatureAlgorithms ECDSA+SHA384:ECDSA+SHA256:ECDSA+SHA512:RSA-PSS+SHA384:RSA-PSS+SHA256:RSA-PSS+SHA512:RSA+SHA384:RSA+SHA256:RSA+SHA512;
+  ```
+- **Scope**: alleen TLS 1.2; TLS 1.3 heeft eigen signature scheme dat niet
+  via deze directive wordt gestuurd.
+- **Verifieer (SHA-224 moet falen)**:
+  ```bash
+  echo | openssl s_client -connect <domain>:443 -servername <domain> \
+      -tls1_2 -sigalgs ecdsa_secp224r1_sha224 2>&1 | grep alert
+  ```
+  → handshake_failure (of geen output = no connection).
+- **Verifieer (SHA-384 moet werken)**:
+  ```bash
+  echo | openssl s_client -connect <domain>:443 -servername <domain> \
+      -tls1_2 -sigalgs ecdsa_secp384r1_sha384 2>&1 | grep "Peer signing"
+  ```
+  → `Peer signing digest: SHA384`.
+
 ### 1.5 Session resumption aan (caching + tickets)
 
 - **Waarom**: SSL Labs test twee mechanismen apart:
