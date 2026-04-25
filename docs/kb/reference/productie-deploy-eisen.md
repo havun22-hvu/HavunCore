@@ -233,6 +233,80 @@ Alle 6 **recommended headers** aanwezig met strikte waarden.
 - **Hoe**: `Permissions-Policy: camera=(), microphone=(), geolocation=(), fullscreen=(self)` — restrict tot wat nodig is.
 - **Waarom**: disable features die we niet gebruiken (privacy + attack surface).
 
+### 2.7 Cross-Origin Isolation Headers (CORP + COOP)
+
+- **Waarom**: bescherming tegen Spectre/XS-Leaks cross-origin attacks. Geen
+  letter-grade impact op de 5 testsites, maar tonen op SecurityHeaders.com
+  als "Recommended ✓" in de Additional Information sectie. Defensieve
+  best-practice.
+- **Headers**:
+  - `Cross-Origin-Resource-Policy` (CORP): wie mag jouw resources fetchen
+  - `Cross-Origin-Opener-Policy` (COOP): isolatie van browsing-context
+  - `Cross-Origin-Embedder-Policy` (COEP): vereist CORP op embedded resources
+
+#### Beleid per projecttype
+
+| Projecttype | CORP | COOP | COEP |
+|-------------|------|------|------|
+| **Intern admin/tool** (HavunAdmin, HavunCore, Studieplanner-API) | `same-origin` | `same-origin` | weggelaten |
+| **Publieke site met social sharing** (Herdenkingsportaal, JudoToernooi, havun.nl) | `cross-origin` | `same-origin-allow-popups` | weggelaten |
+
+- **CORP `same-origin`** = strict, alleen jouw eigen domain mag fetchen. Veilig
+  voor admin-tools waar geen externe embed nodig is.
+- **CORP `cross-origin`** = open (default). Vereist voor sites waar OG-images
+  via Facebook/LinkedIn/X opgehaald worden, anders breken social previews.
+- **COOP `same-origin`** = strict popup-isolation. Window.opener wordt `null`
+  bij cross-origin popup. Veilig voor admin.
+- **COOP `same-origin-allow-popups`** = behoudt opener-relatie voor popups die
+  je zelf opent (OAuth-flow, social sharing). Veilig voor publieke sites.
+- **COEP weggelaten**: `require-corp` breekt externe fonts (Google Fonts, Bunny
+  Fonts) en CDN-resources die geen CORP-header sturen. Alleen overwegen als
+  je SharedArrayBuffer of high-precision timers nodig hebt — voor onze
+  use-cases niet relevant.
+
+#### Implementatie (Laravel SecurityHeaders middleware)
+
+```php
+// In app/Http/Middleware/SecurityHeaders.php, na de bestaande headers:
+
+$isPublic = in_array($appSlug, ['herdenkingsportaal', 'judotoernooi', 'havun']);
+
+$response->headers->set(
+    'Cross-Origin-Resource-Policy',
+    $isPublic ? 'cross-origin' : 'same-origin'
+);
+$response->headers->set(
+    'Cross-Origin-Opener-Policy',
+    $isPublic ? 'same-origin-allow-popups' : 'same-origin'
+);
+// COEP bewust weggelaten — breekt externe fonts/CDN
+```
+
+#### Verifieer
+
+```bash
+curl -skI https://<domain>/ | grep -iE 'cross-origin-(resource|opener)-policy'
+```
+
+Verwacht voor admin: `Cross-Origin-Resource-Policy: same-origin` +
+`Cross-Origin-Opener-Policy: same-origin`.
+
+Verwacht voor publiek: `Cross-Origin-Resource-Policy: cross-origin` +
+`Cross-Origin-Opener-Policy: same-origin-allow-popups`.
+
+#### Test op SecurityHeaders.com
+
+Na deploy → https://securityheaders.com/?q=<domain> → "Additional Information"
+sectie toont CORP en COOP met blue ✓. Letter-grade blijft A+ (geen change).
+
+#### Test of social sharing niet kapot is (publieke sites)
+
+Voor Herdenkingsportaal/JT/havun.nl na deploy:
+- Facebook Sharing Debugger: https://developers.facebook.com/tools/debug/
+- LinkedIn Post Inspector: https://www.linkedin.com/post-inspector/
+- Beide moeten OG-image kunnen ophalen. Als CORP=cross-origin staat: groen.
+  Als per ongeluk same-origin: image laadt niet.
+
 ---
 
 ## 3. Mozilla Observatory → A+ (score 100)

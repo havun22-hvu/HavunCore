@@ -2,8 +2,9 @@
 title: Mollie vs. Bunq voor zakelijke bank-monitoring
 type: decision
 scope: alle-projecten
-last_check: 2026-04-18
+last_check: 2026-04-25
 status: resolved
+note: bevat geen provider-specifieke prijs/feature-details (verouderen snel) — alleen rol-architectuur
 ---
 
 # ADR: Bunq (native API) i.p.v. Mollie voor bank-afschrift-monitoring
@@ -74,3 +75,13 @@ status: resolved
 
 Als deze vraag terugkomt: **eerst deze ADR verwijzen**, pas daarna opnieuw
 beoordelen als Mollie nieuwe features release (check update-datum).
+
+> **Bewust geen prijs/feature-details opgeslagen** — die veranderen continu
+> bij Mollie/Bunq productvernieuwingen en zouden de ADR onbetrouwbaar maken.
+> Bij her-evaluatie altijd live op leveranciers-docs checken, niet op cached
+> info hier.
+
+## Bevestigd 2026-04-25
+Hernieuwde live check Mollie-producten (Bank Statements, Business Account,
+Bank Transfer payment method) bevestigde de oorspronkelijke beslissing:
+**Bunq blijft** voor low-price-realtime-app-flows zoals Studieplanner €1.
