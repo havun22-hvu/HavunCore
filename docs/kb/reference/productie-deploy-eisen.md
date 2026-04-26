@@ -579,6 +579,47 @@ Zie 1.4 — via systemd env var.
 
 ---
 
+## 7. Mobile apps (Android APK)
+
+> **Geldt voor**: JudoScoreBoard, Studieplanner-mobile, toekomstige Android-apps.
+> **Frequentie**: Voor elke release naar Play Store / publieke distributie.
+
+### 7.1 MobSF Security Score ≥ 50
+
+- **Tool**: https://mobsf.live (online, sleep `.apk` erin)
+- **Hoe**: Upload release-APK, wacht op statisch rapport, lees Security Score.
+- **Eisen**:
+  - Score ≥ 50 (lager = HIGH-risk findings)
+  - Geen critical / high severity findings zonder accept-rationale
+- **Volledige checklist**: zie `docs/kb/runbooks/apk-security-check.md`
+
+### 7.2 Permissies minimaal & gerechtvaardigd
+
+- Geen dangerous permissies die je niet gebruikt
+- Geen signature/system permissies (alleen voor system apps)
+
+### 7.3 Geen secrets in APK
+
+- Geen hardcoded API keys, tokens, passwords (in strings.xml of JS-bundle)
+- React Native: secrets via auth-flow (login → token), nooit in `assets/index.android.bundle`
+
+### 7.4 Network security
+
+- `android:usesCleartextTraffic="false"` in AndroidManifest
+- Network Security Config aanwezig (`@xml/network_security_config`)
+- Alle API-calls via HTTPS
+
+### 7.5 Code obfuscation in release build
+
+- ProGuard/R8 enabled (`minifyEnabled true`)
+- Resource shrinking enabled (`shrinkResources true`)
+
+### 7.6 APK gesigneerd met productie keystore
+
+- Release APK gesigneerd, keystore backup buiten git (USB vault)
+
+---
+
 ## Verificatie-sequence voor nieuwe productie-deploy
 
 1. `dig CAA <domain> +short` — CAA records gepubliceerd
@@ -591,6 +632,7 @@ Zie 1.4 — via systemd env var.
 8. **Mozilla Observatory** https://observatory.mozilla.org/analyze/<domain> → A+
 9. **Hardenize** https://www.hardenize.com/report/<domain> — alle secties groen
 10. **Internet.nl** https://internet.nl/site/<domain> → 100%
+11. **MobSF** (alleen voor mobile-app releases) https://mobsf.live → Security Score ≥ 50, 0 high
 
 Elk vinkje noteren in deploy-checklist per project.
 
