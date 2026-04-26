@@ -2,6 +2,24 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 25 april 2026 (kort) — APK security baseline opgezet
+
+### Wat gedaan
+- **Runbook `apk-security-check.md`** aangemaakt — handmatige scan via mobsf.live (zelfde patroon als SSL Labs / Mozilla Observatory checks). Volledige checklist (permissies, secrets, network security, ProGuard, signing, WebView, backup).
+- **`productie-deploy-eisen.md` sectie 7 (Mobile apps)** toegevoegd — eis MobSF Security Score ≥ 50, geen high findings, ProGuard enabled, geen cleartext traffic, etc.
+- **Verificatie-sequence stap 11** toegevoegd voor mobile-app releases.
+- **JudoScoreBoard release-APK gescand** door Henk via mobsf.live (rapport 86cb5189...). Bevindingen niet teruggegeven in deze sessie — open voor volgende keer.
+
+### Openstaand
+- [ ] **JudoScoreBoard MobSF-rapport beoordelen** — Henk plakt de findings in volgende sessie, ik vertaal naar fix/accept/false-positive
+- [ ] **Studieplanner APK** ook scannen (`D:\GitHub\Studieplanner\android\app\build\outputs\apk\release\app-release.apk`)
+- [ ] **History-tabel** in `apk-security-check.md` invullen na eerste 2 baseline-scans
+
+### Notitie
+Geen Docker op de PC — gekozen voor handmatige online MobSF (sluit aan bij eerdere voorkeur "online tests handmatig, geen automatisering inbouwen voor dingen die je toch handmatig moet beoordelen").
+
+---
+
 ## Sessie: 25-26 april 2026 — Cross-portfolio security marathon → judotournament.org Hall of Fame (100% internet.nl)
 
 ### Wat gedaan
