@@ -2,37 +2,39 @@
 title: Unified Auth Strategy
 type: reference
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-04-27
 ---
 
 # Unified Auth Strategy
 
-> **Laatst bijgewerkt:** 31 maart 2026
+> **Laatst bijgewerkt:** 27 april 2026 — wachtwoord opt-in toegevoegd, Google OAuth verwijderd
 > **Status:** Actieve standaard voor alle Havun-projecten
-> **Versie:** 5.0
+> **Versie:** 5.1
 > **Eigenaar:** HavunCore
 
 ## Overzicht
 
-Alle Havun-applicaties (web + native) gebruiken een **passwordless** authenticatiestrategie:
+Alle Havun-applicaties (web + native) gebruiken een **passwordless-first** authenticatiestrategie met optionele wachtwoord-fallback:
 - **Magic link** voor eerste login + herstel (nieuw apparaat, passkey kwijt)
 - **Biometrie (WebAuthn/Passkey)** voor dagelijks gebruik (smartphone + native apps)
 - **QR code** voor desktop login (scan met telefoon)
+- **Wachtwoord (optioneel, opt-in)** — gebruiker kan zelf wachtwoord aanmaken in account-settings, niet default
 - **Decentraal** — elke app beheert eigen auth (ADR-002)
 
 ### Platforms
 
-| Platform | Primair | Eerste keer / herstel |
-|----------|---------|----------------------|
-| **Smartphone (web)** | Biometrie (passkey) | Magic link |
-| **Desktop (web)** | QR code (scan met telefoon) | Magic link |
-| **Android app** | Biometrie (passkey via Google Play Services) | Magic link (deep link) |
-| **iOS app** | Biometrie (passkey via iCloud Keychain) | Magic link (universal link) |
+| Platform | Primair | Eerste keer / herstel | Optioneel |
+|----------|---------|----------------------|-----------|
+| **Smartphone (web)** | Biometrie (passkey) | Magic link | Wachtwoord (opt-in) |
+| **Desktop (web)** | QR code (scan met telefoon) | Magic link | Wachtwoord (opt-in) |
+| **Android app** | Biometrie (passkey via Google Play Services) | Magic link (deep link) | — |
+| **iOS app** | Biometrie (passkey via iCloud Keychain) | Magic link (universal link) | — |
 
-### Niet meer gebruikt (v5.0)
-- ~~Email/wachtwoord~~ (verwijderd — wachtwoorden zijn obsoleet)
-- ~~PIN login~~ (verwijderd in v4.0)
-- ~~Device fingerprint als primaire herkenning~~ (nu alleen voor analytics)
+### Niet meer gebruikt
+- ~~Google/Apple OAuth (Social login)~~ — verwijderd 27-04-2026 (incident "deleted_client" Google Cloud, privacy-afhankelijkheid van derden)
+- ~~PIN login~~ — verwijderd in v4.0 (biometrie vervangt dit)
+- ~~Device fingerprint als primaire herkenning~~ — nu alleen voor analytics
+- ~~Wachtwoord als verplichte methode~~ — alleen opt-in als gebruiker zelf wil
 
 ---
 
@@ -55,11 +57,11 @@ Alle Havun-applicaties (web + native) gebruiken een **passwordless** authenticat
 - **Email enumeration preventie:** altijd success tonen
 - **Email template:** branded, duidelijke CTA knop
 
-### Waarom passwordless?
-- Wachtwoorden zijn obsoleet — slecht voor UX en security
+### Waarom passwordless-first?
 - Magic link: lagere drempel, email verificatie ingebouwd
 - Biometrie: sneller en veiliger dan elk wachtwoord
-- Geen wachtwoord = geen wachtwoord-gerelateerde support
+- Minder wachtwoord-gerelateerde support
+- Wachtwoord blijft beschikbaar als opt-in voor gebruikers die het willen (vertrouwd bij 50+ doelgroep, password managers, fallback bij mailbox-problemen)
 
 ---
 
@@ -102,8 +104,13 @@ Fallback: Magic link
 5. Nieuwe passkey geregistreerd → klaar
 ```
 
-### Geen wachtwoord reset nodig
-Er zijn geen wachtwoorden meer. Magic link IS de recovery methode.
+### Wachtwoord-flow (optioneel, opt-in)
+
+- **Default:** geen wachtwoord. Recovery = magic link.
+- **Opt-in:** gebruiker kan zelf wachtwoord aanmaken in account-settings (security-tab). Pas dán toont login-pagina een wachtwoord-veld voor die gebruiker.
+- **Wachtwoord vergeten:** magic link → reset-flow → nieuw wachtwoord instellen.
+- **Wachtwoord verwijderen:** in settings → terug naar magic-only.
+- **Storage:** bcrypt (argon2id voor nieuwe projecten), nullable kolom — bestaande NULL-records blijven werken.
 
 ---
 

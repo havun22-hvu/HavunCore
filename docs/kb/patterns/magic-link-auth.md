@@ -2,24 +2,28 @@
 title: Magic Link Authentication Pattern (Laravel)
 type: pattern
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-04-27
 ---
 
 # Magic Link Authentication Pattern (Laravel)
 
 > **Status:** Standaard voor alle Havun projecten
-> **Laatste update:** 14 april 2026
+> **Laatste update:** 27 april 2026 — wachtwoord opt-in toegevoegd
 > **Gebruikt in:** Studieplanner (referentie), Herdenkingsportaal, JudoToernooi
 
 ## Overzicht
 
 Magic links worden gebruikt voor:
 1. **Registratie** — nieuwe gebruiker voert email in, ontvangt link, account wordt aangemaakt
-2. **Herstel** — bestaande gebruiker op nieuw apparaat, ontvangt link om in te loggen
+2. **Login** — bestaande gebruiker, ontvangt link om in te loggen (vervangt vroegere "alleen herstel"-rol)
+3. **Herstel** — bestaande gebruiker op nieuw apparaat, ontvangt link om in te loggen
+4. **Wachtwoord-reset** — gebruiker met opt-in wachtwoord vraagt reset-link aan
 
 **Email-first flow:** Eén endpoint voor zowel login als registratie. Backend bepaalt op basis van het emailadres of het een bestaande of nieuwe gebruiker is. Geen aparte login/registratie schermen. Zie `patterns/universal-login-screen.md`.
 
-Geen wachtwoord nodig. Biometric + magic link dekt alle scenario's.
+Magic link is de primaire auth-methode. Biometric + QR zijn snellere alternatieven op bekend apparaat. Wachtwoord is **optioneel opt-in** — gebruiker kan zelf in account-settings een wachtwoord aanmaken; default = uit.
+
+**Migration-hint:** breidt enum `type` uit met `'login'` als je magic-link login toevoegt aan een bestaand project (zie HP migration `2026_03_17_000001_create_magic_link_tokens_table.php`).
 
 ## Database
 

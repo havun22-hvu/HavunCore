@@ -2,13 +2,13 @@
 title: Universal Login Screen Pattern
 type: pattern
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-04-27
 ---
 
 # Universal Login Screen Pattern
 
 > **Status:** Standaard voor alle Havun projecten
-> **Laatste update:** 14 april 2026
+> **Laatste update:** 27 april 2026 — wachtwoord opt-in toegevoegd, Google OAuth verwijderd
 > **Basis:** Studieplanner design (dark theme, centered card)
 > **Gerelateerd:** `magic-link-auth.md`, `reference/authentication-methods.md`, `standards/unified-auth-strategy.md`
 
@@ -412,7 +412,8 @@ Bij elke implementatie controleren:
 - [ ] **QR status:** via WebSocket (GEEN polling)
 - [ ] **HTTPS** verplicht in productie (WebAuthn + magic links vereisen dit)
 - [ ] **Externe scripts:** SRI hash + `crossorigin="anonymous"`
-- [ ] **Geen wachtwoord velden** — biometric + magic link dekt alles
+- [ ] **Wachtwoord-veld alleen tonen** als gebruiker zelf wachtwoord heeft ingesteld (opt-in via account-settings, niet default)
+- [ ] **Geen Google/Facebook/social login** — verwijderd uit standaard (incident 27-04-2026)
 
 ---
 

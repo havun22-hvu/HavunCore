@@ -2,34 +2,39 @@
 title: Unified Login System
 type: reference
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-04-27
 ---
 
 # Unified Login System
 
 > **Status:** Production (alle Havun-applicaties: web + native)
-> **Versie:** 5.0
-> **Laatste update:** 31 maart 2026
+> **Versie:** 5.1
+> **Laatste update:** 27 april 2026 — wachtwoord opt-in toegevoegd, Google OAuth verwijderd
 > **Auth model:** Decentraal (ADR-002) — elke app beheert eigen auth
 
 Dit is het ENIGE document dat je nodig hebt om het Havun login systeem te begrijpen.
 
-## Overzicht — Passwordless Authentication
+## Overzicht — Passwordless-First, Wachtwoord Opt-in
 
 | Methode | Platform | Wanneer |
 |---------|----------|---------|
 | Magic link | Alle | Eerste login + herstel (nieuw apparaat, passkey kwijt) |
 | Biometrie (WebAuthn/Passkey) | Smartphone, Android, iOS | Dagelijks gebruik |
 | QR code | Desktop | Dagelijks gebruik (scan met telefoon) |
+| Wachtwoord (optioneel) | Alle | Alleen als gebruiker zelf heeft ingesteld in account-settings |
 
-| Platform | Dagelijks | Eerste keer / herstel |
-|----------|-----------|----------------------|
-| **Smartphone (web)** | Biometrie (passkey) | Magic link |
-| **Desktop (web)** | QR code scan | Magic link |
-| **Android (native)** | Biometrie (Credential Manager) | Magic link (deep link) |
-| **iOS (native)** | Biometrie (ASAuthorization) | Magic link (universal link) |
+| Platform | Dagelijks | Eerste keer / herstel | Optioneel |
+|----------|-----------|----------------------|-----------|
+| **Smartphone (web)** | Biometrie (passkey) | Magic link | Wachtwoord (opt-in) |
+| **Desktop (web)** | QR code scan | Magic link | Wachtwoord (opt-in) |
+| **Android (native)** | Biometrie (Credential Manager) | Magic link (deep link) | — |
+| **iOS (native)** | Biometrie (ASAuthorization) | Magic link (universal link) | — |
 
-**Niet meer gebruikt:** Email/wachtwoord (v5.0), PIN login (v4.0)
+**Niet meer gebruikt:**
+- PIN login (v4.0 → vervangen door biometric)
+- Google OAuth / Social login (v5.1 → verwijderd 27-04-2026, incident "deleted_client" Google Cloud Console)
+
+**Wachtwoord-flow:** Default = uit. Gebruiker activeert zelf via account-settings (security-tab). Login-pagina toont wachtwoord-veld alleen als de gebruiker een wachtwoord heeft ingesteld.
 
 ## Login Flow
 

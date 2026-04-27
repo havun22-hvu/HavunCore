@@ -36,9 +36,11 @@ Online platform waar gebruikers digitale herdenkingspagina's (memorials) aanmake
 ## Auth
 
 - **Guard:** `web` (session-based, default Laravel)
-- **Provider:** `eloquent-webauthn` (met password fallback)
-- **Features:** WebAuthn/Passkey, OAuth (Google/Apple), 2FA, PIN login
+- **Provider:** `eloquent-webauthn` (met optionele wachtwoord-fallback)
+- **Features:** Magic link (primair), WebAuthn/Passkey, QR-code (desktop), wachtwoord (opt-in), 2FA TOTP
 - **Admin middleware:** `['auth', 'admin', 'enforce.2fa', 'production.redirect']`
+- **Verwijderd 27-04-2026:** Google OAuth (incident "deleted_client" Google Cloud — externe identity-provider niet meer ondersteund)
+- **Drift:** PIN login routes bestaan nog maar zijn niet meer aangesloten op de UI (cleanup gepland)
 
 ## Core Features
 

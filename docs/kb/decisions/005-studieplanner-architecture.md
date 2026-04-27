@@ -33,7 +33,7 @@ Studieplanner is een studieplanningsapp voor leerlingen en mentors met:
 | Backend | Laravel 12 (eigen app) | Volledig controle, al op server |
 | Database | MySQL (prod) / SQLite (dev) | Standaard Laravel |
 | Real-time | Laravel Reverb (via HavunCore) | Open source, geen externe kosten |
-| Auth | Magic link + biometrie | Geen wachtwoorden, veilig, gebruiksvriendelijk |
+| Auth | Magic link + biometrie (wachtwoord opt-in) | Veilig, gebruiksvriendelijk; wachtwoord alleen als gebruiker zelf instelt |
 | Push | expo-notifications (native) | Betrouwbaar op achtergrond |
 | Payments | bunq.me/Havun + XRP (€1/jaar) | €0 transactiekosten, geen commissie |
 | Distributie | Eigen server APK | 0% commissie, geen Play Store review |

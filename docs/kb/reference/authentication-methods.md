@@ -2,14 +2,14 @@
 title: Authenticatie Methodes — Alle Havun Projecten
 type: reference
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-04-27
 ---
 
 # Authenticatie Methodes — Alle Havun Projecten
 
 > **Status:** Vastgelegd — geldt voor ALLE projecten
 > **Datum:** 13 april 2026
-> **Laatst bijgewerkt:** 14 april 2026
+> **Laatst bijgewerkt:** 27 april 2026 — wachtwoord toegevoegd als laatste fallback
 
 ## Email-First Flow (geen tabs)
 
@@ -35,9 +35,9 @@ E-mail = identiteit. Geen gebruikersnaam. Geen login/register tabs.
 |-----------|---------|---------|
 | 1 | **Biometric** (fingerprint/face) | Als geregistreerd op dit apparaat |
 | 2 | **Magic link** (herstel) | Nieuw apparaat, biometric kwijt |
+| 3 | **Wachtwoord** (optioneel) | Alleen als gebruiker zelf heeft ingesteld in account-settings |
 
 **NIET tonen op smartphone:** QR code. Heeft geen zin — je scant een QR code met je smartphone om in te loggen op een ander scherm, niet op dezelfde smartphone.
-**NIET nodig op smartphone:** Wachtwoord. Biometric + magic link dekt alle scenario's.
 
 ### Desktop (browser)
 
@@ -45,8 +45,21 @@ E-mail = identiteit. Geen gebruikersnaam. Geen login/register tabs.
 |-----------|---------|---------|
 | 1 | **QR code** scannen met smartphone | Altijd |
 | 2 | **Magic link** (herstel) | Nieuw apparaat, QR niet beschikbaar |
+| 3 | **Wachtwoord** (optioneel) | Alleen als gebruiker zelf heeft ingesteld in account-settings |
 
 **NIET tonen op desktop:** Biometric. Desktop browsers ondersteunen WebAuthn maar de UX is slecht (Windows Hello popup, niet iedereen heeft het). Biometric is voor smartphones.
+
+### Wachtwoord-flow (optioneel, opt-in per gebruiker)
+
+- **Default:** geen wachtwoord. Login-scherm vraagt alleen e-mail → magic-link of bio/QR.
+- **Opt-in:** gebruiker kan in account-settings zelf een wachtwoord aanmaken (security-tab).
+- **Login-flow met optioneel wachtwoord:**
+  1. Gebruiker vult e-mail in
+  2. Backend checkt: heeft deze user een wachtwoord ingesteld?
+  3. **Ja:** toon "wachtwoord-veld + magic-link knop als alternatief"
+  4. **Nee:** stuur magic-link direct (geen wachtwoord-veld)
+- **Resetten:** "wachtwoord vergeten" = magic-link → reset-flow.
+- **Verwijderen:** gebruiker kan zelf wachtwoord uitzetten in settings (terug naar magic-only).
 
 ### Gedrag
 
@@ -56,25 +69,25 @@ E-mail = identiteit. Geen gebruikersnaam. Geen login/register tabs.
 
 ## NIET gebruiken
 
-- ~~Wachtwoord~~ — niet nodig, biometric + magic link dekt alles
 - ~~Pincode~~ — niet nodig, biometric vervangt dit
 - ~~SMS verificatie~~ — te duur, niet betrouwbaar
-- ~~Social login~~ (Google/Facebook) — privacy, afhankelijkheid
+- ~~Social login~~ (Google/Facebook) — privacy, afhankelijkheid van derde partij (zie incident 27-04-2026: Google verwijderde HP OAuth-client)
 - ~~Magic link voor elke login~~ — alleen voor registratie + herstel (nieuw apparaat)
+- ~~Wachtwoord verplicht~~ — opt-in alleen, nooit default
 
 ## Per Project
 
-| Project | Registratie | Login smartphone | Login desktop |
-|---------|------------|-----------------|---------------|
-| Studieplanner | Magic link | Biometric / magic link (herstel) | N.v.t. (alleen app) |
-| HavunCore Webapp | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) |
-| Herdenkingsportaal | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) |
-| HavunAdmin | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) |
-| JudoToernooi | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) |
-| Infosyst | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) |
-| SafeHavun | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) |
+| Project | Registratie | Login smartphone | Login desktop | Wachtwoord (opt-in) |
+|---------|------------|-----------------|---------------|---------------------|
+| Studieplanner | Magic link | Biometric / magic link (herstel) | N.v.t. (alleen app) | Optioneel |
+| HavunCore Webapp | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
+| Herdenkingsportaal | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
+| HavunAdmin | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
+| JudoToernooi | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
+| Infosyst | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
+| SafeHavun | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel + verplicht TOTP-2FA (vault) |
 
-Alle projecten gebruiken dezelfde methodes. Geen wachtwoorden. Magic link = herstel methode (nieuw apparaat, biometric kwijt).
+Alle projecten gebruiken dezelfde methodes. Wachtwoord is optioneel, opt-in via account-settings — niet verplicht, niet default. Magic link = herstel methode (nieuw apparaat, biometric kwijt).
 
 ## Technisch
 
