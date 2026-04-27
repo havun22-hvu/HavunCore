@@ -96,4 +96,4 @@ Zoek info in `docs/kb/`:
 | Mutation testing baseline | `docs/kb/reference/mutation-baseline-2026-04-17.md` |
 | Test-repair anti-pattern | `docs/kb/runbooks/test-repair-anti-pattern.md` |
 | Verbeterplan tracking | `docs/audit/verbeterplan-q2-2026.md` |
-| Beschermingslagen | `docs/kb/runbooks/beschermingslagen.md` |
+| Beschermingslagen | `docs/kb/runbooks/claude-werkwijze.md` §4 |
