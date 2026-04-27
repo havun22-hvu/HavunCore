@@ -225,6 +225,8 @@ MD;
 
     private function renderClaudeMd(string $slug, string $title): string
     {
+        $standardsBlock = $this->loadStandardsBlock();
+
         return <<<MD
 # {$title} — Claude Instructions
 
@@ -307,25 +309,23 @@ systemd/cron wijzigingen.
 Dit project is geregistreerd in HavunCore's `config/quality-safety.php`.
 Maandelijkse audit: zie `docs/kb/reference/kb-audit-latest.md` (auto-gegen).
 
-## Havun Standaarden (verplicht — zie HavunCore KB)
-
-Bij elke code-wijziging gelden de centrale Havun-normen. Lees bij twijfel de relevante doc:
-
-| Norm | Centrale doc |
-|------|-------------|
-| 6 Onschendbare Regels | `HavunCore/CLAUDE.md` |
-| Auth-standaard (magic + bio/QR + wachtwoord-optin) | `HavunCore/docs/kb/reference/authentication-methods.md` |
-| Test-quality policy (kritieke paden 100 %, MSI ≥ 80 %) | `HavunCore/docs/kb/reference/test-quality-policy.md` |
-| Quality standards (>80 % coverage nieuwe code, form requests, rate-limit) | `HavunCore/docs/kb/reference/havun-quality-standards.md` |
-| Productie-deploy eisen (SSL/SecHeaders/Mozilla/Hardenize/Internet.nl) | `HavunCore/docs/kb/reference/productie-deploy-eisen.md` |
-| V&K-systeem (qv:scan + qv:log) | `HavunCore/docs/kb/reference/qv-scan-latest.md` |
-| Test-repair anti-pattern (VP-17) | `HavunCore/docs/kb/runbooks/test-repair-anti-pattern.md` |
-| Universal login screen | `HavunCore/docs/kb/patterns/universal-login-screen.md` |
-| Werkwijze + beschermingslagen + DO NOT REMOVE | `HavunCore/docs/kb/runbooks/claude-werkwijze.md` |
-
-> **Bij twijfel:** `cd D:/GitHub/HavunCore && php artisan docs:search "<onderwerp>"`
-
+{$standardsBlock}
 MD;
+    }
+
+    /**
+     * Single source of truth for the Havun standards block.
+     * Lives in stubs/claude-md-standards-block.md so updates flow to
+     * every new scaffold automatically without editing this command.
+     */
+    private function loadStandardsBlock(): string
+    {
+        $stub = base_path('stubs/claude-md-standards-block.md');
+        if (! File::exists($stub)) {
+            return "## Havun Standaarden\n\n> **TODO:** stub `stubs/claude-md-standards-block.md` ontbreekt — handmatig invullen.\n";
+        }
+
+        return rtrim(File::get($stub)) . "\n";
     }
 
     private function renderContractsMd(string $title): string
