@@ -85,3 +85,32 @@ beoordelen als Mollie nieuwe features release (check update-datum).
 Hernieuwde live check Mollie-producten (Bank Statements, Business Account,
 Bank Transfer payment method) bevestigde de oorspronkelijke beslissing:
 **Bunq blijft** voor low-price-realtime-app-flows zoals Studieplanner €1.
+
+## Bevestigd 2026-04-29 — Bizcuit-route onderzocht
+
+Mollie Business Account toont integraties (Excel, SnelStart, ...) via
+**Bizcuit** (PSD2 AIS-broker, Bizcuit B.V. KvK 68122853). Onderzocht of dit
+een gratis achterdeur naar real-time multi-bank webhooks is.
+
+**Bevindingen:**
+- Bizcuit heeft een **echte developer-API + sandbox** (developer.bizcuit.nl).
+- Webhook-functionaliteit voor real-time transactie-events: **niet
+  expliciet gedocumenteerd** — bevestiging vereist `partnersupport@bizcuit.nl`.
+- Bizcuit-voorwaarden (gelezen 2026-04-29) tonen 5 structurele risico's
+  voor app-kritieke afhankelijkheid:
+  - Art. 17.1 — kettingafhankelijkheid: onze toegang stopt automatisch
+    als Mollie's contract met Bizcuit eindigt.
+  - Art. 7.1 + 7.5 — maandelijkse vergoeding kan eenzijdig worden verhoogd.
+  - Art. 11.4 — "fair use": bij veel API-calls voor app-logica kan Bizcuit
+    extra factureren.
+  - Art. 4.4 + 23.1 — Bizcuit mag voorwaarden + dienst eenzijdig wijzigen.
+  - Art. 14.3-14.4 — Bizcuit kan toegang opschorten "naar eigen inzicht".
+
+**Conclusie:** voor app-kritieke flows (Studieplanner premium-toggle)
+**niet** via Bizcuit. Te veel schakels (Mollie→Bizcuit→ons) en te veel
+voorwaarden die de andere partij eenzijdig kan wijzigen. Bunq direct blijft
+de juiste keuze.
+
+**Wel nuttig voor:** boekhouding-automatisering (Mollie→Bizcuit→SnelStart
+of Moneybird). Geen eigen Laravel-integratie nodig — kant-en-klare sync.
+Aparte beslissing, niet vervangend voor Bunq-monitoring.

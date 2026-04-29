@@ -272,23 +272,18 @@ Zie: `docs/audit/verbeterplan-q2-2026.md` (VP-10)
 
 ## 12. Urenregistratie (VERPLICHT - belastingaangifte)
 
-**Jij vult zelf de uren in.** Geef een zeer beknopt overzicht om de werkzaamheden te onderbouwen.
+**Jij vult zelf de uren in.** Geef een zeer beknopt overzicht in **lopende tekst** (geen bullet-lijst, max 1-2 regels) om de werkzaamheden te onderbouwen.
 **GEEN commit details of technische beschrijvingen.** Alleen projectnaam + globaal onderwerp (max 3 woorden).
 
 → Kopieer naar `HavunCore/urenregistratie-2026.csv` (formaat: `Datum;Uren;Project;Onderdeel`). Projectnamen met hoofdletter: JudoToernooi, Infosyst, HavunClub, etc.
 
 ```
-[YYYY-MM-DD]:
-- [Project]: [globaal onderwerp, max 3 woorden]
-- [Project]: [globaal onderwerp, max 3 woorden]
+[YYYY-MM-DD]: [Project] [onderwerp], [Project] [onderwerp], [Project] [onderwerp].
 ```
 
 Voorbeeld:
 ```
-2026-03-09:
-- JudoToernooi: Stripe Connect, AutoFix
-- HavunAdmin: StripeService fix
-- HavunCore: KB bijwerken
+2026-03-09: JudoToernooi Stripe Connect & AutoFix, HavunAdmin StripeService fix, HavunCore KB bijwerken.
 ```
 
 ## NIET DOEN BIJ AFSLUITEN
