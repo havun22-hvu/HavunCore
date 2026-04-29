@@ -242,6 +242,50 @@ php artisan config:clear && php artisan cache:clear
 git branch --merged | grep -v master | xargs git branch -d
 ```
 
+## 9b. Schone Lei Check (VERPLICHT — einde van de dag)
+
+> **Filosofie:** elke dag eindigt schoon. Geen losse wijzigingen, geen
+> vergeten branches, geen onverwerkte PR's. Wat morgen begint moet vanaf
+> nul kunnen.
+
+### Verplichte controles per project waarop vandaag gewerkt is
+
+```bash
+# 1. Alle wijzigingen gecommit?
+git status                       # MOET leeg zijn (of alleen bewust untracked)
+
+# 2. Alles gepusht?
+git log @{u}..HEAD --oneline     # MOET leeg zijn
+
+# 3. Openstaande PR's verwerken
+gh pr list --author @me          # elke PR: merge, sluit, of expliciet in handover
+
+# 4. Lokale branches opruimen
+git branch --merged | grep -v master   # MOET leeg zijn (anders -> stap 9)
+```
+
+### Beslisregel per item
+
+| Bevinding | Actie |
+|-----------|-------|
+| Uncommitted code-wijziging | Commit nu (atomair) of revert bewust |
+| Uncommitted MD-wijziging | Commit als `docs:` of revert |
+| Niet-gepushte commits | Push nu |
+| Open eigen PR | Merge, sluit, of noteer in handover **waarom** open blijft |
+| Open review-PR | Verwerk feedback of noteer in handover |
+| Gemergde lokale branch | Verwijder met `git branch -d` |
+
+### Hard rule
+
+Nooit een dag eindigen met:
+- Losse wijzigingen zonder commit
+- Lokale commits zonder push
+- PR's zonder status-update in handover
+- Stale gemergde branches
+
+Als iets bewust open blijft (lopend werk dat morgen verder gaat): leg het
+expliciet vast in `.claude/handover.md` met **wat** en **waarom**.
+
 ## 10. USB / Op reis (HavunCore only)
 
 **Nieuwe werkwijze:** USB bevat alleen credentials (vault) + startscript; geen code sync meer nodig. Code op reis via `git clone`/`git pull`.
