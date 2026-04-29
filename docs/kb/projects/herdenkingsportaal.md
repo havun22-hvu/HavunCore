@@ -8,8 +8,8 @@ last_check: 2026-04-22
 # Project: Herdenkingsportaal
 
 **URL:** https://herdenkingsportaal.nl
-**Type:** Laravel 11 memorial portal met blockchain (Arweave)
-**Versie:** 3.0.80
+**Type:** Laravel 12 memorial portal met blockchain (Arweave)
+**Versie:** 3.3.0
 
 ## Wat is het?
 
@@ -33,13 +33,20 @@ Online platform waar gebruikers digitale herdenkingspagina's (memorials) aanmake
 
 **Access levels:** guest (10 min) → registered (7 dagen gratis) → betaald pakket
 
-## Auth
+## Auth (HP-specifiek — afwijking van Havun-portfolio)
 
 - **Guard:** `web` (session-based, default Laravel)
-- **Provider:** `eloquent-webauthn` (met optionele wachtwoord-fallback)
-- **Features:** Magic link (primair), WebAuthn/Passkey, QR-code (desktop), wachtwoord (opt-in), 2FA TOTP
+- **Provider:** `eloquent-webauthn` (met wachtwoord-fallback)
+- **Login-methoden op /login (3.3.0):**
+  - Wachtwoord + email (primair, voor de HP-doelgroep — oudere users)
+  - Magic-link knop (alternatief)
+  - Biometrie-knop "Inloggen met vingerafdruk" (alleen smartphone, expliciet klikken)
+- **NIET op /login:** QR-login, silent biometric op page-load, login-methode-voorkeur
+- **2FA TOTP:** alleen voor admins (henkvu@gmail.com); UI verborgen voor reguliere users
 - **Admin middleware:** `['auth', 'admin', 'enforce.2fa', 'production.redirect']`
-- **Verwijderd 27-04-2026:** Google OAuth (incident "deleted_client" Google Cloud — externe identity-provider niet meer ondersteund)
+- **Backend blijft staan:** QR-routes (`/auth/qr/*`), passkey-management (`/profile`), magic-link routes — niet bereikbaar vanaf /login UI maar wel functioneel
+- **Bewuste afwijking:** Havun-standaard (`reference/authentication-methods.md`) zegt "wachtwoord NIET MEER GEBRUIKEN" voor alle projecten. HP houdt wachtwoord-primair vanwege doelgroep (memoriale herdenking voor familie/oudere bezoekers waar magic-link drempel te hoog is). Heroverwegen bij grote redesign.
+- **Verwijderd 27-04-2026:** Google OAuth (incident "deleted_client" Google Cloud)
 - **Drift:** PIN login routes bestaan nog maar zijn niet meer aangesloten op de UI (cleanup gepland)
 
 ## Core Features
@@ -108,7 +115,7 @@ Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
 | Services | 37 |
 | Migrations | 90 |
 
-**Stack:** Laravel 11, Tailwind CSS, Alpine.js, Vite, WebAuthn, Arweave (Node.js bridge)
+**Stack:** Laravel 12, Tailwind CSS, Alpine.js (`@alpinejs/csp` build), Vite, WebAuthn (Laragear), Arweave (Node.js bridge)
 
 **Patterns:**
 - Service layer (PaymentServiceFactory, ConfigurationService)
@@ -136,4 +143,4 @@ php artisan optimize:clear
 
 ---
 
-*Laatste update: 11 maart 2026*
+*Laatste update: 30 april 2026 (login-vereenvoudiging 3.3.0, Laravel 12, Brevo email)*
