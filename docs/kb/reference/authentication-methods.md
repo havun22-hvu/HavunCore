@@ -2,14 +2,14 @@
 title: Authenticatie Methodes — Alle Havun Projecten
 type: reference
 scope: havuncore
-last_check: 2026-04-27
+last_check: 2026-04-30
 ---
 
 # Authenticatie Methodes — Alle Havun Projecten
 
-> **Status:** Vastgelegd — geldt voor ALLE projecten
+> **Status:** Vastgelegd — portfolio-standaard (passwordless + biometric/QR)
 > **Datum:** 13 april 2026
-> **Laatst bijgewerkt:** 27 april 2026 — wachtwoord toegevoegd als laatste fallback
+> **Laatst bijgewerkt:** 30 april 2026 — Herdenkingsportaal-uitzondering (wachtwoord-primair) gemarkeerd
 
 ## Email-First Flow (geen tabs)
 
@@ -77,17 +77,21 @@ E-mail = identiteit. Geen gebruikersnaam. Geen login/register tabs.
 
 ## Per Project
 
-| Project | Registratie | Login smartphone | Login desktop | Wachtwoord (opt-in) |
-|---------|------------|-----------------|---------------|---------------------|
-| Studieplanner | Magic link | Biometric / magic link (herstel) | N.v.t. (alleen app) | Optioneel |
-| HavunCore Webapp | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
-| Herdenkingsportaal | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
-| HavunAdmin | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
-| JudoToernooi | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
-| Infosyst | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel |
+| Project | Registratie | Login smartphone | Login desktop | Wachtwoord-rol |
+|---------|------------|-----------------|---------------|----------------|
+| Studieplanner | Magic link | Biometric / magic link (herstel) | N.v.t. (alleen app) | Optioneel (opt-in) |
+| HavunCore Webapp | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel (opt-in) |
+| **Herdenkingsportaal** ⚠️ | Magic link | **Wachtwoord (primair)** + magic-link knop + biometrie-knop (expliciet, alleen smartphone) | **Wachtwoord (primair)** + magic-link knop | **Primair** (bewuste afwijking) |
+| HavunAdmin | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel (opt-in) |
+| JudoToernooi | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel (opt-in) |
+| Infosyst | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel (opt-in) |
 | SafeHavun | Magic link | Biometric / magic link (herstel) | QR / magic link (herstel) | Optioneel + verplicht TOTP-2FA (vault) |
 
-Alle projecten gebruiken dezelfde methodes. Wachtwoord is optioneel, opt-in via account-settings — niet verplicht, niet default. Magic link = herstel methode (nieuw apparaat, biometric kwijt).
+Alle projecten **behalve Herdenkingsportaal** gebruiken dezelfde passwordless-default methodes.
+
+### ⚠️ Herdenkingsportaal — bewuste afwijking (sinds 30-04-2026)
+
+HP houdt **wachtwoord-primair** met magic-link en biometrie als alternatieven. Reden: doelgroep (oudere familie, memoriaal-context) ervaart magic-link/passwordless als drempel — gebruikers verwachten een ouderwetse wachtwoord-flow. QR is verwijderd uit de login-UI in 3.3.0; backend-routes blijven werkend voor toekomstige integratie. Volledige rationale: [HP SPEC.md sectie 3](../../../../Herdenkingsportaal/SPEC.md), [HP LOGIN-METHODS.md](../../../../Herdenkingsportaal/docs/2-FEATURES/LOGIN-METHODS.md). Heroverweg bij grote redesign.
 
 ## Technisch
 

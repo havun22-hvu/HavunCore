@@ -9,7 +9,7 @@ last_check: 2026-04-22
 
 **URL:** https://herdenkingsportaal.nl
 **Type:** Laravel 12 memorial portal met blockchain (Arweave)
-**Versie:** 3.3.0
+**Versie:** 3.3.1
 
 ## Wat is het?
 
@@ -37,17 +37,19 @@ Online platform waar gebruikers digitale herdenkingspagina's (memorials) aanmake
 
 - **Guard:** `web` (session-based, default Laravel)
 - **Provider:** `eloquent-webauthn` (met wachtwoord-fallback)
-- **Login-methoden op /login (3.3.0):**
+- **Login-methoden op /login (3.3.x):**
   - Wachtwoord + email (primair, voor de HP-doelgroep — oudere users)
-  - Magic-link knop (alternatief)
-  - Biometrie-knop "Inloggen met vingerafdruk" (alleen smartphone, expliciet klikken)
-- **NIET op /login:** QR-login, silent biometric op page-load, login-methode-voorkeur
+  - Magic-link knop "Stuur me een login-link" (alternatief, type=`'login'`)
+  - Biometrie-knop "Inloggen met vingerafdruk" (alleen smartphone `min(width,height)<550`, expliciet klikken)
+- **NIET op /login:** QR-modal, silent biometric op page-load, login-methode-voorkeur, provider-display
+- **Passkey-management op /profile:** delegated click listener op `[data-action="delete-passkey"]` (CSP-veilig, sinds 3.3.1 — 30-04-2026)
 - **2FA TOTP:** alleen voor admins (henkvu@gmail.com); UI verborgen voor reguliere users
 - **Admin middleware:** `['auth', 'admin', 'enforce.2fa', 'production.redirect']`
 - **Backend blijft staan:** QR-routes (`/auth/qr/*`), passkey-management (`/profile`), magic-link routes — niet bereikbaar vanaf /login UI maar wel functioneel
 - **Bewuste afwijking:** Havun-standaard (`reference/authentication-methods.md`) zegt "wachtwoord NIET MEER GEBRUIKEN" voor alle projecten. HP houdt wachtwoord-primair vanwege doelgroep (memoriale herdenking voor familie/oudere bezoekers waar magic-link drempel te hoog is). Heroverwegen bij grote redesign.
 - **Verwijderd 27-04-2026:** Google OAuth (incident "deleted_client" Google Cloud)
-- **Drift:** PIN login routes bestaan nog maar zijn niet meer aangesloten op de UI (cleanup gepland)
+- **Verwijderd 29-04-2026 (3.3.0):** QR-modal op /login, silent biometric op page-load, csrfFetch-helper, login-methode-voorkeur, provider-display per passkey
+- **Drift:** PIN login routes bestaan nog maar zijn niet meer aangesloten op de UI; DB-kolom `users.preferred_login_method` ongebruikt sinds 3.3.0 (cleanup gepland)
 
 ## Core Features
 
