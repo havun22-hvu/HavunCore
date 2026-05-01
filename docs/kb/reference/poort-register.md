@@ -2,7 +2,7 @@
 title: Poort-register (productie + lokale dev)
 type: reference
 scope: alle-projecten
-last_check: 2026-04-19
+last_check: 2026-05-02
 ---
 
 # Poort-register
@@ -49,6 +49,44 @@ last_check: 2026-04-19
 | 8384 | Syncthing GUI | infra | `127.0.0.1` | syncthing |
 | 22000 | Syncthing sync | infra | `*` | syncthing |
 | 33060 | MySQL X-protocol | infra | `127.0.0.1` | mysqld |
+
+### Externe bereikbaarheid (UFW firewall policy)
+
+> **Eis**: zie `productie-deploy-eisen.md` sectie 8.4 — UFW actief, alleen 22/80/443 publiek (+22000 Syncthing als gebruikt).
+>
+> Sommige services binden aan `0.0.0.0` of `*` voor interne nginx-proxy
+> communicatie, maar mogen NIET direct van extern bereikbaar zijn. UFW zorgt
+> daarvoor (laatste-laag), bind-config is eerste laag.
+
+| Poort | Bind | Mag van extern? | Reden |
+|-------|------|-----------------|-------|
+| 22 | `0.0.0.0` | ✅ JA | SSH-toegang vereist |
+| 80 | `0.0.0.0` | ✅ JA | HTTP → 443 redirect |
+| 443 | `0.0.0.0` | ✅ JA | HTTPS publiek |
+| 22000 | `*` | ✅ JA | Syncthing P2P sync |
+| 3001 (havuncore-backend) | `0.0.0.0` | ❌ NEE | Alleen via nginx upstream |
+| 3002 (vpdupdate) | `*` | ❌ NEE | Alleen interne calls via localhost |
+| 3003 (havun-website) | `*` | ❌ NEE | Alleen via nginx upstream |
+| 8001 (Studieplanner-API) | `127.0.0.1` | ❌ NEE | Localhost-bind = vanzelf afgeschermd |
+| 8080 (Reverb prod) | `0.0.0.0` | ❌ NEE | Alleen via nginx WebSocket-proxy |
+| 8081 (Reverb staging) | `0.0.0.0` | ❌ NEE | Alleen via nginx WebSocket-proxy |
+| 8384 (Syncthing GUI) | `127.0.0.1` | ❌ NEE | Localhost-bind |
+| 3306 / 33060 (MySQL) | `127.0.0.1` | ❌ NEE | Localhost-bind |
+| 6379 (Redis) | `127.0.0.1` | ❌ NEE | Localhost-bind |
+| 53 (DNS) | `127.0.0.53` | ❌ NEE | systemd-resolved interne resolver |
+
+**UFW config** (Ubuntu, productie):
+```bash
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 22/tcp comment 'SSH'
+ufw allow 80/tcp comment 'HTTP'
+ufw allow 443/tcp comment 'HTTPS'
+ufw allow 22000/tcp comment 'Syncthing'
+ufw enable
+```
+
+Services op `0.0.0.0` zonder UFW-allow blijven werken voor lokale nginx-upstream-calls (UFW filtert alleen extern verkeer, niet localhost).
 
 ### Nginx → upstream mapping
 

@@ -2,14 +2,65 @@
 title: Security findings log (alle projecten)
 type: reference
 scope: alle-projecten
-last_check: 2026-04-18
+last_check: 2026-05-02
 ---
 
 # Security findings log
 
 > **Chronologisch** log van elke externe security-scan hit + fix.
-> **Bron voor entries:** `composer audit`, `npm audit`, Mozilla Observatory, SSL Labs, OWASP ZAP, pentest, GHSA notifications.
+> **Bron voor entries:** `composer audit`, `npm audit`, Mozilla Observatory, SSL Labs, OWASP ZAP, pentest, GHSA notifications, ad-hoc server-sweeps.
 > **Werkwijze:** zie `runbooks/security-findings-logging.md`.
+
+## 2026-05-02 — Server-hardening sweep (Hetzner prod 188.245.159.115)
+
+**Bron**: ad-hoc audit n.a.v. user-vraag "is de site goed beveiligd?".
+**Scope**: OS-laag + Laravel app-config op productie-server. App-laag (CSP,
+CSRF, XSS, etc.) was al groen — focus deze sweep op infra die door eerdere
+audit (1-nov-2025) niet was gedekt.
+
+### Bevindingen
+
+| # | Severity | Bevinding | Project / scope |
+|---|----------|-----------|-----------------|
+| 1 | 🔴 HIGH | `APP_DEBUG=true` op productie | Herdenkingsportaal |
+| 2 | 🟠 MEDIUM | `SESSION_LIFETIME=43200` (30 dagen) — eis is ≤ 120 | Herdenkingsportaal |
+| 3 | 🟠 MEDIUM | `SESSION_DRIVER=file` — eis is `database` op productie | Herdenkingsportaal |
+| 4 | 🟠 MEDIUM | `.env` permissions `0664` (world-readable) | Herdenkingsportaal |
+| 5 | 🔴 HIGH | UFW firewall `inactive` op hele server | alle projecten |
+| 6 | 🔴 HIGH | fail2ban niet geïnstalleerd; `auth.log` toont actieve brute-force op SSH | alle projecten |
+| 7 | 🔴 HIGH | SSH `PasswordAuthentication` aan; brute-force pogingen succesvol-mogelijk | alle projecten |
+
+### Wat goed was (geen actie)
+
+- ✅ HTTPS-headers correct (HSTS, CSP nonce, Permissions-Policy, COOP/CORP)
+- ✅ Cookies met `__Host-` en `__Secure-` prefixes, secure+httponly+samesite=lax
+- ✅ MySQL + Redis bind 127.0.0.1 (niet extern bereikbaar)
+- ✅ SSL cert geldig tot 22-jul-2026, ECDSA, auto-renew werkt
+- ✅ PHP 8.2.29 (laatste patch)
+- ✅ Composer + npm audits clean
+
+### Doc-updates (2026-05-02)
+
+- `productie-deploy-eisen.md` — sectie 8 "Server-hardening (OS + app-config)" toegevoegd met 7 sub-eisen + verifieer-commands
+- `poort-register.md` — sectie "Externe bereikbaarheid (UFW policy)" toegevoegd
+- `security.md` — server-hardening status tabel toegevoegd, Hetzner prod = ❌
+- `server.md` — ports-sectie verwijderd (dubbel met poort-register)
+- `Herdenkingsportaal/docs/3-TECHNICAL/SECURITY-AUDIT-2025-11-01.md` — verwijderd (obsolete "100/100" claim)
+
+### Plan / status fixes
+
+Plan-doc: `Herdenkingsportaal/docs/3-TECHNICAL/SERVER-HARDENING-PLAN-2026-05-02.md`
+(volgorde, dependencies, rollback, owner=Henk).
+
+| # | Fix | Status |
+|---|-----|--------|
+| 1 | APP_DEBUG=false op HP-prod + cache:clear | ⏳ open |
+| 2 | SESSION_LIFETIME=120 + DRIVER=database op HP-prod | ⏳ open |
+| 3 | chmod 640 .env op HP-prod | ⏳ open |
+| 4 | UFW activeren met whitelist 22/80/443/22000 | ⏳ open |
+| 5 | fail2ban installeren + sshd jail | ⏳ open |
+| 6 | SSH PasswordAuthentication=no (na pubkey-test) | ⏳ open |
+| 7 | Re-audit + status updaten in `security.md` | ⏳ open |
 
 ## 2026-04-18 — Composer audit sweep
 

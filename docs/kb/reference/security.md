@@ -2,14 +2,15 @@
 title: Security Overzicht
 type: reference
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-05-02
 ---
 
 # Security Overzicht
 
-> Centrale security status voor alle Havun projecten
+> Centrale security status voor alle Havun projecten.
+> **Eisen** liggen vast in [`productie-deploy-eisen.md`](productie-deploy-eisen.md) (BINDING).
 
-## GitHub Repositories
+## GitHub Repositories (code)
 
 | Repository | Status | Visibility |
 |------------|--------|------------|
@@ -20,6 +21,18 @@ last_check: 2026-04-22
 | Studieplanner | ✅ Veilig | Private |
 | infosyst | ✅ Veilig | Private |
 | HavunClub | ✅ Veilig | Private |
+
+## Server-hardening status (per omgeving)
+
+> **Eis**: zie `productie-deploy-eisen.md` sectie 8 — UFW actief, fail2ban,
+> SSH pubkey-only, APP_DEBUG=false, SESSION_LIFETIME ≤ 120, .env perms 640.
+> Status onderstaand **per server**, niet per project (één VPS host meerdere projecten).
+
+| Server | UFW | fail2ban | SSH pubkey-only | Open ports OK | App-config OK | Laatste audit |
+|--------|:---:|:--------:|:---------------:|:-------------:|:-------------:|---------------|
+| `188.245.159.115` (Hetzner prod) | ❌ | ❌ | ❌ | ❌ | ❌ HP debug=true, lifetime=43200, .env=664 | 2026-05-02 |
+
+**Actie**: zie `security-findings.md` 2026-05-02-entry voor de hele lijst gaps + planning.
 
 ## Credentials Opslag
 
