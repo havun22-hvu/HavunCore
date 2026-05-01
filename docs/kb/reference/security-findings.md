@@ -54,13 +54,25 @@ Plan-doc: `Herdenkingsportaal/docs/3-TECHNICAL/SERVER-HARDENING-PLAN-2026-05-02.
 
 | # | Fix | Status |
 |---|-----|--------|
-| 1 | APP_DEBUG=false op HP-prod + cache:clear | ⏳ open |
-| 2 | SESSION_LIFETIME=120 + DRIVER=database op HP-prod | ⏳ open |
-| 3 | chmod 640 .env op HP-prod | ⏳ open |
-| 4 | UFW activeren met whitelist 22/80/443/22000 | ⏳ open |
+| 1 | APP_DEBUG=false op HP-prod + cache:clear | ✅ 2026-05-02 23:03 UTC |
+| 2 | SESSION_LIFETIME=120 + DRIVER=database op HP-prod | ✅ 2026-05-02 23:03 UTC (sessions-tabel bestond al, geen migrate nodig) |
+| 3 | chmod 640 .env op HP-prod (eigenaar root:www-data) | ✅ 2026-05-02 23:03 UTC |
+| 4 | UFW activeren met whitelist 22/80/443/22000 | ⏳ open (wacht op user-vangnet voor self-lockout-risico) |
 | 5 | fail2ban installeren + sshd jail | ⏳ open |
-| 6 | SSH PasswordAuthentication=no (na pubkey-test) | ⏳ open |
-| 7 | Re-audit + status updaten in `security.md` | ⏳ open |
+| 6 | SSH PasswordAuthentication=no (na pubkey-test) | ⏳ open (wacht op user-vangnet) |
+| 7 | Re-audit + status updaten in `security.md` | ⏳ open (na 4-6) |
+
+**Verificatie Fase 1+2** (na uitvoering):
+- DB row-counts vóór = na: `users=5, memorials=8, invoices=13, payments=17` (data-safety bevestigd)
+- `curl -sI https://herdenkingsportaal.nl/i-do-not-exist` → HTTP 404 zonder Whoops-stack-trace in body (APP_DEBUG=false werkt)
+- `ls -la .env` → `-rw-r----- 1 root www-data` (640 perms gerespecteerd, php-fpm leest nog via groep)
+- HTTPS 200 OK na chmod (php-fpm leest .env via group)
+
+**Bonus-bevindingen tijdens P3 (.env snapshots)** — meer projecten hebben onveilige .env perms (out of scope deze sweep, voor follow-up):
+- `havunclub/production/.env`: `-rwxr-xr-x` (755, **executable!**)
+- `havunclub/staging/.env`: `-rwxr-xr-x` (755)
+- `herdenkingsportaal/staging/.env`: `-rwxr-xr-x` (755)
+- `safehavun/production/.env`: `-rwxr-xr-x` (755)
 
 ## 2026-04-18 — Composer audit sweep
 
