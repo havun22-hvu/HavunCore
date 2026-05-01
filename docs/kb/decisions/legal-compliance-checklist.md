@@ -97,13 +97,14 @@ Voor MKB <250 medewerkers alleen verplicht bij hoog-risico verwerking. HP-conten
 
 | Tool | Doel | Status | Kosten |
 |------|------|--------|--------|
-| Termly of iubenda | Privacy/voorwaarden/cookies in alle talen | ⬜ Niet ingericht | ~€15/maand |
+| ~~Termly / iubenda~~ | Privacy/voorwaarden/cookies in alle talen | ❌ **Niet gekozen** — abonnement vermijden | ~€15/maand |
+| **Self-hosted (interne docs)** | Privacy/voorwaarden/cookies in eigen `legal/`-views | 🟡 In opzet — Claude schrijft, Henk reviewt | €0/maand |
+| Halfjaarlijkse review | Claude scant AP/EU-jurisprudentie + updatet legal-teksten | 🗓️ Cadens: 1 mei + 1 nov, plus ad-hoc op aanwijzing | €0 |
 | Mollie | Betalingen + EU-BTW + sancties-screening | ✅ Live | per-transactie |
 | Cookie-consent-banner | Tw-conform (NL) | ✅ Live, locale-aware | — |
 | Cloudflare cf-ipcountry | Geo-detectie voor land-default | ⬜ Optioneel, fase 2 | gratis |
-| Eenmalige jurist-review | NL/EU-specialist | ⬜ Plannen | €500-1000 |
-| **Total jaar 1:** ~€700 | | | |
-| **Total jaar 2+:** ~€180/jaar | | | |
+| Eenmalige jurist-review | NL/EU-specialist — alleen bij **trigger** (datalek/AP-vooronderzoek/.com-launch) | ⬜ Reactief plannen | €500-1000 ad-hoc |
+| **Total jaar 1+:** €0 doorlopend | | | |
 
 ## Action-items (geprioriteerd)
 
@@ -137,10 +138,18 @@ Voor MKB <250 medewerkers alleen verplicht bij hoog-risico verwerking. HP-conten
 
 ## Trigger voor herziening
 
+### Vaste cadens
+- **Halfjaarlijks:** 1 mei + 1 november — Claude scant relevante updates (AP-uitspraken, AVG-jurisprudentie, DSA-richtsnoeren, AI Act-secundaire wetgeving) en past `legal/privacy.blade.php` / `terms.blade.php` / `cookies.blade.php` aan waar nodig. Commit met audit-trail.
+- **Ad-hoc:** zodra Henk aanwijst dat er iets gewijzigd moet worden (bijv. nieuwe sub-processor, nieuwe verwerking, klant-vraag met juridische lading).
+
+### Reactieve triggers (jurist erbij halen)
 - Substantiële klacht uit niet-EU jurisdictie → jurist consulteren
-- AP-onderzoek of jurisprudentie over blockchain-archivering → BLOCKCHAIN-PERMANENCE.md heroverwegen
+- AP-onderzoek of -klacht → jurist consulteren vóór reactie
+- AP-jurisprudentie specifiek over blockchain-archivering → `BLOCKCHAIN-PERMANENCE.md` heroverwegen + jurist
 - Omzet >€100k/jaar uit specifiek niet-EU land → aparte compliance overwegen
 - DSA: zodra HP >50 unieke gebruikers per maand → jaarrapport-verplichting checken
+- Datalek met AP-meldplicht (zie `INCIDENT-RESPONSE-DATALEK.md`)
+- Definitieve `.com`-launch → eenmalige jurist-check op blockchain-clausule + UAVG-overledenen + multilingual-vertaling-conformity
 
 ## Referenties
 
