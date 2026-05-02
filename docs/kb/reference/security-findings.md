@@ -11,6 +11,32 @@ last_check: 2026-05-02
 > **Bron voor entries:** `composer audit`, `npm audit`, Mozilla Observatory, SSL Labs, OWASP ZAP, pentest, GHSA notifications, ad-hoc server-sweeps.
 > **Werkwijze:** zie `runbooks/security-findings-logging.md`.
 
+## 2026-05-02 — Backup MVP feature-complete (Herdenkingsportaal)
+
+**Bron**: Follow-up op `2026-04-26 — havun:backup:run MVP` waar offsite SFTP push,
+AES-256 encryptie en multi-channel notifications nog ontbraken.
+
+**Implementatie** (commit `7615c48` + simplify-fixes `647eb29`):
+- `BackupService::encryptFile()` — AES-256-CBC via openssl CLI, password via
+  0600 temp file (nooit in argv), pbkdf2 salt. Streaming dus 1 GB+ DBs werken.
+- `BackupService::pushToOffsite()` — `fopen()` + `Storage::disk('hetzner-storage-box')->writeStream()`.
+  Memory-constant; SFTP-disk al ge­config'd.
+- Pipeline in `HavunBackupRun`: dump → encrypt → push → prune. Encryption-failure
+  deletet unencrypted dump (GDPR). Offsite-failure returnt FAILURE (monitoring).
+- DRY: `withTempCredentialsFile()` + `configuredTimeout()` helpers — `dumpMysql`
+  en `encryptFile` delen patroon.
+- Tests: 12 totaal (8 unit + 4 pipeline), encrypt-roundtrip getest met openssl CLI.
+
+**Activeren op productie** (toekomstige stap, vereist operator-actie):
+```
+BACKUP_OFFSITE_ENABLED=true   # in /var/www/herdenkingsportaal/production/.env
+# HETZNER_STORAGE_HOST/USERNAME/PASSWORD + BACKUP_ENCRYPTION_PASSWORD zijn al gezet
+php artisan havun:backup:run  # produceert .sql.gz + .sql.gz.enc + SFTP push
+```
+
+**Out of scope** (volgende iteratie): multi-channel notifications (slack/discord),
+restore-runbook met decryption-instructies.
+
 ## 2026-05-02 — Server-hardening sweep (Hetzner prod 188.245.159.115)
 
 **Bron**: ad-hoc audit n.a.v. user-vraag "is de site goed beveiligd?".
