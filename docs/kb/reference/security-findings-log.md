@@ -21,3 +21,11 @@ scope: alle-projecten
 
 - [HIGH] **[high]** herdenkingsportaal/—: 1 test file(s) deleted in last 30 days
 - [HIGH] **[high]** judotoernooi/—: Form validation coverage 53% (112/213 write-routes)
+
+## 2026-05-02 16:06
+
+- [HIGH] **[high]** judotoernooi/phpoffice/phpspreadsheet: PKSA-gz3f-3cz3-3wsw — PhpSpreadsheet has CPU Denial of Service via Unbounded Row Number in XLSX Row Dimensions
+- [HIGH] **[high]** judotoernooi/phpoffice/phpspreadsheet: PKSA-x13r-n4wc-4gcr — PhpSpreadsheet has CPU Denial of Service via Unbounded Row Index in SpreadsheetML XML Reader
+- [HIGH] **[high]** judotoernooi/phpoffice/phpspreadsheet: PKSA-8cfg-tzhf-fr83 — PhpSpreadsheet has SSRF/RCE in IOFactory::load when $filename is user controlled
+- [HIGH] **[high]** judotoernooi/—: Form validation coverage 53% (112/213 write-routes)
+- [HIGH] **[high]** havunvet/—: 1 session-cookie flag(s) not securely set
