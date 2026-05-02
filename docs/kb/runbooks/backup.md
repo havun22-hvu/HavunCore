@@ -203,6 +203,79 @@ Endpoint: `GET /health/backup` op de webapp backend.
 - **Fix:** awk quoting gefixt, `set -e` verwijderd, shebang gefixt, ontbrekende DBs toegevoegd
 - **Impact:** Geen backup van herdenkingsportaal/judotoernooi/etc beschikbaar voor restore
 
+## Project-level backup (Laravel artisan)
+
+> **Sinds 2 mei 2026 (HP).** Aanvulling op de globale `/usr/local/bin/havun-backup.sh`.
+> Per-project artisan-pipeline met encryption + offsite via Laravel.
+
+### Pipeline
+
+```
+mysqldump → .sql.gz (local)
+         → .sql.gz.enc (AES-256-CBC + pbkdf2, openssl CLI)
+         → SFTP push naar Hetzner storage box
+         → retention prune (>30 dagen lokaal)
+```
+
+### Configuratie (.env op productie)
+
+```ini
+BACKUP_ENCRYPTION_ENABLED=true
+BACKUP_ENCRYPTION_PASSWORD=<sterk wachtwoord — bewaar in vault!>
+BACKUP_OFFSITE_ENABLED=true
+HETZNER_STORAGE_HOST=u510616.your-storagebox.de
+HETZNER_STORAGE_USERNAME=u510616
+HETZNER_STORAGE_PASSWORD=<storage box wachtwoord>
+```
+
+### Run
+
+```bash
+ssh root@188.245.159.115 "cd /var/www/herdenkingsportaal/production && php artisan havun:backup:run"
+
+# Skip offsite voor lokale-only run:
+php artisan havun:backup:run --no-offsite
+
+# Skip prune voor 1-malige extra backup:
+php artisan havun:backup:run --no-prune
+```
+
+### Restore van encrypted offsite-backup
+
+```bash
+# 1. Download .sql.gz.enc van Hetzner
+sftp -P 23 u510616@u510616.your-storagebox.de
+sftp> cd havun-backups
+sftp> get herdenkingsportaal-prod-20260502-040000.sql.gz.enc /tmp/
+sftp> bye
+
+# 2. Decrypt (vereist BACKUP_ENCRYPTION_PASSWORD)
+read -s -p "Encryption password: " ENC_PASS
+echo "$ENC_PASS" > /tmp/enc-pass && chmod 600 /tmp/enc-pass
+openssl enc -d -aes-256-cbc -pbkdf2 \
+  -in /tmp/herdenkingsportaal-prod-20260502-040000.sql.gz.enc \
+  -out /tmp/herdenkingsportaal-prod-20260502-040000.sql.gz \
+  -pass file:/tmp/enc-pass
+shred -u /tmp/enc-pass
+
+# 3. Restore (BELANGRIJK: backup eerst de huidige DB!)
+mysqldump --single-transaction herdenkingsportaal_prod | gzip > /tmp/pre-restore-$(date +%Y%m%d-%H%M%S).sql.gz
+gunzip -c /tmp/herdenkingsportaal-prod-20260502-040000.sql.gz | mysql herdenkingsportaal_prod
+```
+
+### Restore van lokaal niet-encrypted backup
+
+```bash
+# Direct gunzip → mysql, geen openssl-stap
+gunzip -c /var/www/herdenkingsportaal/production/storage/backups/herdenkingsportaal-prod-*.sql.gz \
+  | mysql herdenkingsportaal_prod
+```
+
+### Tests
+
+12 testen in `tests/Unit/BackupServiceTest.php` + `tests/Feature/HavunBackupRunPipelineTest.php` —
+encryption-roundtrip + offsite-stream + pipeline-failure scenarios.
+
 ## Related
 
 - [backup-system.md](../reference/backup-system.md) - Volledige referentie
