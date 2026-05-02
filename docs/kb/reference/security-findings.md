@@ -68,11 +68,12 @@ Plan-doc: `Herdenkingsportaal/docs/3-TECHNICAL/SERVER-HARDENING-PLAN-2026-05-02.
 - `ls -la .env` → `-rw-r----- 1 root www-data` (640 perms gerespecteerd, php-fpm leest nog via groep)
 - HTTPS 200 OK na chmod (php-fpm leest .env via group)
 
-**Bonus-bevindingen tijdens P3 (.env snapshots)** — meer projecten hebben onveilige .env perms (out of scope deze sweep, voor follow-up):
-- `havunclub/production/.env`: `-rwxr-xr-x` (755, **executable!**)
-- `havunclub/staging/.env`: `-rwxr-xr-x` (755)
-- `herdenkingsportaal/staging/.env`: `-rwxr-xr-x` (755)
-- `safehavun/production/.env`: `-rwxr-xr-x` (755)
+**Bonus-bevindingen tijdens P3 (.env snapshots)** — opgelost 2026-05-02 11:30 UTC:
+- `havunclub/production/.env`: 755 → ✅ 640 (root:www-data)
+- `havunclub/staging/.env`: 755 → ✅ 640 (root:www-data)
+- `herdenkingsportaal/staging/.env`: 755 → ✅ 640 (root:www-data)
+- `safehavun/production/.env`: 755 → ✅ 640 (root:www-data)
+- Alle 4 sites na fix HTTP 200/302 (framework draait, php-fpm leest via group)
 
 ## 2026-04-18 — Composer audit sweep
 
