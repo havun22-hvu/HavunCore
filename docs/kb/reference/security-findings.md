@@ -97,6 +97,45 @@ Plan-doc: `Herdenkingsportaal/docs/3-TECHNICAL/SERVER-HARDENING-PLAN-2026-05-02.
 **Bonus-bevindingen tijdens P3 (.env snapshots)** — opgelost 2026-05-02 11:30 UTC:
 - `havunclub/production/.env`: 755 → ✅ 640 (root:www-data)
 - `havunclub/staging/.env`: 755 → ✅ 640 (root:www-data)
+
+### Cross-project rollout Laravel app-config (2026-05-03)
+
+**Bron:** follow-up sweep — zelfde 3 Laravel-eisen (APP_DEBUG/SESSION_DRIVER/SESSION_LIFETIME) verifiëren op
+de overige 6 productie-projecten naast Herdenkingsportaal.
+
+**Pre-fix audit (alle bevindingen):**
+
+| Project | APP_DEBUG | SESSION_DRIVER | SESSION_LIFETIME | .env perms | Severity |
+|---------|-----------|----------------|------------------|------------|----------|
+| havunadmin | ✅ false | ❌ file | ❌ 525600 (1 jaar) | ✅ 600 www-data:www-data | 🟠 MED |
+| judotoernooi | ✅ false | ❌ file | ✅ 120 | ❌ 644 root:root | 🟠 MED |
+| **studieplanner** | 🔴 **true** | ✅ database | ✅ 120 | ❌ 644 root:root | 🔴 HIGH (info-leak) |
+| safehavun | ✅ false | ✅ database | ✅ 120 | ✅ 640 root:www-data | — al goed |
+| infosyst | ✅ false | ✅ database | ✅ 120 | ❌ 644 root:root | 🟠 MED |
+| havuncore | ✅ false | ⚠️ file | leeg | ✅ 640 www-data:www-data | 🟡 LOW (admin-only) |
+| havunclub | ✅ false | ✅ database | ✅ 120 | ✅ 640 root:www-data | — al goed |
+
+**Fixes uitgevoerd 2026-05-03:**
+
+| # | Project | Wijziging | Status |
+|---|---------|-----------|--------|
+| 1 | studieplanner | APP_DEBUG true→false + chmod 640 root:www-data + .env.bak | ✅ |
+| 2 | havunadmin | SESSION_DRIVER file→database + LIFETIME 525600→120 | ✅ |
+| 3 | judotoernooi | SESSION_DRIVER file→database + chmod 640 root:www-data | ✅ |
+| 4 | infosyst | chmod 640 root:www-data | ✅ |
+| 5 | havuncore | SESSION_DRIVER=file gelaten (geen sessions-migration; admin-only tool) | ⏳ openstaand — overleg vereist |
+
+**Verificatie:**
+- HTTPS smoke-tests: HP/JT/SP=200, HavunAdmin/Infosyst/SafeHavun=302, HavunCore=200 (geen 5xx)
+- 404 endpoint: 0 Whoops-occurrences in body (APP_DEBUG=false bevestigd op SP/HavunAdmin/JT)
+- DB row-counts users vóór = na: havunadmin 2, judotoernooi 0 (organisator-guard), studieplanner 3, infosyst 2 (data-safety bevestigd)
+- Sessions-tabel groeit correct na fix (havunadmin 0→1, judotoernooi 0→2 nieuwe DB-sessies door smoke-tests)
+- `php artisan config:clear` per project — geen 500-errors
+
+**Backup vóór fix:** havun-hotbackup.sh draait elke 5 min (laatste run 22:58 UTC), pre-fix .env als `.env.bak.2026-05-03`.
+
+**Openstaand (havuncore):** SESSION_DRIVER blijft `file` totdat een sessions-migration wordt toegevoegd.
+HavunCore is admin-only (Henk) — risico is laag, maar consistentie zou `database` zijn.
 - `herdenkingsportaal/staging/.env`: 755 → ✅ 640 (root:www-data)
 - `safehavun/production/.env`: 755 → ✅ 640 (root:www-data)
 - Alle 4 sites na fix HTTP 200/302 (framework draait, php-fpm leest via group)

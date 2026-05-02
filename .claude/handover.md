@@ -2,6 +2,52 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 3 mei 2026 — Cross-project rollout server-hardening Laravel-eisen
+
+### Wat gedaan
+- **Audit alle 7 prod .env's** op server (havunadmin, judotoernooi, studieplanner, safehavun, infosyst, havuncore, havunclub) — APP_DEBUG / SESSION_DRIVER / SESSION_LIFETIME / perms.
+- **Pre-fix backup**: havun-hotbackup gedraaid + DB row-counts vastgelegd. `.env.bak.2026-05-03` per gefixt project.
+- **Fixes uitgevoerd** (zie `docs/kb/reference/security-findings.md` §"Cross-project rollout 2026-05-03"):
+  - studieplanner: 🔴 APP_DEBUG=true→false + chmod 640 root:www-data
+  - havunadmin: SESSION_DRIVER file→database + LIFETIME 525600→120
+  - judotoernooi: SESSION_DRIVER file→database + chmod 640 root:www-data
+  - infosyst: chmod 640 root:www-data
+  - safehavun + havunclub: al conform, niets gewijzigd
+- **Verificatie**: HTTPS smoke-tests groen, 0 Whoops in 404 body, sessions-tabel groeit correct, row-counts users vóór = na.
+
+### Openstaand
+- [ ] **havuncore SESSION_DRIVER=file** — geen sessions-migration aanwezig. Admin-only tool dus laag risico, maar consistentie zou database zijn. Beslissing nodig: migration toevoegen of file accepteren.
+- [ ] **Backup MVP rollout naar 6 projecten** — Henk koos: A/B/C nog niet bevestigd. HP heeft project-level pipeline (havun:backup:run met AES-256 + Hetzner SFTP). Andere projecten draaien alleen mee in centrale `/usr/local/bin/havun-backup.sh` (geen encryptie, geen Laravel-integratie). Aanbevolen: shared composer package `havun/backup` extraheren uit HP.
+
+### Belangrijke context
+- Henk gaf "maak alles in orde" — server-hardening Laravel-eisen klaar; backup-rollout wacht op architectuur-keuze (project-copy vs shared package vs centraal shellscript)
+- studieplanner had APP_DEBUG=true op productie — actief informatie-lek, eerst gefixt
+- havunadmin SESSION_LIFETIME stond op 525600 minuten = 1 jaar (eis ≤120) — nu 2u
+
+---
+
+## Sessie: 30 april 2026 — Audit-addendum + werkplan komende week + APK security baseline
+
+### Wat gedaan
+- **Audit-addendum** [docs/audit/addendum-2026-04-25.md](../docs/audit/addendum-2026-04-25.md) opgesteld voor externe beoordeling van werkwijze v3.0 sinds 16-04: VP-status (11/16/17), 5 nieuwe VP's (18 K&V-scan, 19 scaffold, 20 KB-audit, 21 deploy-eisen, 22 padding cleanup), eerlijk gerapporteerde zwakheden (security score-jacht, padding-cyclus, schaalbaarheid)
+- **Werkplan week 26-04 → 02-05** [docs/audit/werkplan-week-26-04-2026.md](../docs/audit/werkplan-week-26-04-2026.md) — 4 actiepunten naar aanleiding van zelf-reflectie *"dweilen we met de kraan open?"*: (1) SSL/Mozilla A = ondergrens, niet hoger; (2) coverage 70% baseline; (3) security-marathon per kwartaal; (4) rollback-ADR discipline. Totaal ~5u werk
+- **Gemini-review op addendum:** 9.8/10. Aanbevolen aandacht: VP-15 formele bevoegdheden, 16k Test Trap, Over-engineering, False Sense of Security
+- **APK security runbook** [docs/kb/runbooks/apk-security-check.md](../docs/kb/runbooks/apk-security-check.md) + sectie 7 toegevoegd aan productie-deploy-eisen (MobSF score ≥ 50, geen high findings, ProGuard, geen cleartext)
+- **Bedrijfsgegevens:** Mollie-IBAN NL12MLLE0707598745 toegevoegd
+
+### Openstaand
+- [ ] **Werkplan uitvoeren** (komende week): 4 ADRs/policy-docs + CI-coverage 70% in 9 projecten + verbeterplan Q3-marathon parkeren
+- [ ] **JudoScoreBoard MobSF-rapport** (rapport 86cb5189...) beoordelen — Henk plakt findings in volgende sessie
+- [ ] **Studieplanner APK** scannen via mobsf.live
+- [ ] **Gemini-aanbevelingen** opvolgen: VP-15 formaliseren, Q3 noodprotocol droogtest
+
+### Belangrijke context
+- Henk heeft expliciet feedback gegeven dat boven A scoren ophouden moet — geen score-perfectionisme meer. Dit moet in policy vóór ik volgende sessie weer aan SSL/Mozilla begin
+- Rollback-ADR voor Alpine CSP HavunAdmin is openstaand — eerste invulling van het nieuwe template
+- **Niet doen komende week:** geen security-tweaks boven A, geen coverage-tests om coverage te halen, geen Mozilla 90→95 pogingen
+
+---
+
 ## Sessie: 25 april 2026 (kort) — APK security baseline opgezet
 
 ### Wat gedaan
