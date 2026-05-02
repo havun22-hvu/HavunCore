@@ -57,10 +57,10 @@ Plan-doc: `Herdenkingsportaal/docs/3-TECHNICAL/SERVER-HARDENING-PLAN-2026-05-02.
 | 1 | APP_DEBUG=false op HP-prod + cache:clear | ✅ 2026-05-02 23:03 UTC |
 | 2 | SESSION_LIFETIME=120 + DRIVER=database op HP-prod | ✅ 2026-05-02 23:03 UTC (sessions-tabel bestond al, geen migrate nodig) |
 | 3 | chmod 640 .env op HP-prod (eigenaar root:www-data) | ✅ 2026-05-02 23:03 UTC |
-| 4 | UFW activeren met whitelist 22/80/443/22000 | 🟡 whitelist toegevoegd 2026-05-02 23:15 UTC, `enable` wacht op user (lockout-risico) |
+| 4 | UFW activeren met whitelist 22/80/443/22000 | ✅ 2026-05-02 11:15 UTC — actief, externe poorten 8080/8081/3001-3004 nu geblokkeerd |
 | 5 | fail2ban installeren + sshd jail | ✅ 2026-05-02 23:15 UTC — 8 IPs direct gebanned uit auth.log historie |
-| 6 | SSH PasswordAuthentication=no (na pubkey-test) | ⏳ open (wacht op user-vangnet) |
-| 7 | Re-audit + status updaten in `security.md` | ⏳ open (na 4-6) |
+| 6 | SSH PasswordAuthentication=no (na pubkey-test) | ✅ 2026-05-02 11:20 UTC — pubkey enforced, password-login geweigerd, sshd reload (niet restart) |
+| 7 | Re-audit + status updaten in `security.md` | ✅ 2026-05-02 11:20 UTC — alle 7 checks groen, `security.md` bijgewerkt |
 
 **Verificatie Fase 1+2** (na uitvoering):
 - DB row-counts vóór = na: `users=5, memorials=8, invoices=13, payments=17` (data-safety bevestigd)

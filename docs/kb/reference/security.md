@@ -30,9 +30,9 @@ last_check: 2026-05-02
 
 | Server | UFW | fail2ban | SSH pubkey-only | Open ports OK | App-config OK | Laatste audit |
 |--------|:---:|:--------:|:---------------:|:-------------:|:-------------:|---------------|
-| `188.245.159.115` (Hetzner prod) | ❌ | ❌ | ❌ | ❌ | ❌ HP debug=true, lifetime=43200, .env=664 | 2026-05-02 |
+| `188.245.159.115` (Hetzner prod) | ✅ | ✅ | ✅ | ✅ | ✅ | 2026-05-02 |
 
-**Actie**: zie `security-findings.md` 2026-05-02-entry voor de hele lijst gaps + planning.
+**Actie**: server-hardening sweep 2026-05-02 afgerond — zie `security-findings.md` voor details.
 
 ## Credentials Opslag
 
