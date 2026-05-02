@@ -979,6 +979,14 @@ class QualitySafetyScanner
             fn ($line) => $line !== '' && str_starts_with($line, 'tests/') && str_ends_with($line, '.php'),
         );
 
+        // Filter out files that have been re-added since the delete (deleted-
+        // then-restored isn't erosion). Compare against the working tree, not
+        // the git index, so a freshly-staged restore counts immediately.
+        $files = array_filter(
+            $files,
+            fn ($path) => ! file_exists($root . '/' . $path),
+        );
+
         return array_values(array_unique($files));
     }
 
