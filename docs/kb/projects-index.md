@@ -19,7 +19,6 @@ last_check: 2026-04-22
 | **Havun** | Next.js | havun.nl | D:\GitHub\Havun | /var/www/havun.nl |
 | **JudoToernooi** | Laravel 11 SaaS | judotournament.org | D:\GitHub\JudoToernooi | /var/www/judotoernooi/laravel |
 | **SafeHavun** | Laravel 12 + React | safehavun.havun.nl | D:\GitHub\SafeHavun | /var/www/safehavun/production |
-| **HavunVet** | Laravel 11 + Livewire | staging.havunvet.havun.nl | D:\GitHub\HavunVet | /var/www/havunvet/staging |
 | **Studieplanner** | Expo React Native + Laravel API | studieplanner.havun.nl | D:\GitHub\Studieplanner | /var/www/studieplanner/production |
 | **Studieplanner-api** | Laravel 12 | (via /api/) | D:\GitHub\Studieplanner-api | /var/www/studieplanner/production |
 | **Infosyst** | Laravel + Ollama | infosyst.havun.nl | D:\GitHub\infosyst | /var/www/infosyst/production |
@@ -27,6 +26,7 @@ last_check: 2026-04-22
 | **JudoScoreBoard** | Expo React Native | (via JudoToernooi) | D:\GitHub\JudoScoreBoard | /var/www/judoscoreboard/ |
 | **HavunClub** | Laravel 11 SaaS | havunclub.havun.nl | D:\GitHub\HavunClub | /var/www/havunclub/production |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (in development) |
+| **Aeterna** | Tauri 2.0 + Rust + React | github.com/havun22-hvu/Aeterna | D:\GitHub\Aeterna | (geen server — multi-mirror distributie) |
 
 ## Korte beschrijving
 
@@ -50,7 +50,6 @@ last_check: 2026-04-22
   - Gezinnen, abonnementen, Mollie recurring, bandexamens, QR check-in
   - Server: `/var/www/havunclub/production`, lokaal: `D:\GitHub\HavunClub`
 - **SafeHavun** - Smart Money Crypto Tracker (whale alerts, sentiment)
-- **HavunVet** - Dierenarts praktijkbeheer (ZZP), integratie met HavunAdmin
 - **Studieplanner** - Expo React Native Android app (v1.0.4) voor leerling-mentor studiesessies
   - Magic link + biometrie auth, eigen APK distributie, bunq.me + XRP betalingen, OTA updates
 - **JudoScoreBoard** - Expo React Native scorebord app voor judo wedstrijden
@@ -59,6 +58,7 @@ last_check: 2026-04-22
   - Lokaal invoeren (SQLite + PWA), sync via Git JSON, server read-only wiki
 - **IDSee** - (details volgen)
 - **VPDUpdate** - Sync tool voor VPD data
+- **Aeterna** - Soeverein desktop/mobile instrument voor ADA-transacties op Cardano. Tauri 2.0 + Rust, censuur-resistant by design. Brainstorm-fase mei 2026, geen code nog.
 
 ## Voor project-specifieke info
 

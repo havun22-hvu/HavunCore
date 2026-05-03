@@ -65,15 +65,6 @@ return [
             'path' => env('STUDIEPLANNER_MOBILE_LOCAL_PATH', 'D:/GitHub/Studieplanner'),
         ],
 
-        // HavunVet — geparkeerd Livewire-project, no public URL. Wel
-        // geregistreerd zodat docs:audit zombie-check class-refs uit
-        // andere Havun-projecten correct herkent (bv. Owner-class
-        // genoemd in HavunCore plan-docs).
-        'havunvet' => [
-            'enabled' => env('QV_HAVUNVET_ENABLED', true),
-            'path' => env('HAVUNVET_LOCAL_PATH', 'D:/GitHub/HavunVet'),
-        ],
-
         // Munus — docs-only specificatie/planning project. Geen Laravel,
         // geen composer/npm/SSL/Observatory checks (auto-geskipt door
         // afwezigheid van composer.json/package.json). Wel: docs:audit voor

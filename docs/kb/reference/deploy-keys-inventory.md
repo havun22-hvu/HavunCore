@@ -35,7 +35,6 @@ next_review: 2026-05-18
 | infosyst | RO deploy | RO ✅ | ✅ |
 | Judotoernooi | RW (AutoFix) | RW ✅ | ✅ motivatie: AutoFix |
 | Studieplanner-api | RO (geen AutoFix) | RO ✅ | ✅ (geroteerd 2026-04-18) |
-| HavunVet | geen (geen prod) | geen | ✅ |
 | SafeHavun | geen (geen prod) | geen | ✅ |
 | JudoScoreBoard | geen (Expo) | geen | ✅ |
 | Studieplanner | geen (Expo) | geen | ✅ |

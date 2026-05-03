@@ -115,7 +115,6 @@ De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2
 | Demo | `demo.havun.nl` | `/var/www/demo/...` |
 | JudoScoreBoard | `judoscoreboard.havun.nl` | `/var/www/judoscoreboard/...` |
 | HavunClub | `havunclub.havun.nl` + staging | **geparkeerd** — nginx config bestaat, deploy-key actief |
-| HavunVet (staging) | `staging.havunvet.havun.nl` | **geparkeerd** — geen prod-deploy |
 
 ### Toekomstige / geparkeerde projecten (nog geen poort)
 
