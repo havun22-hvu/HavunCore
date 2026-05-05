@@ -2,6 +2,35 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 4 mei 2026 — Aeterna APK-hosting + VPD-rename PWA/passkey-recovery
+
+### Wat gedaan
+- **Aeterna APK op server geplaatst** voor Pixel 10 download-test
+  (`D:\GitHub\Aeterna\src-tauri\gen\android\app\build\outputs\apk\universal\release\app-universal-release-debug-signed.apk`, 26.9 MB)
+  - Eerste poging `havuncore.havun.nl/downloads/aeterna/`: faalde — webroot is `webapp/public` (Node/React), niet Laravel-public, en de webapp heeft een **Workbox service-worker met `NavigationRoute`** die elke navigatie-request naar `index.html` mapt → APK kwam niet binnen, bezoekers kregen de SPA-shell
+  - Demo-vhost als alternatief checken: `demo.havun.nl` config wijst naar `/var/www/demo/staging/public/` — die map **bestaat niet meer** (dode vhost-config, opruimen voor later)
+  - Definitieve locatie: `/var/www/havunclub/production/public/aeterna-latest.apk` (havunclub is geparkeerd Laravel-app, géén SW)
+  - **Live URL**: `https://havunclub.havun.nl/aeterna-latest.apk` (HTTP 200, octet-stream, 26.924.068 bytes)
+  - SHA-256: `b22e17f59b4e0863815d3f1965598c6a3aaa6ca07ef435dd01bd7c433c39f8f7`
+  - Henk bevestigde: download + install op Pixel 10 werkte
+- **VPD PWA "geen connectie"** gediagnosticeerd → 1-mei domeinrename `vpdupdate→vpd`. PWA was op oud origin geïnstalleerd → cookies/SW/storage origin-bound. Fix: deinstalleren + opnieuw installeren via `vpd.havun.nl`. Bevestigd werkend.
+- **VPD QR i.p.v. biometric login** → WebAuthn passkeys zijn `rpId`-bound aan `vpdupdate.havun.nl` → server ziet "onbekend apparaat" op nieuw domein → fallback naar QR-flow. Fix: na QR/magic-link inloggen de biometrie opnieuw koppelen in app-instellingen.
+- **Runbook gepubliceerd**: `docs/kb/runbooks/vpd-rename-2026-05-01.md` (commit `bd48b73`) — context, server-status, twee per-device herstelstappen met *waarom*, sluit-criteria voor de oude vhost (eind-2026 + 30d access.log leeg).
+- **Memory-pointer**: `project_vpd_rename_2026_05_01.md` zodat het patroon bij toekomstige meldingen direct herkenbaar is.
+
+### Openstaand
+- [ ] **Aeterna heeft een dedicated download-subdomein nodig** als richting publieke distributie wordt gegaan. Huidig pad `havunclub.havun.nl/aeterna-latest.apk` is een werkaround omdat havunclub geparkeerd is en geen SW heeft. Voorstel: `aeterna.havun.nl` opzetten via mijnhost-DNS API + eigen nginx-vhost + Let's Encrypt (~10–15 min werk). CAA-record voor havun.nl staat al op letsencrypt.org.
+- [ ] **`demo.havun.nl` vhost heeft dode webroot** (`/var/www/demo/staging/public/` bestaat niet) — vhost-config opruimen of de map herstellen, anders blijft dit een rare 404-bron.
+- [ ] **Hosting-keuze Aeterna APK voor productie**: aparte sign-keystore (release-debug-signed nu = debug-key → Play Protect waarschuwt), Play Console of GitHub Releases als kanaal? — separate brainstorm-sessie wanneer Aeterna verder is.
+- [ ] **vpdupdate.havun.nl 301-vhost**: review eind 2026 of access.log leeg is + alle users opnieuw ingelogd → dan pas weghalen + cert revoken + DNS opruimen.
+
+### Belangrijke context voor volgende keer
+- Aeterna heeft nu zijn eerste publieke download — APK is **debug-signed** (release-build met debug-keystore), prima voor persoonlijke test maar geen distributie-kandidaat.
+- Webapp `havuncore.havun.nl` heeft **Workbox SW met NavigationRoute** → onthoud: geen statische bestanden onder dit domein serveren, of de SW moet eerst voor dat pad bypass krijgen + redeploy. Voor downloads liever ander vhost zonder SW.
+- VPD-rename is een herkenbaar patroon: bij elke melding "VPD doet raar / opeens QR-prompt / no connection" → eerste check is "had je het via vpdupdate.havun.nl in gebruik?".
+
+---
+
 ## Sessie: 3 mei 2026 — Cross-project rollout server-hardening Laravel-eisen
 
 ### Wat gedaan
