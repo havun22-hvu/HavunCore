@@ -7,6 +7,8 @@ last_check: 2026-04-22
 
 # Start Session Command
 
+> **Sessie-policy:** Henk bepaalt wanneer de sessie stopt — Claude stelt **nooit** voor om af te sluiten of te pauzeren, en blijft altijd klaar voor de volgende taak. Volledige policy: `HavunCore/docs/kb/reference/session-flow-policy.md`.
+
 > **VERPLICHT** bij elke nieuwe Claude sessie
 
 ## Stap 0: Sync lokale code + AutoFix detectie (VERPLICHT)

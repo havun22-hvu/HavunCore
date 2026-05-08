@@ -7,6 +7,8 @@ last_check: 2026-04-22
 
 # End Session Command
 
+> **Sync-en-deploy verplicht:** vóór afsluiten alle wijzigingen committen + pushen, deploy naar staging (waar beschikbaar), en altijd expliciet vragen of ook naar productie gedeployed moet worden. Volledige policy: `HavunCore/docs/kb/reference/session-flow-policy.md`.
+
 > **VERPLICHT** bij elke sessie-afsluiting - laat het project netjes achter!
 
 ## 1. Review Smallwork.md (EERST!)
