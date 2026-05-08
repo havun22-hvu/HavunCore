@@ -102,6 +102,43 @@ Herdenkingsportaal wil meertalig worden. Vraag was: hoe omgaan met international
 ### CDN cache
 URL-prefix per taal is automatisch cache-key-uniek. **Geen `Vary: Accept-Language` header nodig** — die zou per browser-locale een cache-entry creëren (cache-miss-storm).
 
+## Valuta-strategie — Euro-only
+
+**Beslissing:** alle prijzen in EUR, ongeacht taal of land van de bezoeker.
+
+### Hoe het werkt
+- Prijzen worden **opgeslagen en getoond** in EUR
+- Internationale klant (Brit, Amerikaan, Australiër) betaalt €30 via creditcard/bank → eigen bank rekent wisselkoers → jij ontvangt €30
+- Mollie regelt afrekening volledig in EUR
+- Wisselkoers + bankkosten zijn voor rekening van de klant
+
+### Waarom Euro-only past bij Herdenkingsportaal
+- Lage transactie-bedragen (€15-€50) → omrekenings-drempel is verwaarloosbaar voor de klant
+- Eenmalige of jaarlijkse betaling → geen valuta-onzekerheid in herhalend abonnement
+- Doelgroep is grotendeels EU + emigranten met EU-bankrekeningen
+- Boekhouding blijft schoon in EUR
+- Geen multi-currency-backend, geen prijsstrategie per markt nodig
+
+### Optionele uitbreiding (fase 2)
+Bij bewezen volume uit specifiek niet-EU land (>€10k omzet/jaar) kan een **statische indicatie** bij checkout worden toegevoegd:
+> *"Approximately £26 / $35 — final charge will be in EUR"*
+
+- Statische omrekentabel, weekelijks bijgewerkt via cron
+- Geen live-API koersen (voorkomt fluctuatie tussen tonen en afrekenen)
+- Disclaimer: prijs is indicatief, finale afrekening in EUR
+
+### Wat NIET gebeuren
+- Geen multi-currency database (`display_currency` kolom is overbodig in fase 1)
+- Geen aparte prijsstrategie per markt (zoals Spotify/Netflix doen)
+- Geen live-koers-conversie in checkout-flow
+- Geen cryptocurrency
+- Geen verschillende prijzen per IP zonder uitleg
+
+### Trigger voor herziening
+- Omzet >€10k/jaar uit specifiek niet-EU land → indicatie-component toevoegen
+- Omzet >€50k/jaar uit specifiek niet-EU land → echte multi-currency overwegen
+- Tot dan: Euro-only, Mollie regelt de rest
+
 ## Trigger voor herziening
 
 Deze beslissing herzien wanneer:
