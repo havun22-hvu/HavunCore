@@ -40,7 +40,7 @@ class GenerateOpenAPISpec extends Command
         if (empty($contracts)) {
             $this->warn('⚠️  No API contracts found!');
             $this->line('');
-            $this->line('Define contracts in config/api_contracts.php or register them via APIContractRegistry');
+            $this->line('Define contracts in config/api_contracts.php');
             return self::FAILURE;
         }
 
