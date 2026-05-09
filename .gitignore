@@ -42,5 +42,6 @@ coverage.xml
 .cache_ggshield
 
 # Typo-filenames containing env data (Windows path-encoding accidents)
+# and timestamped .env backup files (e.g. .env.bak-20260423-165633)
 *.env
-*env.bak
+*env.bak*
