@@ -54,3 +54,13 @@ Schedule::command('docs:handover')->dailyAt('04:00');
 // Wekelijkse KB-audit (zondag 04:30 — na za test-erosion 05:37 op zaterdag,
 // voor ma-SSL 04:07). Rapport in docs/kb/reference/kb-audit-latest.md.
 Schedule::command('docs:audit')->weeklyOn(0, '04:30');
+
+// Repo-hygiene residu — wekelijkse detectie. Lokale fallback wanneer de
+// scanner op de productie-host zelf draait (geen SSH self-loop).
+Schedule::command('qv:scan --only=residu --json')->weeklyOn(0, '05:47');
+
+// Auto-commit + push van de regenerated docs (handover, kb-audit-latest,
+// qv-scan-latest, security-findings-log). Draait elke dag om 06:00, na alle
+// ochtend-regeneraties (qv:log 03:27, docs:handover 04:00, docs:audit 04:30).
+// Idempotent: skip als er niets gewijzigd is.
+Schedule::command('auto:commit-regenerated')->dailyAt('06:00');
