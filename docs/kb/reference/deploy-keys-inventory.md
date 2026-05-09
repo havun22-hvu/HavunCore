@@ -2,8 +2,8 @@
 title: GitHub deploy keys — centraal overzicht
 type: reference
 scope: alle-projecten
-last_audit: 2026-04-18
-next_review: 2026-05-18
+last_audit: 2026-05-09
+next_review: 2026-06-09
 ---
 
 # Deploy keys inventaris
@@ -23,6 +23,7 @@ next_review: 2026-05-18
 | infosyst | `HavunCore Server` | RO | prod deploy | 2026-01-01 | 2026-04-12 | 139427685 |
 | Judotoernooi | `server-deploy-judotoernooi` | **RW** | AutoFix hotfix-branch push (VP-01) | 2026-02-22 | 2026-04-17 | 143647875 |
 | Studieplanner-api | `studieplanner-api-deploy-prod` | RO | prod deploy | 2026-04-18 | 2026-04-18 | 148992748 |
+| HavunCore | `havuncore-server-deploy-2026-05-09` | **RW** | prod deploy + push auto-output (handover/kb-audit/qv-scan) | 2026-05-09 | 2026-05-09 | 150988730 |
 
 ## Per-project verwachting (uit runbook)
 
@@ -35,6 +36,7 @@ next_review: 2026-05-18
 | infosyst | RO deploy | RO ✅ | ✅ |
 | Judotoernooi | RW (AutoFix) | RW ✅ | ✅ motivatie: AutoFix |
 | Studieplanner-api | RO (geen AutoFix) | RO ✅ | ✅ (geroteerd 2026-04-18) |
+| HavunCore | RW (auto-output van handover/kb-audit/qv-scan moet kunnen pushen) | RW ✅ | ✅ (toegevoegd 2026-05-09) |
 | SafeHavun | geen (geen prod) | geen | ✅ |
 | JudoScoreBoard | geen (Expo) | geen | ✅ |
 | Studieplanner | geen (Expo) | geen | ✅ |

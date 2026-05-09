@@ -99,8 +99,33 @@ php artisan qv:scan --only=residu --project=havunadmin
 
 Iedere actor die een `.env`-backup maakt — of dat nu Claude in een sessie is, een deploy-script of een handmatige `cp`-commando — gebruikt deze conventie. Inconsistente naam-formaten verraden ad-hoc werk en zijn een drift-signaal.
 
+## Mobile-monitoring Vault PAT
+
+De PWA mobile-project monitoring (zie `decisions/mobile-project-monitoring-2026-05-09.md`) gebruikt een GitHub PAT die in HavunCore Vault ligt — niet op disk. Dezelfde lifecycle-discipline als `.env.bak*` geldt voor deze secret.
+
+### Rotation cadens
+
+- **PAT (in Vault als `github_pat_ro`)**: 90 dagen geldig — fine-grained, read-only, beperkt tot de mobile-repos.
+- **Vault project token (`hvn_…` in PWA `.env.production` als `VAULT_PROJECT_TOKEN`)**: roteren bij verdenking compromise of bij personeel-wisselingen.
+
+### Rotation-procedure
+
+```bash
+# 1. Genereer nieuwe PAT op github.com (jouw account, fine-grained, expiratie + 90d)
+# 2. Update secret + (optioneel) project token via setup-command
+ssh hetzner
+GITHUB_PAT_RO='github_pat_NEW' php artisan vault:setup-mobile-monitoring --from-env
+# Met --rotate-token forceer je ook een nieuw Vault Bearer-token (bij compromise)
+
+# 3. Restart PWA zodat de nieuwe PAT in-memory geladen wordt
+sudo -u www-data pm2 restart havuncore-backend
+```
+
+De `vault:setup-mobile-monitoring` command is idempotent — re-running met een nieuwe PAT update het bestaande secret zonder zijdelings effect.
+
 ## Wijzigingshistorie
 
 | Datum | Wijziging |
 |-------|-----------|
 | 2026-05-09 | Initieel — uit `decisions/repo-hygiene-2026-05-09.md` Laag 4 |
+| 2026-05-09 | Mobile-monitoring Vault PAT-sectie toegevoegd |
