@@ -138,30 +138,43 @@ class QualitySafetyScanner
             return ['findings' => []];
         }
 
-        $host = config('quality-safety.residu.host');
-        $user = config('quality-safety.residu.user', 'root');
         $archiveRoot = rtrim((string) config('quality-safety.residu.archive_root', '/var/backups/havun-env'), '/');
         $archiveAfter = (int) config('quality-safety.thresholds.residu_archive_after_days', 14);
         $purgeAfter = (int) config('quality-safety.thresholds.residu_purge_after_days', 90);
 
-        if (! $host) {
-            return ['findings' => [], 'error' => 'residu: qv-residu host not configured'];
-        }
-
         $archiveDir = $archiveRoot . '/' . $slug;
-        $remoteCmd = $this->buildResiduScanScript($remotePath, $archiveDir);
 
-        $remote = $this->runRemote($host, $user, $remoteCmd, 10);
+        // When the remote path is locally accessible (scanner is running on the
+        // production host itself), skip SSH and inventory directly. Without this,
+        // the scheduled cron on Hetzner ends up SSH-ing back into 127.0.0.1 as
+        // its own www-data user, hitting "Permission denied (publickey)".
+        $output = is_dir($remotePath)
+            ? $this->scanResiduLocal($remotePath, $archiveDir)
+            : null;
 
-        if (! $remote['ok']) {
-            return [
-                'findings' => [],
-                'error' => "SSH residu scan failed for {$slug} (exit {$remote['exit_code']}): {$remote['error']}",
-            ];
+        if ($output === null) {
+            $host = config('quality-safety.residu.host');
+            $user = config('quality-safety.residu.user', 'root');
+
+            if (! $host) {
+                return ['findings' => [], 'error' => 'residu: qv-residu host not configured'];
+            }
+
+            $remoteCmd = $this->buildResiduScanScript($remotePath, $archiveDir);
+            $remote = $this->runRemote($host, $user, $remoteCmd, 10);
+
+            if (! $remote['ok']) {
+                return [
+                    'findings' => [],
+                    'error' => "SSH residu scan failed for {$slug} (exit {$remote['exit_code']}): {$remote['error']}",
+                ];
+            }
+
+            $output = $remote['output'];
         }
 
         $findings = [];
-        foreach ($this->splitLines($remote['output']) as $line) {
+        foreach ($this->splitLines($output) as $line) {
             $parts = explode('|', $line);
             if (count($parts) !== 3) {
                 continue;
@@ -202,6 +215,31 @@ class QualitySafetyScanner
         }
 
         return ['findings' => $findings];
+    }
+
+    /**
+     * Local equivalent of the SSH-side scan. Same `TYPE|PATH|AGE_DAYS` output
+     * shape so the parser doesn't care which path produced it. Used when the
+     * scanner runs on the same host as the checkouts (e.g. server-side cron).
+     */
+    private function scanResiduLocal(string $remotePath, string $archiveDir): string
+    {
+        $now = time();
+        $lines = [];
+        foreach ([
+            ['inplace', glob(rtrim($remotePath, '/') . '/.env.bak*') ?: []],
+            ['archive', glob(rtrim($archiveDir, '/') . '/*') ?: []],
+        ] as [$type, $files]) {
+            foreach ($files as $file) {
+                if (! is_file($file)) {
+                    continue;
+                }
+                $age = (int) floor(($now - filemtime($file)) / 86400);
+                $lines[] = "{$type}|{$file}|{$age}";
+            }
+        }
+
+        return implode("\n", $lines);
     }
 
     /**
