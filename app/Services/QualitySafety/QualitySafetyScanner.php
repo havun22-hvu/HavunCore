@@ -22,6 +22,7 @@ class QualitySafetyScanner
         $errors = [];
 
         foreach ($projects as $slug => $project) {
+            $project['_slug'] = $slug;
             foreach ($checks as $check) {
                 $result = $this->runCheck($check, $project);
 
@@ -71,8 +72,136 @@ class QualitySafetyScanner
             'session-cookies' => $this->sessionCookieFlags($project),
             'test-erosion' => $this->testErosion($project),
             'debug-mode' => $this->debugModeFlag($project),
+            'residu' => $this->residueCheck($project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
+    }
+
+    /**
+     * Repo-hygiene residu check — detects .env backup files that exceed the
+     * lifecycle defined in docs/kb/reference/repo-hygiene-policy.md:
+     *
+     * - in-place .env.bak* older than `residu_archive_after_days` (default 14)
+     *   → candidates for archive (Laag 2 cleanup)
+     * - archived files older than `residu_purge_after_days` (default 90)
+     *   → candidates for purge
+     * - in-place .env.bak* whose name does not match the canonical format
+     *   `.env.bak.YYYY-MM-DD-HHMMSS` → naming-convention drift
+     *
+     * Read-only: this check never deletes or moves files; it surfaces findings
+     * so a human (or future admin-action UI) can decide.
+     *
+     * Skipped silently for project entries without `remote_path`.
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function residueCheck(array $project): array
+    {
+        $remotePath = $project['remote_path'] ?? null;
+        $slug = $project['_slug'] ?? null;
+        if (! $remotePath || ! $slug) {
+            return ['findings' => []];
+        }
+
+        $host = config('quality-safety.residu.host');
+        $user = config('quality-safety.residu.user', 'root');
+        $archiveRoot = rtrim((string) config('quality-safety.residu.archive_root', '/var/backups/havun-env'), '/');
+        $archiveAfter = (int) config('quality-safety.thresholds.residu_archive_after_days', 14);
+        $purgeAfter = (int) config('quality-safety.thresholds.residu_purge_after_days', 90);
+
+        if (! $host) {
+            return ['findings' => [], 'error' => 'residu: qv-residu host not configured'];
+        }
+
+        $bin = config('quality-safety.bin.ssh', 'ssh');
+        $sshOpts = (array) config('quality-safety.server.ssh_options', []);
+
+        $remotePathEsc = escapeshellarg($remotePath);
+        $archiveDirEsc = escapeshellarg($archiveRoot . '/' . $slug);
+
+        // Two loops: in-place .env.bak* in checkout, archived files in
+        // /var/backups/havun-env/{slug}/. Output is one line per file as
+        // `TYPE|PATH|AGE_DAYS` so PHP-side parsing stays trivial.
+        $remoteCmd = sprintf(
+            'now=$(date +%%s); '
+            . 'for f in %s/.env.bak*; do '
+            . '  [ -f "$f" ] || continue; '
+            . '  age=$(( ( now - $(stat -c%%Y "$f") ) / 86400 )); '
+            . '  echo "inplace|$f|$age"; '
+            . 'done; '
+            . 'for f in %s/*; do '
+            . '  [ -f "$f" ] || continue; '
+            . '  age=$(( ( now - $(stat -c%%Y "$f") ) / 86400 )); '
+            . '  echo "archive|$f|$age"; '
+            . 'done',
+            $remotePathEsc,
+            $archiveDirEsc
+        );
+
+        $cmd = array_merge([$bin], $sshOpts, ["{$user}@{$host}", $remoteCmd]);
+        $result = Process::timeout(30)->run($cmd);
+
+        if (! $result->successful()) {
+            $stderr = trim($result->errorOutput()) ?: trim($result->output());
+
+            return [
+                'findings' => [],
+                'error' => "SSH residu scan failed for {$slug} (exit {$result->exitCode()}): " . ($stderr ?: 'no output'),
+            ];
+        }
+
+        $findings = [];
+        foreach ($this->splitLines($result->output()) as $line) {
+            $parts = explode('|', $line);
+            if (count($parts) !== 3) {
+                continue;
+            }
+            [$type, $path, $ageRaw] = $parts;
+            $age = (int) $ageRaw;
+            $name = basename($path);
+
+            if ($type === 'inplace' && $age > $archiveAfter) {
+                $findings[] = [
+                    'severity' => 'informational',
+                    'title' => "{$name} is {$age}d old (>{$archiveAfter}d) — candidate for archive",
+                    'file' => $path,
+                    'age_days' => $age,
+                    'message' => "{$slug}: {$name} ({$age}d) ready for /var/backups/havun-env/{$slug}/",
+                ];
+            }
+
+            if ($type === 'inplace' && ! $this->matchesCanonicalBackupName($name)) {
+                $findings[] = [
+                    'severity' => 'low',
+                    'title' => "{$name} doesn't match canonical name .env.bak.YYYY-MM-DD-HHMMSS",
+                    'file' => $path,
+                    'age_days' => $age,
+                    'message' => "{$slug}: naming drift — {$name} (zie repo-hygiene-policy.md)",
+                ];
+            }
+
+            if ($type === 'archive' && $age > $purgeAfter) {
+                $findings[] = [
+                    'severity' => 'informational',
+                    'title' => "Archived {$name} is {$age}d old (>{$purgeAfter}d) — candidate for purge",
+                    'file' => $path,
+                    'age_days' => $age,
+                    'message' => "{$slug}: archived {$name} ({$age}d) ready for purge",
+                ];
+            }
+        }
+
+        return ['findings' => $findings];
+    }
+
+    /**
+     * Canonical .env-backup name per repo-hygiene-policy.md:
+     * `.env.bak.YYYY-MM-DD-HHMMSS` (e.g. `.env.bak.2026-05-09-143015`).
+     */
+    private function matchesCanonicalBackupName(string $basename): bool
+    {
+        return (bool) preg_match('/^\.env\.bak\.\d{4}-\d{2}-\d{2}-\d{6}$/', $basename);
     }
 
     /**

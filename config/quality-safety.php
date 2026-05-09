@@ -18,42 +18,49 @@ return [
         'havunadmin' => [
             'enabled' => env('QV_HAVUNADMIN_ENABLED', true),
             'path' => env('HAVUNADMIN_LOCAL_PATH', 'D:/GitHub/HavunAdmin'),
+            'remote_path' => '/var/www/havunadmin/production',
             'url' => 'https://havunadmin.havun.nl',
         ],
 
         'herdenkingsportaal' => [
             'enabled' => env('QV_HERDENKINGSPORTAAL_ENABLED', true),
             'path' => env('HERDENKINGSPORTAAL_LOCAL_PATH', 'D:/GitHub/Herdenkingsportaal'),
+            'remote_path' => '/var/www/herdenkingsportaal/production',
             'url' => 'https://herdenkingsportaal.nl',
         ],
 
         'studieplanner' => [
             'enabled' => env('QV_STUDIEPLANNER_ENABLED', true),
             'path' => env('STUDIEPLANNER_LOCAL_PATH', 'D:/GitHub/Studieplanner-api'),
+            'remote_path' => '/var/www/studieplanner/production',
             'url' => 'https://api.studieplanner.havun.nl',
         ],
 
         'judotoernooi' => [
             'enabled' => env('QV_JUDOTOERNOOI_ENABLED', true),
             'path' => env('JUDOTOERNOOI_LOCAL_PATH', 'D:/GitHub/JudoToernooi/laravel'),
+            'remote_path' => '/var/www/judotoernooi/repo-prod/laravel',
             'url' => 'https://judotournament.org',
         ],
 
         'infosyst' => [
             'enabled' => env('QV_INFOSYST_ENABLED', true),
             'path' => env('INFOSYST_LOCAL_PATH', 'D:/GitHub/Infosyst'),
+            'remote_path' => '/var/www/infosyst/production',
             'url' => 'https://infosyst.havun.nl',
         ],
 
         'safehavun' => [
             'enabled' => env('QV_SAFEHAVUN_ENABLED', true),
             'path' => env('SAFEHAVUN_LOCAL_PATH', 'D:/GitHub/SafeHavun'),
+            'remote_path' => '/var/www/safehavun/production',
             'url' => 'https://safehavun.havun.nl',
         ],
 
         'havuncore' => [
             'enabled' => env('QV_HAVUNCORE_ENABLED', true),
             'path' => env('HAVUNCORE_LOCAL_PATH', base_path()),
+            'remote_path' => '/var/www/havuncore/production',
             'url' => 'https://havuncore.havun.nl',
         ],
 
@@ -105,6 +112,30 @@ return [
         // de else-tak runtime onbereikbaar is. Threshold dus loose: HP heeft
         // 25 statische, runtime maar 7. Lager = veel false positives.
         'test_skip_max' => 10,
+        // Repo-hygiene residu (.env.bak* lifecycle). Zie:
+        // docs/kb/reference/repo-hygiene-policy.md
+        'residu_archive_after_days' => 14,
+        'residu_purge_after_days' => 90,
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Repo hygiene (residu check)
+    |--------------------------------------------------------------------------
+    |
+    | Drives the `residu` sub-check of `qv:scan`. Detects .env backup files in
+    | production checkouts that exceed the lifecycle described in
+    | docs/kb/reference/repo-hygiene-policy.md.
+    |
+    */
+
+    'residu' => [
+        // Server SSH target — single host shared with the `server` check.
+        // Each project's `remote_path` is scanned over this SSH session.
+        'host' => env('QV_RESIDU_HOST', '188.245.159.115'),
+        'user' => env('QV_RESIDU_USER', 'root'),
+        // Where Laag 2 archives live. Used for the >90-day purge candidate detection.
+        'archive_root' => env('QV_RESIDU_ARCHIVE_ROOT', '/var/backups/havun-env'),
     ],
 
     /*
