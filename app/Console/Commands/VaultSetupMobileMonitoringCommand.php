@@ -11,9 +11,10 @@ class VaultSetupMobileMonitoringCommand extends Command
     protected $signature = 'vault:setup-mobile-monitoring
         {--project=havuncore-webapp : Vault project name}
         {--secret=github_pat_ro : Secret key}
-        {--rotate-token : Force generation of a fresh project token}';
+        {--rotate-token : Force generation of a fresh project token}
+        {--from-env : Read the PAT from the GITHUB_PAT_RO environment variable instead of prompting (for non-interactive runs)}';
 
-    protected $description = 'Idempotent setup for the PWA mobile-monitoring Vault entry. Prompts for the GitHub PAT (hidden input), creates/updates the secret, ensures the webapp project has access, and prints the Bearer token for VAULT_PROJECT_TOKEN.';
+    protected $description = 'Idempotent setup for the PWA mobile-monitoring Vault entry. Prompts for the GitHub PAT (hidden input), or reads it from GITHUB_PAT_RO env-var with --from-env. Creates/updates the secret, ensures the webapp project has access, and prints the Bearer token for VAULT_PROJECT_TOKEN.';
 
     public function handle(): int
     {
@@ -21,8 +22,11 @@ class VaultSetupMobileMonitoringCommand extends Command
         $secretKey = (string) $this->option('secret');
         $rotate = (bool) $this->option('rotate-token');
 
-        $pat = $this->secret('GitHub Personal Access Token (read-only, scopes: public_repo, repo:status)');
-        if (! is_string($pat) || trim($pat) === '') {
+        $pat = $this->option('from-env')
+            ? (string) (getenv('GITHUB_PAT_RO') ?: '')
+            : (string) ($this->secret('GitHub Personal Access Token (read-only, scopes: public_repo, repo:status)') ?? '');
+
+        if (trim($pat) === '') {
             $this->error('PAT was empty — aborting.');
 
             return 1;
