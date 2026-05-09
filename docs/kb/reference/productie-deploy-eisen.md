@@ -3,7 +3,7 @@ title: Productie-deploy eisen — A+ / 10 op alle testsites
 type: reference
 scope: alle-projecten
 status: BINDING
-last_check: 2026-04-23
+last_check: 2026-05-02
 ---
 
 # Productie-deploy eisen
@@ -620,6 +620,195 @@ Zie 1.4 — via systemd env var.
 
 ---
 
+## 8. Server-hardening (OS + app-config)
+
+> **Geldt voor**: elke web-productie-deploy op een Havun-VPS. Dekt het OS-laag
+> (firewall, SSH, brute-force) en de Laravel-app-config (debug-mode, sessies,
+> file-permissions). Wordt niet gemeten door SSL Labs/Mozilla maar is even
+> kritiek — een server zonder firewall scoort A+ op TLS en is alsnog kwetsbaar.
+>
+> **Aanleiding**: 2026-05-02 sweep op `188.245.159.115` toonde 7 gaps
+> (UFW=inactive, fail2ban ontbreekt, SSH password-login aan, APP_DEBUG=true op
+> Herdenkingsportaal-prod, SESSION_LIFETIME=43200, .env wereld-leesbaar).
+> Zie `security-findings.md` 2026-05-02-entry.
+
+### 8.1 APP_DEBUG=false op productie
+
+- **Waarom**: bij `APP_DEBUG=true` toont Laravel bij elke uncaught exception
+  een Whoops-pagina met stack-traces, file-paths, query-snippets, env-vars in
+  frame-locals. Aanvaller forceert errors → hele interne structuur lekt.
+- **Hoe**: in productie-`.env`:
+  ```
+  APP_ENV=production
+  APP_DEBUG=false
+  ```
+  Daarna `php artisan config:clear`.
+- **Verifieer**:
+  ```bash
+  ssh root@<server> "grep -E '^APP_(ENV|DEBUG)=' /var/www/<project>/production/.env"
+  ```
+  → `APP_ENV=production` + `APP_DEBUG=false`.
+- **Test**: ga naar een non-bestaande route op productie → zie generieke
+  error-pagina, geen stack-trace.
+
+### 8.2 SESSION_LIFETIME ≤ 120 minuten op productie
+
+- **Waarom**: bij gestolen session-cookie (XSS, laptop-diefstal) bepaalt
+  lifetime hoe lang attacker toegang heeft. Default Laravel = 120, audit zegt
+  60 voor maximum security. Boven 480 (8u) = onverdedigbaar.
+- **Hoe**: in productie-`.env`:
+  ```
+  SESSION_LIFETIME=120
+  SESSION_SECURE_COOKIE=true
+  SESSION_SAME_SITE=lax
+  SESSION_DRIVER=database
+  ```
+  Daarna `php artisan config:clear` + `php artisan session:table && php artisan migrate` als de table nog niet bestaat.
+- **Verifieer**:
+  ```bash
+  ssh root@<server> "grep -E '^SESSION_' /var/www/<project>/production/.env"
+  ```
+  → LIFETIME ≤ 120, SECURE_COOKIE=true, DRIVER=database (niet `file`).
+
+### 8.3 .env permissies 0640, eigenaar root:www-data
+
+- **Waarom**: `.env` bevat APP_KEY (decrypts session+cookies), DB_PASSWORD,
+  MOLLIE_API_KEY, ARWEAVE wallet etc. Standaard rechten `0664` = world-readable
+  → elk proces op de server kan het lezen.
+- **Hoe**:
+  ```bash
+  chown root:www-data /var/www/<project>/production/.env
+  chmod 640 /var/www/<project>/production/.env
+  ```
+- **Verifieer**:
+  ```bash
+  ls -la /var/www/<project>/production/.env
+  ```
+  → `-rw-r----- 1 root www-data ...` (geen `r` voor others).
+
+### 8.4 UFW firewall actief — alleen 22/80/443 publiek
+
+- **Waarom**: zonder firewall is elke listening port die op `0.0.0.0` of `*`
+  bind potentieel bereikbaar van internet. Reverb-WS, Node-services en
+  Syncthing-sync moeten op 0.0.0.0 binden voor lokale nginx-proxy maar
+  hoeven niet direct van extern bereikbaar te zijn.
+- **Hoe (Ubuntu)**:
+  ```bash
+  ufw default deny incoming
+  ufw default allow outgoing
+  ufw allow 22/tcp comment 'SSH'
+  ufw allow 80/tcp comment 'HTTP (redirect)'
+  ufw allow 443/tcp comment 'HTTPS'
+  # Syncthing P2P (alleen als gebruikt voor file-sync):
+  ufw allow 22000/tcp comment 'Syncthing'
+  ufw enable
+  ```
+  > **Let op**: voor je `ufw enable` runt — verifieer dat poort 22 in de
+  > whitelist staat, anders sluit je jezelf buiten. Test eerst met
+  > `ufw --dry-run enable`.
+- **Verifieer**:
+  ```bash
+  ufw status verbose
+  ```
+  → `Status: active` + alleen 22, 80, 443 (en 22000 als syncthing) in lijst.
+- **UFW + poort-register**: zie [`poort-register.md` sectie "UFW firewall policy"](poort-register.md) voor de complete map van bound ports vs. UFW-toegestane ports.
+
+### 8.5 fail2ban geïnstalleerd + actief — SSH jail aan
+
+- **Waarom**: `auth.log` toont continu brute-force pogingen (admin/root/
+  ethereum/etc usernames vanuit verschillende IPs). Zonder fail2ban kan
+  attacker oneindig wachtwoorden gokken. Fail2ban bant IP na X failed
+  attempts.
+- **Hoe**:
+  ```bash
+  apt install -y fail2ban
+  cp /etc/fail2ban/jail.conf /etc/fail2ban/jail.local
+  # Edit /etc/fail2ban/jail.local — under [sshd]: enabled = true, maxretry = 3, bantime = 1h
+  systemctl enable --now fail2ban
+  ```
+- **Verifieer**:
+  ```bash
+  fail2ban-client status sshd
+  ```
+  → toont "Currently failed", "Total failed", "Currently banned" tellers.
+  Ook na ~10 min: `fail2ban-client status sshd | grep "Banned IP"` toont IPs.
+
+### 8.6 SSH PasswordAuthentication uit — alleen pubkey
+
+- **Waarom**: zelfs met fail2ban houdt password-login = aanvalsoppervlak.
+  Alle Havun-medewerkers gebruiken pubkey (zie `security.md`). Disable
+  password-login voor alle users + root.
+- **Hoe**: in `/etc/ssh/sshd_config`:
+  ```
+  PasswordAuthentication no
+  PubkeyAuthentication yes
+  PermitRootLogin prohibit-password
+  ChallengeResponseAuthentication no
+  UsePAM yes
+  ```
+  Daarna `systemctl reload sshd`.
+  > **Let op**: vóór reload — test je pubkey-login in een 2e SSH-sessie.
+  > Als die werkt: reload veilig. Als niet: fix pubkey eerst.
+- **Verifieer**:
+  ```bash
+  grep -E '^(PasswordAuthentication|PubkeyAuthentication|PermitRootLogin)' /etc/ssh/sshd_config
+  ```
+  → exact: `PasswordAuthentication no`, `PubkeyAuthentication yes`,
+  `PermitRootLogin prohibit-password`.
+  Test: `ssh -o PubkeyAuthentication=no -o PreferredAuthentications=password root@<server>`
+  → moet falen met "Permission denied (publickey)".
+
+### 8.7 Open ports policy — niet-publieke services bind localhost
+
+- **Waarom**: services zoals MySQL, Redis, dev-servers horen niet bereikbaar
+  van extern. Bind `127.0.0.1`, niet `0.0.0.0`. UFW is laatste-laag-defensie;
+  bind-config is eerste laag.
+- **Hoe**: zie `poort-register.md` sectie "Externe bereikbaarheid (UFW
+  policy)" voor de complete map per service.
+- **Verifieer**:
+  ```bash
+  ss -tlnp | grep -v 127.0.0.1
+  ```
+  → mag alleen tonen: 22 (SSH), 80, 443 (nginx), 22000 (Syncthing als gebruikt).
+  Andere services op `0.0.0.0` = geen UFW-block = hardening-failure.
+
+### 8.8 Verificatie-checklist (Server-hardening — voer uit per server)
+
+```bash
+# 1. APP_DEBUG=false
+ssh root@<server> "grep -E '^APP_DEBUG=' /var/www/*/production/.env" \
+    | grep -v 'APP_DEBUG=false' && echo "FAIL" || echo "PASS"
+
+# 2. SESSION_LIFETIME ≤ 120
+ssh root@<server> "grep -E '^SESSION_LIFETIME=' /var/www/*/production/.env"
+# Output check: alle waarden ≤ 120
+
+# 3. .env perms = 640
+ssh root@<server> "stat -c '%a %n' /var/www/*/production/.env" \
+    | grep -v '^640' && echo "FAIL" || echo "PASS"
+
+# 4. UFW actief
+ssh root@<server> "ufw status | head -1"
+# Verwacht: "Status: active"
+
+# 5. fail2ban actief
+ssh root@<server> "systemctl is-active fail2ban"
+# Verwacht: "active"
+
+# 6. SSH password-login uit
+ssh root@<server> "grep '^PasswordAuthentication' /etc/ssh/sshd_config"
+# Verwacht: "PasswordAuthentication no"
+
+# 7. Geen non-localhost services buiten whitelist
+ssh root@<server> "ss -tlnp | grep -E ':(0\.0\.0\.0|\*):' | grep -vE ':(22|80|443|22000) '"
+# Verwacht: lege output
+```
+
+Elk vinkje noteren in deploy-checklist per project. Falende eis = blocker
+voor productie-deploy.
+
+---
+
 ## Verificatie-sequence voor nieuwe productie-deploy
 
 1. `dig CAA <domain> +short` — CAA records gepubliceerd
@@ -632,7 +821,8 @@ Zie 1.4 — via systemd env var.
 8. **Mozilla Observatory** https://observatory.mozilla.org/analyze/<domain> → A+
 9. **Hardenize** https://www.hardenize.com/report/<domain> — alle secties groen
 10. **Internet.nl** https://internet.nl/site/<domain> → 100%
-11. **MobSF** (alleen voor mobile-app releases) https://mobsf.live → Security Score ≥ 50, 0 high
+11. **Server-hardening** (zie sectie 8.8) — alle 7 OS+app-checks PASS
+12. **MobSF** (alleen voor mobile-app releases) https://mobsf.live → Security Score ≥ 50, 0 high
 
 Elk vinkje noteren in deploy-checklist per project.
 

@@ -1115,6 +1115,51 @@ PHP;
         $this->assertEmpty($run['findings']);
     }
 
+    public function test_test_erosion_does_not_flag_deletions_that_have_been_restored(): void
+    {
+        // Scenario: a test was deleted in last 30 days, then re-added.
+        // git log still reports the deletion, but the file exists on disk now.
+        // This is a fix, not erosion — it should not be flagged.
+        mkdir($this->tempProject . '/.git', 0755, true);
+        mkdir($this->tempProject . '/tests/Unit', 0755, true);
+        // The "restored" file exists in the working tree.
+        file_put_contents($this->tempProject . '/tests/Unit/RestoredTest.php', "<?php\nclass RestoredTest {}\n");
+
+        Process::fake([
+            '*' => Process::result(
+                output: "tests/Unit/RestoredTest.php\ntests/Unit/StillGoneTest.php\n",
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['restored' => $this->project()], ['test-erosion']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertContains('tests/Unit/StillGoneTest.php', $run['findings'][0]['deleted_files']);
+        $this->assertNotContains('tests/Unit/RestoredTest.php', $run['findings'][0]['deleted_files']);
+    }
+
+    public function test_test_erosion_reports_no_finding_when_all_deletions_have_been_restored(): void
+    {
+        mkdir($this->tempProject . '/.git', 0755, true);
+        mkdir($this->tempProject . '/tests/Unit', 0755, true);
+        file_put_contents($this->tempProject . '/tests/Unit/A.php', "<?php\n");
+        file_put_contents($this->tempProject . '/tests/Unit/B.php', "<?php\n");
+
+        Process::fake([
+            '*' => Process::result(
+                output: "tests/Unit/A.php\ntests/Unit/B.php\n",
+                exitCode: 0,
+            ),
+        ]);
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['all-restored' => $this->project()], ['test-erosion']);
+
+        $this->assertEmpty($run['findings']);
+    }
+
     public function test_test_erosion_check_does_not_flag_incomplete_below_threshold(): void
     {
         config()->set('quality-safety.thresholds.test_skip_max', 5);

@@ -49,7 +49,9 @@ Online platform waar gebruikers digitale herdenkingspagina's (memorials) aanmake
 - **Bewuste afwijking:** Havun-standaard (`reference/authentication-methods.md`) zegt "wachtwoord NIET MEER GEBRUIKEN" voor alle projecten. HP houdt wachtwoord-primair vanwege doelgroep (memoriale herdenking voor familie/oudere bezoekers waar magic-link drempel te hoog is). Heroverwegen bij grote redesign.
 - **Verwijderd 27-04-2026:** Google OAuth (incident "deleted_client" Google Cloud)
 - **Verwijderd 29-04-2026 (3.3.0):** QR-modal op /login, silent biometric op page-load, csrfFetch-helper, login-methode-voorkeur, provider-display per passkey
-- **Drift:** PIN login routes bestaan nog maar zijn niet meer aangesloten op de UI; DB-kolom `users.preferred_login_method` ongebruikt sinds 3.3.0 (cleanup gepland)
+- **Legacy DB-kolommen** (gepland te droppen, geen functionele impact):
+  - `auth_devices.pin_hash` — PIN-login verwijderd in 3.0.95 (27-04-2026); model-`$hidden` voorkomt JSON-leakage
+  - `users.preferred_login_method` — feature uit 3.2.0, verwijderd in 3.3.0; ongebruikt sinds dan
 
 ## Core Features
 
