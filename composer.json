@@ -2,7 +2,7 @@
     "name": "havun/core",
     "description": "HavunCore - Central orchestration platform and shared services for Havun projects",
     "type": "project",
-    "version": "1.0.0",
+    "version": "2.0.0",
     "license": "proprietary",
     "authors": [
         {
