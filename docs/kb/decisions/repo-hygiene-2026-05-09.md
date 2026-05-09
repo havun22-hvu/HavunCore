@@ -2,7 +2,7 @@
 title: Repo hygiene — productie-checkout residu
 type: decision
 date: 2026-05-09
-status: proposed
+status: implemented
 project: havuncore (cross-project)
 ---
 
@@ -10,7 +10,17 @@ project: havuncore (cross-project)
 
 ## Status
 
-Voorgesteld 2026-05-09. Aanleiding: HavunCore-webapp Project Status toonde "2 uncommitted files" voor HavunAdmin op productie. Lokale fix bleek effectloos — webapp kijkt naar `/var/www/{project}` op Hetzner, niet naar `D:\GitHub\`.
+**Geïmplementeerd 2026-05-09** in 5 commits + cross-project rollout.
+
+Aanleiding: HavunCore-webapp Project Status toonde "2 uncommitted files" voor HavunAdmin op productie. Lokale fix bleek effectloos — webapp kijkt naar `/var/www/{project}` op Hetzner, niet naar `D:\GitHub\`.
+
+**Implementatie-trail:**
+
+- Bonus-fix `havuncore-webapp@63ac38f` — PWA detecteert geen-git pads als red ipv silent green
+- Laag 1 (cross-project `*env.bak*`): 8 commits over 8 repos, server-pulls op 7 checkouts
+- Laag 2 (archief): 8 backup-files verplaatst naar `/var/backups/havun-env/{project}/` op server
+- Laag 4 (KB-policy): `docs/kb/reference/repo-hygiene-policy.md`
+- Laag 3 (`qv:scan --only=residu`): commits `havuncore@9e2b8c0` + simplify-pass `havuncore@be1e52b`. 102 tests passed; live run rapporteert 4 drift findings cross-project.
 
 ## Context
 
