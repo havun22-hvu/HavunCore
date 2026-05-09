@@ -1238,4 +1238,51 @@ PHP;
             file_put_contents($this->tempProject . '/app/Http/Controllers/C.php', $controller);
         }
     }
+
+    public function test_residu_classifies_findings_by_age_and_naming(): void
+    {
+        // Mock the SSH inventory output: one canonical-named young file (no
+        // findings), one canonical-named old file (archive candidate),
+        // one non-canonical young file (drift only), one archived old file
+        // (purge candidate).
+        Process::fake([
+            '*' => Process::result(output: implode("\n", [
+                'inplace|/var/www/p/.env.bak.2026-05-09-100000|2',
+                'inplace|/var/www/p/.env.bak.2026-04-20-100000|19',
+                'inplace|/var/www/p/.env.bak.2026-05-03|6',
+                'archive|/var/backups/havun-env/p/.env.bak.2026-01-01-000000|129',
+            ])),
+        ]);
+
+        $scanner = new QualitySafetyScanner();
+        $run = $scanner->scan(
+            ['p' => ['enabled' => true, 'remote_path' => '/var/www/p']],
+            ['residu'],
+        );
+
+        $titles = array_map(fn ($f) => $f['title'], $run['findings']);
+        $severities = array_map(fn ($f) => $f['severity'], $run['findings']);
+
+        // Young canonical: silent. Old canonical: archive candidate (informational).
+        // Young non-canonical: drift only (low). Old archived: purge candidate (informational).
+        $this->assertCount(3, $run['findings'], 'unexpected findings: ' . implode('; ', $titles));
+        $this->assertContains('informational', $severities);
+        $this->assertContains('low', $severities);
+
+        $combined = implode(' | ', $titles);
+        $this->assertStringContainsString('candidate for archive', $combined);
+        $this->assertStringContainsString("doesn't match canonical name", $combined);
+        $this->assertStringContainsString('candidate for purge', $combined);
+    }
+
+    public function test_residu_skips_when_remote_path_missing(): void
+    {
+        Process::fake(); // any SSH attempt would surface here
+        $scanner = new QualitySafetyScanner();
+
+        $run = $scanner->scan(['p' => ['enabled' => true]], ['residu']);
+
+        $this->assertSame([], $run['findings']);
+        Process::assertNothingRan();
+    }
 }

@@ -22,9 +22,8 @@ class QualitySafetyScanner
         $errors = [];
 
         foreach ($projects as $slug => $project) {
-            $project['_slug'] = $slug;
             foreach ($checks as $check) {
-                $result = $this->runCheck($check, $project);
+                $result = $this->runCheck($check, $slug, $project);
 
                 foreach ($result['findings'] as $finding) {
                     $findings[] = $finding + [
@@ -58,7 +57,7 @@ class QualitySafetyScanner
      * @param  array<string,mixed>  $project
      * @return array{findings:array<int,array<string,mixed>>, error?:string}
      */
-    private function runCheck(string $check, array $project): array
+    private function runCheck(string $check, string $slug, array $project): array
     {
         return match ($check) {
             'composer' => $this->composerAudit($project),
@@ -72,9 +71,45 @@ class QualitySafetyScanner
             'session-cookies' => $this->sessionCookieFlags($project),
             'test-erosion' => $this->testErosion($project),
             'debug-mode' => $this->debugModeFlag($project),
-            'residu' => $this->residueCheck($project),
+            'residu' => $this->residueCheck($slug, $project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
+    }
+
+    /**
+     * Execute a single remote shell command via SSH and capture stdout.
+     *
+     * Shared between `serverHealth` and `residueCheck`; both run one
+     * SSH session per project and parse structured stdout. Caller
+     * decides what to do with errors (different finding shapes).
+     *
+     * @return array{ok:bool, output:string, exit_code:int, error:?string}
+     */
+    private function runRemote(string $host, string $user, string $remoteCmd, int $timeout): array
+    {
+        $bin = config('quality-safety.bin.ssh', 'ssh');
+        $sshOpts = (array) config('quality-safety.server.ssh_options', []);
+
+        $cmd = array_merge([$bin], $sshOpts, ["{$user}@{$host}", $remoteCmd]);
+        $result = Process::timeout($timeout)->run($cmd);
+
+        if (! $result->successful()) {
+            $stderr = trim($result->errorOutput()) ?: trim($result->output());
+
+            return [
+                'ok' => false,
+                'output' => '',
+                'exit_code' => $result->exitCode(),
+                'error' => $stderr ?: 'no output',
+            ];
+        }
+
+        return [
+            'ok' => true,
+            'output' => $result->output(),
+            'exit_code' => 0,
+            'error' => null,
+        ];
     }
 
     /**
@@ -96,11 +131,10 @@ class QualitySafetyScanner
      * @param  array<string,mixed>  $project
      * @return array{findings:array<int,array<string,mixed>>, error?:string}
      */
-    private function residueCheck(array $project): array
+    private function residueCheck(string $slug, array $project): array
     {
         $remotePath = $project['remote_path'] ?? null;
-        $slug = $project['_slug'] ?? null;
-        if (! $remotePath || ! $slug) {
+        if (! $remotePath) {
             return ['findings' => []];
         }
 
@@ -114,45 +148,20 @@ class QualitySafetyScanner
             return ['findings' => [], 'error' => 'residu: qv-residu host not configured'];
         }
 
-        $bin = config('quality-safety.bin.ssh', 'ssh');
-        $sshOpts = (array) config('quality-safety.server.ssh_options', []);
+        $archiveDir = $archiveRoot . '/' . $slug;
+        $remoteCmd = $this->buildResiduScanScript($remotePath, $archiveDir);
 
-        $remotePathEsc = escapeshellarg($remotePath);
-        $archiveDirEsc = escapeshellarg($archiveRoot . '/' . $slug);
+        $remote = $this->runRemote($host, $user, $remoteCmd, 10);
 
-        // Two loops: in-place .env.bak* in checkout, archived files in
-        // /var/backups/havun-env/{slug}/. Output is one line per file as
-        // `TYPE|PATH|AGE_DAYS` so PHP-side parsing stays trivial.
-        $remoteCmd = sprintf(
-            'now=$(date +%%s); '
-            . 'for f in %s/.env.bak*; do '
-            . '  [ -f "$f" ] || continue; '
-            . '  age=$(( ( now - $(stat -c%%Y "$f") ) / 86400 )); '
-            . '  echo "inplace|$f|$age"; '
-            . 'done; '
-            . 'for f in %s/*; do '
-            . '  [ -f "$f" ] || continue; '
-            . '  age=$(( ( now - $(stat -c%%Y "$f") ) / 86400 )); '
-            . '  echo "archive|$f|$age"; '
-            . 'done',
-            $remotePathEsc,
-            $archiveDirEsc
-        );
-
-        $cmd = array_merge([$bin], $sshOpts, ["{$user}@{$host}", $remoteCmd]);
-        $result = Process::timeout(30)->run($cmd);
-
-        if (! $result->successful()) {
-            $stderr = trim($result->errorOutput()) ?: trim($result->output());
-
+        if (! $remote['ok']) {
             return [
                 'findings' => [],
-                'error' => "SSH residu scan failed for {$slug} (exit {$result->exitCode()}): " . ($stderr ?: 'no output'),
+                'error' => "SSH residu scan failed for {$slug} (exit {$remote['exit_code']}): {$remote['error']}",
             ];
         }
 
         $findings = [];
-        foreach ($this->splitLines($result->output()) as $line) {
+        foreach ($this->splitLines($remote['output']) as $line) {
             $parts = explode('|', $line);
             if (count($parts) !== 3) {
                 continue;
@@ -167,7 +176,7 @@ class QualitySafetyScanner
                     'title' => "{$name} is {$age}d old (>{$archiveAfter}d) — candidate for archive",
                     'file' => $path,
                     'age_days' => $age,
-                    'message' => "{$slug}: {$name} ({$age}d) ready for /var/backups/havun-env/{$slug}/",
+                    'message' => "{$slug}: {$name} ({$age}d) ready for {$archiveDir}/",
                 ];
             }
 
@@ -193,6 +202,36 @@ class QualitySafetyScanner
         }
 
         return ['findings' => $findings];
+    }
+
+    /**
+     * Build the bash that inventories .env.bak* in the checkout and the
+     * archive dir. Emits `TYPE|PATH|AGE_DAYS` per file. Glob iteration
+     * with `[ -f ]` guard handles the no-match case (literal pattern survives
+     * unmatched in non-nullglob bash).
+     */
+    private function buildResiduScanScript(string $remotePath, string $archiveDir): string
+    {
+        $template = <<<'BASH'
+now=$(date +%s)
+for f in {REMOTE}/.env.bak*; do
+  [ -f "$f" ] || continue
+  age=$(( ( now - $(stat -c%Y "$f") ) / 86400 ))
+  echo "inplace|$f|$age"
+done
+for f in {ARCHIVE}/*; do
+  [ -f "$f" ] || continue
+  age=$(( ( now - $(stat -c%Y "$f") ) / 86400 ))
+  echo "archive|$f|$age"
+done
+BASH;
+
+        // Strip CR so the script survives CRLF-saved sources on Windows
+        // (remote bash chokes on `do\r`).
+        return str_replace("\r\n", "\n", strtr($template, [
+            '{REMOTE}' => escapeshellarg($remotePath),
+            '{ARCHIVE}' => escapeshellarg($archiveDir),
+        ]));
     }
 
     /**
@@ -472,25 +511,18 @@ class QualitySafetyScanner
         }
 
         $user = $project['user'] ?? 'root';
-        $bin = config('quality-safety.bin.ssh', 'ssh');
-        $sshOpts = (array) config('quality-safety.server.ssh_options', []);
-
         $remoteCmd = 'df -P -B1 && echo ---SYSTEMD--- && systemctl --failed --no-legend --plain --type=service 2>/dev/null || true';
 
-        $cmd = array_merge([$bin], $sshOpts, ["{$user}@{$host}", $remoteCmd]);
+        $remote = $this->runRemote($host, $user, $remoteCmd, 30);
 
-        $result = Process::timeout(30)->run($cmd);
-
-        if (! $result->successful()) {
-            $stderr = trim($result->errorOutput()) ?: trim($result->output());
-
+        if (! $remote['ok']) {
             return [
                 'findings' => [],
-                'error' => "SSH to {$host} failed (exit {$result->exitCode()}): " . ($stderr ?: 'no output'),
+                'error' => "SSH to {$host} failed (exit {$remote['exit_code']}): {$remote['error']}",
             ];
         }
 
-        [$dfOutput, $systemdOutput] = $this->splitServerOutput($result->output());
+        [$dfOutput, $systemdOutput] = $this->splitServerOutput($remote['output']);
 
         $warnPct = (int) config('quality-safety.thresholds.disk_warning_pct', 90);
         $critPct = (int) config('quality-safety.thresholds.disk_critical_pct', 95);
