@@ -30,7 +30,7 @@ De webapp PWA blijft alleen nuttig als **mobile status-dashboard** voor onderweg
 Verwijder uit `havuncore-webapp`:
 
 - **Frontend:** ChatInterface (+ Code Agent UI: FileExplorer, FileViewer), MessagesView, KBSearchView, SettingsView, VoiceSettings, EmergencyConfirm, HelpView; voice hooks (`useSpeechSynthesis`, `whisperApi`); operation-mode lib + isLocalMode helper.
-- **Backend routes:** `aiConfig.js`, `chat.js`, `orchestrate.js`, `files.js`, `vault.js` (op productie route Nginx `/api/vault` naar Laravel; webapp-handler was dood). `ai.js` gestript tot proxy van `/api/ai/kb-stats` → Laravel `/api/docs/stats`. `projects.js` zonder `ssh-status`/`ssh-toggle`.
+- **Backend routes:** `aiConfig.js`, `chat.js`, `orchestrate.js`, `files.js`, `vault.js` (op productie route Nginx `/api/vault` naar Laravel; webapp-handler was dood). `ai.js` gestript tot proxy van `/api/ai/kb-stats` → Laravel `/api/docs/stats`. `projects.js` zonder `ssh-status`/`ssh-toggle`. **Follow-up 2026-05-09:** `ai.js` is volledig verwijderd — Laravel's `/api/docs/stats` zit achter een Bearer-token; opnieuw vault-token-management opzetten voor een nicety-statistiek was niet de moeite waard. KB-info via remote control (toekomstplan) of SSH wanneer écht nodig.
 - **Backend services:** aiOrchestrator, claudeWithTools, ragService, ollamaService, sshService, tunnelService, projectDelegation, polling, havuncore (CLI wrapper).
 - **DB-tabellen:** `chat_history`, `pending_chat_tasks`, `code_proposals`, `ai_sessions`, `ai_config`, `orchestrations`, `tasks`, `command_history` (idempotent dropped via `runMigrations`).
 - **Env-vars:** `HAVUNCORE_PATH`, `PHP_PATH`, `OLLAMA_*`, `RAG_*`, `ALLOW_SSH_REMOTE`, `SSH_*`, `AUTOFIX_EMAIL`.
