@@ -7,7 +7,7 @@ last_check: 2026-04-22
 
 # HavunCore Vision: Multi-Claude Orchestration Systeem
 
-> ⚠️ **DEPRECATED (2026-03-01):** MCP is verwijderd. Dit doc beschrijft de oorspronkelijke visie; MCP wordt niet meer gebruikt.
+> ⚠️ **DEPRECATED (2026-03-01) — codebase-cleanup voltooid 2026-05-09.** De MCP-laag, TaskOrchestrator + alle bijbehorende artisan commands en publieke API's zijn op 9 mei 2026 verwijderd. Zie [ADR 007 — MCP-removal](007-mcp-removal-2026-05-09.md) voor context, schraplijst en argumentatie. Dit doc blijft staan als oorspronkelijke visie-archief.
 
 **Datum:** 18 november 2025
 **Versie:** 1.0
