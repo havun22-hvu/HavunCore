@@ -2,6 +2,32 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 9 mei 2026 (lange marathon door tot 10 mei vroeg) — Repo-hygiene + Mobile-monitoring + MCP-removal
+
+### Wat gedaan
+
+- **Repo Hygiene 4-laags systeem live** — `*env.bak*` glob-fix in `.gitignore` van alle 8 Havun-repos, 8 backup-files gearchiveerd naar `/var/backups/havun-env/{project}/`, nieuwe `qv:scan --only=residu` sub-check (lokale fallback wanneer scanner op productie-host draait), KB-policy `docs/kb/reference/repo-hygiene-policy.md` met canonical naam-conventie `.env.bak.YYYY-MM-DD-HHMMSS` + TTL 14d→archief→90d→purge. ADR: `decisions/repo-hygiene-2026-05-09.md`. Drift-files cross-project hernoemd naar canonical vorm.
+- **PWA Project Status mobile-monitoring** — categorize Server/Mobile in `havuncore-webapp`, `studieplanner-app` + `JudoScoreBoard` als mobile-entries via GitHub API. PAT in HavunCore Vault als `github_pat_ro`, opgehaald via `vault:setup-mobile-monitoring` artisan command. ADR `decisions/mobile-project-monitoring-2026-05-09.md`. Bonus PWA fix: missing-`.git`-paden tonen rood ipv silent-green.
+- **HavunCore SSH-deploy-key + auto-commit cron** — server kan nu zelf auto-output (handover/kb-audit/qv-scan/security-findings) committen + pushen via nieuwe RW deploy-key (id 150988730). Daily `auto:commit-regenerated` 06:00 idempotent. Eerder gestrande lokale merge-commit gepushed.
+- **PWA KB-stats verwijderd** — `routes/ai.js` (Laravel `/api/docs/stats` proxy) was nooit auth'd → altijd 401 in productie. Schrappen ipv tweede Vault-token-pad bouwen. Frontend rebuilt + dist/public bijgewerkt. Stale CSS-bundle even per ongeluk weggehaald, hersteld.
+- **MCP + Multi-Claude Orchestration volledig verwijderd** — ADR 004 was sinds 2026-03-01 DEPRECATED maar code stond er nog. Inventaris bevestigde 0 actieve consumers. 16 files weg (~3100 regels): MCPService, TaskOrchestrator (722 regels), APIContractRegistry, ReportToMCP, ValidatesAPIContract trait, 6 commands (Orchestrate/StatusCommand/Tasks{Check,Complete,Fail}/StoreProjectVault), MCPMessageController, MCPMessage model + migration drop, 2 dedicated tests. Composer **2.0.0** voor breaking public-API removal. ADR `decisions/007-mcp-removal-2026-05-09.md`. Aeterna's "Laravel Queue als vervanging" voorstel afgewezen — geen queue-fundament, semantische mismatch, YAGNI.
+- **JudoToernooi portfolio-split ADR (proposed)** — `decisions/judotoernooi-portfolio-split-2026-05-09.md`. Lokale flat structuur vs server symlink-naar-repo-prod veroorzaakt 1209 D files in portfolio-repo. Drie opties (A/B/C). **Wacht op Henk-keuze**, geen autonome fix.
+- **Memory cleanup** — 4 obsolete entries weggehaald (google_cast geannuleerd, studieplanner_version_mess opgelost, audit_v3_review eenmalig, mozilla_observatory_status verouderd). Nieuwe entries: `feedback_self_directed`, `project_repo_hygiene_live`, `project_mobile_monitoring_live`, `project_mcp_removal`, `reference_gh_cli_deploy_keys`. MEMORY.md `havuncore-webapp` sectie geactualiseerd.
+
+### Openstaande items
+
+- [ ] **JudoToernooi portfolio-split keuze** — A/B/C uit `decisions/judotoernooi-portfolio-split-2026-05-09.md`
+- [ ] **Browser UI-test PWA** — Henk verifieert visueel: Server/Mobile secties, geen Kennisbank-rood
+- [ ] **PWA frontend deploy-script verbeteren** — vite-build laat oude content-hash assets staan in `public/assets/`. Voeg `--emptyOutDir` toe aan build of fix cleanup-script (mijn poging vandaag was bug-vol — verwijderde de huidige CSS-bundle per ongeluk omdat die andere hash had dan JS-bundle).
+- [ ] Vitest setup zodra npm-registry SSL-issue lokaal opgelost is (mockable tests voor `mobileProjectService` + `vaultClient`)
+- [ ] HSTS preload (uit security-sprint backlog, niet vandaag)
+
+### Belangrijke context voor volgende keer
+
+- **Composer 2.0.0** (HavunCore) — breaking. Geen externe consumer geverifieerd vóór release maar bij twijfel andere projecten checken op `Havun\Core\Services\MCPService|TaskOrchestrator|APIContractRegistry`, `Havun\Core\Models\MCPMessage`, `Havun\Core\Traits\ValidatesAPIContract` voordat ze upgraden.
+- **gh CLI op Windows** kan deploy-keys cross-repo via `gh api -X POST repos/{owner}/{repo}/keys` toevoegen — geen browser-actie van Henk nodig. Memory: `reference_gh_cli_deploy_keys.md`.
+- **Henk-stijl** is nu strakker dan ooit: doorpakken op alle technische zaken, alleen vragen voor grote app/business-beslissingen (zie `feedback_self_directed.md`). Geen bevestigingsvragen na milestones, geen subset-vragen, geen "wat nu?".
+
 ## Sessie: 4 mei 2026 — Aeterna APK-hosting + VPD-rename PWA/passkey-recovery
 
 ### Wat gedaan
