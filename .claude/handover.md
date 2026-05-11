@@ -2,6 +2,28 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie: 12 mei 2026 — Cursor volledig verwijderd
+
+### Wat gedaan
+
+- **Cursor GitHub-toegang verwijderd** — Henk had Cursor gecancelled. GitHub App uninstall gedaan via `github.com/settings/installations`. Cursor-bestanden (`.cursor/rules/`, `.cursorrules`) verwijderd uit HavunAdmin, `.cursor/` + `.cursorrules` toegevoegd aan HavunAdmin `.gitignore`, commit `cd25df5` gepusht.
+- **Cursor lokaal volledig verwijderd** — silent uninstall via `unins000.exe`, daarna `~/.cursor` + `AppData/Roaming/Cursor` handmatig verwijderd. Geen API keys/tokens gevonden in Cursor-config. App + alle data-mappen weg.
+
+### Openstaande items
+
+- [ ] **JudoToernooi portfolio-split keuze** — A/B/C uit `decisions/judotoernooi-portfolio-split-2026-05-09.md`
+- [ ] **Browser UI-test PWA** — Henk verifieert visueel: Server/Mobile secties, geen Kennisbank-rood
+- [ ] **PWA frontend deploy-script verbeteren** — `--emptyOutDir` toevoegen aan vite build
+- [ ] Vitest setup zodra npm-registry SSL-issue lokaal opgelost is
+- [ ] HSTS preload (backlog)
+
+### Belangrijke context voor volgende keer
+
+- Cursor is volledig weg — geen IDE-vervanging besproken, Henk kiest zelf.
+- HavunAdmin heeft als enige repo Cursor-bestanden gehad — andere repos waren schoon.
+
+---
+
 ## Sessie: 9 mei 2026 (lange marathon door tot 10 mei vroeg) — Repo-hygiene + Mobile-monitoring + MCP-removal
 
 ### Wat gedaan
