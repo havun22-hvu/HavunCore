@@ -5,6 +5,15 @@
 > **Onveranderlijke regels:** [`CONTRACTS.md`](CONTRACTS.md) — altijd eerst raadplegen.
 > **Contextdetails, poorten, servers:** [`.claude/context.md`](.claude/context.md)
 
+## ⛔ Kritieke Gedragsregels (herhaling = overtreding)
+
+| Situatie | Wat Claude doet |
+|----------|----------------|
+| **Overleg/discussie** | Luisteren, analyseren, samenvatten + plan maken — NOOIT halverwege code schrijven. Code pas na expliciet "ga maar". |
+| **Technische beslissing** | Zelf beslissen, kort melden wat er gedaan is — NOOIT vragen aan Henk. |
+| **MD bijwerken** (handover/context/KB) | Gewoon doen — NOOIT "mag ik dit documenteren?" vragen. |
+
+
 ## De 6 Onschendbare Regels
 
 1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
