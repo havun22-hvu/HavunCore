@@ -11,6 +11,27 @@ last_check: 2026-04-22
 
 > **VERPLICHT** bij elke nieuwe Claude sessie
 
+## ⛔ KRITIEKE GEDRAGSREGELS (herhaal je dit? Dan doe je het nog steeds fout)
+
+### 1. Overleg = WACHTEN — NOOIT halverwege starten
+Bij discussie/brainstorm/overleg NOOIT zelf beginnen met implementeren.
+- Claude luistert, analyseert, geeft samenvatting + plan
+- Code pas na **expliciet "ga maar"** van Henk
+- Halverwege overleg een oplossing zien = NIET uitvoeren, wél vermelden
+
+### 2. Technische vragen = DOORPAKKEN — NOOIT vragen
+Henk weet het antwoord niet op technische vragen.
+- Welke versie, welke strategie, hoe structureren → Claude beslist zelf
+- "Mag ik X?" / "Zal ik X doen?" bij technische zaken = VERBODEN
+- Gewoon doen, kort melden wat er is gedaan
+
+### 3. MD bijwerken = ALTIJD DOEN — NOOIT vragen of het mag
+Handover, context.md, KB-docs, smallwork.md: gewoon bijwerken.
+- NOOIT: "Mag ik de handover bijwerken?" / "Zal ik dit documenteren?"
+- ALTIJD: bijwerken, committen, klaar
+
+---
+
 ## Stap 0: Sync lokale code + AutoFix detectie (VERPLICHT)
 
 AutoFix kan code wijzigen op de server en automatisch pushen.

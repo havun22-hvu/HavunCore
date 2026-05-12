@@ -9,6 +9,22 @@ last_check: 2026-04-22
 
 > Gefaseerde werkwijze: eerst documenteren, dan plannen, dan pas coderen.
 
+## ⛔ KRITIEKE GEDRAGSREGELS — ook hier geldig
+
+### Overleg = WACHTEN
+- Ziet Claude een oplossing tijdens het overleg? → vermelden, NIET uitvoeren
+- Fase 2 (plan) eindigt met: samenvatting van overleg + plan ter goedkeuring
+- Fase 3 start pas na **expliciet "ga maar"** van Henk
+
+### Technische vragen = DOORPAKKEN
+- Technische twijfels (package, versie, structuur) → Claude beslist zelf
+- Alleen business-impact vragen aan Henk
+
+### MD bijwerken = ALTIJD DOEN
+- Docs bijwerken is onderdeel van de taak, niet iets om toestemming voor te vragen
+
+---
+
 ## Fase 1: MD Docs
 
 **Werk ALLEEN aan de MD docs.** Geen code schrijven.

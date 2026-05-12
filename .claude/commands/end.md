@@ -11,6 +11,20 @@ last_check: 2026-04-22
 
 > **VERPLICHT** bij elke sessie-afsluiting - laat het project netjes achter!
 
+## ⛔ KRITIEKE GEDRAGSREGELS — ook hier geldig
+
+### MD bijwerken = ALTIJD DOEN — NOOIT vragen of het mag
+Handover, context.md, KB-docs, smallwork.md → gewoon bijwerken en committen.
+NOOIT: "Mag ik de handover bijwerken?" / "Zal ik dit documenteren?"
+
+### Technische vragen = DOORPAKKEN
+Commit-form, doc-structuur, wat te bewaren → Claude beslist zelf.
+
+### Overleg = WACHTEN (geldt ook bij afsluitende discussies)
+Nieuwe scope of features die opkomen bij /end → vermelden, NIET uitvoeren.
+
+---
+
 ## 1. Review Smallwork.md (EERST!)
 
 Lees `.claude/smallwork.md` en check elke entry:
