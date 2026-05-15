@@ -2,60 +2,65 @@
 title: Aeterna — Project Overview
 type: project
 scope: aeterna
-last_check: 2026-05-03
+last_check: 2026-05-16
 ---
 
 # Aeterna — Project Overview
 
 > Soeverein desktop/mobile instrument voor het versturen van ADA op Cardano. Censuur-resistant by design.
 
-## Status (2026-05-03)
+## Status (2026-05-16, sessie 30)
 
-Brainstorm-fase compleet. Volledig plan in `D:\GitHub\Aeterna\PLAN.md` v3. Project-skeleton (CLAUDE.md, CONTRACTS.md, GOVERNANCE.md, .claude/) compleet. Nog geen code geschreven. GitHub-repo publiek live: https://github.com/havun22-hvu/Aeterna
+- v1.0.2 live op GitHub Releases — gesignede productie-APK (53 MB, arm64)
+- 306 Rust-tests + 15 frontend-tests groen. 0 compiler warnings, 0 clippy, 0 critical audit
+- PRs #3–#96 gemerged; alle PLAN.md-items §1–§38 klaar, geblokkeerd of gedocumenteerd
+- Mirror-pipeline volledig: Arweave, IPFS, F-Droid (geautomatiseerd via GitHub Actions), GitHub Releases
+- Productie-keystore in GitHub Secrets; officieel update-adres Preview actief
+- Ledger probe command geïmplementeerd (PR #94); fysieke Nano X test pending
+- GitHub-repo publiek: https://github.com/havun22-hvu/Aeterna
 
 ## Verhouding tot HavunCore
 
 Aeterna staat **technisch los** van HavunCore-infra:
 - Geen Hetzner-server, geen Laravel, geen MySQL, geen nginx-vhost
-- Geen qv:scan-registratie in `config/quality-safety.php`
-- Geen AutoFix
-- Geen productie-deploy-eisen (SSL Labs, Mozilla Observatory, etc.) — dat slaat op websites, Aeterna is een desktop/mobile-app
-- Geen koppeling met andere Havun-projecten of Herdenkingsportaal-data
+- Geen qv:scan-registratie, geen AutoFix, geen productie-deploy-eisen
 
 Aeterna staat **filosofisch ingebed** in de HavunCore-werkwijze:
 - MPC-model verplicht (MD → Plan → Code)
-- Docs-first
-- KB-zoekplicht via HavunCore (`docs:search`)
+- Docs-first, KB-zoekplicht via HavunCore (`docs:search`)
 - Standards-blok in CLAUDE.md (wallet-variant van canonical template)
-- Test-quality-policy (durable + zinvol > coverage-padding)
-- Test-repair anti-pattern bewaakt
+- Test-quality-policy, test-repair anti-pattern bewaakt
 - Geen feature-creep buiten PLAN.md
-
-Cross-project patterns die uit Aeterna ontstaan, komen NIET in Aeterna's eigen docs maar in HavunCore `docs/kb/patterns/`:
-- Browser-only-blockchain-app pattern (uitgebreid: native-app-zonder-server pattern)
-- Hardware-wallet-abstraction-layer pattern (async trait-based plugin-architectuur)
-- Air-gapped-QR-signing pattern (BC-UR uniform resources)
-- Reproducible-build-pipeline voor Tauri+Rust+Android pattern
-- Multi-mirror distribution pattern (GitHub + F-Droid + Arweave + IPFS)
-- On-chain update-pointer pattern met confirmation-threshold
 
 ## Architectuur — kort
 
-- **Framework:** Tauri 2.0 cross-platform (Android primair, Windows secundair, één codebase)
-- **Frontend:** React + TypeScript in system-WebView per OS, responsive
+- **Framework:** Tauri 2.5 cross-platform (Android primair, Windows secundair, één codebase)
+- **Frontend:** React 19 + TypeScript in system-WebView per OS
 - **Backend:** Rust, async-first (tokio)
-- **Cardano P2P:** pallas crate voor write-pad (tx-broadcast)
-- **Cardano API-fallback:** multi-Koios voor read-pad (saldo + history) met failover
+- **Cardano P2P:** pallas 0.30 voor write-pad (tx-broadcast via Ouroboros P2P)
+- **Cardano API-fallback:** multi-Koios voor read-pad (saldo + history + UTXOs) met failover
 - **Wallet:** async `WalletBackend` trait — hot wallet (Argon2id + AES-256-GCM) + Ledger USB-OTG + watch-only in v1
-- **Air-gap:** BC-UR multi-frame QR (Keystone/NGRAVE) vanaf v1.3 maar abstractie vanaf dag 1
-- **Distributie:** eigen F-Droid repo + GitHub Releases + Arweave + IPFS + ZIP
-- **Updates:** on-chain pointer-bericht vanaf hardcoded officieel adres met 10-block-confirmation threshold; nooit auto-install
+- **Mithril:** BLS chain-validatie via `mithril-common` v0.6 (Apache-2.0)
+- **Distributie:** één APK, drie modi (zie C-03)
+- **Updates:** on-chain pointer-bericht vanaf hardcoded officieel adres; nooit auto-install
 
-## Onveranderlijke contracten (CONTRACTS.md, 12 stuks)
+## Distributie-architectuur (C-03 — drie modi)
+
+Één APK, drie gebruikersmodi. Geen aparte builds.
+
+**v1.0 (nu):** Sovereign-only, geen Play Store. GitHub Releases + F-Droid + Arweave + IPFS.
+
+**v1.x:** Google Play Store als primair kanaal voor Lite/Advanced (mainstream Mary). Bij Play Store-uitval (bijv. juridische druk) triggert Pad A automatisch: PackageManager detecteert dat installer niet `com.android.vending` is → banner → gebruiker kiest bewust voor Sovereign → updates via eigen mirrors.
+
+**Apple App Store:** absoluut verboden, zonder uitzondering.
+
+Sovereign is niet de startpositie maar de fallback die altijd klaar staat. De sovereiniteit wordt relevant zodra politieke druk crypto aan banden wil leggen.
+
+## Onveranderlijke contracten (CONTRACTS.md, 16 stuks)
 
 - C-01: Geen seed of private key verlaat ooit het toestel
 - C-02: Geen single point of failure dat eenzijdig censureerbaar is
-- C-03: Geen Google Play of Apple App Store distributie
+- C-03: Één APK, drie modi (Lite/Advanced/Sovereign). Play Store voor v1.x (Lite/Advanced); Apple App Store absoluut verboden
 - C-04: Hardware-wallet abstractie verplicht — geen vendor lock-in
 - C-05: Reproducible build voor elke release
 - C-06: Updates worden nooit automatisch geïnstalleerd
@@ -65,35 +70,24 @@ Cross-project patterns die uit Aeterna ontstaan, komen NIET in Aeterna's eigen d
 - C-10: SecureRandom/OsRng voor seed-generatie, geen thread_rng
 - C-11: Stake-key isolatie bij send-transacties
 - C-12: Geen automatische updates, ooit
+- C-13: SOCKS5 proxy-discipline (aeterna-http crate)
+- C-14: Decoy vault structuur in wallet.bin
+- C-15: CBDC-resistance roadmap (v2.x scope)
+- C-16: Geen Google Play Services dependency
 
-## Roadmap (PLAN.md sectie 15)
+## Roadmap
 
-- v1: hot wallet + Ledger Nano X/S+ via USB-OTG + watch-only — 10-12 weken parttime + 2 buffer
-- v1.1: Trezor (na hardware-aankoop)
-- v1.2: BitBox02
-- v1.3: Keystone air-gapped via BC-UR-QR
-- v1.4: NGRAVE Zero
-- v1.5: Tangem NFC (Android)
-- v1.6: cardano-cli air-gap (geen hardware)
-- v2: iOS, native token send, multisig, Mithril, opt-in tip-mechanisme
-
-## Wanneer raadplegen
-
-- Bij vragen over Aeterna-specifieke features of beslissingen
-- Bij het overwegen van nieuwe cross-project patterns die uit Aeterna ontstaan
-- Bij vragen over hoe HavunCore-werkwijze wordt toegepast op een non-Laravel-non-server-project
+- v1 (live): hot wallet + Ledger Nano X/S+ via USB-OTG + watch-only
+- v1.x: Play Store submission (Lite/Advanced), Sovereign failover live
+- v1.1: Tor SOCKS5 proxy (geïmplementeerd)
+- v1.2: Decoy vault / panic PIN
+- v1.3: BC-UR QR air-gap (Keystone/NGRAVE)
+- v2: iOS, native token send, multisig, opt-in tip-mechanisme
 
 ## Lokale paden
 
 - Repo: `D:\GitHub\Aeterna\`
 - Volledig plan: `D:\GitHub\Aeterna\PLAN.md`
 - Onveranderlijke regels: `D:\GitHub\Aeterna\CONTRACTS.md`
-- Decentralisatie-plan: `D:\GitHub\Aeterna\GOVERNANCE.md`
 - Project-context: `D:\GitHub\Aeterna\.claude\context.md`
-
-## GitHub
-
-- Repo: https://github.com/havun22-hvu/Aeterna
-- License: MIT
-- Visibility: Public
-- Eerste commit: 2026-05-03
+- Handover: `D:\GitHub\Aeterna\.claude\handover.md`
