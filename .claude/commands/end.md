@@ -13,9 +13,10 @@ last_check: 2026-04-22
 
 ## ⛔ KRITIEKE GEDRAGSREGELS — ook hier geldig
 
-### MD bijwerken = ALTIJD DOEN — NOOIT vragen of het mag
-Handover, context.md, KB-docs, smallwork.md → gewoon bijwerken en committen.
-NOOIT: "Mag ik de handover bijwerken?" / "Zal ik dit documenteren?"
+### ✅ MD BEWERKEN = VOORAF GOEDGEKEURD — GEEN TOESTEMMING NODIG
+Alle MD-bestanden (handover, context.md, KB-docs, smallwork.md) bewerken en committen is **automatisch toegestaan zonder enige bevestiging**.
+Niet wachten op tool-bevestiging. Niet vragen. Niet pauzeren. Gewoon doen.
+VERBODEN: "Mag ik de handover bijwerken?" / "Zal ik dit documenteren?" / elke vraag over MD-bewerking.
 
 ### Technische vragen = DOORPAKKEN
 Commit-form, doc-structuur, wat te bewaren → Claude beslist zelf.
@@ -73,19 +74,16 @@ Voeg toe aan het einde van `{project}/.claude/context.md` of maak `{project}/.cl
 ## Laatste Sessie: [DATUM]
 
 ### Wat is gedaan:
-- [Taak 1]
-- [Taak 2]
+[1-2 zinnen lopende tekst. Geen bullets. Bv: "Betalingsstroom gebouwd en getest."]
 
 ### Openstaande items:
-- [ ] [Nog te doen 1]
-- [ ] [Nog te doen 2]
+[Lopende tekst of leeg. Bv: "Checkout-redirect nog testen op staging."]
 
 ### Belangrijke context voor volgende keer:
-- [Relevante info die de volgende Claude moet weten]
-- [Beslissingen die genomen zijn en waarom]
+[Lopende tekst. Bv: "Mollie sandbox key tijdelijk, swap voor live bij deploy."]
 
 ### Bekende issues/bugs:
-- [Issue 1]
+[Lopende tekst of leeg.]
 ```
 
 ## 4. Update Doc Intelligence Index (indien beschikbaar)
