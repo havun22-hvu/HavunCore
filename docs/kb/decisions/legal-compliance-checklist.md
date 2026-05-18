@@ -44,7 +44,7 @@ AVG zegt: niet van toepassing op overledenen. **UAVG voegt toe:** nabestaanden h
 **Voor HP:**
 - Eigenaar memorial = nabestaande (niet de overledene)
 - Verwijdering uit DB+UI = wel doen (soft-delete + 410 Gone)
-- Blockchain-versie = niet verwijderbaar — zie [BLOCKCHAIN-PERMANENCE.md](../../../Herdenkingsportaal/docs/2-FEATURES/BLOCKCHAIN-PERMANENCE.md)
+- Blockchain-versie = niet verwijderbaar — zie `D:\GitHub\Herdenkingsportaal\docs\2-FEATURES\BLOCKCHAIN-PERMANENCE.md`
 
 ### 2. Blockchain-permanence + recht op vergetelheid (AVG art. 17)
 
@@ -154,7 +154,7 @@ Voor MKB <250 medewerkers alleen verplicht bij hoog-risico verwerking. HP-conten
 ## Referenties
 
 - ADR i18n-strategie: [`internationalization-strategy.md`](internationalization-strategy.md)
-- HP feature-doc blockchain: [`Herdenkingsportaal/docs/2-FEATURES/BLOCKCHAIN-PERMANENCE.md`](../../../Herdenkingsportaal/docs/2-FEATURES/BLOCKCHAIN-PERMANENCE.md)
+- HP feature-doc blockchain: `D:\GitHub\Herdenkingsportaal\docs\2-FEATURES\BLOCKCHAIN-PERMANENCE.md`
 - AP (Autoriteit Persoonsgegevens): https://autoriteitpersoonsgegevens.nl
 - AVG-tekst: https://gdpr-info.eu/
 - UAVG-tekst: https://wetten.overheid.nl/jci1.3:c:BWBR0040940
