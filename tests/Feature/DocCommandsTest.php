@@ -372,6 +372,7 @@ class DocCommandsTest extends TestCase
         $indexer->shouldReceive('indexAll')
             ->once()
             ->andReturn(['havuncore' => ['indexed' => 5, 'indexed_md' => 5, 'indexed_code' => 0, 'skipped' => 0, 'errors' => []]]);
+        $indexer->shouldReceive('cleanupOrphaned')->andReturn(0);
 
         $this->artisan('docs:index')
             ->expectsOutputToContain('Indexing all projects')
@@ -385,6 +386,7 @@ class DocCommandsTest extends TestCase
             ->with('havuncore', false, true)
             ->once()
             ->andReturn(['indexed' => 3, 'indexed_md' => 3, 'indexed_code' => 0, 'skipped' => 1, 'errors' => []]);
+        $indexer->shouldReceive('cleanupOrphaned')->with('havuncore')->andReturn(0);
 
         $this->artisan('docs:index', ['project' => 'havuncore'])
             ->assertExitCode(0);
@@ -410,6 +412,7 @@ class DocCommandsTest extends TestCase
             ->with('havuncore', false, false)
             ->once()
             ->andReturn(['indexed' => 2, 'indexed_md' => 2, 'indexed_code' => 0, 'skipped' => 0, 'errors' => []]);
+        $indexer->shouldReceive('cleanupOrphaned')->with('havuncore')->andReturn(0);
 
         $this->artisan('docs:index', ['project' => 'havuncore', '--no-code' => true])
             ->assertExitCode(0);

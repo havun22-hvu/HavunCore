@@ -30,7 +30,9 @@ class DocIndexCommand extends Command
                 } else {
                     $md = $result['indexed_md'] ?? $result['indexed'];
                     $code = $result['indexed_code'] ?? 0;
-                    $this->line("{$proj}: {$result['indexed']} indexed ({$md} md, {$code} code), {$result['skipped']} skipped");
+                    $removed = $indexer->cleanupOrphaned($proj);
+                    $cleanupNote = $removed > 0 ? ", {$removed} orphaned removed" : '';
+                    $this->line("{$proj}: {$result['indexed']} indexed ({$md} md, {$code} code), {$result['skipped']} skipped{$cleanupNote}");
                     if (!empty($result['errors'])) {
                         foreach ($result['errors'] as $error) {
                             $this->warn("  - {$error}");
@@ -49,7 +51,8 @@ class DocIndexCommand extends Command
 
             $md = $result['indexed_md'] ?? $result['indexed'];
             $code = $result['indexed_code'] ?? 0;
-            $this->info("Indexed: {$result['indexed']} ({$md} md, {$code} code), Skipped: {$result['skipped']}");
+            $removed = $indexer->cleanupOrphaned($project);
+            $this->info("Indexed: {$result['indexed']} ({$md} md, {$code} code), Skipped: {$result['skipped']}" . ($removed > 0 ? ", Orphaned removed: {$removed}" : ''));
             if (!empty($result['errors'])) {
                 $this->warn('Errors:');
                 foreach ($result['errors'] as $error) {

@@ -48,6 +48,7 @@ class DocIndexCommandTest extends TestCase
                     'errors' => [],
                 ],
             ]);
+        $indexer->shouldReceive('cleanupOrphaned')->andReturn(0);
 
         $this->app->instance(DocIndexer::class, $indexer);
 
@@ -76,6 +77,7 @@ class DocIndexCommandTest extends TestCase
                     'error' => 'Project path not found',
                 ],
             ]);
+        $indexer->shouldReceive('cleanupOrphaned')->with('havuncore')->andReturn(0);
 
         $this->app->instance(DocIndexer::class, $indexer);
 
@@ -129,6 +131,7 @@ class DocIndexCommandTest extends TestCase
                 'skipped' => 1,
                 'errors' => [],
             ]);
+        $indexer->shouldReceive('cleanupOrphaned')->with('havuncore')->andReturn(0);
 
         $this->app->instance(DocIndexer::class, $indexer);
 
@@ -168,6 +171,7 @@ class DocIndexCommandTest extends TestCase
                 'skipped' => 0,
                 'errors' => ['Could not parse file.md', 'Embedding failed for doc.md'],
             ]);
+        $indexer->shouldReceive('cleanupOrphaned')->with('havuncore')->andReturn(0);
 
         $this->app->instance(DocIndexer::class, $indexer);
 
@@ -191,6 +195,7 @@ class DocIndexCommandTest extends TestCase
                 'skipped' => 0,
                 'errors' => [],
             ]);
+        $indexer->shouldReceive('cleanupOrphaned')->with('havuncore')->andReturn(0);
 
         $this->app->instance(DocIndexer::class, $indexer);
 
@@ -211,6 +216,7 @@ class DocIndexCommandTest extends TestCase
                 'skipped' => 0,
                 'errors' => [],
             ]);
+        $indexer->shouldReceive('cleanupOrphaned')->with('havuncore')->andReturn(0);
 
         $this->app->instance(DocIndexer::class, $indexer);
 
@@ -233,6 +239,7 @@ class DocIndexCommandTest extends TestCase
                     'errors' => [],
                 ],
             ]);
+        $indexer->shouldReceive('cleanupOrphaned')->with('testproj')->andReturn(0);
 
         $this->app->instance(DocIndexer::class, $indexer);
 
