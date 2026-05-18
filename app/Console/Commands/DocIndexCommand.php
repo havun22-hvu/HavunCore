@@ -52,7 +52,8 @@ class DocIndexCommand extends Command
             $md = $result['indexed_md'] ?? $result['indexed'];
             $code = $result['indexed_code'] ?? 0;
             $removed = $indexer->cleanupOrphaned($project);
-            $this->info("Indexed: {$result['indexed']} ({$md} md, {$code} code), Skipped: {$result['skipped']}" . ($removed > 0 ? ", Orphaned removed: {$removed}" : ''));
+            $cleanupNote = $removed > 0 ? ", {$removed} orphaned removed" : '';
+            $this->info("Indexed: {$result['indexed']} ({$md} md, {$code} code), Skipped: {$result['skipped']}{$cleanupNote}");
             if (!empty($result['errors'])) {
                 $this->warn('Errors:');
                 foreach ($result['errors'] as $error) {
