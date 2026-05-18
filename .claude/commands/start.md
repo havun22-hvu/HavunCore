@@ -2,7 +2,7 @@
 title: Start Session Command
 type: claude
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-05-18
 ---
 
 # Start Session Command
@@ -11,200 +11,108 @@ last_check: 2026-04-22
 
 > **VERPLICHT** bij elke nieuwe Claude sessie
 
-## ⛔ KRITIEKE GEDRAGSREGELS (herhaal je dit? Dan doe je het nog steeds fout)
+## ⛔ KRITIEKE GEDRAGSREGELS
 
-### 1. Overleg = WACHTEN — NOOIT halverwege starten
-Bij discussie/brainstorm/overleg NOOIT zelf beginnen met implementeren.
-- Claude luistert, analyseert, geeft samenvatting + plan
-- Code pas na **expliciet "ga maar"** van Henk
-- Halverwege overleg een oplossing zien = NIET uitvoeren, wél vermelden
+### Rolverdeling (ABSOLUUT)
+| Rol | Wie | Wat |
+|-----|-----|-----|
+| **Architect** | Henk | Richting, plan goedkeuren, "ga maar" zeggen |
+| **Tester** | Henk | Praktische browser/app tests — op zijn eigen moment |
+| **Implementer** | Claude | Alles: code, docs, tests, commits, deploys, branches |
 
-### 2. Technische vragen = DOORPAKKEN — NOOIT vragen
-Henk weet het antwoord niet op technische vragen.
-- Welke versie, welke strategie, hoe structureren → Claude beslist zelf
-- "Mag ik X?" / "Zal ik X doen?" bij technische zaken = VERBODEN
-- Gewoon doen, kort melden wat er is gedaan
+### Vraagdiscipline
+- **NOOIT:** "Mag ik X?", "Zal ik Y doen?", "Wat moet ik als volgende doen?"
+- **ALLEEN vragen bij:** iets te testen (Henk), iets vergeten in de planning, business-beslissing
+- Technische beslissingen → Claude beslist zelf, meldt kort wat er gedaan is
 
-### 3. MD bijwerken = ALTIJD DOEN — NOOIT vragen of het mag
-Handover, context.md, KB-docs, smallwork.md: gewoon bijwerken.
-- NOOIT: "Mag ik de handover bijwerken?" / "Zal ik dit documenteren?"
-- ALTIJD: bijwerken, committen, klaar
+### Per-agendapunt cyclus (na elk punt verplicht)
+1. Geautomatiseerde tests draaien + V&K check
+2. `/simplify` uitvoeren
+3. MD docs + planning + handover bijwerken
+4. Commit + push
+5. Volgende punt — geen wachten op praktische tests van Henk
 
 ---
 
-## Stap 0: Sync lokale code + AutoFix detectie (VERPLICHT)
-
-AutoFix kan code wijzigen op de server en automatisch pushen.
-Pull altijd eerst de laatste wijzigingen voordat je begint:
+## Stap 0: Git sync + AutoFix detectie (VERPLICHT)
 
 ```bash
 cd [project directory] && git pull
-```
-
-Als er merge conflicts zijn: meld aan gebruiker, NIET zelf oplossen.
-
-### AutoFix commits detecteren
-
-Na de pull, check of er AutoFix commits zijn binnengekomen:
-
-```bash
 git log --oneline --since="3 days ago" --grep="autofix("
 ```
 
-Als er AutoFix commits gevonden worden, toon aan de gebruiker:
-
-```
-🔧 AutoFix commits gedetecteerd sinds laatste sessie:
-
-  - autofix(BlokController): Added null check for $poule->judokas (#42)
-  - autofix(PouleService): Fixed undefined variable in scoring (#43)
-
-Deze bestanden zijn automatisch gefixt op de server.
-Zal ik de KB-secties voor deze bestanden markeren voor review?
-```
-
-**Bij "ja":** Lees de gewijzigde bestanden, check of de fixes consistent zijn met de KB docs, en meld inconsistenties.
-**Bij "nee":** Ga verder met de sessie.
+Als er AutoFix commits zijn: meld ze, ga daarna door.
 
 ## Stap 0b: Dependency Security Audit (VERPLICHT)
 
-Na de git pull, draai een security audit op dependencies:
-
 ```bash
-# PHP projecten:
-composer audit 2>/dev/null && echo "✓ Geen bekende PHP kwetsbaarheden" || echo "⚠️ PHP kwetsbaarheden gevonden — toon details aan gebruiker!"
-
-# Node.js projecten (indien package.json aanwezig):
-npm audit --omit=dev 2>/dev/null && echo "✓ NPM packages veilig" || echo "⚠️ NPM kwetsbaarheden gevonden!"
-
-# Verouderde packages (maandelijks, of bij /start als >30 dagen sinds laatste check):
-composer outdated --direct 2>/dev/null | head -20
+composer audit 2>/dev/null && echo "✓ PHP OK" || echo "⚠️ PHP kwetsbaarheden!"
+npm audit --omit=dev 2>/dev/null && echo "✓ NPM OK" || echo "⚠️ NPM kwetsbaarheden!"
 ```
 
-Als er **kritieke kwetsbaarheden** zijn:
-```
-🔴 SECURITY: Kritieke kwetsbaarheden gevonden!
+Kritieke kwetsbaarheden → eerst oplossen. Low/medium → melden, doorgaan.
 
-  - [package] [versie] → [CVE details]
-
-⚠️ Dit moet EERST opgelost worden voordat we verder gaan.
-Wil je de kwetsbaarheden nu oplossen?
-```
-
-Bij **lage/medium** kwetsbaarheden: melden, maar sessie mag doorgaan.
-
-## Stap 1: Lees de project documentatie (VERPLICHT)
-
-Lees deze bestanden in volgorde en bevestig aan de gebruiker:
+## Stap 1: Lees project documentatie (VERPLICHT)
 
 ```
-1. CLAUDE.md                    ← Project regels en context
-2. .claude/context.md           ← Project-specifieke details
-3. .claude/rules.md             ← Security regels (indien aanwezig)
+1. CLAUDE.md
+2. .claude/context.md
+3. .claude/rules.md (indien aanwezig)
+4. .claude/handover.md (indien aanwezig)
 ```
 
-## Stap 2: Kennisbank (KB-first, NIET alles laden)
-
-**NIET** de volledige werkwijze-doc laden. Gebruik de KB on-demand:
-
-```bash
-# Zoek ALTIJD in de KB voordat je code leest of schrijft:
-cd D:\GitHub\HavunCore && php artisan docs:search "zoekterm"
-
-# Gebruik --type voor gerichte resultaten:
-php artisan docs:search "mollie betaling" --type=service    # alleen services
-php artisan docs:search "login auth" --type=controller       # alleen controllers
-php artisan docs:search "memorial lifecycle" --type=docs     # alleen MD docs
-php artisan docs:search "poule indeling" --type=model        # alleen models
-```
-
-**Na elke KB search:** vermeld de bron → "Volgens [bestand]: [citaat]"
-**Geen resultaat?** Meld: "KB bevat geen info over [X]. Documenteren?"
-
-## VERPLICHT: Havun Kwaliteitsnormen (enterprise)
-
-Bij ELKE code wijziging gelden deze normen uit `docs/kb/reference/havun-quality-standards.md`:
-
-- **Coverage >80%** voor nieuwe code (enterprise niveau)
-- **Form Requests** voor ALLE user input
-- **Rate limiting** op API endpoints, login, webhooks
-- **Custom exceptions** bij externe calls (geen generieke \Exception)
-- **Circuit breaker** bij nieuwe externe diensten
-- **Policies** voor autorisatie
-- **Audit log** voor kritieke acties
-- **CSRF + Security headers** standaard actief
-- **CSP nonce** op ALLE nieuwe inline `<script>` tags (`<script @nonce>`)
-- **Docs-first** — plan in MD voor code
-
-**Lees vóór elke feature/refactor:**
-```bash
-cd D:\GitHub\HavunCore && php artisan docs:search "havun quality standards"
-# Of direct:
-cat D:\GitHub\HavunCore\docs\kb\reference\havun-quality-standards.md
-```
-
-**De 5 Onschendbare Regels:**
-1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
-2. NOOIT features/UI-elementen verwijderen zonder instructie
-3. NOOIT credentials/keys/env aanraken
-4. ALTIJD tests draaien voor én na wijzigingen (coverage >80%)
-5. ALTIJD toestemming vragen bij grote wijzigingen
-
-## Stap 3: Check Doc Intelligence issues
+## Stap 2: Doc Intelligence — auto-cleanup + issues oplossen
 
 ```bash
 cd D:\GitHub\HavunCore
-php artisan docs:issues [huidig project]
+
+# Herindex + ruim stale entries op (cleanupOrphaned is nu ingebouwd in docs:index)
+php artisan docs:index [huidig project]
+
+# Detecteer nieuwe issues
+php artisan docs:detect [huidig project]
+
+# Check open issues
+php artisan docs:issues [huidig project] --summary
 ```
 
-> **Let op:** project is een positional argument, niet een --flag.
-> Voorbeeld: `php artisan docs:issues havunclub`
+### Auto-actie per severity:
 
-Als er openstaande issues zijn, toon ze aan de gebruiker:
+| Severity | Actie |
+|----------|-------|
+| 🔴 HIGH | Claude lost het OP vóór verder te gaan — altijd |
+| 🟡 MEDIUM | Claude evalueert: echt probleem → fixen; false positive → ignoren met reden |
+| 🔵 LOW | Auto-ignoren (`bulk-review-[datum]`) |
 
-```
-⚠️ Documentatie issues gevonden:
+**Doel: 0 open issues na /start.** Issues hopen nooit op.
 
-🔴 [HIGH] Inconsistent: Prijs verschilt tussen SPEC.md en PRICING.md
-   → Welke is correct?
-
-🟡 [MED] Duplicate: Mollie setup staat in 2 bestanden
-   → Consolideer naar één locatie?
-
-Wil je deze eerst oplossen of later?
-```
-
-## Na Stap 1–3: Korte bevestiging
-
-Geef een KORTE bevestiging:
-
-```
-✓ MD files gelezen:
-  - CLAUDE.md (X regels)
-  - context.md (X regels)
-  - claude-werkwijze.md (werkwijze + docs-first + PKM)
-
-📋 Dit project: [korte beschrijving]
-⚠️ Verboden: [belangrijkste restricties]
-📄 DOCS-FIRST: Ik schrijf alleen code zoals het in de docs staat.
-📊 Doc issues: [X open issues / geen issues]
-
-Klaar om te beginnen. Wat wil je doen?
-```
-
-## Stap 4: ONTHOUD deze principes
-
-### Bij ELKE vraag:
-1. Is dit groot (feature/styling/tekst) of klein (bug/typo)?
-2. **GROOT** → `docs:search` → Meld wat er staat → Wacht op bevestiging → Update docs → Code
-3. **KLEIN** → Log in `.claude/smallwork.md` → Fix → Klaar
-
-### Bij twijfel: zoek in KB
 ```bash
-cd D:\GitHub\HavunCore && php artisan docs:search "onderwerp"
+# LOW issues bulk-ignoren:
+php artisan tinker --execute="
+\DB::connection('doc_intelligence')->table('doc_issues')
+    ->where('project', '[project]')->where('status', 'open')->where('severity', 'low')
+    ->update(['status' => 'ignored', 'resolved_by' => 'auto-start-[datum]', 'resolved_at' => now(), 'updated_at' => now()]);
+"
 ```
 
-### NIET DOEN
-- Direct code schrijven zonder docs/KB te checken
-- Grote MD docs volledig laden (gebruik KB search)
-- Code schrijven terwijl docs inconsistent zijn
+## Stap 3: Havun Kwaliteitsnormen (bij code wijzigingen)
+
+Bij ELKE code wijziging:
+- Coverage >80%, Form Requests, Rate limiting, Custom exceptions, Circuit breaker
+- Policies, Audit log, CSRF + Security headers, CSP nonce op inline scripts
+- Docs-first — plan in MD voor code
+
+```bash
+php artisan docs:search "havun quality standards"
+```
+
+## Na alle stappen: Korte bevestiging
+
+```
+✓ Gelezen: CLAUDE.md, context.md[, rules.md][, handover.md]
+✓ Issues: [X opgelost / 0 open]
+✓ Security: [OK / kwetsbaarheden opgelost]
+
+[project]: [korte beschrijving]
+Klaar.
+```

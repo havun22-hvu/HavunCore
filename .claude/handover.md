@@ -2,6 +2,22 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie 2026-05-19 — Workflow-standaardisatie + doc-intelligence cleanup
+
+### Gedaan
+
+1607 open Doc Intelligence issues opgelost: root cause was 3 verwijderde agent-worktrees die nog in de index stonden. `cleanupOrphaned()` via tinker verwijderde 394 records, 999 worktree-gerelateerde issues bulk-resolved, daarna `docs:detect` herindexeert schoon. `DocIndexCommand` bijgewerkt zodat `cleanupOrphaned()` voortaan automatisch draait bij elke `docs:index`-aanroep — stale entries hopen nooit meer op. Tests in `DocIndexCommandTest` en `DocCommandsTest` bijgewerkt met de benodigde mock-verwachtingen (3 falende tests gefixt). Workflow-commando's `start.md`, `end.md`, `mpc.md` volledig herschreven: rolverdeling expliciet (Henk=architect+tester, Claude=implementer), per-agendapunt cyclus verplicht (tests→V&K→simplify→docs→commit), vragen alleen in planningsfase, issues direct oplossen bij /start. `claude-werkwijze.md` bijgewerkt met per-agendapunt cyclus sectie. Alle 10 actieve project-CLAUDE.md bestanden bijgewerkt met Havun-standaard werkwijze-blok.
+
+### Openstaande items
+
+JudoToernooi portfolio-split keuze (A/B/C) wacht nog op Henk. Browser UI-test PWA (Server/Mobile secties) wacht op Henk. PWA frontend deploy-script `--emptyOutDir` verbetering open. Vitest setup wacht op npm-registry SSL-fix. HSTS preload staat in backlog.
+
+### Context voor volgende keer
+
+`docs:index` roept nu automatisch `cleanupOrphaned()` aan — geen handmatige cleanup meer nodig. De 10 project-CLAUDE.md commits zijn per project repo apart gepusht via subagents. `claude-werkwijze.md` heeft nu een expliciete per-agendapunt cyclus sectie.
+
+---
+
 ## Sessie: 12 mei 2026 — Cursor volledig verwijderd
 
 ### Wat gedaan

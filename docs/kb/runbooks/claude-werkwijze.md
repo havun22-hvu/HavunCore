@@ -117,6 +117,30 @@ Als de KB geen resultaat geeft:
 
 Volledig pattern: `docs/kb/patterns/regression-guard-tests.md`
 
+### Per-agendapunt cyclus (MPC — VERPLICHT na elk punt)
+
+Na elk agendapunt in MPC-workflow:
+
+```
+1. Implementeer het agendapunt
+2. Geautomatiseerde tests draaien:
+   └── php artisan test --no-coverage  (Laravel)
+   └── npm test                        (Node/RN)
+3. V&K check: php artisan qv:scan [project]
+4. /simplify uitvoeren op gewijzigde code
+5. MD docs + planning + handover bijwerken
+   └── Wat is af? Wat staat er nog?
+6. Commit + push (atomair per punt)
+7. → Volgende punt (geen wachten op Henk's praktische test)
+```
+
+**Rolverdeling:**
+- Claude draait geautomatiseerde tests — PHPUnit, Jest, npm test
+- Henk doet praktische browser/UI-tests — op zijn eigen moment, niet gebonden aan agendapunten
+- Bij hoog risico (productie-deploy, DB-migratie, betaling): wacht op Henk's GO
+
+**Na "ga maar":** Claude voert volledig autonoom uit. Geen technische vragen meer aan Henk.
+
 ### DOCUMENTEER (Altijd!)
 
 **Na elke taak/oplossing:**

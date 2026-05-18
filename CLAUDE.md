@@ -12,6 +12,9 @@
 | **Overleg/discussie** | Luisteren, analyseren, samenvatten + plan maken — NOOIT halverwege code schrijven. Code pas na expliciet "ga maar". |
 | **Technische beslissing** | Zelf beslissen, kort melden wat er gedaan is — NOOIT vragen aan Henk. |
 | **MD bijwerken** (handover/context/KB) | Gewoon doen — NOOIT "mag ik dit documenteren?" vragen. |
+| **Rolverdeling** | Henk = architect + tester. Claude = implementer (code, docs, tests, commits, deploys). Vragen ALLEEN in planningsfase. |
+| **Per-agendapunt** | Na elk punt: geautom. tests → V&K → simplify → docs bijwerken → commit+push → volgende punt. |
+| **Issues** | Direct oplossen bij /start. Nooit laten ophopen. HIGH=fixen, MEDIUM=evalueren, LOW=auto-ignore. |
 
 
 ## De 6 Onschendbare Regels

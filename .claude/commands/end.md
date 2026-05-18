@@ -2,351 +2,107 @@
 title: End Session Command
 type: claude
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-05-18
 ---
 
 # End Session Command
 
-> **Sync-en-deploy verplicht:** vóór afsluiten alle wijzigingen committen + pushen, deploy naar staging (waar beschikbaar), en altijd expliciet vragen of ook naar productie gedeployed moet worden. Volledige policy: `HavunCore/docs/kb/reference/session-flow-policy.md`.
+> **VERPLICHT** bij elke sessie-afsluiting — laat het project netjes achter.
 
-> **VERPLICHT** bij elke sessie-afsluiting - laat het project netjes achter!
+## ⛔ KRITIEKE GEDRAGSREGEL
 
-## ⛔ KRITIEKE GEDRAGSREGELS — ook hier geldig
-
-### ✅ MD BEWERKEN = VOORAF GOEDGEKEURD — GEEN TOESTEMMING NODIG
-Alle MD-bestanden (handover, context.md, KB-docs, smallwork.md) bewerken en committen is **automatisch toegestaan zonder enige bevestiging**.
-Niet wachten op tool-bevestiging. Niet vragen. Niet pauzeren. Gewoon doen.
-VERBODEN: "Mag ik de handover bijwerken?" / "Zal ik dit documenteren?" / elke vraag over MD-bewerking.
-
-### Technische vragen = DOORPAKKEN
-Commit-form, doc-structuur, wat te bewaren → Claude beslist zelf.
-
-### Overleg = WACHTEN (geldt ook bij afsluitende discussies)
-Nieuwe scope of features die opkomen bij /end → vermelden, NIET uitvoeren.
+MD bijwerken, committen, pushen, branches opruimen = **volledig automatisch, geen toestemming nodig**.
+VERBODEN: "Mag ik de handover bijwerken?", "Zal ik committen?", "Weet je zeker dat ik moet pushen?"
 
 ---
 
-## 1. Review Smallwork.md (EERST!)
+## 1. Handover bijwerken (ALTIJD, EERST)
 
-Lees `.claude/smallwork.md` en check elke entry:
-
-```
-Voor elke fix in smallwork.md:
-  ├── Moet dit naar permanente docs?
-  │     ├── Feature/functionaliteit → SPEC.md of FEATURES.md
-  │     ├── Styling → STYLING.md
-  │     ├── Business rule → relevante doc
-  │     └── Technisch/eenmalig → blijft in smallwork
-  │
-  └── Verplaats indien nodig en vink af
-```
-
-## 2. MD Bestanden Netjes Achterlaten (KRITIEK!)
-
-### Controleer en update:
-
-```
-{project}/CLAUDE.md           ← Zijn er nieuwe regels/restricties?
-{project}/.claude/context.md  ← Is er nieuwe project kennis?
-{project}/.claude/smallwork.md ← Is alles afgehandeld?
-```
-
-### Vraag jezelf:
-- [ ] Wat hebben we besproken dat NIET gedocumenteerd is?
-- [ ] Zijn er beslissingen genomen die vastgelegd moeten worden?
-- [ ] Heeft de gebruiker iets uitgelegd dat opgeslagen moet worden?
-- [ ] Zijn er nieuwe patterns/oplossingen die herbruikbaar zijn?
-
-### Waar opslaan?
-
-| Nieuwe kennis | Locatie |
-|---------------|---------|
-| Project-specifiek | `{project}/.claude/context.md` |
-| Herbruikbaar pattern | `HavunCore/docs/kb/patterns/` |
-| How-to procedure | `HavunCore/docs/kb/runbooks/` |
-| Architectuur beslissing | `HavunCore/docs/kb/decisions/` |
-
-## 3. Maak een Handover voor Volgende Sessie
-
-Voeg toe aan het einde van `{project}/.claude/context.md` of maak `{project}/.claude/handover.md`:
+Schrijf of update `.claude/handover.md` + `.claude/smallwork.md`:
 
 ```markdown
-## Laatste Sessie: [DATUM]
+## Sessie [YYYY-MM-DD]
 
-### Wat is gedaan:
-[1-2 zinnen lopende tekst. Geen bullets. Bv: "Betalingsstroom gebouwd en getest."]
+### Gedaan:
+[1-3 zinnen lopende tekst. Geen bullets.]
 
 ### Openstaande items:
-[Lopende tekst of leeg. Bv: "Checkout-redirect nog testen op staging."]
-
-### Belangrijke context voor volgende keer:
-[Lopende tekst. Bv: "Mollie sandbox key tijdelijk, swap voor live bij deploy."]
-
-### Bekende issues/bugs:
 [Lopende tekst of leeg.]
+
+### Context voor volgende keer:
+[Lopende tekst.]
 ```
 
-## 4. Update Doc Intelligence Index (indien beschikbaar)
+Herbruikbare kennis → `HavunCore/docs/kb/patterns/`, `runbooks/`, of `decisions/`.
 
-Als het Doc Intelligence systeem actief is, indexeer de wijzigingen:
+## 2. Linter-gate (bij code wijzigingen)
+
+```bash
+# Laravel:
+php artisan test --no-coverage 2>&1
+
+# Expo/RN:
+npm test 2>&1
+
+# Integrity (indien aanwezig):
+node scripts/check-integrity.cjs 2>&1
+```
+
+Falende tests → eerst fixen, DAN committen.
+
+## 3. Doc Intelligence bijwerken
 
 ```bash
 cd D:\GitHub\HavunCore
-php artisan docs:index [project]
-php artisan docs:detect [project]
+php artisan docs:index [project]   # herindexeert + ruimt stale entries op
+php artisan docs:detect [project]  # detecteert nieuwe issues
 ```
 
-Dit zorgt ervoor dat:
-- Gewijzigde MD files opnieuw geïndexeerd worden
-- Nieuwe inconsistenties gedetecteerd worden
-- De volgende sessie up-to-date info heeft
+HIGH issues die ontstonden door sessie-wijzigingen → direct oplossen.
 
-## 5. Linter-Gate: Test Verificatie (VERPLICHT bij code wijzigingen)
-
-Als er code is gewijzigd in deze sessie, draai de tests en analyseer het resultaat:
+## 4. Git: commit + push (AUTOMATISCH — alles)
 
 ```bash
-# Laravel projecten:
-php artisan test --log-junit storage/logs/test-results.xml 2>&1
+# Staged + unstaged tracked files committen
+git add -u
+git add .claude/ docs/ CLAUDE.md  # altijd docs meenemen
 
-# Expo/React Native projecten:
-npm test -- --json --outputFile=test-results.json 2>&1
-```
+# Geen .env, credentials of untracked sensible files
+git status  # check wat er in gaat
 
-### Analyse (VERPLICHT):
-1. **Alle tests groen?** → Door naar stap 6
-2. **Tests falen?** → Fix de falende tests VOORDAT je commit
-3. **Nieuwe code zonder tests?** → Schrijf minimaal guard tests
+# Code-commit (indien code gewijzigd)
+git commit -m "feat/fix/refactor: [beschrijving] ..."
 
-### Bij bug fix in deze sessie:
-- Is er een regression test geschreven die de bug reproduceert?
-- Zo nee: schrijf die NU, voor je commit
+# Docs-commit
+git commit -m "docs: session handover $(date +%Y-%m-%d)"
 
-### Recent Regressions bijwerken:
-Als er een regression is gevonden en gefixt, voeg toe aan `{project}/.claude/recent-regressions.md`:
-
-```markdown
-## [DATUM] - [korte beschrijving]
-- **Wat:** [wat was kapot]
-- **Oorzaak:** [waarom]
-- **Fix:** [wat gefixt]
-- **Test:** [welke test bewaakt dit nu]
-- **Vervalt:** [datum + 7 dagen]
-```
-
-Verwijder entries ouder dan 7 dagen uit dit bestand.
-
-### Integrity Check (indien `.integrity.json` bestaat):
-```bash
-# Valideer dat kritieke elementen nog aanwezig zijn
-node scripts/check-integrity.js 2>&1 || php artisan integrity:check 2>&1
-```
-
-## 6. Doc-Sync Check (VP-12 — voor commit)
-
-> **Doel:** Voorkomen dat tests en business-docs uit elkaar gaan lopen. Een test die per ongeluk een verouderde regel codificeert is een stille bug.
-> **Wanneer:** alleen als er deze sessie tests gewijzigd of toegevoegd zijn.
-
-### Procedure
-
-Voor **elke** nieuwe of gewijzigde test in deze sessie:
-
-1. Lees de assertion(s)
-2. Zoek de bijbehorende business rule:
-   - `<project>/CONTRACTS.md` (als die bestaat — zie VP-14)
-   - `<project>/CLAUDE.md`
-   - `docs/kb/` (relevante runbook/pattern)
-3. Klopt de assertion 1-op-1 met wat de doc zegt?
-
-### Beslissing
-
-| Situatie | Actie |
-|----------|-------|
-| Assertion en doc matchen | ✅ door naar commit |
-| Assertion is strenger dan doc (correcte hard-coding) | ✅ door — overweeg de doc te verscherpen |
-| Assertion is losser dan doc (gevaarlijk) | ❌ STOP — assertion aanscherpen of doc bijwerken |
-| Assertion en doc spreken elkaar tegen | ❌ STOP — vraag eigenaar welke gedrag correct is |
-
-### Anti-pattern (verboden — zie ook CLAUDE.md regel 6 + runbook test-repair-anti-pattern.md)
-
-❌ Een falende test "fixen" door de assertion aan te passen tot hij groen is, zonder eerst te onderzoeken of de doc wel klopt.
-
-### Klaar-criteria
-
-In de handover (stap 4) is per gewijzigde test in 1 zin vermeld: *"Assertion checkt \[X], wat overeenkomt met regel \[Y] in \[doc]."*
-
-## 7. Git Commit & Push (KRITIEK - NIETS MAG ACHTERBLIJVEN!)
-
-### Stap A: Commit ALLE code-wijzigingen EERST
-
-```bash
-# 1. Check wat er open staat
-git status
-
-# 2. Groepeer wijzigingen in logische, atomaire commits
-#    - Per feature/fix een aparte commit
-#    - Gebruik duidelijke commit messages (feat:/fix:/refactor:)
-#    Voorbeeld:
-#      git add src/controllers/UserController.php src/views/user.blade.php
-#      git commit -m "feat: Add user profile page"
-
-# 3. HERHAAL tot ALLE code-wijzigingen gecommit zijn
-```
-
-⚠️ **HARD RULE:** Na deze stap mag `git status` GEEN gewijzigde code-bestanden meer tonen. Alleen docs mogen nog open staan.
-
-### Stap B: Commit docs/handover
-
-```bash
-git add .claude/context.md .claude/smallwork.md
-git commit -m "docs: Session handover [datum] + [korte beschrijving]"
-```
-
-### Stap C: Push ALLES
-
-```bash
+# Push alles
 git push
 ```
 
-### Stap D: Verificatie (VERPLICHT)
+**Hard rule:** na /end is `git status` leeg (alleen bewust untracked).
+
+## 5. Branch cleanup (AUTOMATISCH)
 
 ```bash
-# Dit MOET leeg zijn (behalve untracked files die bewust niet gecommit worden)
-git status
-git diff
+# Verwijder lokaal gemergede branches
+git branch --merged | grep -Ev "master|main|develop" | xargs -r git branch -d
+
+# Check remote merged branches (optioneel)
+git fetch --prune
 ```
 
-⚠️ **Als er NOG wijzigingen open staan: NIET doorgaan. Eerst committen!**
+## 6. Urenregistratie (VERPLICHT — Henk vult in)
 
-## 8. Deploy naar Server (indien van toepassing)
-
-### Bij publieke apps (HP, JT, HA): STAGING EERST!
-
-```bash
-ssh root@188.245.159.115
-
-# Stap 1: Deploy naar STAGING
-cd [project staging path]
-git pull
-php artisan migrate
-php artisan config:clear && php artisan cache:clear
-
-# Stap 2: Verifieer staging
-# Open staging URL, test kritieke features
-# Minimaal 1 uur wachten, bij grote wijzigingen 24 uur
-
-# Stap 3: Deploy naar PRODUCTIE (pas na staging-verificatie)
-cd [project production path]
-git pull
-php artisan config:clear && php artisan cache:clear
+Eén zin, lopende tekst, geen bullets:
+```
+[YYYY-MM-DD]: [Project] [onderwerp], [Project] [onderwerp].
 ```
 
-### Bij overige apps of alleen docs-wijzigingen:
+## 7. KOR-omzetcheck (ALLEEN bij kwartaaleinde)
 
-```bash
-ssh root@188.245.159.115
-cd [project path]
-git pull
-php artisan config:clear && php artisan cache:clear
-```
+Drempel: €20.000/jaar. Check Mollie + Stripe. Waarschuw bij >€16.000.
 
-## 9. Branch Cleanup
+---
 
-```bash
-git branch --merged | grep -v master | xargs git branch -d
-```
-
-## 9b. Schone Lei Check (VERPLICHT — einde van de dag)
-
-> **Filosofie:** elke dag eindigt schoon. Geen losse wijzigingen, geen
-> vergeten branches, geen onverwerkte PR's. Wat morgen begint moet vanaf
-> nul kunnen.
-
-### Verplichte controles per project waarop vandaag gewerkt is
-
-```bash
-# 1. Alle wijzigingen gecommit?
-git status                       # MOET leeg zijn (of alleen bewust untracked)
-
-# 2. Alles gepusht?
-git log @{u}..HEAD --oneline     # MOET leeg zijn
-
-# 3. Openstaande PR's verwerken
-gh pr list --author @me          # elke PR: merge, sluit, of expliciet in handover
-
-# 4. Lokale branches opruimen
-git branch --merged | grep -v master   # MOET leeg zijn (anders -> stap 9)
-```
-
-### Beslisregel per item
-
-| Bevinding | Actie |
-|-----------|-------|
-| Uncommitted code-wijziging | Commit nu (atomair) of revert bewust |
-| Uncommitted MD-wijziging | Commit als `docs:` of revert |
-| Niet-gepushte commits | Push nu |
-| Open eigen PR | Merge, sluit, of noteer in handover **waarom** open blijft |
-| Open review-PR | Verwerk feedback of noteer in handover |
-| Gemergde lokale branch | Verwijder met `git branch -d` |
-
-### Hard rule
-
-Nooit een dag eindigen met:
-- Losse wijzigingen zonder commit
-- Lokale commits zonder push
-- PR's zonder status-update in handover
-- Stale gemergde branches
-
-Als iets bewust open blijft (lopend werk dat morgen verder gaat): leg het
-expliciet vast in `.claude/handover.md` met **wat** en **waarom**.
-
-## 10. USB / Op reis (HavunCore only)
-
-**Nieuwe werkwijze:** USB bevat alleen credentials (vault) + startscript; geen code sync meer nodig. Code op reis via `git clone`/`git pull`.
-
-- **Vault bijwerken (thuis):** Zorg dat `credentials.vault` op de USB de actuele `.env` en `context.md` per project bevat (handmatig of eigen script).
-- **Runbook:** `docs/kb/runbooks/op-reis-workflow.md`
-
-## 11. KOR-Omzetcheck (elk kwartaal)
-
-**Alleen bij kwartaaleinde (maart, juni, september, december):**
-
-Check of de omzet richting de KOR-drempel gaat (€20.000/jaar):
-
-```
-⚠️ KOR-drempelcheck:
-   Drempel: €20.000/jaar
-   Waarschuwing bij: €16.000 (80%)
-
-   → Check Mollie dashboard: https://my.mollie.com
-   → Check Stripe dashboard: https://dashboard.stripe.com
-   → Tel op: Mollie + Stripe + overige inkomsten
-
-   Status: [onder drempel / waarschuwing / boven drempel]
-```
-
-Als omzet > €16.000: meld aan gebruiker dat BTW-overgangsplan nodig is.
-Zie: `docs/audit/verbeterplan-q2-2026.md` (VP-10)
-
-## 12. Urenregistratie (VERPLICHT - belastingaangifte)
-
-**Jij vult zelf de uren in.** Eén zin in **lopende tekst** — projecten achter elkaar gescheiden door komma's. **Geen bullets, geen details, geen technische beschrijvingen, geen commit-info.** Per project: `Projectnaam` + 1 woord onderwerp. Klaar.
-
-→ Kopieer naar `HavunCore/urenregistratie-2026.csv` (formaat: `Datum;Uren;Project;Onderdeel`).
-
-Format:
-```
-[YYYY-MM-DD]: [Project] [onderwerp], [Project] [onderwerp], [Project] [onderwerp].
-```
-
-Voorbeeld:
-```
-2026-05-07: JudoToernooi betalingen, HavunAdmin facturen, HavunCore docs.
-```
-
-## NIET DOEN BIJ AFSLUITEN
-
-❌ Afsluiten zonder MD files te checken
-❌ Kennis "in je hoofd houden" - de volgende Claude weet het niet!
-❌ Geen handover maken bij openstaande items
-❌ Pushen zonder duidelijke commit message
+**Nooit eindigen met:** uncommitted wijzigingen · niet-gepushte commits · stale merged branches · open issues zonder status.

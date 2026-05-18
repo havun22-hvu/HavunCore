@@ -2,65 +2,77 @@
 title: MPC — MD, Plan, Codering
 type: claude
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-05-18
 ---
 
 # MPC — MD, Plan, Codering
 
-> Gefaseerde werkwijze: eerst documenteren, dan plannen, dan pas coderen.
+> Gefaseerde werkwijze: eerst documenteren, dan plannen, dan autonoom uitvoeren.
 
-## ⛔ KRITIEKE GEDRAGSREGELS — ook hier geldig
+## Rolverdeling (ABSOLUUT)
 
-### Overleg = WACHTEN
-- Ziet Claude een oplossing tijdens het overleg? → vermelden, NIET uitvoeren
-- Fase 2 (plan) eindigt met: samenvatting van overleg + plan ter goedkeuring
-- Fase 3 start pas na **expliciet "ga maar"** van Henk
+| Rol | Wie | Wat |
+|-----|-----|-----|
+| **Architect** | Henk | Geeft richting, keurt plan goed, zegt "ga maar" |
+| **Tester** | Henk | Praktische tests — op zijn eigen moment, niet gebonden aan agendapunten |
+| **Implementer** | Claude | Alles: code, docs, geautomatiseerde tests, commits, deploys, branches |
 
-### Technische vragen = DOORPAKKEN
-- Technische twijfels (package, versie, structuur) → Claude beslist zelf
-- Alleen business-impact vragen aan Henk
-
-### MD bijwerken = ALTIJD DOEN
-- Docs bijwerken is onderdeel van de taak, niet iets om toestemming voor te vragen
+**Na "ga maar": Claude voert volledig autonoom uit. Geen vragen meer.**
 
 ---
 
-## Fase 1: MD Docs
+## Fase 1: MD Docs — EXHAUSTIEF (ENIGE fase voor vragen)
 
 **Werk ALLEEN aan de MD docs.** Geen code schrijven.
 
-1. Lees de bestaande docs over het onderwerp (`docs/`, `docs/kb/`, `.claude/`)
-2. Zijn ze compleet? Duidelijk? Helder? Consistent met andere docs?
-3. Ontbrekende informatie → vraag aan gebruiker
-4. Tegenstrijdigheden → meld en corrigeer
-5. Update/maak docs tot ze **100% compleet** zijn
+1. Lees alle bestaande docs over het onderwerp
+2. Stel ALLE vragen die je ooit nodig kunt hebben — **nu**, niet later
+3. Vragen die MOGEN: ontbrekende business-logica, onduidelijke requirements, vergeten edge cases
+4. Vragen die NIET mogen later: "Zal ik X doen?", "Mag ik Y aanpassen?", technische keuzes
+5. Update/maak docs tot ze 100% compleet zijn
 
-**Klaar-criteria:** Een andere Claude sessie kan de docs lezen en EXACT weten wat er gebouwd moet worden, zonder aannames.
+**Klaar-criteria:** Een andere Claude kan de docs lezen en EXACT weten wat gebouwd moet worden — zonder één aanname of vraag.
 
-## Fase 2: Plan
+## Fase 2: Plan — gedetailleerd agendaoverzicht
 
-**Pas als alle docs compleet zijn** → maak een implementatieplan.
+Na volledige docs → schrijf een implementatieplan:
 
-1. Welke bestanden moeten gewijzigd/aangemaakt worden?
-2. In welke volgorde?
-3. Wat zijn de afhankelijkheden?
-4. Wat kan parallel?
-5. Waar zitten de risico's?
+1. Welke bestanden worden gewijzigd/aangemaakt?
+2. Volgorde + afhankelijkheden
+3. Wat parallel kan
+4. Waar de risico's zitten
+5. Per agendapunt: wat gebouwd wordt + welke geautomatiseerde tests er komen
 
-Schrijf het plan in een MD bestand. Leg voor aan de gebruiker voor akkoord.
+**Sla het plan op** in `.claude/smallwork.md` of een apart planbestand.
+**Leg voor aan Henk** → wacht op "ga maar".
 
-## Fase 3: Codering
+## Fase 3: Codering — volledig autonoom
 
-**Pas na akkoord op het plan** → voer het uit.
+**Na "ga maar"** → voer elk agendapunt uit in deze cyclus:
 
-1. Volg het plan stap voor stap
-2. Test na elke stap
-3. Commit na elke werkende stap
-4. Bij afwijking van plan: update het plan EERST, dan pas code
+### Per-agendapunt cyclus (VERPLICHT na ELK punt)
+
+```
+1. Implementeer het agendapunt
+2. Geautomatiseerde tests draaien + V&K check
+   └── php artisan test --no-coverage  (Laravel)
+   └── npm test                        (Node/RN)
+3. /simplify uitvoeren op gewijzigde code
+4. MD docs + planning + handover bijwerken
+   └── Wat is af? Wat staat er nog?
+5. Commit + push (atomair per punt)
+6. → Volgende punt (geen wachten op Henk's praktische test)
+```
+
+**Bij planafwijking:** update het plan EERST, dan pas code. Meld de afwijking in één zin.
+
+**Bij hoog risico** (productie-deploy, database-migratie, betalingssysteem):
+→ Meld "klaar voor [X], wacht op jouw GO voor productie" — dit is de enige uitzondering.
 
 ## Regels
 
 - **NOOIT** code schrijven in fase 1
-- **NOOIT** coderen zonder plan in fase 2
+- **NOOIT** coderen zonder goedgekeurd plan
 - **NOOIT** afwijken van plan zonder update
-- Bij twijfel: terug naar fase 1 (docs)
+- **NOOIT** wachten op technische beslissing van Henk — Claude beslist zelf
+- **ALTIJD** per-agendapunt cyclus volgen: test → simplify → docs → commit
