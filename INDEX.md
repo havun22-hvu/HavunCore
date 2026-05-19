@@ -29,7 +29,7 @@ De volledige kennisbank staat in `docs/kb/`:
 
 | Folder | Inhoud |
 |--------|--------|
-| [docs/projects/](docs/projects/) | Per-project overzichten |
+| [docs/kb/projects/](docs/kb/projects/) | Per-project overzichten |
 
 ## Credentials
 
@@ -63,7 +63,7 @@ HavunCore/
 ├── docs/
 │   ├── handover.md
 │   ├── kb/                # Knowledge Base: INDEX.md, OVERZICHT.md, projects-index, patterns, runbooks, reference, decisions, contracts, templates
-│   └── projects/         # HAVUNCORE, HAVUNADMIN, HERDENKINGSPORTAAL, VPDUPDATE, INDEX
+│   └── kb/projects/      # Per-project overzichten (havunadmin, hp, judotoernooi, etc.)
 ├── public/
 │   └── index.php
 ├── routes/               # api.php, web.php, console.php, channels.php
