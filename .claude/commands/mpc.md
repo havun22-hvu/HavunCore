@@ -44,7 +44,8 @@ Na volledige docs → schrijf een implementatieplan:
 5. Per agendapunt: wat gebouwd wordt + welke geautomatiseerde tests er komen
 
 **Sla het plan op** in `.claude/smallwork.md` of een apart planbestand.
-**Leg voor aan Henk** → wacht op "ga maar".
+**Presenteer het plan** aan Henk en eindig met: `Plan klaar — typ "ga maar" om te starten.`
+NOOIT phrasing als vraag: geen "Ga maar?", geen "Zal ik beginnen?", geen "Akkoord?".
 
 ## Fase 3: Codering — volledig autonoom
 
