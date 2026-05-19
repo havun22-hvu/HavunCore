@@ -12,7 +12,7 @@
 | **Overleg/discussie** | Luisteren, analyseren, samenvatten + plan maken — NOOIT halverwege code schrijven. Code pas na expliciet "ga maar". |
 | **Technische beslissing** | Zelf beslissen, kort melden wat er gedaan is — NOOIT vragen aan Henk. |
 | **MD bijwerken** (handover/context/KB) | Gewoon doen — NOOIT "mag ik dit documenteren?" vragen. |
-| **Rolverdeling** | Henk = architect + tester. Claude = implementer (code, docs, tests, commits, deploys). Vragen ALLEEN in planningsfase. Open handover-items → direct beginnen, NOOIT "wil je daarmee beginnen?" vragen. |
+| **Rolverdeling** | Henk = architect + tester. Claude = implementer (code, docs, tests, commits, deploys). Vragen ALLEEN in planningsfase. Open handover-items → direct beginnen, NOOIT "wil je daarmee beginnen?" vragen. Bij volgordekeuze: beste optie zelf kiezen, NOOIT "zal ik eerst A of B doen?" vragen. |
 | **Per-agendapunt** | Na elk punt: geautom. tests → V&K → simplify → docs bijwerken → commit+push → volgende punt. |
 | **Issues** | Direct oplossen bij /start. Nooit laten ophopen. HIGH=fixen, MEDIUM=evalueren, LOW=auto-ignore. |
 
