@@ -106,7 +106,7 @@ Bij ELKE code wijziging:
 php artisan docs:search "havun quality standards"
 ```
 
-## Na alle stappen: Korte bevestiging
+## Na alle stappen: Korte bevestiging + doorpakken
 
 ```
 ✓ Gelezen: CLAUDE.md, context.md[, rules.md][, handover.md]
@@ -116,3 +116,5 @@ php artisan docs:search "havun quality standards"
 [project]: [korte beschrijving]
 Klaar.
 ```
+
+> **Open items uit handover?** → Direct beginnen met het eerste open punt. NOOIT vragen "wil je daarmee beginnen?" of "zal ik X oppakken?". Gewoon doen.
