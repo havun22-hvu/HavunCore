@@ -2,6 +2,32 @@
 
 > Laatste sessie info voor volgende Claude.
 
+## Sessie 2026-05-20 — Workflow-vraag-verbod uitgebreid + SafeHavun whale plans + PWA deploy fix
+
+### Gedaan
+
+Workflow-regels in alle 9 repos aangescherpt: "open handover-items → direct beginnen, NOOIT 'wil je daarmee beginnen?' vragen" toegevoegd aan alle project CLAUDE.md's; vervolgens ook "NOOIT 'zal ik eerst A of B doen?'" toegevoegd — bij volgordekeuze beste optie zelf pakken. `mpc.md` gefixed: plan eindigt nu met declaratieve tekst ("Plan klaar — typ 'ga maar' om te starten"), niet als vraag "Ga maar?". Memory `feedback_dont_pause.md` bijgewerkt met deze twee nieuwe regels.
+
+SafeHavun: beide open plannen (whale-relative-thresholds + ETH dual tracking) waren al geïmplementeerd. Ontbrekende tests toegevoegd: `coinThreshold` met/zonder market_cap via SOL-fetch indirect, relatieve signaaldrempel in GenerateMarketSignalsTest. Helper `createBtcWithMarketCap()` geëxtraheerd na /simplify. `strength: 80` assertion toegevoegd. 376/376 tests groen. Deployed naar productie.
+
+havuncore-webapp deploy script: `scp` vervangen door `rsync --delete` + `ssh rm -rf assets` pre-stap zodat stale content-hash files niet meer blijven staan. `emptyOutDir: true` expliciet in vite.config.js.
+
+Root INDEX.md broken link gefixed: `docs/projects/` → `docs/kb/projects/`. 190 false-positive duplicate issues + 2 Mermaid-syntax false positives genegeerd in Doc Intelligence.
+
+### Openstaande items
+
+- [ ] **JudoToernooi portfolio-split keuze** — A/B/C uit `decisions/judotoernooi-portfolio-split-2026-05-09.md` (wacht op Henk)
+- [ ] **Browser UI-test PWA** — Henk verifieert visueel: Server/Mobile secties
+- [ ] **SafeHavun monitor** — eerste 2 weken BTC-drempel ~$66M observeren (was $1M)
+- [ ] **Vitest setup** — wacht op npm-registry SSL-fix lokaal
+- [ ] **HSTS preload** — backlog
+
+### Context voor volgende keer
+
+Workflow-commando's (`start.md`, `mpc.md`) en alle 9 project CLAUDE.md's zijn bijgewerkt met uitgebreide vraag-verboden. SafeHavun `handover.md` aangemaakt (was er nog niet). `feedback_dont_pause.md` memory bevat nu ook de A/B volgorde-regel en de handover-items-start-regel.
+
+---
+
 ## Sessie 2026-05-19 — Workflow-standaardisatie + doc-intelligence cleanup
 
 ### Gedaan
