@@ -16,11 +16,7 @@ Jij typt de opdracht, de rest is achtergrondwerk.
 
 Controleer of `$ARGUMENTS` een `--project=X` flag bevat:
 - Ja → gebruik die waarde
-- Nee → detecteer uit de huidige werkmap:
-  - `D:\GitHub\SafeHavun` → `safehavun`
-  - `D:\GitHub\JudoToernooi` → `judotoernooi`
-  - `D:\GitHub\Herdenkingsportaal` → `herdenkingsportaal`
-  - `D:\GitHub\HavunCore` → vraag éénmalig welk project (HavunCore zelf heeft geen eigen pack)
+- Nee → detecteer uit de huidige werkmap: neem het laatste padsegment, lowercase (bijv. `D:\GitHub\SafeHavun` → `safehavun`). Uitzondering: als de map `HavunCore` is, vraag dan éénmalig welk project — HavunCore zelf heeft geen eigen pack.
 - Niet detecteerbaar → vraag éénmalig, ga daarna direct door
 
 Extraheer vervolgens de prompt (alles uit `$ARGUMENTS` zonder de `--project=X` flag).
