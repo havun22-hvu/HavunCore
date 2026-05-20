@@ -141,20 +141,34 @@ class HavunPackCommand extends Command
         $path = $this->normalizePath($projectPath);
         $files = [];
 
-        $candidates = ['PLAN.md', 'SPEC.md', 'docs/INDEX.md', '.claude/context.md'];
+        // Scan all MD files in the project — Gemini has 2M token context, use it fully
+        $iterator = new \RecursiveIteratorIterator(
+            new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS)
+        );
 
-        foreach ($candidates as $candidate) {
-            $full = $path . DIRECTORY_SEPARATOR . $this->normalizePath($candidate);
-            $content = @file_get_contents($full);
-            if ($content === false) {
+        $skip = ['vendor', 'node_modules', '.git', 'storage', 'bootstrap/cache'];
+
+        foreach ($iterator as $file) {
+            if ($file->getExtension() !== 'md') {
                 continue;
             }
-            if (strlen($content) > 8000) {
-                $content = substr($content, 0, 8000) . "\n\n[... truncated ...]";
+
+            $relative = str_replace($path . DIRECTORY_SEPARATOR, '', $file->getPathname());
+            $relative = str_replace('\\', '/', $relative);
+
+            foreach ($skip as $dir) {
+                if (str_starts_with($relative, $dir . '/')) {
+                    continue 2;
+                }
             }
-            $files[$candidate] = $content;
+
+            $content = @file_get_contents($file->getPathname());
+            if ($content !== false && trim($content) !== '') {
+                $files[$relative] = $content;
+            }
         }
 
+        ksort($files);
         return $files;
     }
 
