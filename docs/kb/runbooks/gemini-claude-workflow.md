@@ -115,6 +115,14 @@ Voer nu uit, pas /simplify toe en update de docs.
 php artisan test --no-coverage
 ```
 
+### Catch: vage prompts geven generieke output
+Als Gemini een algemene codebase-analyse geeft in plaats van de gevraagde implementatie, was de prompt te vaag.
+
+**Slecht:** `"Optimaliseer de ETH whale tracking"`
+**Goed:** `"Schrijf de volledige PHP-code voor WhaleTrackingService::fetchTxInternal() die txlistinternal gebruikt met rate limiting van max 1 call per 5 seconden. Lever als kant-en-klare PHP-methode."`
+
+Als Gemini generiek blijft → Claude voert de taak zelf uit als executor zonder blueprint.
+
 ### Catch: maximaal één reflectieronde
 LLM's kunnen eindeloos beleefd heen-en-weer praten. De cyclus is altijd:
 **Gemini ontwerpt → Claude schiet gaten → Gemini corrigeert → Claude voert uit.**
