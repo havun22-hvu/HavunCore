@@ -60,13 +60,20 @@ Key genereren (nieuw project): https://aistudio.google.com/apikey
 ## De standaard cyclus (4 stappen)
 
 ### Stap 1 — Context inpakken + blauwdruk genereren
-Vanuit de projectmap — `--project` is optioneel, wordt auto-gedetecteerd op basis van de huidige map:
+Gebruik de `/arch` skill in Claude CLI — pipeline draait automatisch op de achtergrond:
+```
+/arch --project=<naam> [taak beschrijving]
+```
+
+Of handmatig via PowerShell:
 ```powershell
 php artisan havun:pack | gemini "Analyseer deze context. [Taak]. Lever op als Markdown." | Out-File -Encoding utf8 gemini_blueprint.md
 ```
 
 ### Stap 2 — Claude valideert en voert uit
-In Claude CLI:
+Na `/arch`: typ `/mpc` om de blueprint uit te voeren.
+
+Handmatig in Claude CLI:
 ```
 Voer gemini_blueprint.md uit.
 - Controleer of bestandsnamen en patronen kloppen met de lokale codebase
