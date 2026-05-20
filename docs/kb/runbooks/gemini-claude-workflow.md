@@ -217,5 +217,6 @@ Gebruik altijd `| Out-File -Encoding utf8` in plaats van `>` om encoding-problem
 
 Geïnstalleerd: 2026-05-20
 Gemini CLI versie: 0.42.0
+Gemini API model (havun:gemini): gemini-2.5-flash (1M tokens), override met --model=gemini-2.5-pro voor complexe taken
 GEMINI_API_KEY: instellen via PowerShell (key ophalen via Claude/HavunCore SSH-lookup)
 Eerste echte test: SafeHavun ETH whale tracking (volgende sessie)

@@ -11,7 +11,7 @@ class HavunGeminiCommand extends Command
     protected $signature = 'havun:gemini
                             {prompt : De opdracht voor Gemini}
                             {--project= : Project om in te pakken via havun:pack (optioneel)}
-                            {--model=gemini-3.1-flash-lite : Gemini model}
+                            {--model=gemini-2.5-flash : Gemini model}
                             {--out= : Schrijf output naar bestand}';
 
     protected $description = 'Stuur een prompt naar Gemini, optioneel met havun:pack context';
@@ -38,7 +38,7 @@ class HavunGeminiCommand extends Command
 
         // withoutVerifying() is required: Windows TLS cert revocation check fails for googleapis.com
         $response = Http::withoutVerifying()
-            ->timeout(120)
+            ->timeout(300)
             ->post(
                 "https://generativelanguage.googleapis.com/v1beta/models/{$model}:generateContent?key={$apiKey}",
                 ['contents' => [['parts' => [['text' => $fullPrompt]]]]]
