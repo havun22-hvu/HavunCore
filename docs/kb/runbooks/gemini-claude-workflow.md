@@ -115,6 +115,9 @@ Voer nu uit, pas /simplify toe en update de docs.
 php artisan test --no-coverage
 ```
 
+### Catch: Claude wacht als Gemini aan zet is
+Als de gebruiker bezig is met de Gemini-pipeline, gaat Claude NIET zelf door met coderen. Geen "laat me even kijken", geen autonoom doorwerken. Claude wacht op de blueprint en voert pas uit na "ga maar".
+
 ### Catch: vage prompts geven generieke output
 Als Gemini een algemene codebase-analyse geeft in plaats van de gevraagde implementatie, was de prompt te vaag.
 

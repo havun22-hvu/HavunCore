@@ -19,6 +19,7 @@ last_check: 2026-05-18
 | **Micro-Executor** | Claude | Code, docs, tests, commits, deploys — valideert Gemini-blauwdruk lokaal |
 
 **Grote taak?** → Eerst Gemini-blauwdruk, dan pas MPC-fase 2+3.
+**Gemini aan zet?** → Claude wacht. Niet zelf doorcoderen ("puppy-gedrag").
 ```bash
 php artisan havun:gemini --project=<naam> "Ontwerp blauwdruk voor: [taak]" --out=gemini_blueprint.md
 ```
