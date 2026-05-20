@@ -1,35 +1,32 @@
 ---
 title: Gemini + Claude CLI — Hybride AI Werkwijze
 type: runbook
-date: 2026-05-20
-applies_to: alle projecten
+scope: alle projecten
+last_check: 2026-05-20
 ---
 
 # Gemini + Claude CLI — Hybride AI Werkwijze
 
-## De kern in één zin
-
-Gemini is het langetermijngeheugen en de architect. Claude is de kritische lokale uitvoerder. Ze werken samen via een geautomatiseerde pipe, niet via copy/paste.
+**Doctrine:** Macro-Architect (Gemini) ←→ Micro-Executor (Claude)
 
 ## Waarom deze werkwijze
 
-Claude heeft ~200k context en geen geheugen tussen sessies. Gemini heeft 2M context en kan de volledige codebase onthouden. De combinatie is sterker dan elk model apart:
+Claude heeft ~200k context en geen geheugen tussen sessies. Langdurige sessies leiden tot context-verwatering en scope-drift. Gemini heeft 2M+ tokens en bewaart het grote plaatje.
 
-- Gemini ziet het grote plaatje en maakt blauwdrukken met echte bestandsnamen
-- Claude controleert lokaal of die blauwdruk klopt met de codebase en voert uit
-- Geen "blinde executor" — Claude grijpt in als Gemini iets verkeerd aanneemt
+**Oplossing:** Claude wordt ontlast van de architectuurrol. Gemini maakt de blauwdrukken — Claude is de kritische, lokale poortwachter en executor.
 
 ## Rolverdeling
 
 | Taak | Wie |
 |---|---|
 | Architectuur bewaken | Gemini |
-| Blauwdrukken maken | Gemini |
-| MD-docs schrijven/bijwerken | Claude |
-| Code uitvoeren | Claude |
+| Blauwdrukken + MD-docs schrijven | Gemini |
 | Lokale bestandsnamen verifiëren | Claude |
+| Code uitvoeren op schijf | Claude |
 | /simplify + tests runnen | Claude |
 | Langetermijngeheugen | Gemini (of de docs zelf) |
+
+---
 
 ## Vereisten
 
@@ -40,38 +37,101 @@ gemini --version  # moet 0.42.0 of hoger tonen
 ```
 
 ### GEMINI_API_KEY
-Eenmalig instellen in Windows (permanent):
+Eenmalig instellen in Windows (permanent) — doe dit in een **losse PowerShell**, niet via Claude CLI:
 ```powershell
 [Environment]::SetEnvironmentVariable("GEMINI_API_KEY", "jouw-key", "User")
+
+# Verificeer
+[Environment]::GetEnvironmentVariable("GEMINI_API_KEY", "User")
 ```
-Key genereren via: https://aistudio.google.com/apikey
 
-## De dagelijkse workflow
+**Key ophalen via HavunCore** — Claude zoekt de key op zonder dat jij zelf in `.env` hoeft te duiken:
+```
+"Zoek de Gemini API key op voor project X"
+→ Claude SSH → /var/www/<project>/production/.env → masked weergeven
+```
 
-### Stap 1 — Context inpakken
-Vanuit de projectmap in VS Code terminal:
+Key genereren (nieuw project): https://aistudio.google.com/apikey
+
+**Veiligheidsregel: plak de key nooit in de chat.** Een key die zichtbaar is geweest in een chatvenster is gecompromitteerd (terminal-geschiedenis, logs, context-exports).
+
+---
+
+## De standaard cyclus (4 stappen)
+
+### Stap 1 — Context inpakken + blauwdruk genereren
 ```bash
-php artisan havun:pack --project=projectnaam > gemini_context.md
+php artisan havun:pack --project=<projectnaam> | gemini "Analyseer deze context. [Taak]. Lever op als Markdown." > gemini_blueprint.md
 ```
 
-### Stap 2 — Blauwdruk genereren (frictieloos, geen browser)
-```bash
-cat gemini_context.md | gemini "Jouw opdracht hier. Lever op als Markdown." > gemini_blueprint.md
-```
-
-Of in één pipe:
-```bash
-php artisan havun:pack --project=projectnaam | gemini "Jouw opdracht hier." > gemini_blueprint.md
-```
-
-### Stap 3 — Claude voert uit
+### Stap 2 — Claude valideert en voert uit
 In Claude CLI:
 ```
-Voer gemini_blueprint.md uit. Controleer of bestandsnamen en patronen 
-kloppen met de lokale codebase. Pas /simplify toe, run de tests.
+Voer gemini_blueprint.md uit.
+- Controleer of bestandsnamen en patronen kloppen met de lokale codebase
+- Schrijf wijzigingen weg op schijf, pas /simplify toe
+- Update lokale project-docs met Gemini's tekst
 ```
 
-## Voorbeelden per use case
+### Stap 3 — Test-gate
+```bash
+php artisan test --no-coverage
+```
+
+---
+
+## De uitgebreide cyclus — met reflectieronde (6 stappen)
+
+Gebruik dit voor complexe features of architectuurbeslissingen waarbij kwaliteit zwaarder weegt dan snelheid.
+
+### Stap 1 — Gemini ontwerpt de eerste opzet
+```bash
+php artisan havun:pack --project=<projectnaam> | gemini "[Taak]. Lever op als Markdown." > gemini_blueprint.md
+```
+
+### Stap 2 — Claude schiet gaten
+In Claude CLI — nog NIET uitvoeren:
+```
+Review gemini_blueprint.md. Welke lokale edge-cases, ontbrekende bestanden
+of syntax-fouten zie jij die Gemini in de cloud over het hoofd heeft gezien?
+Schrijf je kritiek en verbeterpunten in claude_critique.md.
+```
+
+### Stap 3 — Gemini corrigeert op basis van Claude's kritiek
+```bash
+cat claude_critique.md | gemini "Pas de eerdere blauwdruk aan op basis van deze kritiek van de lokale executor." > gemini_blueprint_final.md
+```
+
+### Stap 4 — Definitieve uitvoering
+In Claude CLI:
+```
+De blauwdruk is gecorrigeerd in gemini_blueprint_final.md.
+Voer nu uit, pas /simplify toe en update de docs.
+```
+
+### Stap 5 — Test-gate
+```bash
+php artisan test --no-coverage
+```
+
+### Catch: maximaal één reflectieronde
+LLM's kunnen eindeloos beleefd heen-en-weer praten. De cyclus is altijd:
+**Gemini ontwerpt → Claude schiet gaten → Gemini corrigeert → Claude voert uit.**
+Nooit meer dan één ronde. Jij bent de regisseur die de knop indrukt.
+
+### Snelle variant (zonder bestanden)
+Claude's kritiek direct verwerken zonder tussenbestanden:
+```bash
+# Claude geeft kritiek mondeling in de terminal
+# Jij verwerkt die direct in de volgende pipe:
+php artisan havun:pack --project=<projectnaam> | gemini \
+  "Pas de blauwdruk aan, houd rekening met: [wat Claude net zei]" \
+  > gemini_blueprint.md
+```
+
+---
+
+## Voorbeelden
 
 ### Feature bouwen
 ```bash
@@ -94,35 +154,44 @@ php artisan havun:pack --project=judotoernooi | \
   > gemini_blueprint.md
 ```
 
-## Regels
+---
 
-**Eén taak per pipe** — geef Gemini nooit drie features tegelijk. Atomaire opdrachten per keer.
+## Harde regels voor Claude
 
-**Claude controleert altijd** — nooit blind uitvoeren. Claude vergelijkt blauwdruk met lokale codebase voordat er iets wordt aangepast.
+**⛔ STOP-lijn:** Claude begint NOOIT met coderen voordat `gemini_blueprint.md` op schijf staat en de gebruiker expliciet "ga maar" heeft getypt.
 
-**CLAUDE.md blijft compact** — de ⛔ STOP-lijn + project-gotchas is genoeg. Geen honderden regels gedragsregels meer.
+**Stateless discipline:** Claude heeft geen geheugen over sessies heen. De blueprint is het geheugen — vertrouw erop.
+
+**Eigenaarschap van docs:** Claude schrijft de lokale docs bij, maar gebruikt daarvoor de inhoud die Gemini heeft geformuleerd.
+
+**Één taak per pipe:** Geef Gemini nooit drie features tegelijk. Atomaire opdrachten.
 
 **Scope: één project per sessie** — havun:pack voor project X, uitvoeren in sessie voor project X.
 
-**API key nooit in chat** — stel GEMINI_API_KEY in via PowerShell, niet via Claude CLI.
+---
 
 ## PowerShell encoding gotcha
 
-Als gemini_blueprint.md rare tekens bevat (UTF-16 probleem):
+Als `gemini_blueprint.md` rare tekens bevat (UTF-16 probleem):
 ```powershell
-php artisan havun:pack --project=projectnaam | gemini "opdracht" | Out-File -Encoding utf8 gemini_blueprint.md
+php artisan havun:pack --project=<projectnaam> | gemini "opdracht" | Out-File -Encoding utf8 gemini_blueprint.md
 ```
+
+---
 
 ## Wat we bewust NIET doen
 
-- Claude opvoeden via steeds meer MD-regels — werkt niet structureel
-- Gemini als blinde dictator — Claude blijft kritische poortwachter
-- API-integratie in havun:pack bouwen — de pipe werkt al zonder extra code
+- Claude als architect inzetten voor grote multi-file taken
+- Gemini-output blind overnemen zonder lokale verificatie
+- API-integratie in havun:pack bouwen — de pipe werkt zonder extra code
 - Browser openen voor Gemini — de CLI elimineert dat volledig
+- Key in chat plakken of in git committen
+
+---
 
 ## Status
 
 Geïnstalleerd: 2026-05-20
 Gemini CLI versie: 0.42.0
-GEMINI_API_KEY: moet nog permanent worden ingesteld via PowerShell
+GEMINI_API_KEY: instellen via PowerShell (key ophalen via Claude/HavunCore SSH-lookup)
 Eerste echte test: SafeHavun ETH whale tracking (volgende sessie)
