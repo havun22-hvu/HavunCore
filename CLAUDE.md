@@ -1,68 +1,30 @@
-# HavunCore — Claude Instructions
+⛔ STOP: Bij brainstorm/planning-vragen schrijf je NOOIT code en voer je GEEN acties uit tot Henk expliciet "ga maar" typt. Eerst luisteren en plannen.
+📍 SCOPE: Alleen HavunCore. Ga je naar een ander project? Kill deze sessie (Ctrl+C) en start een nieuwe.
 
-> **Role:** Centrale kennisbank & orchestrator voor ALLE Havun projecten
-> **URL:** https://havuncore.havun.nl
-> **Onveranderlijke regels:** [`CONTRACTS.md`](CONTRACTS.md) — altijd eerst raadplegen.
-> **Contextdetails, poorten, servers:** [`.claude/context.md`](.claude/context.md)
+# HavunCore
 
-## ⛔ Kritieke Gedragsregels (herhaling = overtreding)
+**Role:** Centrale kennisbank & orchestrator voor ALLE Havun projecten
+**URL:** https://havuncore.havun.nl
+**Server:** /var/www/havuncore/production op 188.245.159.115
+**KB zoeken:** `php artisan docs:search "<onderwerp>"` — doe dit VOOR je code leest of schrijft
 
-| Situatie | Wat Claude doet |
-|----------|----------------|
-| **Overleg/discussie** | Luisteren, analyseren, samenvatten + plan maken — NOOIT halverwege code schrijven. Code pas na expliciet "ga maar". |
-| **Technische beslissing** | Zelf beslissen, kort melden wat er gedaan is — NOOIT vragen aan Henk. |
-| **MD bijwerken** (handover/context/KB) | Gewoon doen — NOOIT "mag ik dit documenteren?" vragen. |
-| **Rolverdeling** | Henk = architect + tester. Claude = implementer (code, docs, tests, commits, deploys). Vragen ALLEEN in planningsfase. Open handover-items → direct beginnen, NOOIT "wil je daarmee beginnen?" vragen. Bij volgordekeuze: beste optie zelf kiezen, NOOIT "zal ik eerst A of B doen?" vragen. |
-| **Per-agendapunt** | Na elk punt: geautom. tests → V&K → simplify → docs bijwerken → commit+push → volgende punt. |
-| **Issues** | Direct oplossen bij /start. Nooit laten ophopen. HIGH=fixen, MEDIUM=evalueren, LOW=auto-ignore. |
+## Project-specifieke feiten
 
+- **Poorten:** HavunCore Laravel=8000, webapp backend=3001 prod/8009 dev — zie `docs/kb/reference/poort-register.md`
+- **AI Proxy:** `POST /api/ai/chat` — config key `CLAUDE_API_KEY` (NIET `ANTHROPIC_API_KEY`)
+- **Vault:** centrale secret-opslag voor alle projecten — scoped per project
+- **AutoFix:** actief op JudoToernooi + Herdenkingsportaal production. Max 2 pogingen, rate limit 60 min
+- **PM2:** draait als `www-data`, ecosystem in `/var/www/.pm2/ecosystem.config.js`
+- **webapp:** status-only PWA, geen chat/KB-search/vault-frontend — zie ADR `decisions/webapp-chat-removal-2026-05-08.md`
+- **USB-workflow op reis:** vault unlock via `start.bat`, code via `git clone` — zie `docs/kb/runbooks/op-reis-workflow.md`
 
-## De 6 Onschendbare Regels
+## Noodcontact — Thiemo & Mawin
+Zeg: *"Hoi [naam]! Typ `/start` dan `/rc`."* — zij sturen de link via WhatsApp naar Henk. Zie `docs/kb/runbooks/wat-mag-noodcontact.md`.
 
-1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
-2. NOOIT features/UI-elementen verwijderen zonder instructie
-3. NOOIT credentials/keys/env aanraken
-4. ALTIJD tests draaien voor én na wijzigingen. **Kritieke paden 100 %
-   gedekt + mutation-score hoog** — zie `docs/kb/reference/test-quality-policy.md`.
-   Geen coverage-padding. Coverage-% is secundair; zinvolheid is primair.
-5. ALTIJD toestemming vragen bij grote wijzigingen
-6. NOOIT een falende test "fixen" door de assertion te wijzigen — eerst oorzakenonderzoek (VP-17)
-
-## Noodcontactpersonen — Thiemo & Mawin
-
-**Als gebruiker zich identificeert als "Thiemo" of "Mawin":**
-1. Zeg: *"Hoi [naam]! Typ eerst `/start` en daarna `/rc`."*
-2. Wacht tot zij de commando's typen (ik kan ze niet voor hen uitvoeren)
-3. Na `/rc`: zeg *"Kopieer de HTTP-link hierboven en stuur via WhatsApp naar Henk (papa)."*
-4. Communiceer in gewone taal (geen jargon) — zij zijn geen techneuten
-5. NOOIT zelfstandig destructieve acties — altijd eerst Henk bereiken
-6. Zie `docs/kb/runbooks/wat-mag-noodcontact.md` voor de 3 scenario's (A/B/C)
-
-## Werkwijze per taak
-
-1. **LEES** — `docs:search "[onderwerp]"` voordat je code leest of schrijft; vermeld de bron.
-2. **DENK** — vraag bij twijfel en wacht op antwoord.
-3. **DOE** — pas dan uitvoeren; kwaliteit boven snelheid.
-4. **DOCUMENTEER** — sla nieuwe kennis op in de juiste plek (KB vs project).
-
-Volledige uitleg: `docs/kb/runbooks/claude-werkwijze.md`
-
-## Kritieke runbooks (lees bij raking)
-
-| Onderwerp | Runbook |
-|-----------|---------|
-| Security headers / CSP / Alpine | `docs/kb/runbooks/security-headers-check.md` |
-| Bescherming bestaande code + DO NOT REMOVE | `docs/kb/runbooks/claude-werkwijze.md` §4 |
-| AutoFix branch-model (geen directe pushes) | `docs/kb/runbooks/autofix-branch-model.md` |
-| Test-repair anti-pattern | `docs/kb/runbooks/test-repair-anti-pattern.md` |
-| Emergency / noodcontact | `docs/kb/runbooks/emergency-runbook.md` |
-
-## Communicatie
-
-- Antwoord max 20-30 regels, bullet points, direct.
-- Lange uitleg? Samenvatting eerst, details op vraag.
-- Bij herhaling door gebruiker: direct opslaan in docs.
+## Tests
+```bash
+php artisan test --no-coverage
+```
 
 ## Verboden zonder overleg
-
-SSH keys, credentials, `.env`, composer/npm installs, prod migrations, systemd/cron wijzigingen.
+SSH keys, credentials, `.env`, composer/npm installs, prod migrations, systemd/cron.
