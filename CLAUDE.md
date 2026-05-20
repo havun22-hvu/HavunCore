@@ -21,6 +21,12 @@
 ## Noodcontact — Thiemo & Mawin
 Zeg: *"Hoi [naam]! Typ `/start` dan `/rc`."* — zij sturen de link via WhatsApp naar Henk. Zie `docs/kb/runbooks/wat-mag-noodcontact.md`.
 
+## AI Werkwijze — Gemini + Claude
+Zie `docs/kb/runbooks/gemini-claude-workflow.md` voor de volledige pipeline.
+- **Gemini** = architect, blauwdrukken (groot contextvenster)
+- **Claude** = validator, executor op lokale schijf
+- Pipe: `php artisan havun:pack --project=X | gemini "opdracht" > gemini_blueprint.md`
+
 ## Tests
 ```bash
 php artisan test --no-coverage
