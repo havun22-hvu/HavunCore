@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
+use Symfony\Component\Console\Output\BufferedOutput;
 
 class HavunGeminiCommand extends Command
 {
@@ -17,7 +18,7 @@ class HavunGeminiCommand extends Command
 
     public function handle(): int
     {
-        $apiKey = env('GEMINI_API_KEY');
+        $apiKey = config('services.gemini.api_key');
         if (! $apiKey) {
             $this->error('GEMINI_API_KEY niet ingesteld.');
             return Command::FAILURE;
@@ -35,6 +36,7 @@ class HavunGeminiCommand extends Command
 
         $this->line("Gemini ({$model}) wordt aangesproken...", null, 'v');
 
+        // withoutVerifying() is required: Windows TLS cert revocation check fails for googleapis.com
         $response = Http::withoutVerifying()
             ->timeout(120)
             ->post(
@@ -49,8 +51,12 @@ class HavunGeminiCommand extends Command
 
         $text = data_get($response->json(), 'candidates.0.content.parts.0.text', '');
 
-        if ($out = $this->option('out')) {
-            file_put_contents($out, $text);
+        $out = $this->option('out');
+        if ($out) {
+            if (file_put_contents($out, $text) === false) {
+                $this->error("Schrijven naar {$out} mislukt.");
+                return Command::FAILURE;
+            }
             $this->line("Geschreven naar: {$out}");
         } else {
             $this->line($text);
@@ -63,8 +69,8 @@ class HavunGeminiCommand extends Command
     {
         $this->line("Context inpakken voor project: {$project}...", null, 'v');
 
-        ob_start();
-        $this->call('havun:pack', ['--project' => $project]);
-        return ob_get_clean();
+        $buffer = new BufferedOutput();
+        $this->call('havun:pack', ['--project' => $project], $buffer);
+        return $buffer->fetch();
     }
 }

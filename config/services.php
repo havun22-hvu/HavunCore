@@ -45,4 +45,9 @@ return [
         'api_token' => env('DOC_INTELLIGENCE_API_TOKEN'),
     ],
 
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
+        'model'   => env('GEMINI_MODEL', 'gemini-3.1-flash-lite'),
+    ],
+
 ];
