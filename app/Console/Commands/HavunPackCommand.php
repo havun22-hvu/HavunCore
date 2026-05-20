@@ -62,9 +62,13 @@ class HavunPackCommand extends Command
 
     private function detectProjectFromCwd(): ?string
     {
-        $cwd = str_replace('\\', '/', getcwd());
+        $cwd = str_replace('\\', '/', getcwd() ?: '');
+        if (! $cwd) {
+            return null;
+        }
+
         foreach ($this->projects as $key => $path) {
-            if (str_starts_with($cwd, str_replace('\\', '/', $path))) {
+            if (str_starts_with($cwd, $path)) {
                 return $key;
             }
         }
