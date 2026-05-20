@@ -105,6 +105,8 @@ class HavunPackCommand extends Command
             'reference/test-quality-policy.md',
             'reference/productie-deploy-eisen.md',
             'runbooks/claude-werkwijze.md',
+            'runbooks/gemini-claude-workflow.md',
+            'decisions/008-gemini-claude-hybrid-workflow.md',
         ];
 
         foreach ($globalDocs as $doc) {
