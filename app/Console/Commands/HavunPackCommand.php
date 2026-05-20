@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Str;
+use Symfony\Component\Process\Process;
 
 class HavunPackCommand extends Command
 {
@@ -14,17 +14,17 @@ class HavunPackCommand extends Command
     protected $description = 'Pack project context into a structured AI-ready payload';
 
     private array $projects = [
-        'havuncore'         => 'D:/GitHub/HavunCore',
+        'havuncore'          => 'D:/GitHub/HavunCore',
         'herdenkingsportaal' => 'D:/GitHub/Herdenkingsportaal',
-        'judotoernooi'      => 'D:/GitHub/JudoToernooi',
-        'studieplanner'     => 'D:/GitHub/Studieplanner',
-        'havunadmin'        => 'D:/GitHub/HavunAdmin',
-        'infosyst'          => 'D:/GitHub/Infosyst',
-        'safehavun'         => 'D:/GitHub/SafeHavun',
-        'munus'             => 'D:/GitHub/Munus',
-        'aeterna'           => 'D:/GitHub/Aeterna',
-        'havunclub'         => 'D:/GitHub/HavunClub',
-        'havunity'          => 'D:/GitHub/Havunity',
+        'judotoernooi'       => 'D:/GitHub/JudoToernooi',
+        'studieplanner'      => 'D:/GitHub/Studieplanner',
+        'havunadmin'         => 'D:/GitHub/HavunAdmin',
+        'infosyst'           => 'D:/GitHub/Infosyst',
+        'safehavun'          => 'D:/GitHub/SafeHavun',
+        'munus'              => 'D:/GitHub/Munus',
+        'aeterna'            => 'D:/GitHub/Aeterna',
+        'havunclub'          => 'D:/GitHub/HavunClub',
+        'havunity'           => 'D:/GitHub/Havunity',
     ];
 
     public function handle(): int
@@ -71,16 +71,16 @@ class HavunPackCommand extends Command
 
     private function readFile(string $path): ?string
     {
-        $normalized = str_replace('/', DIRECTORY_SEPARATOR, $path);
-        return file_exists($normalized) ? file_get_contents($normalized) : null;
+        $normalized = $this->normalizePath($path);
+        $content = @file_get_contents($normalized);
+        return $content !== false ? $content : null;
     }
 
     private function readKbDocs(string $projectKey): array
     {
-        $kbBase = 'D:/GitHub/HavunCore/docs/kb';
+        $kbBase = base_path('docs/kb');
         $docs = [];
 
-        // Always include global references
         $globalDocs = [
             'reference/authentication-methods.md',
             'reference/test-quality-policy.md',
@@ -90,14 +90,13 @@ class HavunPackCommand extends Command
 
         foreach ($globalDocs as $doc) {
             $content = $this->readFile($kbBase . '/' . $doc);
-            if ($content) {
+            if ($content !== null) {
                 $docs[$doc] = $content;
             }
         }
 
-        // Project-specific docs
         $projectDoc = $this->readFile($kbBase . '/projects/' . $projectKey . '.md');
-        if ($projectDoc) {
+        if ($projectDoc !== null) {
             $docs["projects/{$projectKey}.md"] = $projectDoc;
         }
 
@@ -106,41 +105,41 @@ class HavunPackCommand extends Command
 
     private function gitLog(string $projectPath): string
     {
-        $path = str_replace('/', DIRECTORY_SEPARATOR, $projectPath);
-        if (! is_dir($path . DIRECTORY_SEPARATOR . '.git')) {
-            return '(no git repo)';
-        }
+        $path = $this->normalizePath($projectPath);
 
-        $output = shell_exec("git -C \"{$path}\" log --oneline -10 2>&1");
-        return trim($output ?? '(git log failed)');
+        $process = new Process(['git', '-C', $path, 'log', '--oneline', '-10']);
+        $process->run();
+
+        return $process->isSuccessful()
+            ? trim($process->getOutput())
+            : '(git log failed)';
     }
 
     private function listOpenFiles(string $projectPath): array
     {
-        $path = str_replace('/', DIRECTORY_SEPARATOR, $projectPath);
+        $path = $this->normalizePath($projectPath);
         $files = [];
 
-        // Key files worth including if they exist
-        $candidates = [
-            'PLAN.md',
-            'SPEC.md',
-            'docs/INDEX.md',
-            '.claude/context.md',
-        ];
+        $candidates = ['PLAN.md', 'SPEC.md', 'docs/INDEX.md', '.claude/context.md'];
 
         foreach ($candidates as $candidate) {
-            $full = $path . DIRECTORY_SEPARATOR . str_replace('/', DIRECTORY_SEPARATOR, $candidate);
-            if (file_exists($full)) {
-                $content = file_get_contents($full);
-                // Truncate large files
-                if (strlen($content) > 8000) {
-                    $content = substr($content, 0, 8000) . "\n\n[... truncated ...]";
-                }
-                $files[$candidate] = $content;
+            $full = $path . DIRECTORY_SEPARATOR . $this->normalizePath($candidate);
+            $content = @file_get_contents($full);
+            if ($content === false) {
+                continue;
             }
+            if (strlen($content) > 8000) {
+                $content = substr($content, 0, 8000) . "\n\n[... truncated ...]";
+            }
+            $files[$candidate] = $content;
         }
 
         return $files;
+    }
+
+    private function normalizePath(string $path): string
+    {
+        return str_replace('/', DIRECTORY_SEPARATOR, $path);
     }
 
     private function renderText(array $payload): void
@@ -150,13 +149,13 @@ class HavunPackCommand extends Command
         $this->line("Generated: {$payload['generated']}");
         $this->line('');
 
-        if ($payload['claude_md']) {
+        if ($payload['claude_md'] !== null) {
             $this->info('--- CLAUDE.md ---');
             $this->line($payload['claude_md']);
             $this->line('');
         }
 
-        if ($payload['contracts']) {
+        if ($payload['contracts'] !== null) {
             $this->info('--- CONTRACTS.md ---');
             $this->line($payload['contracts']);
             $this->line('');
