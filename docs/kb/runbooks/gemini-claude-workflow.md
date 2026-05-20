@@ -60,8 +60,9 @@ Key genereren (nieuw project): https://aistudio.google.com/apikey
 ## De standaard cyclus (4 stappen)
 
 ### Stap 1 — Context inpakken + blauwdruk genereren
-```bash
-php artisan havun:pack --project=<projectnaam> | gemini "Analyseer deze context. [Taak]. Lever op als Markdown." > gemini_blueprint.md
+Vanuit de projectmap — `--project` is optioneel, wordt auto-gedetecteerd op basis van de huidige map:
+```powershell
+php artisan havun:pack | gemini "Analyseer deze context. [Taak]. Lever op als Markdown." | Out-File -Encoding utf8 gemini_blueprint.md
 ```
 
 ### Stap 2 — Claude valideert en voert uit
@@ -85,8 +86,8 @@ php artisan test --no-coverage
 Gebruik dit voor complexe features of architectuurbeslissingen waarbij kwaliteit zwaarder weegt dan snelheid.
 
 ### Stap 1 — Gemini ontwerpt de eerste opzet
-```bash
-php artisan havun:pack --project=<projectnaam> | gemini "[Taak]. Lever op als Markdown." > gemini_blueprint.md
+```powershell
+php artisan havun:pack | gemini "[Taak]. Lever op als Markdown." | Out-File -Encoding utf8 gemini_blueprint.md
 ```
 
 ### Stap 2 — Claude schiet gaten
@@ -98,8 +99,8 @@ Schrijf je kritiek en verbeterpunten in claude_critique.md.
 ```
 
 ### Stap 3 — Gemini corrigeert op basis van Claude's kritiek
-```bash
-cat claude_critique.md | gemini "Pas de eerdere blauwdruk aan op basis van deze kritiek van de lokale executor." > gemini_blueprint_final.md
+```powershell
+Get-Content claude_critique.md | gemini "Pas de eerdere blauwdruk aan op basis van deze kritiek van de lokale executor." | Out-File -Encoding utf8 gemini_blueprint_final.md
 ```
 
 ### Stap 4 — Definitieve uitvoering
@@ -170,12 +171,17 @@ php artisan havun:pack --project=judotoernooi | \
 
 ---
 
-## PowerShell encoding gotcha
+## Eenmalige setup (Windows)
 
-Als `gemini_blueprint.md` rare tekens bevat (UTF-16 probleem):
 ```powershell
-php artisan havun:pack --project=<projectnaam> | gemini "opdracht" | Out-File -Encoding utf8 gemini_blueprint.md
+# Gemini hoeft niet elke keer om trust te vragen
+[Environment]::SetEnvironmentVariable("GEMINI_CLI_TRUST_WORKSPACE", "true", "User")
+
+# API key (ophalen via Claude/HavunCore als je hem kwijt bent)
+[Environment]::SetEnvironmentVariable("GEMINI_API_KEY", "jouw-key", "User")
 ```
+
+Gebruik altijd `| Out-File -Encoding utf8` in plaats van `>` om encoding-problemen te voorkomen.
 
 ---
 

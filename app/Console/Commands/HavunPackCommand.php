@@ -33,9 +33,13 @@ class HavunPackCommand extends Command
         $format = $this->option('format');
 
         if (! $projectKey) {
-            $this->error('Specify a project with --project=<name>');
-            $this->line('Available: ' . implode(', ', array_keys($this->projects)));
-            return Command::FAILURE;
+            $projectKey = $this->detectProjectFromCwd();
+            if (! $projectKey) {
+                $this->error('Kan project niet detecteren. Gebruik --project=<name>');
+                $this->line('Available: ' . implode(', ', array_keys($this->projects)));
+                return Command::FAILURE;
+            }
+            $this->line("Auto-detected project: {$projectKey}");
         }
 
         if (! isset($this->projects[$projectKey])) {
@@ -54,6 +58,17 @@ class HavunPackCommand extends Command
         }
 
         return Command::SUCCESS;
+    }
+
+    private function detectProjectFromCwd(): ?string
+    {
+        $cwd = str_replace('\\', '/', getcwd());
+        foreach ($this->projects as $key => $path) {
+            if (str_starts_with($cwd, str_replace('\\', '/', $path))) {
+                return $key;
+            }
+        }
+        return null;
     }
 
     private function buildPayload(string $projectKey, string $projectPath): array
