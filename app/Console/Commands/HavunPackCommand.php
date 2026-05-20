@@ -141,28 +141,24 @@ class HavunPackCommand extends Command
         $path = $this->normalizePath($projectPath);
         $files = [];
 
-        // Scan all MD files in the project — Gemini has 2M token context, use it fully
-        $iterator = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS)
-        );
-
+        // Scan all MD files — Gemini has 2M token context, use it fully
         $skip = ['vendor', 'node_modules', '.git', 'storage', 'bootstrap/cache'];
 
-        foreach ($iterator as $file) {
-            if ($file->getExtension() !== 'md') {
+        $base = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS);
+        $filtered = new \RecursiveCallbackFilterIterator($base, function ($current) use ($skip) {
+            if ($current->isDir()) {
+                return ! in_array($current->getFilename(), $skip, true);
+            }
+            return $current->getExtension() === 'md';
+        });
+
+        foreach (new \RecursiveIteratorIterator($filtered) as $file) {
+            $relative = str_replace([$path . DIRECTORY_SEPARATOR, '\\'], ['', '/'], $file->getPathname());
+
+            if (! is_readable($file->getPathname())) {
                 continue;
             }
-
-            $relative = str_replace($path . DIRECTORY_SEPARATOR, '', $file->getPathname());
-            $relative = str_replace('\\', '/', $relative);
-
-            foreach ($skip as $dir) {
-                if (str_starts_with($relative, $dir . '/')) {
-                    continue 2;
-                }
-            }
-
-            $content = @file_get_contents($file->getPathname());
+            $content = file_get_contents($file->getPathname());
             if ($content !== false && trim($content) !== '') {
                 $files[$relative] = $content;
             }
