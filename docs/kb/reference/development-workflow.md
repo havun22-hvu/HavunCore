@@ -55,9 +55,10 @@ last_check: 2026-04-22
 │  ┌─────────────────┐                                            │
 │  │  DOCS-FIRST      │                                            │
 │  │                  │                                            │
-│  │  GROOT?          │                                            │
-│  │  ├─ Zoek docs    │                                            │
-│  │  ├─ Meld aan user│                                            │
+│  │  GROOT?          │  ← Gebruik Gemini-pipeline                 │
+│  │  ├─ havun:pack   │    php artisan havun:pack |                │
+│  │  │   → Gemini    │    gemini "opdracht" > blueprint.md        │
+│  │  ├─ Claude review│  ← Claude valideert blueprint lokaal       │
 │  │  ├─ Wacht op OK  │                                            │
 │  │  ├─ Update docs  │                                            │
 │  │  └─ Dan pas code │                                            │

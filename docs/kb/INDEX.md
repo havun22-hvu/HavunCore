@@ -67,6 +67,7 @@ docs/kb/
 │   ├── backup.md
 │   ├── chrome-testing.md
 │   ├── claude-werkwijze.md       ← HOOFDDOCUMENT: werkwijze + beschermingslagen
+│   ├── gemini-claude-workflow.md ← Gemini+Claude hybride pipeline (architectuur via Gemini, uitvoer via Claude)
 │   ├── deploy.md
 │   ├── deploy-safehavun.md
 │   ├── doc-intelligence-setup.md
@@ -106,6 +107,7 @@ docs/kb/
     ├── 003-security-incident-ssh-key.md
     ├── 004-vision-orchestration.md
     ├── 005-studieplanner-architecture.md
+    ├── 008-gemini-claude-hybrid-workflow.md ← Gemini=architect, Claude=executor
     └── auth-same-origin.md
 
 docs/audit/                   ← Kwartaal-audit (extern)
