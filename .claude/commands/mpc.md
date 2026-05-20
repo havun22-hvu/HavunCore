@@ -13,9 +13,15 @@ last_check: 2026-05-18
 
 | Rol | Wie | Wat |
 |-----|-----|-----|
-| **Architect** | Henk | Geeft richting, keurt plan goed, zegt "ga maar" |
-| **Tester** | Henk | Praktische tests — op zijn eigen moment, niet gebonden aan agendapunten |
-| **Implementer** | Claude | Alles: code, docs, geautomatiseerde tests, commits, deploys, branches |
+| **Macro-Architect** | Gemini | Blauwdrukken voor grote/complexe taken via `havun:gemini` |
+| **Regisseur** | Henk | Geeft richting, keurt plan goed, zegt "ga maar" |
+| **Tester** | Henk | Praktische tests — op zijn eigen moment |
+| **Micro-Executor** | Claude | Code, docs, tests, commits, deploys — valideert Gemini-blauwdruk lokaal |
+
+**Grote taak?** → Eerst Gemini-blauwdruk, dan pas MPC-fase 2+3.
+```bash
+php artisan havun:gemini --project=<naam> "Ontwerp blauwdruk voor: [taak]" --out=gemini_blueprint.md
+```
 
 **Na "ga maar": Claude voert volledig autonoom uit. Geen vragen meer.**
 
