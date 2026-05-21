@@ -2,12 +2,14 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\NormalizesPath;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Http;
 use Symfony\Component\Console\Output\BufferedOutput;
 
 class HavunGeminiCommand extends Command
 {
+    use NormalizesPath;
     protected $signature = 'havun:gemini
                             {prompt : De opdracht voor Gemini}
                             {--project= : Project om in te pakken via havun:pack (optioneel)}
@@ -75,7 +77,7 @@ class HavunGeminiCommand extends Command
         }
         $projects = config('havun-projects');
         $projectPath = $projects[strtolower($project)] ?? null;
-        return $projectPath ? str_replace('/', DIRECTORY_SEPARATOR, $projectPath . '/gemini_blueprint.md') : null;
+        return $projectPath ? $this->normalizePath($projectPath . '/gemini_blueprint.md') : null;
     }
 
     private function packProject(string $project, bool $includeSource): string

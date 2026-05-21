@@ -2,11 +2,13 @@
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Concerns\NormalizesPath;
 use Illuminate\Console\Command;
 use Symfony\Component\Process\Process;
 
 class HavunPackCommand extends Command
 {
+    use NormalizesPath;
     protected $signature = 'havun:pack
                             {--project= : Project name (e.g. herdenkingsportaal, judotoernooi)}
                             {--format=text : Output format: text or json}
@@ -15,14 +17,6 @@ class HavunPackCommand extends Command
     protected $description = 'Pack project context into a structured AI-ready payload';
 
     private const SKIP_DIRS = ['vendor', 'node_modules', '.git', 'storage', 'bootstrap'];
-
-    private array $projects;
-
-    public function __construct()
-    {
-        parent::__construct();
-        $this->projects = config('havun-projects');
-    }
 
     private const SOURCE_DIRS = [
         'app'              => ['php'],
@@ -37,27 +31,28 @@ class HavunPackCommand extends Command
 
     public function handle(): int
     {
+        $projects = config('havun-projects');
         $projectKey = strtolower($this->option('project') ?? '');
         $format = $this->option('format');
         $includeSource = (bool) $this->option('include-source');
 
         if (! $projectKey) {
-            $projectKey = $this->detectProjectFromCwd();
+            $projectKey = $this->detectProjectFromCwd($projects);
             if (! $projectKey) {
                 $this->error('Kan project niet detecteren. Gebruik --project=<name>');
-                $this->line('Available: ' . implode(', ', array_keys($this->projects)));
+                $this->line('Available: ' . implode(', ', array_keys($projects)));
                 return Command::FAILURE;
             }
             $this->line("Auto-detected project: {$projectKey}");
         }
 
-        if (! isset($this->projects[$projectKey])) {
+        if (! isset($projects[$projectKey])) {
             $this->error("Unknown project: {$projectKey}");
-            $this->line('Available: ' . implode(', ', array_keys($this->projects)));
+            $this->line('Available: ' . implode(', ', array_keys($projects)));
             return Command::FAILURE;
         }
 
-        $projectPath = $this->projects[$projectKey];
+        $projectPath = $projects[$projectKey];
         $payload = $this->buildPayload($projectKey, $projectPath, $includeSource);
 
         if ($format === 'json') {
@@ -69,14 +64,14 @@ class HavunPackCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function detectProjectFromCwd(): ?string
+    private function detectProjectFromCwd(array $projects): ?string
     {
         $cwd = str_replace('\\', '/', getcwd() ?: '');
         if (! $cwd) {
             return null;
         }
 
-        foreach ($this->projects as $key => $path) {
+        foreach ($projects as $key => $path) {
             if (str_starts_with($cwd, $path)) {
                 return $key;
             }
@@ -205,11 +200,6 @@ class HavunPackCommand extends Command
         }
 
         return $files;
-    }
-
-    private function normalizePath(string $path): string
-    {
-        return str_replace('/', DIRECTORY_SEPARATOR, $path);
     }
 
     private function renderText(array $payload): void
