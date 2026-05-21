@@ -67,7 +67,7 @@ Gebruik de `/arch` skill in Claude CLI — pipeline draait automatisch op de ach
 
 Of handmatig via PowerShell:
 ```powershell
-php artisan havun:pack | gemini "Analyseer deze context. [Taak]. Lever op als Markdown." | Out-File -Encoding utf8 gemini_blueprint.md
+php artisan havun:pack --project=<naam> | gemini "Analyseer deze context. [Taak]. Lever op als Markdown." | Out-File -Encoding utf8 "D:\GitHub\<naam>\.claude\blueprint.md"
 ```
 
 ### Stap 2 — Claude valideert en voert uit
@@ -75,7 +75,7 @@ Na `/arch`: typ `/mpc` om de blueprint uit te voeren.
 
 Handmatig in Claude CLI:
 ```
-Voer gemini_blueprint.md uit.
+Voer .claude/blueprint.md uit.
 - Controleer of bestandsnamen en patronen kloppen met de lokale codebase
 - Schrijf wijzigingen weg op schijf, pas /simplify toe
 - Update lokale project-docs met Gemini's tekst
@@ -94,26 +94,26 @@ Gebruik dit voor complexe features of architectuurbeslissingen waarbij kwaliteit
 
 ### Stap 1 — Gemini ontwerpt de eerste opzet
 ```powershell
-php artisan havun:pack | gemini "[Taak]. Lever op als Markdown." | Out-File -Encoding utf8 gemini_blueprint.md
+php artisan havun:pack | gemini "[Taak]. Lever op als Markdown." | Out-File -Encoding utf8 {project}/.claude/blueprint.md
 ```
 
 ### Stap 2 — Claude schiet gaten
 In Claude CLI — nog NIET uitvoeren:
 ```
-Review gemini_blueprint.md. Welke lokale edge-cases, ontbrekende bestanden
+Review {project}/.claude/blueprint.md. Welke lokale edge-cases, ontbrekende bestanden
 of syntax-fouten zie jij die Gemini in de cloud over het hoofd heeft gezien?
 Schrijf je kritiek en verbeterpunten in claude_critique.md.
 ```
 
 ### Stap 3 — Gemini corrigeert op basis van Claude's kritiek
 ```powershell
-Get-Content claude_critique.md | gemini "Pas de eerdere blauwdruk aan op basis van deze kritiek van de lokale executor." | Out-File -Encoding utf8 gemini_blueprint_final.md
+Get-Content claude_critique.md | gemini "Pas de eerdere blauwdruk aan op basis van deze kritiek van de lokale executor." | Out-File -Encoding utf8 {project}/.claude/blueprint_final.md
 ```
 
 ### Stap 4 — Definitieve uitvoering
 In Claude CLI:
 ```
-De blauwdruk is gecorrigeerd in gemini_blueprint_final.md.
+De blauwdruk is gecorrigeerd in {project}/.claude/blueprint_final.md.
 Voer nu uit, pas /simplify toe en update de docs.
 ```
 
@@ -140,44 +140,41 @@ Nooit meer dan één ronde. Jij bent de regisseur die de knop indrukt.
 
 ### Snelle variant (zonder bestanden)
 Claude's kritiek direct verwerken zonder tussenbestanden:
-```bash
+```powershell
 # Claude geeft kritiek mondeling in de terminal
 # Jij verwerkt die direct in de volgende pipe:
-php artisan havun:pack --project=<projectnaam> | gemini \
-  "Pas de blauwdruk aan, houd rekening met: [wat Claude net zei]" \
-  > gemini_blueprint.md
+php artisan havun:pack --project=<naam> | gemini "Pas de blauwdruk aan, houd rekening met: [wat Claude net zei]" | Out-File -Encoding utf8 "D:\GitHub\<naam>\.claude\blueprint.md"
 ```
 
 ---
 
 ## Voorbeelden
 
-### Feature bouwen
-```bash
-php artisan havun:pack --project=safehavun | \
-  gemini "Optimaliseer ETH whale tracking via txlistinternal. Schrijf PHP-logica uit én update WHALE-TRACKING.md. Lever als Markdown." \
-  > gemini_blueprint.md
+### Feature bouwen (via /arch)
+```
+/arch --project=safehavun "Optimaliseer ETH whale tracking via txlistinternal. Schrijf PHP-logica uit én update WHALE-TRACKING.md."
+```
+
+### Feature bouwen (handmatig)
+```powershell
+php artisan havun:pack --project=safehavun | gemini "Optimaliseer ETH whale tracking. Lever als Markdown." | Out-File -Encoding utf8 "D:\GitHub\SafeHavun\.claude\blueprint.md"
 ```
 
 ### MD-doc bijwerken
-```bash
-php artisan havun:pack --project=herdenkingsportaal | \
-  gemini "Update SPEC.md sectie 4 met de nieuwe auth-flow. Lever alleen de bijgewerkte sectie als Markdown." \
-  > gemini_blueprint.md
+```
+/arch --project=herdenkingsportaal "Update SPEC.md sectie 4 met de nieuwe auth-flow."
 ```
 
 ### Bug analyseren
-```bash
-php artisan havun:pack --project=judotoernooi | \
-  gemini "Analyseer waarom de poule-indeling bij oneven aantal judoka's crasht. Geef oorzaak + fix als Markdown." \
-  > gemini_blueprint.md
+```
+/arch --project=judotoernooi "Analyseer waarom de poule-indeling bij oneven aantal judoka's crasht. Geef oorzaak + fix."
 ```
 
 ---
 
 ## Harde regels voor Claude
 
-**⛔ STOP-lijn:** Claude begint NOOIT met coderen voordat `gemini_blueprint.md` op schijf staat en de gebruiker expliciet "ga maar" heeft getypt.
+**⛔ STOP-lijn:** Claude begint NOOIT met coderen voordat `.claude/blueprint.md` op schijf staat en de gebruiker expliciet "ga maar" heeft getypt.
 
 **Stateless discipline:** Claude heeft geen geheugen over sessies heen. De blueprint is het geheugen — vertrouw erop.
 
@@ -207,8 +204,7 @@ Gebruik altijd `| Out-File -Encoding utf8` in plaats van `>` om encoding-problem
 
 - Claude als architect inzetten voor grote multi-file taken
 - Gemini-output blind overnemen zonder lokale verificatie
-- API-integratie in havun:pack bouwen — de pipe werkt zonder extra code
-- Browser openen voor Gemini — de CLI elimineert dat volledig
+- Browser openen voor Gemini — `havun:gemini` of de CLI doet het zonder browser
 - Key in chat plakken of in git committen
 
 ---
@@ -217,6 +213,7 @@ Gebruik altijd `| Out-File -Encoding utf8` in plaats van `>` om encoding-problem
 
 Geïnstalleerd: 2026-05-20
 Gemini CLI versie: 0.42.0
-Gemini API model (havun:gemini): gemini-2.5-flash (1M tokens), override met --model=gemini-2.5-pro voor complexe taken
-GEMINI_API_KEY: instellen via PowerShell (key ophalen via Claude/HavunCore SSH-lookup)
-Eerste echte test: SafeHavun ETH whale tracking (volgende sessie)
+Gemini API model (havun:gemini): gemini-2.5-flash, override met --model=gemini-2.5-pro voor complexe taken
+Blueprint locatie: `{project}/.claude/blueprint.md` — automatisch opgepakt door `/start`
+Live API samples: `havun:pack --include-source` fetcht echte API-responses mee (timeout 3s, graceful fallback)
+GEMINI_API_KEY: in `.env` (HavunCore) + Windows User Environment

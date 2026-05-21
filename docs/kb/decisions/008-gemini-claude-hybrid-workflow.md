@@ -33,16 +33,24 @@ We voeren een hybride AI werkwijze in met vaste rolverdeling:
 - `GEMINI_API_KEY` in `.env` en Windows User Environment
 - `NODE_TLS_REJECT_UNAUTHORIZED=0` + `GEMINI_CLI_TRUST_WORKSPACE=true` permanent ingesteld
 
-## Standaard pipe (door gebruiker)
+## Standaard pipe (door Claude via /arch)
+
+```bash
+/arch --project=<naam> "opdracht"
+```
+Blueprint landt automatisch in `{project}/.claude/blueprint.md`. Ophalen bij `/start`.
+
+## Handmatige pipe (door gebruiker)
 
 ```powershell
-php artisan havun:pack | gemini "opdracht" | Out-File -Encoding utf8 gemini_blueprint.md
+php artisan havun:pack --project=<naam> | gemini "opdracht" | Out-File -Encoding utf8 "D:\GitHub\<naam>\.claude\blueprint.md"
 ```
 
 ## Autonome pipe (door Claude)
 
 ```bash
-php artisan havun:gemini --project=<naam> "opdracht" --out=gemini_blueprint.md
+php artisan havun:gemini --project=<naam> "opdracht"
+# Slaat automatisch op in {project}/.claude/blueprint.md
 ```
 
 ## Gevolgen
