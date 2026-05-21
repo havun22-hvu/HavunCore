@@ -26,7 +26,7 @@ Extraheer vervolgens de prompt (alles uit `$ARGUMENTS` zonder de `--project=X` f
 Voer dit uit via Bash. Toon GEEN ruwe output aan de gebruiker — alleen voortgang:
 
 ```bash
-cd D:\GitHub\HavunCore && php artisan havun:gemini --project={project} "{prompt}" --out=gemini_blueprint.md
+cd D:\GitHub\HavunCore && php artisan havun:gemini --project={project} "{prompt}" --out=gemini_blueprint.md --include-source
 ```
 
 Meld kort: `Gemini pipeline gestart voor {project}...`

@@ -9,9 +9,12 @@ class HavunPackCommand extends Command
 {
     protected $signature = 'havun:pack
                             {--project= : Project name (e.g. herdenkingsportaal, judotoernooi)}
-                            {--format=text : Output format: text or json}';
+                            {--format=text : Output format: text or json}
+                            {--include-source : Include PHP/JS/TS source files for large architectural tasks}';
 
     protected $description = 'Pack project context into a structured AI-ready payload';
+
+    private const SKIP_DIRS = ['vendor', 'node_modules', '.git', 'storage', 'bootstrap'];
 
     private array $projects = [
         'havuncore'          => 'D:/GitHub/HavunCore',
@@ -27,10 +30,23 @@ class HavunPackCommand extends Command
         'havunity'           => 'D:/GitHub/Havunity',
     ];
 
+    // Source dirs to scan with --include-source, mapped to allowed extensions
+    private const SOURCE_DIRS = [
+        'app'              => ['php'],
+        'routes'           => ['php'],
+        'database'         => ['php'],
+        'config'           => ['php'],
+        'resources/js'     => ['js', 'ts', 'vue', 'jsx', 'tsx'],
+        'resources/views'  => ['php'],
+        'src'              => ['js', 'ts', 'vue', 'jsx', 'tsx'],
+        'tests'            => ['php'],
+    ];
+
     public function handle(): int
     {
         $projectKey = strtolower($this->option('project') ?? '');
         $format = $this->option('format');
+        $includeSource = (bool) $this->option('include-source');
 
         if (! $projectKey) {
             $projectKey = $this->detectProjectFromCwd();
@@ -49,7 +65,7 @@ class HavunPackCommand extends Command
         }
 
         $projectPath = $this->projects[$projectKey];
-        $payload = $this->buildPayload($projectKey, $projectPath);
+        $payload = $this->buildPayload($projectKey, $projectPath, $includeSource);
 
         if ($format === 'json') {
             $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -75,17 +91,28 @@ class HavunPackCommand extends Command
         return null;
     }
 
-    private function buildPayload(string $projectKey, string $projectPath): array
+    private function buildPayload(string $projectKey, string $projectPath, bool $includeSource): array
     {
-        return [
+        $gitDepth = $includeSource ? 50 : 10;
+
+        $payload = [
             'project'    => $projectKey,
             'generated'  => now()->toIso8601String(),
+            'mode'       => $includeSource ? 'full (broncode inbegrepen)' : 'docs-only',
             'claude_md'  => $this->readFile($projectPath . '/CLAUDE.md'),
             'contracts'  => $this->readFile($projectPath . '/CONTRACTS.md'),
             'kb_docs'    => $this->readKbDocs($projectKey),
-            'git_log'    => $this->gitLog($projectPath),
-            'open_files' => $this->listOpenFiles($projectPath),
+            'git_log'    => $this->gitLog($projectPath, $gitDepth),
+            'open_files' => $this->listDocFiles($projectPath),
         ];
+
+        if ($includeSource) {
+            $payload['composer_json'] = $this->readFile($projectPath . '/composer.json');
+            $payload['package_json']  = $this->readFile($projectPath . '/package.json');
+            $payload['source_files']  = $this->listSourceFiles($projectPath);
+        }
+
+        return $payload;
     }
 
     private function readFile(string $path): ?string
@@ -124,11 +151,11 @@ class HavunPackCommand extends Command
         return $docs;
     }
 
-    private function gitLog(string $projectPath): string
+    private function gitLog(string $projectPath, int $depth): string
     {
         $path = $this->normalizePath($projectPath);
 
-        $process = new Process(['git', '-C', $path, 'log', '--oneline', '-10']);
+        $process = new Process(['git', '-C', $path, 'log', '--oneline', "-{$depth}"]);
         $process->run();
 
         return $process->isSuccessful()
@@ -136,24 +163,44 @@ class HavunPackCommand extends Command
             : '(git log failed)';
     }
 
-    private function listOpenFiles(string $projectPath): array
+    private function listDocFiles(string $projectPath): array
+    {
+        return $this->scanFiles($projectPath, null, ['md']);
+    }
+
+    private function listSourceFiles(string $projectPath): array
     {
         $path = $this->normalizePath($projectPath);
         $files = [];
 
-        // Scan all MD files — Gemini has 2M token context, use it fully
-        $skip = ['vendor', 'node_modules', '.git', 'storage', 'bootstrap/cache'];
-
-        $base = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS);
-        $filtered = new \RecursiveCallbackFilterIterator($base, function ($current) use ($skip) {
-            if ($current->isDir()) {
-                return ! in_array($current->getFilename(), $skip, true);
+        foreach (self::SOURCE_DIRS as $subDir => $extensions) {
+            $dirPath = $path . DIRECTORY_SEPARATOR . $this->normalizePath($subDir);
+            if (! is_dir($dirPath)) {
+                continue;
             }
-            return $current->getExtension() === 'md';
+            $files = array_merge($files, $this->scanFiles($dirPath, $path, $extensions));
+        }
+
+        ksort($files);
+        return $files;
+    }
+
+    private function scanFiles(string $scanPath, ?string $basePath, array $extensions): array
+    {
+        $path = $this->normalizePath($scanPath);
+        $base = $basePath ? $this->normalizePath($basePath) : $path;
+        $files = [];
+
+        $dir = new \RecursiveDirectoryIterator($path, \RecursiveDirectoryIterator::SKIP_DOTS);
+        $filtered = new \RecursiveCallbackFilterIterator($dir, function ($current) use ($extensions) {
+            if ($current->isDir()) {
+                return ! in_array($current->getFilename(), self::SKIP_DIRS, true);
+            }
+            return in_array($current->getExtension(), $extensions, true);
         });
 
         foreach (new \RecursiveIteratorIterator($filtered) as $file) {
-            $relative = str_replace([$path . DIRECTORY_SEPARATOR, '\\'], ['', '/'], $file->getPathname());
+            $relative = str_replace([$base . DIRECTORY_SEPARATOR, '\\'], ['', '/'], $file->getPathname());
 
             if (! is_readable($file->getPathname())) {
                 continue;
@@ -175,8 +222,10 @@ class HavunPackCommand extends Command
 
     private function renderText(array $payload): void
     {
+        $gitDepth = isset($payload['source_files']) ? 50 : 10;
+
         $this->line('');
-        $this->info("=== HAVUN PACK: {$payload['project']} ===");
+        $this->info("=== HAVUN PACK: {$payload['project']} ({$payload['mode']}) ===");
         $this->line("Generated: {$payload['generated']}");
         $this->line('');
 
@@ -210,7 +259,28 @@ class HavunPackCommand extends Command
             }
         }
 
-        $this->info('--- GIT LOG (last 10) ---');
+        if (isset($payload['composer_json']) && $payload['composer_json'] !== null) {
+            $this->info('--- composer.json ---');
+            $this->line($payload['composer_json']);
+            $this->line('');
+        }
+
+        if (isset($payload['package_json']) && $payload['package_json'] !== null) {
+            $this->info('--- package.json ---');
+            $this->line($payload['package_json']);
+            $this->line('');
+        }
+
+        if (! empty($payload['source_files'])) {
+            $this->info('--- SOURCE FILES (' . count($payload['source_files']) . ' bestanden) ---');
+            foreach ($payload['source_files'] as $path => $content) {
+                $this->line("### {$path}");
+                $this->line($content);
+                $this->line('');
+            }
+        }
+
+        $this->info("--- GIT LOG (last {$gitDepth}) ---");
         $this->line($payload['git_log']);
         $this->line('');
     }

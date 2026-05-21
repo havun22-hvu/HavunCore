@@ -12,7 +12,8 @@ class HavunGeminiCommand extends Command
                             {prompt : De opdracht voor Gemini}
                             {--project= : Project om in te pakken via havun:pack (optioneel)}
                             {--model=gemini-2.5-flash : Gemini model}
-                            {--out= : Schrijf output naar bestand}';
+                            {--out= : Schrijf output naar bestand}
+                            {--include-source : Voeg broncode toe aan pack context (voor grote taken)}';
 
     protected $description = 'Stuur een prompt naar Gemini, optioneel met havun:pack context';
 
@@ -28,7 +29,8 @@ class HavunGeminiCommand extends Command
         $project = $this->option('project');
         $model = $this->option('model');
 
-        $context = $project ? $this->packProject($project) : '';
+        $includeSource = (bool) $this->option('include-source');
+        $context = $project ? $this->packProject($project, $includeSource) : '';
 
         $fullPrompt = $context
             ? "PROJECTCONTEXT:\n{$context}\n\nOPDRACHT:\n{$prompt}"
@@ -65,12 +67,17 @@ class HavunGeminiCommand extends Command
         return Command::SUCCESS;
     }
 
-    private function packProject(string $project): string
+    private function packProject(string $project, bool $includeSource): string
     {
-        $this->line("Context inpakken voor project: {$project}...", null, 'v');
+        $this->line("Context inpakken voor project: {$project}" . ($includeSource ? ' (+ broncode)' : '') . '...', null, 'v');
+
+        $args = ['--project' => $project];
+        if ($includeSource) {
+            $args['--include-source'] = true;
+        }
 
         $buffer = new BufferedOutput();
-        $this->call('havun:pack', ['--project' => $project], $buffer);
+        $this->call('havun:pack', $args, $buffer);
         return $buffer->fetch();
     }
 }
