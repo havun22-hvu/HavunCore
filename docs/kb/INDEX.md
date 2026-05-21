@@ -2,7 +2,7 @@
 title: Knowledge Base Index
 type: reference
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-05-22
 ---
 
 # Knowledge Base Index
@@ -197,7 +197,7 @@ docs/audit/                   ← Kwartaal-audit (extern)
 - [infosyst.md](projects/infosyst.md) - Infosyst kennisbank + AI
 - [judotoernooi.md](projects/judotoernooi.md) - JudoToernooi toernooi management
 - [judoscoreboard.md](projects/judoscoreboard.md) - JudoScoreBoard Android app (Expo)
-- [safehavun.md](projects/safehavun.md) - SafeHavun crypto tracker
+- [safehavun.md](projects/safehavun.md) - SafeHavun Smart Money Crypto Tracker (live, Vanilla JS PWA, 5 coins)
 - [studieplanner.md](projects/studieplanner.md) - Studieplanner Android app (Expo)
 - [doc-intelligence-system.md](projects/doc-intelligence-system.md) - Doc Intelligence systeem
 

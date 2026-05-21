@@ -255,9 +255,12 @@ Expo React Native Android scorebord app voor judo wedstrijden:
 - Expo SDK 55, landscape, foreground service timer, offline resilient
 
 ### SafeHavun (`projects/safehavun.md`)
-Smart Money Crypto Tracker:
-- Whale alerts, sentiment analyse
-- Laravel 12 + React
+Smart Money Crypto Tracker (live — https://safehavun.havun.nl):
+- Whale tracking (Etherscan), Fear & Greed (Alternative.me), macro (FRED)
+- HolderScore scoring engine, push notifications
+- Laravel 12 + PHP 8.2 + Vanilla JS PWA (GEEN React) + TailwindCSS 4
+- 5 actieve coins: BTC, ETH, ADA, XRP, SOL
+- 384 tests, 800 assertions — alles groen (2026-05-22)
 
 ### Doc Intelligence System (`projects/doc-intelligence-system.md`)
 Doc indexering en semantic search voor alle projecten.

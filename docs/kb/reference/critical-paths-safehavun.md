@@ -3,7 +3,7 @@ title: SafeHavun — kritieke paden (audit-bewijs)
 type: reference
 scope: safehavun
 status: BINDING
-last_reviewed: 2026-04-21
+last_reviewed: 2026-05-22
 follows: "test-quality-policy.md"
 ---
 
@@ -13,18 +13,19 @@ follows: "test-quality-policy.md"
 > mutation-score ≥ 80. Audit-bewijs voor SafeHavun.
 > Bij elke PR die één van deze paden raakt: update dit document.
 
-SafeHavun is de portefeuille-tracker (crypto + goud + fear/greed index +
-exchange-integraties). Een bug hier raakt iemands zicht op eigen geld —
-verkeerde prijs, verkeerde holdings, of zelfs het lekken van
-exchange-credentials zijn de failure-modes die we moeten voorkomen.
+SafeHavun is een Smart Money Crypto Tracker (whale tracking, sentiment,
+macro, scoring engine). Een bug hier raakt het zicht op marktbewegingen —
+verkeerde prijs, verkeerde scores of gemiste whale alerts zijn de
+failure-modes die we moeten voorkomen.
 
-Repo-pad: `D:/GitHub/SafeHavun` (via `havuncore:config/quality-safety.php`).
+Repo-pad: `D:/GitHub/SafeHavun`.
 Test-referenties zijn **relatief aan die root**.
 
-## Pad 1 — Authenticatie (Login + PIN + QR + Register)
+## Pad 1 — Authenticatie (Login + PIN + QR + WebAuthn)
 
-**Waarom kritiek:** portfolio-data is financieel gevoelig + we bewaren
-exchange-credentials. Elke auth-bypass = lezen van die credentials.
+**Waarom kritiek:** de app toont financiële marktdata. Auth-bypass
+is de toegangspoort. PIN + QR + WebAuthn zijn alternatieve login-methodes
+die elk eigen brute-force surfaces hebben.
 
 **Componenten:**
 
@@ -32,16 +33,18 @@ exchange-credentials. Elke auth-bypass = lezen van die credentials.
 - `app/Http/Controllers/Auth/RegisterController.php`
 - `app/Http/Controllers/Auth/PinAuthController.php`
 - `app/Http/Controllers/Auth/QrAuthController.php`
+- `app/Http/Controllers/WebAuthn/WebAuthnLoginController.php`
+- `app/Http/Controllers/WebAuthn/WebAuthnRegisterController.php`
 - `app/Models/AuthDevice.php`
 - `app/Models/QrLoginToken.php`
 
 **Branches / edge-cases:**
 
-- [ ] Login met geldig wachtwoord → success + session.
-- [ ] Wrong password → 401 + rate-limit.
-- [ ] Register: duplicate email → 422.
-- [ ] PIN: brute-force weigeren (rate-limit).
-- [ ] QR-token: expired token → 410; re-use na succesvol login → 403.
+- [x] Login met geldig wachtwoord → success + session.
+- [x] Wrong password → 401 + rate-limit.
+- [x] Register: uitgeschakeld (redirect naar login).
+- [x] PIN: brute-force weigeren (rate-limit throttle:auth).
+- [x] QR-token: expired token → 410; re-use na succesvol login → 403.
 
 **Tests:**
 
@@ -54,117 +57,191 @@ exchange-credentials. Elke auth-bypass = lezen van die credentials.
 
 **Mutation-score target:** 90 %.
 
-## Pad 2 — Exchange-integraties + credential-opslag
+## Pad 2 — Prijzen + Data-fetching
 
-**Waarom kritiek:** API-keys van Kraken/Binance/Coinbase etc. worden
-opgeslagen. Lekken = rechtstreeks geld-risico. Transaction-import moet
-idempotent zijn anders tellen aankopen dubbel.
-
-**Componenten:**
-
-- `app/Models/ExchangeCredential.php`
-- `app/Models/ExchangeTransaction.php`
-- `app/Services/Exchanges/*`
-
-**Branches / edge-cases:**
-
-- [ ] Credential-opslag: encrypted-at-rest.
-- [ ] Credential-decrypt: alleen voor authenticated owner.
-- [ ] Transaction-import: hash-dedupe — dubbele import = 1 record.
-- [ ] API-failure: retry met backoff, geen runaway.
-
-**Tests:**
-
-- `tests/Unit/Models/ExchangeCredentialTest.php`
-- `tests/Unit/Models/ExchangeTransactionTest.php`
-
-**Mutation-score target:** 90 %.
-
-## Pad 3 — Portfolio + asset-pricing
-
-**Waarom kritiek:** verkeerde prijs = verkeerd portfolio-totaal =
-paniek-actie door eigenaar.
+**Waarom kritiek:** verkeerde prijs = verkeerd marktbeeld = paniek-actie.
+Externe API-failures mogen de app niet neer leggen.
 
 **Componenten:**
 
-- `app/Http/Controllers/PortfolioController.php`
-- `app/Http/Controllers/DashboardController.php`
-- `app/Models/Asset.php` + `Price.php`
+- `app/Http/Controllers/ApiController.php` (prices, priceHistory, sparklines)
+- `app/Models/Asset.php`
+- `app/Models/Price.php`
 - `app/Console/Commands/FetchCryptoPrices.php`
-- `app/Console/Commands/FetchGoldPrice.php`
-- `app/Console/Commands/GenerateMarketSignals.php`
-- `app/Console/Commands/FetchFearGreedIndex.php`
 - `app/Console/Commands/SeedDefaultAssets.php`
+- `app/Services/CoinGeckoService.php`
+- `app/Services/GoldPriceService.php`
 
 **Branches / edge-cases:**
 
-- [ ] Portfolio rendert met correcte totalen (som × prijs).
-- [ ] Prijs-fetch: external API down → cache-fallback, geen 500.
-- [ ] Seed-assets: idempotent, dubbele run = 1 set.
-- [ ] Market signals: drempelwaarden getest (buy/hold/sell).
-- [ ] Fear & greed: uit 0-100 correct gemapt naar label.
-
-**Tests:**
-
-- `tests/Feature/PortfolioControllerTest.php`
-- `tests/Feature/DashboardControllerTest.php`
-- `tests/Feature/Commands/FetchCryptoPricesTest.php`
-- `tests/Feature/Commands/FetchGoldPriceTest.php`
-- `tests/Feature/Commands/FetchFearGreedIndexTest.php`
-- `tests/Feature/Commands/GenerateMarketSignalsTest.php`
-- `tests/Feature/Commands/SeedDefaultAssetsTest.php`
-- `tests/Unit/Models/AssetTest.php`
-- `tests/Unit/Models/PriceTest.php`
-- `tests/Unit/Models/FearGreedIndexTest.php`
-- `tests/Unit/Models/MarketSignalTest.php`
-- `tests/Unit/Models/WhaleAlertTest.php`
-
-**Mutation-score target:** 85 %.
-
-## Pad 4 — API + PWA offline-modus
-
-**Waarom kritiek:** mobiele/PWA gebruikers willen hun portfolio zien
-ook zonder netwerk. Een cache-corruptie = lege portfolio = paniek.
-
-**Componenten:**
-
-- `app/Http/Controllers/ApiController.php`
-- `app/Http/Controllers/PwaController.php`
-
-**Branches / edge-cases:**
-
-- [ ] API returnt JSON met Bearer-auth.
-- [ ] PWA-manifest + service-worker serves.
-- [ ] Offline-fallback: cached portfolio zichtbaar zonder netwerk.
+- [x] Prijzen returnen correcte JSON voor alle actieve assets (BTC/ETH/ADA/XRP/SOL).
+- [x] Prijshistoriek: max 90 dagen, chronologisch gesorteerd.
+- [x] Sparklines: 7-daagse data per coin.
+- [x] Prijs-fetch: externe API down → graceful failure, geen 500.
+- [x] Seed-assets: idempotent, dubbele run = 1 set.
 
 **Tests:**
 
 - `tests/Feature/ApiControllerTest.php`
-- `tests/Feature/PwaControllerTest.php`
-- `tests/Feature/RouteTest.php`
+- `tests/Feature/Commands/FetchCryptoPricesTest.php`
+- `tests/Feature/Commands/FetchGoldPriceTest.php`
+- `tests/Feature/Commands/SeedDefaultAssetsTest.php`
+- `tests/Feature/SparklineTest.php`
+- `tests/Unit/Models/AssetTest.php`
+- `tests/Unit/Models/PriceTest.php`
+- `tests/Unit/Services/CoinGeckoServiceTest.php`
+- `tests/Unit/Services/GoldPriceServiceTest.php`
 
 **Mutation-score target:** 85 %.
 
-## Pad 5 — Security headers + session cookies
+## Pad 3 — Signals + Sentiment + Macro
+
+**Waarom kritiek:** market signals en macro-indicatoren vormen de kern
+van de tracking-functionaliteit. Foute drempelwaarden of verkeerde
+Fear & Greed mapping = verkeerd advies.
 
 **Componenten:**
 
-- `app/Http/Middleware/SecurityHeaders.php`
-- `config/session.php`
+- `app/Http/Controllers/ApiController.php` (signals, marketOverview, fearGreedHistory)
+- `app/Console/Commands/GenerateMarketSignals.php`
+- `app/Console/Commands/FetchFearGreedIndex.php`
+- `app/Console/Commands/FetchMacroIndicators.php`
+- `app/Models/MarketSignal.php`
+- `app/Models/FearGreedIndex.php`
+- `app/Models/MacroIndicator.php`
+- `app/Services/MarketSignalService.php`
+- `app/Services/FearGreedService.php`
+- `app/Services/FredService.php`
+- `app/Services/HorizonSentimentService.php`
+
+**Branches / edge-cases:**
+
+- [x] Market signals: drempelwaarden getest (buy/hold/sell).
+- [x] Fear & greed: 0-100 correct gemapt naar label (extreme fear/greed etc.).
+- [x] FRED: FED rate + CPI correct opgeslagen als MacroIndicator.
+- [x] Horizon sentiment: correct samengesteld uit signals.
 
 **Tests:**
 
-- `tests/Feature/Middleware/SecurityHeadersTest.php` (7 tests / 13
-  assertions — X-Content-Type, X-Frame=DENY, X-XSS, Referrer-Policy,
-  Permissions-Policy, CSP default-deny + frame-ancestors='none',
-  nonce-per-request-uniekheid)
+- `tests/Feature/Commands/GenerateMarketSignalsTest.php`
+- `tests/Feature/Commands/FetchFearGreedIndexTest.php`
+- `tests/Feature/Commands/FetchMacroIndicatorsTest.php`
+- `tests/Unit/Models/MarketSignalTest.php`
+- `tests/Unit/Models/FearGreedIndexTest.php`
+- `tests/Unit/Services/MarketSignalServiceTest.php`
+- `tests/Unit/Services/FearGreedServiceTest.php`
+- `tests/Unit/Services/FredServiceTest.php`
+- `tests/Unit/Services/HorizonSentimentServiceTest.php`
+
+**Mutation-score target:** 85 %.
+
+## Pad 4 — Whale Tracking
+
+**Waarom kritiek:** whale alerts zijn het onderscheidend kenmerk van
+SafeHavun. Missende transacties of verkeerde inflow/outflow-classificatie
+ondermijnt de tracking-waarde.
+
+**Componenten:**
+
+- `app/Http/Controllers/ApiController.php` (whaleAlerts, whaleAggregations)
+- `app/Console/Commands/FetchWhaleAlerts.php`
+- `app/Console/Commands/AggregateWhaleAlerts.php`
+- `app/Models/WhaleAlert.php`
+- `app/Models/WhaleAggregation.php`
+- `app/Services/WhaleTrackingService.php`
+
+**Branches / edge-cases:**
+
+- [x] Whale alerts: inflow/outflow correct geclassificeerd.
+- [x] Etherscan: internal txs + normal txs verwerkt.
+- [x] Aggregatie: bucket-berekening correct (sentiment_score, net_flow_usd).
+- [x] Deduplicatie: zelfde tx hash niet dubbel ingevoegd.
+
+**Tests:**
+
+- `tests/Feature/Commands/FetchWhaleAlertsTest.php`
+- `tests/Feature/Commands/AggregateWhaleAlertsTest.php`
+- `tests/Unit/Models/WhaleAlertTest.php`
+- `tests/Unit/Services/WhaleTrackingServiceTest.php`
+
+**Mutation-score target:** 85 %.
+
+## Pad 5 — HolderScore Engine
+
+**Waarom kritiek:** de scoring engine is de kern van de voorspellings-
+functionaliteit. Verkeerde scores = verkeerde signalen aan de gebruiker.
+
+**Componenten:**
+
+- `app/Http/Controllers/HolderScoreController.php`
+- `app/Http/Controllers/ScoreVerificationController.php`
+- `app/Console/Commands/GenerateHolderScores.php`
+- `app/Console/Commands/AdjustHolderScoreWeights.php`
+- `app/Console/Commands/EvaluateScoreVerifications.php`
+- `app/Models/HolderScore.php`
+- `app/Models/ScoreComponent.php`
+- `app/Models/ScoreVerification.php`
+- `app/Services/HolderScoreService.php`
+
+**Branches / edge-cases:**
+
+- [x] Score berekening: gewogen som van deelscores klopt.
+- [x] Score verificatie: predicted vs actual correct vergeleken.
+- [x] Weight adjustment: gewichten bijgesteld op basis van verificatie-resultaat.
+- [x] Historiek: `/api/holder-scores/{coin}/history` correct gesorteerd.
+
+**Tests:**
+
+- `tests/Feature/Api/HolderScoreApiTest.php`
+- `tests/Feature/Commands/GenerateHolderScoresTest.php`
+- `tests/Feature/Commands/AdjustHolderScoreWeightsTest.php`
+- `tests/Feature/Commands/EvaluateScoreVerificationsTest.php`
+- `tests/Feature/ScoreVerificationTest.php`
+- `tests/Unit/Services/HolderScoreServiceTest.php`
+
+**Mutation-score target:** 85 %.
+
+## Pad 6 — PWA + Push Notifications + Security
+
+**Waarom kritiek:** PWA is de primaire user interface. Push notifications
+zijn de alerting-laag. Security headers beschermen de sessie.
+
+**Componenten:**
+
+- `app/Http/Controllers/PwaController.php`
+- `app/Http/Controllers/PushController.php`
+- `app/Http/Controllers/DashboardController.php`
+- `app/Http/Middleware/SecurityHeaders.php`
+- `app/Models/PushSubscription.php`
+- `app/Services/PushNotificationService.php`
+- `config/session.php`
+
+**Branches / edge-cases:**
+
+- [x] PWA-manifest + service-worker served correct.
+- [x] Push subscribe/unsubscribe idempotent.
+- [x] Dashboard: authenticated-only, redirect anders naar /pwa.
+- [x] Security headers: X-Content-Type, X-Frame=DENY, X-XSS, Referrer-Policy,
+      Permissions-Policy, CSP default-deny + frame-ancestors='none',
+      nonce-per-request-uniciteit.
+- [x] Push90: push notification na 90 dagen inactief.
+
+**Tests:**
+
+- `tests/Feature/PwaControllerTest.php`
+- `tests/Feature/PushSubscriptionTest.php`
+- `tests/Feature/Push90Test.php`
+- `tests/Feature/DashboardControllerTest.php`
+- `tests/Feature/RouteTest.php`
+- `tests/Feature/Middleware/SecurityHeadersTest.php`
 
 **Mutation-score target:** 85 %.
 
 ## Audit-checklist
 
-1. Klopt het aantal paden? (5).
-2. Tests actueel? → `critical-paths:verify --project=safehavun`.
+1. Klopt het aantal paden? (6).
+2. Tests actueel? → `php artisan test --no-coverage` (384 tests, 800 assertions).
+3. Alle actieve assets: BTC, ETH, ADA, XRP, SOL.
 
 ## Proces
 
