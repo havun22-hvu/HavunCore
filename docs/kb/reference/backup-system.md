@@ -162,4 +162,4 @@ Zie Hetzner Console/facturen voor actuele prijzen.
 
 - [backup.md](../runbooks/backup.md) - Dagelijkse operaties
 - Project-specifieke info in elk project
-- [context.md](../../../.claude/context.md) - Credentials
+- `.claude/credentials.md` - Credentials (gitignored)

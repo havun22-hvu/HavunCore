@@ -253,5 +253,5 @@ Uitzondering: apps zonder Laravel middleware (havuncore, vpdupdate) gebruiken ng
 
 ## Related
 
-- [context.md](../../../.claude/context.md) - Actuele credentials
+- `.claude/credentials.md` - Actuele credentials (gitignored)
 - [backup.md](../runbooks/backup.md) - Backup procedures

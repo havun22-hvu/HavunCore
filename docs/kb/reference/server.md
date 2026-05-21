@@ -124,5 +124,5 @@ Zie [backup.md](../runbooks/backup.md).
 
 ## Related
 
-- [.claude/context.md](../../../.claude/context.md) - Credentials
+- `.claude/credentials.md` - Credentials (gitignored)
 - [troubleshoot.md](../runbooks/troubleshoot.md) - Problemen oplossen

@@ -70,4 +70,4 @@ Content-Type: application/json
 ## Related
 
 - HavunCore - Host van Vault
-- [.claude/context.md](../../../.claude/context.md) - Credentials
+- `.claude/credentials.md` - Credentials (gitignored)

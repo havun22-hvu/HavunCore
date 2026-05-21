@@ -279,4 +279,4 @@ encryption-roundtrip + offsite-stream + pipeline-failure scenarios.
 ## Related
 
 - [backup-system.md](../reference/backup-system.md) - Volledige referentie
-- [.claude/context.md](../../../.claude/context.md) - Hetzner credentials
+- `.claude/credentials.md` - Hetzner credentials (gitignored)
