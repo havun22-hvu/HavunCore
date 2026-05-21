@@ -30,7 +30,6 @@ class HavunPackCommand extends Command
         'havunity'           => 'D:/GitHub/Havunity',
     ];
 
-    // Source dirs to scan with --include-source, mapped to allowed extensions
     private const SOURCE_DIRS = [
         'app'              => ['php'],
         'routes'           => ['php'],
@@ -96,9 +95,10 @@ class HavunPackCommand extends Command
         $gitDepth = $includeSource ? 50 : 10;
 
         $payload = [
-            'project'    => $projectKey,
-            'generated'  => now()->toIso8601String(),
-            'mode'       => $includeSource ? 'full (broncode inbegrepen)' : 'docs-only',
+            'project'       => $projectKey,
+            'generated'     => now()->toIso8601String(),
+            'mode'          => $includeSource ? 'full (broncode inbegrepen)' : 'docs-only',
+            'git_log_depth' => $gitDepth,
             'claude_md'  => $this->readFile($projectPath . '/CLAUDE.md'),
             'contracts'  => $this->readFile($projectPath . '/CONTRACTS.md'),
             'kb_docs'    => $this->readKbDocs($projectKey),
@@ -165,22 +165,25 @@ class HavunPackCommand extends Command
 
     private function listDocFiles(string $projectPath): array
     {
-        return $this->scanFiles($projectPath, null, ['md']);
+        $files = $this->scanFiles($projectPath, null, ['md']);
+        ksort($files);
+        return $files;
     }
 
     private function listSourceFiles(string $projectPath): array
     {
         $path = $this->normalizePath($projectPath);
-        $files = [];
+        $chunks = [];
 
         foreach (self::SOURCE_DIRS as $subDir => $extensions) {
             $dirPath = $path . DIRECTORY_SEPARATOR . $this->normalizePath($subDir);
             if (! is_dir($dirPath)) {
                 continue;
             }
-            $files = array_merge($files, $this->scanFiles($dirPath, $path, $extensions));
+            $chunks[] = $this->scanFiles($dirPath, $path, $extensions);
         }
 
+        $files = $chunks ? array_merge(...$chunks) : [];
         ksort($files);
         return $files;
     }
@@ -201,17 +204,12 @@ class HavunPackCommand extends Command
 
         foreach (new \RecursiveIteratorIterator($filtered) as $file) {
             $relative = str_replace([$base . DIRECTORY_SEPARATOR, '\\'], ['', '/'], $file->getPathname());
-
-            if (! is_readable($file->getPathname())) {
-                continue;
-            }
             $content = file_get_contents($file->getPathname());
             if ($content !== false && trim($content) !== '') {
                 $files[$relative] = $content;
             }
         }
 
-        ksort($files);
         return $files;
     }
 
@@ -222,8 +220,6 @@ class HavunPackCommand extends Command
 
     private function renderText(array $payload): void
     {
-        $gitDepth = isset($payload['source_files']) ? 50 : 10;
-
         $this->line('');
         $this->info("=== HAVUN PACK: {$payload['project']} ({$payload['mode']}) ===");
         $this->line("Generated: {$payload['generated']}");
@@ -280,7 +276,7 @@ class HavunPackCommand extends Command
             }
         }
 
-        $this->info("--- GIT LOG (last {$gitDepth}) ---");
+        $this->info("--- GIT LOG (last {$payload['git_log_depth']}) ---");
         $this->line($payload['git_log']);
         $this->line('');
     }
