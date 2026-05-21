@@ -26,15 +26,15 @@ Extraheer vervolgens de prompt (alles uit `$ARGUMENTS` zonder de `--project=X` f
 Voer dit uit via Bash. Toon GEEN ruwe output aan de gebruiker — alleen voortgang:
 
 ```bash
-cd D:\GitHub\HavunCore && php artisan havun:gemini --project={project} "{prompt}" --out=gemini_blueprint.md --include-source
+cd D:\GitHub\HavunCore && php artisan havun:gemini --project={project} "{prompt}" --include-source
 ```
 
 Meld kort: `Gemini pipeline gestart voor {project}...`
-Wacht op voltooiing.
+Wacht op voltooiing. Het commando print het blueprint-pad als `Blueprint: {pad}` — gebruik dat pad in stap 3.
 
 ### Stap 3 — Blueprint lezen en presenteren
 
-Lees `D:\GitHub\HavunCore\gemini_blueprint.md` en presenteer beknopt:
+Lees het blueprint-bestand op het pad dat het commando heeft uitgeprint (bijv. `D:\GitHub\JudoToernooi\gemini_blueprint.md`) en presenteer beknopt:
 - Wat Gemini heeft ontworpen (2-4 regels samenvatting)
 - Welke bestanden/modules worden geraakt
 - Eventuele risico's of openstaande vragen uit de blueprint
@@ -42,7 +42,7 @@ Lees `D:\GitHub\HavunCore\gemini_blueprint.md` en presenteer beknopt:
 ### Stap 4 — Handoff
 
 Eindig ALTIJD met:
-> Blueprint klaar in `gemini_blueprint.md`. Typ `/mpc` om uit te voeren, of geef aanvullingen.
+> Blueprint klaar in `{pad}`. Typ `/mpc` om uit te voeren, of geef aanvullingen.
 
 ## Gebruik
 

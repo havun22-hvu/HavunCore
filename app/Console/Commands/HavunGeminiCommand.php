@@ -53,18 +53,29 @@ class HavunGeminiCommand extends Command
 
         $text = data_get($response->json(), 'candidates.0.content.parts.0.text', '');
 
-        $out = $this->option('out');
+        $out = $this->option('out') ?: $this->defaultOutputPath($project);
+
         if ($out) {
             if (file_put_contents($out, $text) === false) {
                 $this->error("Schrijven naar {$out} mislukt.");
                 return Command::FAILURE;
             }
-            $this->line("Geschreven naar: {$out}");
+            $this->line("Blueprint: {$out}");
         } else {
             $this->line($text);
         }
 
         return Command::SUCCESS;
+    }
+
+    private function defaultOutputPath(?string $project): ?string
+    {
+        if (! $project) {
+            return null;
+        }
+        $projects = config('havun-projects');
+        $projectPath = $projects[strtolower($project)] ?? null;
+        return $projectPath ? str_replace('/', DIRECTORY_SEPARATOR, $projectPath . '/gemini_blueprint.md') : null;
     }
 
     private function packProject(string $project, bool $includeSource): string
