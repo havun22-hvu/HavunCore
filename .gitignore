@@ -6,9 +6,11 @@
 Thumbs.db
 *.log
 
-# Claude Code local settings (but keep commands)
+# Claude Code local settings (but keep commands and shared docs)
 .claude/*
 !.claude/commands/
+!.claude/handover.md
+!.claude/working-in-projects.md
 
 # Laravel specific
 /.phpunit.cache
