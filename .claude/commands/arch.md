@@ -30,11 +30,12 @@ cd D:\GitHub\HavunCore && php artisan havun:gemini --project={project} "{prompt}
 ```
 
 Meld kort: `Gemini pipeline gestart voor {project}...`
-Wacht op voltooiing. Het commando print het blueprint-pad als `Blueprint: {pad}` — gebruik dat pad in stap 3.
+Wacht op voltooiing. Blueprint landt automatisch in `{projectpad}/.claude/blueprint.md`.
 
 ### Stap 3 — Blueprint lezen en presenteren
 
-Lees het blueprint-bestand op het pad dat het commando heeft uitgeprint (bijv. `D:\GitHub\JudoToernooi\gemini_blueprint.md`) en presenteer beknopt:
+Lees `{projectpad}/.claude/blueprint.md` en presenteer beknopt:
+- Timestamp bovenaan (blockquote header) — controleer of het vers is
 - Wat Gemini heeft ontworpen (2-4 regels samenvatting)
 - Welke bestanden/modules worden geraakt
 - Eventuele risico's of openstaande vragen uit de blueprint
@@ -42,7 +43,7 @@ Lees het blueprint-bestand op het pad dat het commando heeft uitgeprint (bijv. `
 ### Stap 4 — Handoff
 
 Eindig ALTIJD met:
-> Blueprint klaar in `{pad}`. Typ `/mpc` om uit te voeren, of geef aanvullingen.
+> Blueprint klaar in `.claude/blueprint.md`. Typ `/mpc` om uit te voeren, of geef aanvullingen.
 
 ## Gebruik
 

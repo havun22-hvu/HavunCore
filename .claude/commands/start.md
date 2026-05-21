@@ -59,7 +59,15 @@ Kritieke kwetsbaarheden → eerst oplossen. Low/medium → melden, doorgaan.
 2. .claude/context.md
 3. .claude/rules.md (indien aanwezig)
 4. .claude/handover.md (indien aanwezig)
+5. .claude/blueprint.md (indien aanwezig) → zie hieronder
 ```
+
+### Blueprint check
+
+Als `.claude/blueprint.md` bestaat:
+- Toon de timestamp uit de blockquote header bovenaan
+- Meld: "📋 Blueprint aanwezig van [timestamp] — implementeren? Typ `/mpc` + 'ga maar'."
+- Ga NIET zelf implementeren zonder "ga maar"
 
 ## Stap 2: Doc Intelligence — auto-cleanup + issues oplossen
 

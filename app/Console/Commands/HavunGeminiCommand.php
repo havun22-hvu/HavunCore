@@ -10,12 +10,13 @@ use Symfony\Component\Console\Output\BufferedOutput;
 class HavunGeminiCommand extends Command
 {
     use NormalizesPath;
+
     protected $signature = 'havun:gemini
                             {prompt : De opdracht voor Gemini}
                             {--project= : Project om in te pakken via havun:pack (optioneel)}
                             {--model=gemini-2.5-flash : Gemini model}
                             {--out= : Schrijf output naar bestand}
-                            {--include-source : Voeg broncode toe aan pack context (voor grote taken)}';
+                            {--include-source : Voeg broncode + live API toe aan pack context}';
 
     protected $description = 'Stuur een prompt naar Gemini, optioneel met havun:pack context';
 
@@ -30,8 +31,8 @@ class HavunGeminiCommand extends Command
         $prompt = $this->argument('prompt');
         $project = $this->option('project');
         $model = $this->option('model');
-
         $includeSource = (bool) $this->option('include-source');
+
         $context = $project ? $this->packProject($project, $includeSource) : '';
 
         $fullPrompt = $context
@@ -58,7 +59,8 @@ class HavunGeminiCommand extends Command
         $out = $this->option('out') ?: $this->defaultOutputPath($project);
 
         if ($out) {
-            if (file_put_contents($out, $text) === false) {
+            $content = $this->wrapWithHeader($text, $project, $model);
+            if (file_put_contents($out, $content) === false) {
                 $this->error("Schrijven naar {$out} mislukt.");
                 return Command::FAILURE;
             }
@@ -70,19 +72,35 @@ class HavunGeminiCommand extends Command
         return Command::SUCCESS;
     }
 
+    private function wrapWithHeader(string $text, ?string $project, string $model): string
+    {
+        $timestamp = now()->format('Y-m-d H:i');
+        $projectLabel = $project ? strtoupper($project) : 'geen project';
+
+        $header = "> **Blueprint** — {$projectLabel} | Gegenereerd: {$timestamp} | Model: {$model}\n\n";
+
+        return $header . $text;
+    }
+
     private function defaultOutputPath(?string $project): ?string
     {
         if (! $project) {
             return null;
         }
+
         $projects = config('havun-projects');
-        $projectPath = $projects[strtolower($project)] ?? null;
-        return $projectPath ? $this->normalizePath($projectPath . '/gemini_blueprint.md') : null;
+        $config = $projects[strtolower($project)] ?? null;
+        $projectPath = $config['path'] ?? null;
+
+        return $projectPath
+            ? $this->normalizePath($projectPath . '/.claude/blueprint.md')
+            : null;
     }
 
     private function packProject(string $project, bool $includeSource): string
     {
-        $this->line("Context inpakken voor project: {$project}" . ($includeSource ? ' (+ broncode)' : '') . '...', null, 'v');
+        $label = $includeSource ? ' (+ broncode + live API)' : '';
+        $this->line("Context inpakken voor project: {$project}{$label}...", null, 'v');
 
         $args = ['--project' => $project];
         if ($includeSource) {

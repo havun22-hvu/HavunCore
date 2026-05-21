@@ -4,15 +4,17 @@ namespace App\Console\Commands;
 
 use App\Console\Commands\Concerns\NormalizesPath;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Http;
 use Symfony\Component\Process\Process;
 
 class HavunPackCommand extends Command
 {
     use NormalizesPath;
+
     protected $signature = 'havun:pack
                             {--project= : Project name (e.g. herdenkingsportaal, judotoernooi)}
                             {--format=text : Output format: text or json}
-                            {--include-source : Include PHP/JS/TS source files for large architectural tasks}';
+                            {--include-source : Include PHP/JS/TS source files + live API samples}';
 
     protected $description = 'Pack project context into a structured AI-ready payload';
 
@@ -52,8 +54,8 @@ class HavunPackCommand extends Command
             return Command::FAILURE;
         }
 
-        $projectPath = $projects[$projectKey];
-        $payload = $this->buildPayload($projectKey, $projectPath, $includeSource);
+        $config = $projects[$projectKey];
+        $payload = $this->buildPayload($projectKey, $config, $includeSource);
 
         if ($format === 'json') {
             $this->line(json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
@@ -71,37 +73,63 @@ class HavunPackCommand extends Command
             return null;
         }
 
-        foreach ($projects as $key => $path) {
-            if (str_starts_with($cwd, $path)) {
+        foreach ($projects as $key => $config) {
+            if (str_starts_with($cwd, $config['path'])) {
                 return $key;
             }
         }
         return null;
     }
 
-    private function buildPayload(string $projectKey, string $projectPath, bool $includeSource): array
+    private function buildPayload(string $projectKey, array $config, bool $includeSource): array
     {
+        $projectPath = $config['path'];
         $gitDepth = $includeSource ? 50 : 10;
 
         $payload = [
             'project'       => $projectKey,
             'generated'     => now()->toIso8601String(),
-            'mode'          => $includeSource ? 'full (broncode inbegrepen)' : 'docs-only',
+            'mode'          => $includeSource ? 'full (broncode + live API)' : 'docs-only',
             'git_log_depth' => $gitDepth,
-            'claude_md'  => $this->readFile($projectPath . '/CLAUDE.md'),
-            'contracts'  => $this->readFile($projectPath . '/CONTRACTS.md'),
-            'kb_docs'    => $this->readKbDocs($projectKey),
-            'git_log'    => $this->gitLog($projectPath, $gitDepth),
-            'open_files' => $this->listDocFiles($projectPath),
+            'claude_md'     => $this->readFile($projectPath . '/CLAUDE.md'),
+            'contracts'     => $this->readFile($projectPath . '/CONTRACTS.md'),
+            'kb_docs'       => $this->readKbDocs($projectKey),
+            'git_log'       => $this->gitLog($projectPath, $gitDepth),
+            'open_files'    => $this->listDocFiles($projectPath),
         ];
 
         if ($includeSource) {
             $payload['composer_json'] = $this->readFile($projectPath . '/composer.json');
             $payload['package_json']  = $this->readFile($projectPath . '/package.json');
             $payload['source_files']  = $this->listSourceFiles($projectPath);
+            $payload['api_samples']   = $this->fetchApiSamples(
+                $config['local_url'] ?? null,
+                $config['endpoints'] ?? []
+            );
         }
 
         return $payload;
+    }
+
+    private function fetchApiSamples(?string $baseUrl, array $endpoints): array
+    {
+        if (! $baseUrl || empty($endpoints)) {
+            return [];
+        }
+
+        $samples = [];
+        foreach ($endpoints as $endpoint) {
+            try {
+                $response = Http::timeout(3)->get($baseUrl . $endpoint);
+                $samples[$endpoint] = $response->successful()
+                    ? $response->body()
+                    : 'API_UNAVAILABLE (HTTP ' . $response->status() . ')';
+            } catch (\Throwable) {
+                $samples[$endpoint] = 'API_UNAVAILABLE (timeout of connectiefout)';
+            }
+        }
+
+        return $samples;
     }
 
     private function readFile(string $path): ?string
@@ -249,6 +277,15 @@ class HavunPackCommand extends Command
             $this->info('--- package.json ---');
             $this->line($payload['package_json']);
             $this->line('');
+        }
+
+        if (! empty($payload['api_samples'])) {
+            $this->info('--- LIVE API SAMPLES (' . count($payload['api_samples']) . ' endpoints) ---');
+            foreach ($payload['api_samples'] as $endpoint => $body) {
+                $this->line("### {$endpoint}");
+                $this->line($body);
+                $this->line('');
+            }
         }
 
         if (! empty($payload['source_files'])) {
