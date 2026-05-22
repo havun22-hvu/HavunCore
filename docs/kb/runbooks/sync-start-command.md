@@ -32,8 +32,10 @@ last_check: 2026-04-22
 | SafeHavun      | `D:\GitHub\SafeHavun\.claude\commands\start.md` |
 | HavunClub      | `D:\GitHub\HavunClub\.claude\commands\start.md` |
 | Studieplanner  | `D:\GitHub\Studieplanner\.claude\commands\start.md` |
-| Infosyst       | `D:\GitHub\infosyst\.claude\commands\start.md` |
-| HavunVet       | `D:\GitHub\HavunVet\.claude\commands\start.md` |
+| Infosyst       | `D:\GitHub\Infosyst\.claude\commands\start.md` |
+| Munus          | `D:\GitHub\Munus\.claude\commands\start.md` |
+| Aeterna        | `D:\GitHub\Aeterna\.claude\commands\start.md` |
+| Havunity       | `D:\GitHub\Havunity\.claude\commands\start.md` |
 
 3. **Optioneel:** Als een project geen `.claude/commands/` heeft, maak de map aan en plak start.md.
 

@@ -268,10 +268,12 @@ Is dit correct en compleet? Wat wil je aanpassen?
 
 ```
 Project/
-├── CLAUDE.md              <- Korte regels + context (max 60 regels)
+├── CLAUDE.md              <- Korte regels + context (max 60 regels) + sessiestart-sectie
 ├── .claude/
-│   ├── context.md         <- ALLES over dit project (features, auth, DB, deploy)
-│   └── rules.md           <- Security regels
+│   ├── handover.md        <- Huidige staat: wat speelt, openstaande items, sessie-log
+│   ├── blueprint.md       <- Gemini-blauwdruk (auto-aangemaakt door /arch, gelezen door /start)
+│   ├── rules.md           <- Security regels (optioneel)
+│   └── commands/          <- Slash commands
 └── docs/                  <- Eventuele extra project docs
 ```
 

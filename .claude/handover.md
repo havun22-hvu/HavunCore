@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-05-21
+last_updated: 2026-05-22
 ---
 
 # HavunCore — Handover
@@ -12,51 +12,39 @@ last_updated: 2026-05-21
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste commit:** `d3794cc` — feat(arch-pipeline): live API samples, blueprint to .claude/, start blueprint check
+**Laatste commit:** `276e7db` — docs(kb): update Gemini workflow docs to reflect new .claude/blueprint.md location
 
-## Wat is er recent gedaan (deze sessie)
+## Wat is er recent gedaan (21-22 mei)
 
-### AIOps pipeline — volledig uitgerold
-De Gemini–Claude pipeline is nu end-to-end gebouwd:
+### Alle projecten voorzien van session-start workflow
+- `handover.md` aangemaakt in `.claude/` voor alle 11 projecten
+- CLAUDE.md van elk project bijgewerkt met "✅ Verplicht bij sessiestart" sectie
+- `/arch`-instructie toegevoegd per project (blueprint-locatie, `/mpc ga maar`)
 
-1. **`havun:pack --include-source`** — pakt broncode (PHP/JS/TS) + live API responses mee
-2. **`havun:gemini`** — stuurt pack context naar Gemini REST API, slaat blueprint op in `{project}/.claude/blueprint.md` (niet meer in HavunCore root)
-3. **Blueprint timestamp header** — blockquote bovenaan: `> **Blueprint** — PROJECT | Gegenereerd: ... | Model: ...`
-4. **`/start` skill** — detecteert nu automatisch blueprint.md en vraagt of het geïmplementeerd moet worden
-5. **`/arch` skill** — instructies bijgewerkt met nieuwe paths en handoff-tekst
-
-### Infrastructuur
-- `NormalizesPath` trait geïntroduceerd (gedeeld door Pack + Gemini commands)
-- `config/havun-projects.php` omgebouwd van flat strings naar arrays met `path`, `local_url`, `endpoints`
-- `fetchApiSamples()` in HavunPackCommand — live HTTP calls met 3s timeout, graceful fallback naar `API_UNAVAILABLE`
-
-### SafeHavun docs structureel verbeterd
-- `D:\GitHub\SafeHavun\.claude\handover.md` aangemaakt (UI Redesign state)
-- `D:\GitHub\SafeHavun\CLAUDE.md` uitgebreid met session-start stappen
-- `D:\GitHub\SafeHavun\docs\kb\reference\architecture.md` en `pwa-structure.md` aangemaakt
+### KB bijgewerkt en stale verwijzingen opgeruimd
+- `ADR-008` en `gemini-claude-workflow.md` runbook: `gemini_blueprint.md` → `{project}/.claude/blueprint.md`
+- Stale "we bouwen geen API-integratie" verwijderd (die integratie bestaat nu)
+- Status-sectie runbook bijgewerkt met live API samples, blueprint locatie
 
 ## Openstaande kleine punten
 
 - Dutch error string in Engels codebase: `'API_UNAVAILABLE (timeout of connectiefout)'` in `HavunPackCommand::fetchApiSamples()` — bewust gelaten, lage prioriteit
-- API timeout in fetchApiSamples is 3s — voor localhost-URLs zou 1-2s ook volstaan
+- `sync-start-command.md` runbook heeft incomplete projectlijst (mist Munus, Aeterna, Havunity)
 
 ## Lopende projecten (per project)
 
-| Project | Status | Blueprint aanwezig |
-|---------|--------|--------------------|
-| SafeHavun | UI Redesign — spec klaar in `gemini_blueprint.md` | Nee (staat nog op HavunCore root, te verplaatsen) |
-| Herdenkingsportaal | Stabiel | Nee |
-| JudoToernooi | Stabiel | Nee |
-| HavunAdmin | Stabiel | Nee |
-
-## Hoe verder te gaan
-
-1. SafeHavun UI Redesign uitvoeren → open in SafeHavun sessie, `/start` + `/mpc ga maar`
-2. SafeHavun blueprint verplaatsen van `D:\GitHub\HavunCore\gemini_blueprint.md` → `D:\GitHub\SafeHavun\.claude\blueprint.md` als het er nog staat
+| Project | Status |
+|---------|--------|
+| SafeHavun | Stabiel — UI redesign geïmplementeerd (21 mei) |
+| Herdenkingsportaal | Stabiel — deploy pending (avondsessie 20 mei) |
+| JudoToernooi | Stabiel |
+| HavunAdmin | Stabiel — Alpine CSP-migratie 21 views open |
+| Munus | MVP Fase 1 — ontwerp klaar, code nog niet gestart |
+| Aeterna | Feature-complete — Week 2-plan wacht op go/no-go |
 
 ## Architectuurprincipes (niet te herhalen elk gesprek)
 
 - Gemini = architect (groot contextvenster, blauwdrukken)
 - Claude = validator + executor (lokale schijf, implementatie)
-- Blueprint flow: `/arch [opdracht]` → `.claude/blueprint.md` → `/start` detecteert → `/mpc ga maar`
+- Blueprint flow: `/arch [opdracht]` → `{project}/.claude/blueprint.md` → `/start` detecteert → `/mpc ga maar`
 - Zie `docs/kb/runbooks/gemini-claude-workflow.md` voor volledige beschrijving
