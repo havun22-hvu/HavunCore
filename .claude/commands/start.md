@@ -34,7 +34,18 @@ last_check: 2026-05-18
 
 ---
 
-## Stap 0: Git sync + AutoFix detectie (VERPLICHT)
+## Stap 0: Memory opfrissen (VERPLICHT — EERST)
+
+Voer `/mem` uit **vóór alles**:
+1. Lees `C:/Users/henkv/.claude/projects/D--GitHub-HavunCore/memory/MEMORY.md`
+2. Lees elk geheugenbestand dat daarin gelinkt is
+3. Toon een korte samenvatting van actieve feedback + projectcontext
+
+> Dit voorkomt dat eerder gemaakte fouten herhaald worden.
+
+---
+
+## Stap 1: Git sync + AutoFix detectie (VERPLICHT)
 
 ```bash
 cd [project directory] && git pull
@@ -43,7 +54,7 @@ git log --oneline --since="3 days ago" --grep="autofix("
 
 Als er AutoFix commits zijn: meld ze, ga daarna door.
 
-## Stap 0b: Dependency Security Audit (VERPLICHT)
+## Stap 1b: Dependency Security Audit (VERPLICHT)
 
 ```bash
 composer audit 2>/dev/null && echo "✓ PHP OK" || echo "⚠️ PHP kwetsbaarheden!"
@@ -52,7 +63,7 @@ npm audit --omit=dev 2>/dev/null && echo "✓ NPM OK" || echo "⚠️ NPM kwetsb
 
 Kritieke kwetsbaarheden → eerst oplossen. Low/medium → melden, doorgaan.
 
-## Stap 1: Lees project documentatie (VERPLICHT)
+## Stap 2: Lees project documentatie (VERPLICHT)
 
 ```
 1. CLAUDE.md
@@ -69,7 +80,7 @@ Als `.claude/blueprint.md` bestaat:
 - Meld: "📋 Blueprint aanwezig van [timestamp] — implementeren? Typ `/mpc` + 'ga maar'."
 - Ga NIET zelf implementeren zonder "ga maar"
 
-## Stap 2: Doc Intelligence — auto-cleanup + issues oplossen
+## Stap 3: Doc Intelligence — auto-cleanup + issues oplossen
 
 ```bash
 cd D:\GitHub\HavunCore
@@ -103,7 +114,7 @@ php artisan tinker --execute="
 "
 ```
 
-## Stap 3: Havun Kwaliteitsnormen (bij code wijzigingen)
+## Stap 4: Havun Kwaliteitsnormen (bij code wijzigingen)
 
 Bij ELKE code wijziging:
 - Coverage >80%, Form Requests, Rate limiting, Custom exceptions, Circuit breaker
@@ -117,6 +128,7 @@ php artisan docs:search "havun quality standards"
 ## Na alle stappen: Korte bevestiging + doorpakken
 
 ```
+✓ Memory: [N bestanden geladen — actieve feedback: ...]
 ✓ Gelezen: CLAUDE.md, context.md[, rules.md][, handover.md]
 ✓ Issues: [X opgelost / 0 open]
 ✓ Security: [OK / kwetsbaarheden opgelost]
