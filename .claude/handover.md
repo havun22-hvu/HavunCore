@@ -12,39 +12,50 @@ last_updated: 2026-05-22
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste commit:** `b8fca52` — alle projecten volledig bijgewerkt voor nieuw AI-werksysteem
+**Laatste commit:** `70c294b` — alle 20 projecten volledig gesynchroniseerd met nieuw AI-werksysteem
 
-## Wat is er recent gedaan (21-22 mei)
+## Wat is er recent gedaan (23-24 mei)
 
-### Alle projecten voorzien van session-start workflow
-- `handover.md` aangemaakt in `.claude/` voor alle 11 projecten
-- CLAUDE.md van elk project bijgewerkt met "✅ Verplicht bij sessiestart" sectie
-- `/arch`-instructie toegevoegd per project (blueprint-locatie, `/mpc ga maar`)
+### Geheugen- en werksysteem uitgerold naar alle 20 projecten
+- `/mem` command aangemaakt en in `/start` verankerd als stap 0 (memory lezen voor alles)
+- `/arch` command uitgerold naar alle 18 overige projecten
+- Blueprint-detectie toegevoegd aan elk project's `start.md`
+- `autoMode.allow` voor `php artisan havun:gemini *` toegevoegd aan elk project (settings.local.json of settings.json)
+- `f.md` aangemaakt waar ontbrak (havuncore-webapp, Aeterna)
+- `handover.md` aangemaakt waar ontbrak (HavunVet, Studieplanner-api, Demo, IDSee)
+- `/arch` sectie toegevoegd aan CLAUDE.md van 6 projecten
 
-### KB bijgewerkt en stale verwijzingen opgeruimd
-- `ADR-008` en `gemini-claude-workflow.md` runbook: `gemini_blueprint.md` → `{project}/.claude/blueprint.md`
-- Stale "we bouwen geen API-integratie" verwijderd (die integratie bestaat nu)
-- Status-sectie runbook bijgewerkt met live API samples, blueprint locatie
+### Config cache bug opgelost
+- `judoscoreboard` stond al in `config/havun-projects.php` maar Laravel cache was verouderd
+- Fix: `php artisan config:clear` — `/arch judoscoreboard` werkt nu
+
+### Speciale situaties per project
+- **Herdenkingsportaal + Munus**: `settings.local.json` gitignored → `autoMode` in `settings.json`
+- **VPDUpdate + Aeterna**: force-add nodig voor `.claude/` (was gitignored)
+- **Munus + Havunity**: geen GitHub remote — commits lokaal aanwezig, push wacht op remote
 
 ## Openstaande kleine punten
 
-- Dutch error string in Engels codebase: `'API_UNAVAILABLE (timeout of connectiefout)'` in `HavunPackCommand::fetchApiSamples()` — bewust gelaten, lage prioriteit
+- Dutch error string: `'API_UNAVAILABLE (timeout of connectiefout)'` in `HavunPackCommand::fetchApiSamples()` — bewust gelaten, lage prioriteit
 - `sync-start-command.md` runbook heeft incomplete projectlijst (mist Munus, Aeterna, Havunity)
+- **JudoScoreBoard**: `/arch` pre-publish review nog uitvoeren in aparte sessie
 
 ## Lopende projecten (per project)
 
 | Project | Status |
 |---------|--------|
-| SafeHavun | Stabiel — UI redesign geïmplementeerd (21 mei) |
-| Herdenkingsportaal | Stabiel — deploy pending (avondsessie 20 mei) |
+| JudoScoreBoard | Pre-publish review pending via `/arch` |
+| SafeHavun | Stabiel |
+| Herdenkingsportaal | Stabiel |
 | JudoToernooi | Stabiel |
 | HavunAdmin | Stabiel — Alpine CSP-migratie 21 views open |
 | Munus | MVP Fase 1 — ontwerp klaar, code nog niet gestart |
 | Aeterna | Feature-complete — Week 2-plan wacht op go/no-go |
 
-## Architectuurprincipes (niet te herhalen elk gesprek)
+## Architectuurprincipes
 
 - Gemini = architect (groot contextvenster, blauwdrukken)
 - Claude = validator + executor (lokale schijf, implementatie)
 - Blueprint flow: `/arch [opdracht]` → `{project}/.claude/blueprint.md` → `/start` detecteert → `/mpc ga maar`
-- Zie `docs/kb/runbooks/gemini-claude-workflow.md` voor volledige beschrijving
+- Memory flow: `/mem` → leest `C:/Users/henkv/.claude/projects/[SLUG]/memory/MEMORY.md`
+- Bij config-issues na wijziging `havun-projects.php`: altijd `php artisan config:clear`
