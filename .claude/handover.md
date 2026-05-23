@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-05-22
+last_updated: 2026-05-24
 ---
 
 # HavunCore — Handover
@@ -56,6 +56,6 @@ last_updated: 2026-05-22
 
 - Gemini = architect (groot contextvenster, blauwdrukken)
 - Claude = validator + executor (lokale schijf, implementatie)
-- Blueprint flow: `/arch [opdracht]` → `{project}/.claude/blueprint.md` → `/start` detecteert → `/mpc ga maar`
+- Blueprint flow: `/arch [opdracht]` → `gemini_blueprint.md` (HavunCore root) → `/mpc ga maar` (blueprint persisteert tussen sessies)
 - Memory flow: `/mem` → leest `C:/Users/henkv/.claude/projects/[SLUG]/memory/MEMORY.md`
 - Bij config-issues na wijziging `havun-projects.php`: altijd `php artisan config:clear`
