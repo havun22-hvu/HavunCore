@@ -19,11 +19,16 @@ last_check: 2026-05-23
 
 ## Stap 1: Lees de Memory Index
 
-Lees het geheugenindex-bestand voor het huidige project:
+Lees het geheugenindex-bestand voor het huidige project. Het pad volgt het patroon:
 
 ```
-C:/Users/henkv/.claude/projects/D--GitHub-HavunCore/memory/MEMORY.md
+C:/Users/henkv/.claude/projects/[SLUG]/memory/MEMORY.md
 ```
+
+De `[SLUG]` is de projectmap als pad-slug: `D:\GitHub\HavunCore` → `D--GitHub-HavunCore`.
+Probeer zowel hoofdletter als kleine letter voor de schijfletter (bijv. `D--` én `d--`).
+
+Als het bestand niet bestaat → geen geheugens voor dit project, ga door naar stap 2.
 
 ## Stap 2: Lees alle geheugenbestanden
 
