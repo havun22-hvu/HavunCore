@@ -12,7 +12,7 @@ last_updated: 2026-05-22
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste commit:** `276e7db` — docs(kb): update Gemini workflow docs to reflect new .claude/blueprint.md location
+**Laatste commit:** `b8fca52` — alle projecten volledig bijgewerkt voor nieuw AI-werksysteem
 
 ## Wat is er recent gedaan (21-22 mei)
 
