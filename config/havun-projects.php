@@ -16,6 +16,11 @@ return [
         'local_url' => 'http://localhost:8002',
         'endpoints' => [],
     ],
+    'judoscoreboard' => [
+        'path'      => 'D:/GitHub/JudoScoreBoard',
+        'local_url' => null,
+        'endpoints' => [],
+    ],
     'studieplanner' => [
         'path'      => 'D:/GitHub/Studieplanner',
         'local_url' => 'http://localhost:8003',
