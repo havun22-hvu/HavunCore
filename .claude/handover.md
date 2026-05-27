@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-05-24
+last_updated: 2026-05-28
 ---
 
 # HavunCore — Handover
@@ -12,27 +12,23 @@ last_updated: 2026-05-24
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste commit:** `70c294b` — alle 20 projecten volledig gesynchroniseerd met nieuw AI-werksysteem
+**Laatste commit:** `c2f6f66` — security update Symfony packages
 
-## Wat is er recent gedaan (23-24 mei)
+## Wat is er recent gedaan (28 mei)
 
-### Geheugen- en werksysteem uitgerold naar alle 20 projecten
-- `/mem` command aangemaakt en in `/start` verankerd als stap 0 (memory lezen voor alles)
-- `/arch` command uitgerold naar alle 18 overige projecten
-- Blueprint-detectie toegevoegd aan elk project's `start.md`
-- `autoMode.allow` voor `php artisan havun:gemini *` toegevoegd aan elk project (settings.local.json of settings.json)
-- `f.md` aangemaakt waar ontbrak (havuncore-webapp, Aeterna)
-- `handover.md` aangemaakt waar ontbrak (HavunVet, Studieplanner-api, Demo, IDSee)
-- `/arch` sectie toegevoegd aan CLAUDE.md van 6 projecten
+### Security fixes (kritiek — CVE's gepusht)
+- `symfony/http-foundation` 7.4.1 → 7.4.13 (CVE-2026-48736: SSRF bypass fix)
+- `symfony/routing` 7.4.12 → 7.4.13 (CVE-2026-48784: URL normalization fix)
+- `symfony/polyfill-intl-idn` 1.33.0 → 1.38.1 (CVE-2026-46644: Punycode fix)
 
-### Config cache bug opgelost
-- `judoscoreboard` stond al in `config/havun-projects.php` maar Laravel cache was verouderd
-- Fix: `php artisan config:clear` — `/arch judoscoreboard` werkt nu
+### Config
+- `judoscoreboard` entry definitief gecommit in `config/havun-projects.php`
 
-### Speciale situaties per project
-- **Herdenkingsportaal + Munus**: `settings.local.json` gitignored → `autoMode` in `settings.json`
-- **VPDUpdate + Aeterna**: force-add nodig voor `.claude/` (was gitignored)
-- **Munus + Havunity**: geen GitHub remote — commits lokaal aanwezig, push wacht op remote
+### Doc Intelligence cleanup
+- 4 HIGH issues genegeerd (archive + andere-project docs)
+- Alle MEDIUM duplicaten bulk-genegeerd (false positives — structuurmatch, niet inhoudsdup)
+- Mermaid `[[node]]` broken-link false positives genegeerd (issues 15836, 15837)
+- 0 open issues na cleanup
 
 ## Openstaande kleine punten
 
@@ -59,3 +55,4 @@ last_updated: 2026-05-24
 - Blueprint flow: `/arch [opdracht]` → `gemini_blueprint.md` (HavunCore root) → `/mpc ga maar` (blueprint persisteert tussen sessies)
 - Memory flow: `/mem` → leest `C:/Users/henkv/.claude/projects/[SLUG]/memory/MEMORY.md`
 - Bij config-issues na wijziging `havun-projects.php`: altijd `php artisan config:clear`
+- Doc Intelligence MEDIUM duplicaten zijn vrijwel altijd false positives — bulk-negeren is correct
