@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-05-28
+last_updated: 2026-05-29
 ---
 
 # HavunCore — Handover
@@ -12,47 +12,51 @@ last_updated: 2026-05-28
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste commit:** `c2f6f66` — security update Symfony packages
+**Laatste commit:** `197dc43` — dynamic workflows toegevoegd aan AI workflow doctrine
 
-## Wat is er recent gedaan (28 mei)
+## Wat is er recent gedaan (29 mei)
 
-### Security fixes (kritiek — CVE's gepusht)
-- `symfony/http-foundation` 7.4.1 → 7.4.13 (CVE-2026-48736: SSRF bypass fix)
-- `symfony/routing` 7.4.12 → 7.4.13 (CVE-2026-48784: URL normalization fix)
-- `symfony/polyfill-intl-idn` 1.33.0 → 1.38.1 (CVE-2026-46644: Punycode fix)
+### JudoScoreBoard — Play Console screenshots opgelost
+- Screenshots werden steeds afgekeurd (⊘) — oorzaak: bibliotheek geopend vanuit Functieafbeelding-context (1024×500) i.p.v. Telefoon-context
+- Fix: "Items toevoegen" klikken binnenin de rode Telefoon-box, niet de knop bovenaan
+- Native 1080×1920 ADB screenshots zijn correct en worden nu geaccepteerd
 
-### Config
-- `judoscoreboard` entry definitief gecommit in `config/havun-projects.php`
+### AI Werkwijze uitgebreid met Dynamic Workflows
+- `CLAUDE.md`: drie pijlers toegevoegd — Gemini (architect/brainstorm), Claude normaal (klein), Claude dynamic workflow (groot)
+- `docs/kb/runbooks/gemini-claude-workflow.md`: nieuwe sectie met decision table + uitleg
+- Dynamic workflows roepen `havun:gemini` automatisch aan als eerste stap — geen handmatige `/arch` + `/mpc` meer nodig voor grote taken
+- Starten: gewoon de opdracht typen (ultracode mode) — Claude beslist zelf
 
-### Doc Intelligence cleanup
-- 4 HIGH issues genegeerd (archive + andere-project docs)
-- Alle MEDIUM duplicaten bulk-genegeerd (false positives — structuurmatch, niet inhoudsdup)
-- Mermaid `[[node]]` broken-link false positives genegeerd (issues 15836, 15837)
-- 0 open issues na cleanup
+### Projectprioriteiten bijgewerkt
+- Munus = geparkeerd (niet meer actief)
+- Actieve focus: JudoScoreBoard, Aeterna, SafeHavun, JudoToernooi, Herdenkingsportaal, Studieplanner
 
-## Openstaande kleine punten
+## Openstaande punten
 
-- Dutch error string: `'API_UNAVAILABLE (timeout of connectiefout)'` in `HavunPackCommand::fetchApiSamples()` — bewust gelaten, lage prioriteit
-- `sync-start-command.md` runbook heeft incomplete projectlijst (mist Munus, Aeterna, Havunity)
-- **JudoScoreBoard**: `/arch` pre-publish review nog uitvoeren in aparte sessie
+- **JudoScoreBoard**: pre-publish review via dynamic workflow (eerste echte dynamic workflow sessie)
+- **Aeterna**: Week 2-plan wacht op go/no-go van Henk
+- **HavunAdmin**: Alpine CSP-migratie 21 views open
+- Dutch error string: `'API_UNAVAILABLE (timeout of connectiefout)'` in `HavunPackCommand::fetchApiSamples()` — lage prioriteit
+- `sync-start-command.md` runbook heeft incomplete projectlijst
 
 ## Lopende projecten (per project)
 
 | Project | Status |
 |---------|--------|
-| JudoScoreBoard | Pre-publish review pending via `/arch` |
-| SafeHavun | Stabiel |
+| JudoScoreBoard | Play Console screenshots OK — pre-publish review via dynamic workflow |
+| Aeterna | Feature-complete — Week 2-plan wacht op go/no-go |
+| SafeHavun | Stabiel v1.1.3 |
 | Herdenkingsportaal | Stabiel |
 | JudoToernooi | Stabiel |
 | HavunAdmin | Stabiel — Alpine CSP-migratie 21 views open |
-| Munus | MVP Fase 1 — ontwerp klaar, code nog niet gestart |
-| Aeterna | Feature-complete — Week 2-plan wacht op go/no-go |
+| Munus | **GEPARKEERD** |
+| Studieplanner | In ontwikkeling — geen bekende open items |
 
 ## Architectuurprincipes
 
-- Gemini = architect (groot contextvenster, blauwdrukken)
-- Claude = validator + executor (lokale schijf, implementatie)
-- Blueprint flow: `/arch [opdracht]` → `gemini_blueprint.md` (HavunCore root) → `/mpc ga maar` (blueprint persisteert tussen sessies)
+- **Gemini** = architect + brainstorm (groot contextvenster, tweede mening) — via `/arch` of automatisch in dynamic workflow
+- **Claude dynamic workflow** = grote taken (ultracode mode) — roept Gemini aan, implementeert parallel, test, commit
+- **Claude normaal** = kleine fixes (< 5 bestanden, afgebakend)
 - Memory flow: `/mem` → leest `C:/Users/henkv/.claude/projects/[SLUG]/memory/MEMORY.md`
 - Bij config-issues na wijziging `havun-projects.php`: altijd `php artisan config:clear`
 - Doc Intelligence MEDIUM duplicaten zijn vrijwel altijd false positives — bulk-negeren is correct
