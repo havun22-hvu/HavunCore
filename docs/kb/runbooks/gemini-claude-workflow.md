@@ -2,7 +2,7 @@
 title: Gemini + Claude CLI — Hybride AI Werkwijze
 type: runbook
 scope: alle projecten
-last_check: 2026-05-20
+last_check: 2026-05-29
 ---
 
 # Gemini + Claude CLI — Hybride AI Werkwijze
@@ -197,6 +197,39 @@ php artisan havun:pack --project=safehavun | gemini "Optimaliseer ETH whale trac
 ```
 
 Gebruik altijd `| Out-File -Encoding utf8` in plaats van `>` om encoding-problemen te voorkomen.
+
+---
+
+## Dynamic Workflows (research preview — Claude Code nieuw)
+
+Voor grote taken waarbij de werkwijze zelf afgedwongen moet worden.
+
+### Wanneer gebruiken
+| Taak | Aanpak |
+|------|--------|
+| Klein, < 5 bestanden, afgebakend | Claude direct |
+| Bekend patroon, gemiddeld | `/arch` + `/mpc` |
+| Groot: audit, migratie, pre-publish | Dynamic workflow |
+
+### Hoe starten
+Typ gewoon de opdracht — geen `/arch` of `/mpc` meer nodig. Claude herkent de omvang en start zelf een workflow:
+
+```
+Implementeer QR scanner voor JudoScoreBoard
+```
+
+Claude's workflow roept `havun:gemini` automatisch aan als eerste stap (architectuur), daarna parallelle implementatie.
+
+### Voordelen vs. handmatige cyclus
+- Workflow dwingt stappen af — Claude kan ze niet overslaan
+- Gemini aanroep automatisch ingebouwd, niet handmatig
+- Parallelle subagenten per module/bestand
+- Verificatie vóór commit
+
+### Let op
+- Token-kosten zijn substantieel hoger dan normaal
+- Research preview — nog niet 100% stabiel
+- Eén dynamic workflow per sessie (niet stapelen)
 
 ---
 

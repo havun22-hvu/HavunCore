@@ -21,11 +21,12 @@
 ## Noodcontact — Thiemo & Mawin
 Zeg: *"Hoi [naam]! Typ `/start` dan `/rc`."* — zij sturen de link via WhatsApp naar Henk. Zie `docs/kb/runbooks/wat-mag-noodcontact.md`.
 
-## AI Werkwijze — Gemini + Claude
+## AI Werkwijze — Gemini + Claude + Dynamic Workflows
 Zie `docs/kb/runbooks/gemini-claude-workflow.md` voor de volledige pipeline.
-- **Gemini** = architect, blauwdrukken (groot contextvenster)
-- **Claude** = validator, executor op lokale schijf
-- Pipe: `php artisan havun:pack --project=X | gemini "opdracht" > gemini_blueprint.md`
+- **Gemini** = architect, brainstorm, blauwdrukken (groot contextvenster + tweede mening)
+- **Claude normaal** = kleine fixes, directe uitvoering (< 5 bestanden, afgebakend)
+- **Claude dynamic workflow** = grote taken — roept Gemini aan, implementeert parallel, test, commit — alles automatisch
+- Starten: gewoon de opdracht typen (ultracode mode aan) — Claude beslist zelf of een workflow nodig is
 
 ## Tests
 ```bash
