@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-05-29
+last_updated: 2026-05-31
 ---
 
 # HavunCore — Handover
@@ -12,30 +12,34 @@ last_updated: 2026-05-29
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste commit:** `197dc43` — dynamic workflows toegevoegd aan AI workflow doctrine
+**Laatste commit:** IDSee Midnight docs + HavunCore autoMode settings fix
 
-## Wat is er recent gedaan (29 mei)
+## Wat is er recent gedaan (31 mei)
 
-### JudoScoreBoard — Play Console screenshots opgelost
-- Screenshots werden steeds afgekeurd (⊘) — oorzaak: bibliotheek geopend vanuit Functieafbeelding-context (1024×500) i.p.v. Telefoon-context
-- Fix: "Items toevoegen" klikken binnenin de rode Telefoon-box, niet de knop bovenaan
-- Native 1080×1920 ADB screenshots zijn correct en worden nu geaccepteerd
+### IDSee — Midnight Network kennisbank aangelegd
+- `docs/midnight/OVERVIEW.md` — platform architectuur, SDK, roadmap status (Kolu actief!)
+- `docs/midnight/ZK-PATTERNS.md` — commitment/nullifier/Merkle patronen + 3 IDSee circuits uitgewerkt
+- `docs/midnight/COMPACT-LANGUAGE.md` — Compact DSL syntax, types, Midnight.js integratie (TypeScript-achtig, NIET Rust)
+- `docs/midnight/INTEGRATION-PLAN.md` — fasering fase 0-4, nieuwe services, DB schema
+- `docs/midnight/HOSKINSON-CONTEXT.md` — video samenvatting incl. Hawaiian roadmap (Kolu=actief, Mahalu=Q2, Ua=Q3 2026)
+- `docs/contracts/VERIFICATION.md` — pseudo-code gecorrigeerd van Rust naar Compact
+- Memory opgeslagen: `project_midnight_network.md` — Midnight voor IDSee én Aeterna
 
-### AI Werkwijze uitgebreid met Dynamic Workflows
-- `CLAUDE.md`: drie pijlers toegevoegd — Gemini (architect/brainstorm), Claude normaal (klein), Claude dynamic workflow (groot)
-- `docs/kb/runbooks/gemini-claude-workflow.md`: nieuwe sectie met decision table + uitleg
-- Dynamic workflows roepen `havun:gemini` automatisch aan als eerste stap — geen handmatige `/arch` + `/mpc` meer nodig voor grote taken
-- Starten: gewoon de opdracht typen (ultracode mode) — Claude beslist zelf
+### Midnight gebruik: IDSee + Aeterna
+- **IDSee**: anonieme ZK-verificatie fokkers/dierenartsen/chippers
+- **Aeterna**: zelfde patroon (use case nog te concretiseren)
+- Academy: https://academy.midnight.network (gratis, 3 certificaten — doorlopen vóór implementatie)
 
-### Projectprioriteiten bijgewerkt
-- Munus = geparkeerd (niet meer actief)
-- Actieve focus: JudoScoreBoard, Aeterna, SafeHavun, JudoToernooi, Herdenkingsportaal, Studieplanner
+### Globale settings fix — autoMode MD-bestanden
+- `~/.claude/settings.json`: `autoMode.allow` uitgebreid met patronen voor handover.md, context.md, HANDOVER.md, CLAUDE.md
+- Reden: extension vroeg steeds om bevestiging bij MD-edits buiten `.claude/*.md`
 
 ## Openstaande punten
 
 - **JudoScoreBoard**: pre-publish review via dynamic workflow (eerste echte dynamic workflow sessie)
-- **Aeterna**: Week 2-plan wacht op go/no-go van Henk
+- **Aeterna**: Week 2-plan wacht op go/no-go van Henk + Midnight use case concretiseren
 - **HavunAdmin**: Alpine CSP-migratie 21 views open
+- **IDSee Midnight**: Fase 0 = Academy doorlopen vóór implementatie begint
 - Dutch error string: `'API_UNAVAILABLE (timeout of connectiefout)'` in `HavunPackCommand::fetchApiSamples()` — lage prioriteit
 - `sync-start-command.md` runbook heeft incomplete projectlijst
 
@@ -44,11 +48,12 @@ last_updated: 2026-05-29
 | Project | Status |
 |---------|--------|
 | JudoScoreBoard | Play Console screenshots OK — pre-publish review via dynamic workflow |
-| Aeterna | Feature-complete — Week 2-plan wacht op go/no-go |
+| Aeterna | Feature-complete — Week 2-plan wacht op go/no-go + Midnight use case |
 | SafeHavun | Stabiel v1.1.3 |
 | Herdenkingsportaal | Stabiel |
 | JudoToernooi | Stabiel |
 | HavunAdmin | Stabiel — Alpine CSP-migratie 21 views open |
+| IDSee | Midnight KB aangelegd — klaar voor Fase 0 (Academy) |
 | Munus | **GEPARKEERD** |
 | Studieplanner | In ontwikkeling — geen bekende open items |
 
@@ -60,3 +65,5 @@ last_updated: 2026-05-29
 - Memory flow: `/mem` → leest `C:/Users/henkv/.claude/projects/[SLUG]/memory/MEMORY.md`
 - Bij config-issues na wijziging `havun-projects.php`: altijd `php artisan config:clear`
 - Doc Intelligence MEDIUM duplicaten zijn vrijwel altijd false positives — bulk-negeren is correct
+- **Midnight**: Compact = TypeScript-achtige DSL (niet Rust). Backend genereert proofs server-side — gebruikers zien nooit blockchain.
+- **autoMode.allow**: handover.md en context.md staan nu globaal in de allow-lijst (`~/.claude/settings.json`)
