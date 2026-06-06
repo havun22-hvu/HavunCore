@@ -2,7 +2,7 @@
 title: Runbook: Reverb WebSocket Troubleshooting
 type: runbook
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-06-06
 ---
 
 # Runbook: Reverb WebSocket Troubleshooting
@@ -112,6 +112,36 @@ supervisorctl status reverb-staging
 ```bash
 systemctl disable --now judotoernooi-reverb-staging
 ```
+
+### 6. FATAL na MySQL-/dependency-herstart (stale logs!)
+
+**Symptoom:** `supervisorctl status` toont `reverb` én `reverb-staging` op **FATAL — Exited too quickly**.
+Poorten 8080/8081 dood. In de webapp-status: "niet goed" voor beide tegelijk.
+
+**Oorzaak:** Reverb leest bij boot de cache-tabel (`BroadcastConfigValidator` → cache-driver = database/MySQL).
+Als MySQL even herstart, faalt die boot-check (`SQLSTATE[HY000] [2002] Connection refused`),
+supervisor verbruikt `startretries` en zet het proces op **FATAL**. MySQL komt seconden later terug,
+maar **supervisor herstelt nooit zelf uit FATAL** → reverb blijft dagen down terwijl de DB allang werkt.
+
+**Valkuil:** de errors in `storage/logs/reverb.log` zijn dan **stale** — kijk altijd naar de mtime:
+```bash
+stat -c '%y' /var/www/judotoernooi/laravel/storage/logs/reverb.log   # == MySQL-herstartmoment?
+# Werkt de DB nu wél?
+cd /var/www/judotoernooi/laravel && sudo -u www-data php artisan tinker \
+  --execute='echo DB::connection()->getDatabaseName();'
+```
+
+**Fix:** als de DB nu bereikbaar is → simpelweg herstarten:
+```bash
+supervisorctl restart reverb reverb-staging
+sudo -u www-data php artisan reverb:health   # verifieer
+```
+
+**Structurele preventie (JudoToernooi-config):** verhoog `startretries` in de supervisor-conf, of maak
+reverb tolerant voor een korte DB-hapering bij boot, zodat een MySQL-restart geen permanente FATAL geeft.
+
+> **Incident 4-6 juni 2026:** MySQL-restart 4 jun 06:21 UTC → reverb prod+staging FATAL → 2,5 dag down
+> ondanks gezonde DB. Opgelost met `supervisorctl restart`. Status-monitoring toonde dit correct.
 
 ## Server poorten
 
