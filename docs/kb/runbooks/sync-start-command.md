@@ -2,7 +2,7 @@
 title: Runbook: Start-command sync naar alle projecten
 type: runbook
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-06-06
 ---
 
 # Runbook: Start-command sync naar alle projecten
@@ -21,21 +21,26 @@ last_check: 2026-04-22
 1. **Controleer bron:** Lees `D:\GitHub\HavunCore\.claude\commands\start.md`.
 2. **Kopieer naar elk project:** Vervang `{project}/.claude/commands/start.md` door de inhoud van HavunCore.
 
-### Projecten (zie docs/kb/projects-index.md)
+### Projecten (bron van waarheid: docs/kb/projects-index.md)
 
-| Project        | Pad naar start.md |
-|----------------|-------------------|
-| HavunCore      | (bron) `.claude/commands/start.md` |
-| HavunAdmin     | `D:\GitHub\HavunAdmin\.claude\commands\start.md` |
+| Project           | Pad naar start.md |
+|-------------------|-------------------|
+| HavunCore         | (bron) `.claude/commands/start.md` |
+| HavunAdmin        | `D:\GitHub\HavunAdmin\.claude\commands\start.md` |
 | Herdenkingsportaal | `D:\GitHub\Herdenkingsportaal\.claude\commands\start.md` |
-| JudoToernooi   | `D:\GitHub\JudoToernooi\.claude\commands\start.md` |
-| SafeHavun      | `D:\GitHub\SafeHavun\.claude\commands\start.md` |
-| HavunClub      | `D:\GitHub\HavunClub\.claude\commands\start.md` |
-| Studieplanner  | `D:\GitHub\Studieplanner\.claude\commands\start.md` |
-| Infosyst       | `D:\GitHub\Infosyst\.claude\commands\start.md` |
-| Munus          | `D:\GitHub\Munus\.claude\commands\start.md` |
-| Aeterna        | `D:\GitHub\Aeterna\.claude\commands\start.md` |
-| Havunity       | `D:\GitHub\Havunity\.claude\commands\start.md` |
+| Havun             | `D:\GitHub\Havun\.claude\commands\start.md` |
+| JudoToernooi      | `D:\GitHub\JudoToernooi\.claude\commands\start.md` |
+| SafeHavun         | `D:\GitHub\SafeHavun\.claude\commands\start.md` |
+| Studieplanner     | `D:\GitHub\Studieplanner\.claude\commands\start.md` |
+| Studieplanner-api | `D:\GitHub\Studieplanner-api\.claude\commands\start.md` |
+| Infosyst          | `D:\GitHub\infosyst\.claude\commands\start.md` |
+| IDSee             | `D:\GitHub\IDSee\.claude\commands\start.md` |
+| JudoScoreBoard    | `D:\GitHub\JudoScoreBoard\.claude\commands\start.md` |
+| HavunClub         | `D:\GitHub\HavunClub\.claude\commands\start.md` |
+| VPDUpdate         | `D:\GitHub\VPDUpdate\.claude\commands\start.md` |
+| Aeterna           | `D:\GitHub\Aeterna\.claude\commands\start.md` |
+| Munus             | `D:\GitHub\Munus\.claude\commands\start.md` (⏸ geparkeerd) |
+| Havunity          | `D:\GitHub\Havunity\.claude\commands\start.md` |
 
 3. **Optioneel:** Als een project geen `.claude/commands/` heeft, maak de map aan en plak start.md.
 
