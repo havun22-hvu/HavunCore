@@ -125,7 +125,7 @@ class HavunPackCommand extends Command
                     ? $response->body()
                     : 'API_UNAVAILABLE (HTTP ' . $response->status() . ')';
             } catch (\Throwable) {
-                $samples[$endpoint] = 'API_UNAVAILABLE (timeout of connectiefout)';
+                $samples[$endpoint] = 'API_UNAVAILABLE (timeout or connection error)';
             }
         }
 

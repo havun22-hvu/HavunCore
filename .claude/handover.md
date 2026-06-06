@@ -40,7 +40,7 @@ last_updated: 2026-05-31
 - **Aeterna**: Week 2-plan wacht op go/no-go van Henk + Midnight use case concretiseren
 - **HavunAdmin**: Alpine CSP-migratie 21 views open
 - **IDSee Midnight**: Fase 0 = Academy doorlopen vóór implementatie begint
-- Dutch error string: `'API_UNAVAILABLE (timeout of connectiefout)'` in `HavunPackCommand::fetchApiSamples()` — lage prioriteit
+- ~~Dutch error string in `HavunPackCommand::fetchApiSamples()`~~ ✓ opgelost 6 jun (nu Engels: `timeout or connection error`)
 - ~~`sync-start-command.md` runbook heeft incomplete projectlijst~~ ✓ opgelost 6 jun (tabel gesynct met projects-index + Havun/Studieplanner-api/IDSee/JudoScoreBoard/VPDUpdate toegevoegd)
 
 ## Lopende projecten (per project)
