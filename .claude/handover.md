@@ -14,12 +14,20 @@ last_updated: 2026-06-07
 **Branch:** master (schoon, alles gepusht)
 **Laatste werk:** In-app health-meldingen (Fase 1) — mail vervangen door notificaties in de HavunCore-webapp.
 
+## Wat is er gedaan (8 juni)
+
+### Awasete-ippon waarschuwing opgezocht + KB-doc bijgewerkt
+- Henk vroeg waar de docs staan van de LCD-waarschuwing bij 2e waza-ari in osaekomi (door JudoScoreBoard/JudoToernooi gebouwd, live: app `dda66c4`, backend+display `84a79367`).
+- Gevonden: `JudoScoreBoard/.claude/plan-awasete-waarschuwing.md` (plan) + `.claude/context.md` §"Awasete-ippon waarschuwing" (volledige spec) + `JudoToernooi/laravel/docs/2-FEATURES/SCOREBORD-APP.md` (referentie).
+- **Gat gedicht:** SCOREBORD-APP.md was stale (apr 21) — nieuw `osaekomi.warning`-event, knipperende rode LCD-balk + instelbaar WebAudio-geluid (piep/gong/sirene) toegevoegd. Commit `32111062` op JudoToernooi `main`, gepusht.
+- KB-indexer detecteerde de wijziging nog niet (hash/mtime-cache) — pikt het op bij volgende volledige index.
+
 ## Wat is er gedaan (7 juni — oriëntatie)
 
 ### Auth-fout CLI + extension (opgelost)
 - 401 in CLI (`/start`) én VS Code extension — OAuth-token verlopen. Fix: `/login` in CLI → URL kopiëren → browser. Extension deelt dezelfde token, werkt daarna automatisch weer.
 - Werkwijze-review: `/arch`, `/mpc`, `gemini_blueprint.md`-locatie (root HavunCore), blueprint persisteert tussen sessies.
-- Laravel CVE-2026-48019 (CRLF injection, `laravel/framework v12.44.0`) gesignaleerd — nog niet gefixed.
+- ~~Laravel CVE-2026-48019 (CRLF injection, `laravel/framework v12.44.0`)~~ ✓ opgelost: framework staat nu op v12.61.1, `composer audit` schoon (geverifieerd 8 jun).
 
 ## Wat is er gedaan (6-7 juni)
 
