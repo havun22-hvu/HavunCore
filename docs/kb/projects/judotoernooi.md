@@ -297,14 +297,19 @@ Zie [AutoFix Reference](../reference/autofix.md) voor volledige documentatie.
 ## Server
 
 ```bash
-# Deploy
-cd /var/www/judotoernooi/laravel
-git pull origin main
+# Deploy — let op: /laravel is een symlink → repo-prod (zie bevinding hieronder)
+cd /var/www/judotoernooi/repo-prod
+git pull --ff-only origin main      # post-merge hook wist caches + draait `optimize`
 composer install --no-dev
 npm run build
 php artisan migrate --force
-php artisan config:clear && php artisan cache:clear
+# GEEN handmatige config:clear erna (verprutst de post-merge optimize);
+# als je tóch wist: sluit af met `php laravel/artisan optimize`
 ```
+
+> ⚠️ **Deploy-route geverifieerd 2026-06-08:** `/var/www/judotoernooi/laravel` is een symlink
+> naar `repo-prod`; de parent `/var/www/judotoernooi` is dirty/legacy (niet gebruiken).
+> Volledige bevinding: [`../decisions/judotoernooi-prod-deploy-repo-prod-2026-06-08.md`](../decisions/judotoernooi-prod-deploy-repo-prod-2026-06-08.md)
 
 ## Code Review (14 feb 2026)
 

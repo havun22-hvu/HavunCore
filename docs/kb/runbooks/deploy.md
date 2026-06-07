@@ -82,17 +82,19 @@ git push
 
 # 3. Deploy naar production
 ssh root@SERVER_IP (zie context.md)
-cd /var/www/judotoernooi/laravel
-git pull origin main
+cd /var/www/judotoernooi/repo-prod          # /laravel is een symlink hierheen
+git pull --ff-only origin main              # post-merge hook wist caches + draait `optimize`
 composer install --no-dev
 npm run build
 php artisan migrate --force
-php artisan config:clear && php artisan cache:clear
+# GEEN handmatige config:clear erna (verprutst de post-merge optimize);
+# zo wel nodig: sluit af met `php laravel/artisan optimize`
 ```
 
 > **Let op:** JudoToernooi gebruikt `main` branch (niet `master`)
-> **Server pad:** `/var/www/judotoernooi/laravel`
+> **Server pad (deploy):** `/var/www/judotoernooi/repo-prod` — `/var/www/judotoernooi/laravel` is een **symlink** hierheen; de parent-repo `/var/www/judotoernooi` is dirty/legacy (niet gebruiken)
 > **Staging:** `/var/www/judotoernooi/staging`
+> ⚠️ Geverifieerd 2026-06-08 — volledige bevinding: [`judotoernooi-prod-deploy-repo-prod-2026-06-08.md`](../decisions/judotoernooi-prod-deploy-repo-prod-2026-06-08.md)
 
 ## HavunCore Webapp
 
