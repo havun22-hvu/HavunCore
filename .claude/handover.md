@@ -37,11 +37,14 @@ last_updated: 2026-06-07
 - nginx: `health-alerts` toegevoegd aan de Laravel-allowlist in `sites-enabled/havuncore.havun.nl` (backup `/root/havuncore.havun.nl.bak-2026-06-07`), `nginx -t` ok, reloaded. `GET /api/health-alerts` → `{"success":true,"open_count":0,"data":[]}`.
 - E2E getest: command down→DB→API→resolve→cleanup. ✓
 
-**NOG TE DOEN door Henk (webapp-UI — bewust niet geforceerd):**
-1. **havuncore-webapp repo reconciliëren** — lokaal (`D:\GitHub\HavunCore\webapp`, branch `main`) staat mijn commit `feat: in-app health alert notifications (bell + panel)` klaar, maar local divergeert van origin (jouw niet-gepushte commits + untracked `.claude/commands/wu.md` botst met remote). Reconcileer + push.
-2. **Server-webapp deployen** (`/var/www/havuncore/webapp`, staat 9 commits achter origin, working tree schoon): `git pull`, dan frontend builden (`cd frontend && npm run build`) + dist→`webapp/public` zoals gebruikelijk, en `pm2 restart havuncore-backend` voor de nieuwe `/api/internal/notify`.
-3. **Browser-check**: bel-badge + paneel + layout (mobiel + desktop).
-> Tot dat gebeurt: alerts wórden correct in de DB vastgelegd; ze zijn alleen nog niet zichtbaar in de webapp. De real-time ping (`/api/internal/notify`) geeft tot dan een onschuldige 404 (afgevangen).
+**Webapp-UI nu OOK live (7 jun, na "het kan nu"):**
+- `havuncore-webapp` `main` gereconcilieerd: jouw WIP veilig in `stash@{0}` ("henk-wip-claude-commands-2026-06-07"), mijn feature gerebased op origin (duplicaat-commit `dd43bbe` auto-dropped), `server.js`-conflict opgelost (origin's skip-lijst + `/internal/`), gepusht `27b2f5a..1bd11b1`.
+- Server-webapp (`/var/www/havuncore/webapp`): `git pull` (ff), frontend gebuild, `dist`→`public` (extras apk/downloads behouden, oude assets opgeruimd), `pm2 restart havuncore-backend`.
+- Geverifieerd live: PWA 200, `/api/internal/notify` 200 (real-time bridge), `/api/health-alerts` 200, volledige E2E (command→DB→ping→API→resolve) ✓.
+
+**NOG TE DOEN door Henk:**
+1. **Browser-check**: 🔔 bel-badge + paneel + layout (mobiel + desktop) — visueel.
+2. **Je WIP terughalen**: `cd D:\GitHub\HavunCore\webapp && git stash pop` (stash@{0}). De `.claude`-command files (mpc/start/CLAUDE/wu) zijn op origin gewijzigd, dus pop kan conflicten geven — even nakijken.
 > Let op: `sites-available/havuncore.havun.nl` is een losse file (geen symlink) en wijkt af van `sites-enabled` — pre-existing; alleen `sites-enabled` is geladen.
 
 ## Wat is er recent gedaan (31 mei)
