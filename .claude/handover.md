@@ -30,6 +30,20 @@ last_updated: 2026-06-07
 - **webapp-repo (havuncore-webapp, main):** intern localhost-endpoint `/api/internal/notify` → `io.emit('health-alert')`; frontend `useHealthAlerts`-hook + `NotificationBell` (badge + paneel, gegroepeerd op scope/project) in de Header.
 - **Keuzes Henk:** in-app paneel (geen PWA-push), gefaseerd (Fase 2 = per-app later), UptimeRobot als externe vangnet, GEEN eigen mail.
 
+### DEPLOY-STATUS (7 jun, nacht)
+**LIVE + geverifieerd op prod (188.245.159.115):**
+- Laravel: `git merge origin/master` (prod had auto-commit-divergentie, conflictloos), `migrate --force` → `health_alerts` tabel aangemaakt, caches geleegd.
+- Script `/usr/local/bin/havun-health-check.sh` vervangen door de artisan-versie (backup: `.bak-pre-artisan`). Draait schoon (healthy = 0 alerts). Mail-pad weg.
+- nginx: `health-alerts` toegevoegd aan de Laravel-allowlist in `sites-enabled/havuncore.havun.nl` (backup `/root/havuncore.havun.nl.bak-2026-06-07`), `nginx -t` ok, reloaded. `GET /api/health-alerts` → `{"success":true,"open_count":0,"data":[]}`.
+- E2E getest: command down→DB→API→resolve→cleanup. ✓
+
+**NOG TE DOEN door Henk (webapp-UI — bewust niet geforceerd):**
+1. **havuncore-webapp repo reconciliëren** — lokaal (`D:\GitHub\HavunCore\webapp`, branch `main`) staat mijn commit `feat: in-app health alert notifications (bell + panel)` klaar, maar local divergeert van origin (jouw niet-gepushte commits + untracked `.claude/commands/wu.md` botst met remote). Reconcileer + push.
+2. **Server-webapp deployen** (`/var/www/havuncore/webapp`, staat 9 commits achter origin, working tree schoon): `git pull`, dan frontend builden (`cd frontend && npm run build`) + dist→`webapp/public` zoals gebruikelijk, en `pm2 restart havuncore-backend` voor de nieuwe `/api/internal/notify`.
+3. **Browser-check**: bel-badge + paneel + layout (mobiel + desktop).
+> Tot dat gebeurt: alerts wórden correct in de DB vastgelegd; ze zijn alleen nog niet zichtbaar in de webapp. De real-time ping (`/api/internal/notify`) geeft tot dan een onschuldige 404 (afgevangen).
+> Let op: `sites-available/havuncore.havun.nl` is een losse file (geen symlink) en wijkt af van `sites-enabled` — pre-existing; alleen `sites-enabled` is geladen.
+
 ## Wat is er recent gedaan (31 mei)
 
 ### IDSee — Midnight Network kennisbank aangelegd
