@@ -14,6 +14,13 @@ last_updated: 2026-06-07
 **Branch:** master (schoon, alles gepusht)
 **Laatste werk:** In-app health-meldingen (Fase 1) — mail vervangen door notificaties in de HavunCore-webapp.
 
+## Wat is er gedaan (7 juni — oriëntatie)
+
+### Auth-fout CLI + extension (opgelost)
+- 401 in CLI (`/start`) én VS Code extension — OAuth-token verlopen. Fix: `/login` in CLI → URL kopiëren → browser. Extension deelt dezelfde token, werkt daarna automatisch weer.
+- Werkwijze-review: `/arch`, `/mpc`, `gemini_blueprint.md`-locatie (root HavunCore), blueprint persisteert tussen sessies.
+- Laravel CVE-2026-48019 (CRLF injection, `laravel/framework v12.44.0`) gesignaleerd — nog niet gefixed.
+
 ## Wat is er gedaan (6-7 juni)
 
 ### Incident: reverb 2,5 dag down (opgelost)
