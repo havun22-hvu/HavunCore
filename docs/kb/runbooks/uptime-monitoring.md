@@ -2,7 +2,7 @@
 title: Runbook: Uptime Monitoring & SLA
 type: runbook
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-06-07
 ---
 
 # Runbook: Uptime Monitoring & SLA
@@ -15,7 +15,7 @@ last_check: 2026-04-22
 | App | URL | Uptime-doel | Kritiek? | Toelichting |
 |-----|-----|-------------|----------|-------------|
 | Herdenkingsportaal | herdenkingsportaal.nl | 99.5% (~43u/jaar) | Ja | Publiek verkeer, betalingen |
-| JudoToernooi | judotoernooi.havun.nl | 99% (~87u/jaar) | Ja | Actief tijdens toernooien |
+| JudoToernooi | judotournament.org | 99% (~87u/jaar) | Ja | Actief tijdens toernooien (NIET judotoernooi.havun.nl — die heeft geen vhost) |
 | HavunCore | havuncore.havun.nl | 99% | Ja | Andere apps zijn afhankelijk |
 | HavunAdmin | havunadmin.havun.nl | 95% | Nee | Intern beheer |
 | SafeHavun | safehavun.havun.nl | 95% | Nee | Beperkt gebruik |
@@ -31,17 +31,28 @@ last_check: 2026-04-22
 
 ### Wat het doet:
 - Checkt alle 6 publieke apps met `curl -sk` (elke 5 min)
+- Checkt **reverb** broadcasting via `supervisorctl status` (FATAL/niet-RUNNING → alert)
 - Bij downtime: stuurt e-mail via HavunCore Laravel mail
 - Bij herstel: stuurt recovery e-mail
 - Rate limit: max 1 alert per uur per app (voorkomt spam)
 
+> **Bron in versiebeheer:** `HavunCore/scripts/havun-health-check.sh` (+ `havun-health-alert.php`).
+> Na bewerken: scp naar `/usr/local/bin/` op de server en handmatig draaien om te verifiëren.
+
 ### Gemonitorde apps:
 - HavunCore (`/health`)
 - Herdenkingsportaal
-- JudoToernooi
+- JudoToernooi (`judotournament.org` — de canonieke prod-URL)
 - HavunAdmin
 - SafeHavun
 - Infosyst
+- **reverb** (broadcasting prod + staging, supervisor)
+
+> ⚠️ **Alerts hangen aan SendGrid.** Als de log `[MAIL ERROR] ... Maximum credits exceeded`
+> toont, falen ALLE meldingen stil — je krijgt dan niets, ook al detecteert het script de
+> downtime correct. Check bij "ik krijg geen alerts" altijd eerst:
+> `grep 'MAIL ERROR' /var/log/havun-health.log | tail`. Fix = SendGrid-credits bijladen of
+> overstappen naar een werkende mailprovider (`.env` → overleg met Henk).
 
 ### Troubleshooting:
 ```bash
