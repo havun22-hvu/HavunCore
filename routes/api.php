@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\AutoFixController;
 use App\Http\Controllers\Api\ClaudeTaskController;
 use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\DocIntelligenceController;
+use App\Http\Controllers\Api\HealthAlertController;
 use App\Http\Controllers\Api\ObservabilityController;
 use App\Http\Controllers\Api\QrAuthController;
 use App\Http\Controllers\Api\StudySessionController;
@@ -156,6 +157,12 @@ Route::prefix('studieplanner')->group(function () {
     // Get Reverb connection credentials for frontend
     Route::get('/reverb/credentials', [StudySessionController::class, 'credentials'])
         ->name('api.studieplanner.reverb.credentials');
+});
+
+// Health Alerts API - in-app uptime/health notifications (replaces email alerts)
+Route::prefix('health-alerts')->group(function () {
+    Route::get('/', [HealthAlertController::class, 'index'])->name('api.health-alerts.index');
+    Route::post('/{id}/dismiss', [HealthAlertController::class, 'dismiss'])->name('api.health-alerts.dismiss');
 });
 
 // AutoFix API - Central error analysis and fix proposals

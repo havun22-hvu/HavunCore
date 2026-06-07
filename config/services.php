@@ -50,4 +50,17 @@ return [
         'model'   => env('GEMINI_MODEL', 'gemini-3.1-flash-lite'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Webapp real-time notify
+    |--------------------------------------------------------------------------
+    |
+    | Localhost endpoint on the HavunCore webapp (Node.js) backend that the
+    | health:alert command pings so the notification panel updates live via
+    | Socket.io. Defaults to the production port (3001); best-effort only.
+    |
+    */
+
+    'webapp_notify_url' => env('WEBAPP_NOTIFY_URL', 'http://127.0.0.1:3001/api/internal/notify'),
+
 ];

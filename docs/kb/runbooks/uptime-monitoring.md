@@ -24,49 +24,49 @@ last_check: 2026-06-07
 ## Server-side Health Check (ACTIEF sinds 29-03-2026)
 
 **Script:** `/usr/local/bin/havun-health-check.sh`
-**Mail script:** `/usr/local/bin/havun-health-alert.php`
 **Cron:** Elke 5 minuten (`*/5 * * * *`)
 **Log:** `/var/log/havun-health.log`
-**State:** `/var/run/havun-health/`
+
+> **GEEN E-MAIL meer (sinds 7 juni 2026).** Alerts worden in-app getoond, niet gemaild.
+> De oude `havun-health-alert.php` (SendGrid) is uitgefaseerd (`Maximum credits exceeded`).
 
 ### Wat het doet:
 - Checkt alle 6 publieke apps met `curl -sk` (elke 5 min)
 - Checkt **reverb** broadcasting via `supervisorctl status` (FATAL/niet-RUNNING → alert)
-- Bij downtime: stuurt e-mail via HavunCore Laravel mail
-- Bij herstel: stuurt recovery e-mail
-- Rate limit: max 1 alert per uur per app (voorkomt spam)
+- Roept per check `php artisan health:alert <key> --scope= --project= --status=down|up` aan
+- Stateless: de `health_alerts`-tabel dedupet (down = open alert, up = resolved; up op
+  een gezonde key is een no-op). Geen state-files, geen rate-limit-gedoe meer.
 
-> **Bron in versiebeheer:** `HavunCore/scripts/havun-health-check.sh` (+ `havun-health-alert.php`).
+### Waar zie je de meldingen?
+- **HavunCore-webapp** → 🔔 notificatie-paneel (badge + lijst), real-time via Socket.io.
+  Algemene/server-meldingen staan bovenaan, daarna gegroepeerd per project.
+- **Fase 2 (later):** project-meldingen ook in de betreffende app zelf, via
+  `GET /api/health-alerts?project=<naam>`.
+- **Totale serveruitval** (webapp zelf plat) → externe laag **UptimeRobot** (zie onder).
+
+> **Bron in versiebeheer:** `HavunCore/scripts/havun-health-check.sh`.
 > Na bewerken: scp naar `/usr/local/bin/` op de server en handmatig draaien om te verifiëren.
+> Backend: migratie `health_alerts`, `HealthAlert` model, `health:alert` command,
+> `HealthAlertController` (`/api/health-alerts`).
 
 ### Gemonitorde apps:
-- HavunCore (`/health`)
-- Herdenkingsportaal
-- JudoToernooi (`judotournament.org` — de canonieke prod-URL)
-- HavunAdmin
-- SafeHavun
-- Infosyst
-- **reverb** (broadcasting prod + staging, supervisor)
-
-> ⚠️ **Alerts hangen aan SendGrid.** Als de log `[MAIL ERROR] ... Maximum credits exceeded`
-> toont, falen ALLE meldingen stil — je krijgt dan niets, ook al detecteert het script de
-> downtime correct. Check bij "ik krijg geen alerts" altijd eerst:
-> `grep 'MAIL ERROR' /var/log/havun-health.log | tail`. Fix = SendGrid-credits bijladen of
-> overstappen naar een werkende mailprovider (`.env` → overleg met Henk).
+- HavunCore (`/health`) → scope=server
+- Herdenkingsportaal, JudoToernooi (`judotournament.org`), HavunAdmin, SafeHavun, Infosyst → scope=project
+- **reverb** (broadcasting prod + staging, supervisor) → scope=project, JudoToernooi
 
 ### Troubleshooting:
 ```bash
 # Handmatig draaien:
 /usr/local/bin/havun-health-check.sh
 
-# Log bekijken:
+# Log bekijken (alleen down-events worden gelogd):
 tail -20 /var/log/havun-health.log
 
-# State files (= huidige downtime):
-ls -la /var/run/havun-health/
+# Huidige open meldingen (vanaf de server):
+cd /var/www/havuncore/production && php artisan tinker --execute="echo \App\Models\HealthAlert::open()->count();"
 
-# Reset alerting (na false positive):
-rm -f /var/run/havun-health/[AppName]
+# Of via de API:
+curl -s https://havuncore.havun.nl/api/health-alerts | head
 ```
 
 ## UptimeRobot (optioneel — externe monitoring)

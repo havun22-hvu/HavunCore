@@ -1,4 +1,8 @@
 <?php
+// ⚠️ DEPRECATED (6 jun 2026) — no longer called. Email alerting was replaced by
+// in-app notifications via `php artisan health:alert` (see havun-health-check.sh).
+// Kept for reference only. Henk's policy: no email alerts.
+//
 // Usage: php havun-health-alert.php "App Name" "url" "status" "down|up"
 //
 // SOURCE OF TRUTH: HavunCore/scripts/havun-health-alert.php (version controlled)

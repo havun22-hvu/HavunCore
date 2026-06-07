@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-05-31
+last_updated: 2026-06-07
 ---
 
 # HavunCore — Handover
@@ -12,7 +12,23 @@ last_updated: 2026-05-31
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste commit:** IDSee Midnight docs + HavunCore autoMode settings fix
+**Laatste werk:** In-app health-meldingen (Fase 1) — mail vervangen door notificaties in de HavunCore-webapp.
+
+## Wat is er gedaan (6-7 juni)
+
+### Incident: reverb 2,5 dag down (opgelost)
+- MySQL-restart 4 jun 06:21 liet reverb prod+staging in **FATAL** (supervisor herstelt daar niet uit). `supervisorctl restart reverb reverb-staging` → opgelost. Nieuw scenario §6 in `reverb-troubleshoot.md`.
+
+### 3 monitoring-gaten gevonden + gedicht
+1. Reverb werd niet bewaakt → `check_reverb()` in health-check.
+2. JudoToernooi werd op dode URL `judotoernooi.havun.nl` (geen vhost) bewaakt → gecorrigeerd naar `judotournament.org`.
+3. Alert-mail faalde stil (SendGrid `Maximum credits exceeded`).
+
+### Fase 1: in-app health-meldingen (mail → webapp)
+- **HavunCore (master):** migratie `health_alerts`, model `HealthAlert`, command `health:alert`, `HealthAlertController` (`GET /api/health-alerts`, `POST /{id}/dismiss`), config `services.webapp_notify_url`. 6 tests, suite 1243 groen.
+- **Server-script** `scripts/havun-health-check.sh`: mail eruit, roept nu `php artisan health:alert` (stateless, DB dedupet). `havun-health-alert.php` = DEPRECATED.
+- **webapp-repo (havuncore-webapp, main):** intern localhost-endpoint `/api/internal/notify` → `io.emit('health-alert')`; frontend `useHealthAlerts`-hook + `NotificationBell` (badge + paneel, gegroepeerd op scope/project) in de Header.
+- **Keuzes Henk:** in-app paneel (geen PWA-push), gefaseerd (Fase 2 = per-app later), UptimeRobot als externe vangnet, GEEN eigen mail.
 
 ## Wat is er recent gedaan (31 mei)
 
@@ -36,6 +52,9 @@ last_updated: 2026-05-31
 
 ## Openstaande punten
 
+- **Health-meldingen Fase 2**: project-meldingen óók in de betreffende app tonen (via `GET /api/health-alerts?project=<naam>`) — per app, aparte sessies. Fase 1 (centraal in HavunCore-webapp) is live.
+- **Mailprovider**: SendGrid zit op creditlimiet. Eigen mail is nu helemaal uit (in-app + UptimeRobot ipv). Henk parkeerde de keuze om SendGrid bij te laden of naar Resend te gaan — alleen relevant als er ooit weer mail nodig is. Zie [[project-health-alerts-broken]].
+- **NotificationBell in browser testen**: door Henk visueel te checken (badge/paneel/layout) — Claude kan browser-UI niet testen.
 - **JudoScoreBoard**: pre-publish review via dynamic workflow (eerste echte dynamic workflow sessie)
 - **Aeterna**: Week 2-plan wacht op go/no-go van Henk + Midnight use case concretiseren
 - **HavunAdmin**: Alpine CSP-migratie 21 views open
