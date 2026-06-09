@@ -12,7 +12,27 @@ last_updated: 2026-06-07
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk:** In-app health-meldingen (Fase 1) — mail vervangen door notificaties in de HavunCore-webapp.
+**Laatste werk:** Projects-tab "uncommitted files" onderzocht → bleek server-drift + servers die achterlopen op origin.
+
+## Wat is er gedaan (9 juni)
+
+### Projects-tab uncommitted files uitgezocht (SafeHavun + HavunAdmin)
+- Henk zag in de webapp Projects-tab: HavunAdmin "1 uncommitted file", SafeHavun "2 uncommitted files".
+- **Bron achterhaald:** `webapp/backend/src/services/projectStatusService.js` draait `git status --porcelain` op de **server-checkouts** (`/var/www/<proj>/production`), niet op Henk's lokale repos. Heeft een `isBenignDirtyLine`-filter (`.claude/`, `CLAUDE.md`, Laravel storage/bootstrap `.gitignore`-churn → niet geteld).
+- **Kernbevinding:** beide productie-checkouts **liepen achter op origin** én hadden lokale drift op een verouderde basis:
+  - **SafeHavun** (`/var/www/safehavun/production`): `public/landing.html` (22 KB marketing-pagina) + `public/screenshots/` (5 jpg's) waren untracked — **echte nieuwe content**, nooit gecommit. Plus verouderde `mpc.md`-drift.
+  - **HavunAdmin** (`/var/www/havunadmin/production`): alleen verouderde drift op `CLAUDE.md` (+7 regels "AI Werkwijze" pipe-blok) en `mpc.md` — lokaal/origin is **10+ commits nieuwer** (compact-CLAUDE, /arch, /mem, havun:gemini). Conflicteert.
+- **Servers kunnen NIET pushen (by design):** SafeHavun-server heeft `credential.helper=store` zónder `/root/.git-credentials`; HavunAdmin-server heeft een **read-only deploy key** ("marked as read only"). Goed security-ontwerp: prod mag pullen, niet pushen. Daarom zaten die wijzigingen "vast".
+- **Opgelost via git-bundle-route:** server-commits gebundeld (`@{u}..HEAD`), via scp naar lokaal, daar gepusht met Henk's credentials.
+  - ✅ **SafeHavun landing-pagina + 5 screenshots gepusht naar origin** (`68ebc82..96aa4a1`, master) — alleen de nieuwe files, zónder de verouderde mpc-drift.
+  - HavunAdmin: **niets gepusht** — drift is achterhaald (lokaal nieuwer).
+- **Webapp-bug ontdekt:** productie-webapp toont HavunAdmin als "1" terwijl beide files benign zijn (zou groen/0 moeten zijn) → de live `projectStatusService.js` mist de `CLAUDE.md`-filter → **webapp moet opnieuw gedeployd worden**.
+
+### NOG TE DOEN (wacht op Henk's go/no-go — "we gaan morgen verder")
+- [ ] **A.** Het `havun:gemini`-pipe-blokje uit HavunAdmin-server-CLAUDE.md wél/niet bewaren in de *actuele* lokale CLAUDE.md? (rest van de drift = weggooien). Henk koos nog niet.
+- [ ] **B.** Akkoord om beide server-checkouts op te schonen met `git fetch origin && git reset --hard origin/<branch>` (SafeHavun=master, HavunAdmin=main)? Brengt ze op actuele origin (incl. nieuwe landing), gooit verouderde drift + de losse server-commits weg → webapp groen. Waardevolle content staat al veilig in origin, dus geen dataverlies behalve bewust-achterhaalde drift.
+- [ ] **C.** Productie-webapp opnieuw deployen zodat de `CLAUDE.md`-benign-filter live komt → HavunAdmin wordt groen in de Projects-tab.
+- Losse niet-gepushte commits staan nu nog op de server-checkouts (SafeHavun `1635042`, HavunAdmin `d6068a4`) — worden door stap B opgeruimd. Bundles staan in lokale temp (`/tmp/*-push.bundle`).
 
 ## Wat is er gedaan (8 juni)
 
