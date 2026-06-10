@@ -24,7 +24,12 @@ last_updated: 2026-06-07
 - **CI:** workflow in de **havuncore-webapp repo** (`webapp/.github/workflows/webapp-e2e.yml`) — `webapp` is aparte repo, staat in HavunCore's `.gitignore`. Path-filter `frontend/**`, cachet Chromium, uploadt HTML-rapport.
 - **Twee valkuilen opgelost (zie KB-runbook):** (1) dev-server i.p.v. `vite preview` want preview's PWA service-worker abort't `page.goto`; (2) `workers:1` want dev-server compileert on-demand en racet parallel. Plus: emoji-knoppen (🔔/✕) locaten op `title`, niet accessible name.
 - **Docs:** `docs/kb/runbooks/playwright-e2e-webapp.md` aangelegd.
-- **Nog te doen door Henk:** niets blokkerends. Optioneel later: e2e uitbreiden naar QrScanner/biometric-setup (vereist WebAuthn virtual authenticator) of meer projecten.
+- **Uitbreiding (zelfde sessie):** QrScanner + biometric toegevoegd → **12 tests groen** (9 desktop + 3 mobile).
+  - `biometric-setup.spec.js` (passkey `create()`), `biometric-login.mobile.spec.js` (`get()`), `qr-scanner.mobile.spec.js` (guard + camera-doorgang).
+  - WebAuthn via CDP virtual authenticator (`e2e/webauthn.js`); biometric-login injecteert vooraf een resident credential. `rp.id` = `localhost` (verplicht).
+  - Twee Playwright-projecten: **desktop** (Desktop Chrome) + **mobile** (Pixel 5 + fake-camera) — gesplitst via `*.mobile.spec.js` testMatch/testIgnore.
+  - Headless fake-camera is omgevings-afhankelijk → camera-test assert geen stream, enkel doorgang voorbij de biometrie-guard.
+- **Nog te doen door Henk:** niets blokkerends.
 
 ## Wat is er gedaan (9 juni)
 
