@@ -125,6 +125,7 @@ last_updated: 2026-06-10
 - **Mailprovider**: SendGrid zit op creditlimiet. Eigen mail is nu helemaal uit (in-app + UptimeRobot ipv). Henk parkeerde de keuze om SendGrid bij te laden of naar Resend te gaan — alleen relevant als er ooit weer mail nodig is. Zie [[project-health-alerts-broken]].
 - **NotificationBell**: functioneel nu gedekt door Playwright E2E (badge/dismiss/lege staat). Alleen de visuele layout (mobiel/desktop) blijft een handmatige check voor Henk.
 - **Webapp E2E uitbreiden (optioneel)**: huidige suite is smoke-niveau (12 tests). Eventueel later: project-meldingen Fase 2-UI, of een echte QR-decode-test met een geprepareerde fake-camera video.
+- **Playwright voor JudoToernooi + Herdenkingsportaal (wacht op Henk's go)**: Henk wil E2E ook daar. Werkwijze besproken: gebeurt **in de eigen project-sessie** (scope-regel), niet vanuit HavunCore. HavunCore levert de blauwdruk. ⚠️ Niet copy-paste: die zijn **Laravel + Blade** (server-rendered) → testen tegen draaiende app + test-DB, niet via API-mock zoals de React-PWA. Voorstel openstaand: in HavunCore een generieke "Playwright voor Laravel-projecten"-runbook maken als herbruikbare blauwdruk. Henk koos nog niet of ik die nu maak.
 - **JudoScoreBoard**: pre-publish review via dynamic workflow (eerste echte dynamic workflow sessie)
 - **Aeterna**: Week 2-plan wacht op go/no-go van Henk + Midnight use case concretiseren
 - **HavunAdmin**: Alpine CSP-migratie 21 views open
