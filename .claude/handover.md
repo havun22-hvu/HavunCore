@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-06-07
+last_updated: 2026-06-10
 ---
 
 # HavunCore — Handover
@@ -12,7 +12,7 @@ last_updated: 2026-06-07
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk:** Playwright E2E opgezet voor de webapp-PWA (8 tests groen) + CI-workflow.
+**Laatste werk:** Playwright E2E voor de webapp-PWA — **12 tests groen** (login QR/wachtwoord/biometric, dashboard, QR-approve/scanner, biometric-setup) + CI-workflow. HavunCore-Laravel bewust niet (API/orchestrator, al gedekt door 1243 PHPUnit-tests).
 
 ## Wat is er gedaan (10 juni)
 
@@ -123,7 +123,8 @@ last_updated: 2026-06-07
 
 - **Health-meldingen Fase 2**: project-meldingen óók in de betreffende app tonen (via `GET /api/health-alerts?project=<naam>`) — per app, aparte sessies. Fase 1 (centraal in HavunCore-webapp) is live.
 - **Mailprovider**: SendGrid zit op creditlimiet. Eigen mail is nu helemaal uit (in-app + UptimeRobot ipv). Henk parkeerde de keuze om SendGrid bij te laden of naar Resend te gaan — alleen relevant als er ooit weer mail nodig is. Zie [[project-health-alerts-broken]].
-- **NotificationBell in browser testen**: door Henk visueel te checken (badge/paneel/layout) — Claude kan browser-UI niet testen.
+- **NotificationBell**: functioneel nu gedekt door Playwright E2E (badge/dismiss/lege staat). Alleen de visuele layout (mobiel/desktop) blijft een handmatige check voor Henk.
+- **Webapp E2E uitbreiden (optioneel)**: huidige suite is smoke-niveau (12 tests). Eventueel later: project-meldingen Fase 2-UI, of een echte QR-decode-test met een geprepareerde fake-camera video.
 - **JudoScoreBoard**: pre-publish review via dynamic workflow (eerste echte dynamic workflow sessie)
 - **Aeterna**: Week 2-plan wacht op go/no-go van Henk + Midnight use case concretiseren
 - **HavunAdmin**: Alpine CSP-migratie 21 views open
@@ -144,6 +145,7 @@ last_updated: 2026-06-07
 | IDSee | Midnight KB aangelegd — klaar voor Fase 0 (Academy) |
 | Munus | **GEPARKEERD** |
 | Studieplanner | In ontwikkeling — geen bekende open items |
+| webapp (PWA) | Stabiel — Playwright E2E live (12 tests) + CI; aparte repo `havuncore-webapp` (main) |
 
 ## Architectuurprincipes
 
