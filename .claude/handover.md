@@ -12,7 +12,19 @@ last_updated: 2026-06-07
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk:** Projects-tab "uncommitted files" onderzocht → bleek server-drift + servers die achterlopen op origin.
+**Laatste werk:** Playwright E2E opgezet voor de webapp-PWA (8 tests groen) + CI-workflow.
+
+## Wat is er gedaan (10 juni)
+
+### Playwright E2E voor webapp-PWA
+- **Scope (door Henk gekozen):** alleen `webapp/frontend` (status-only PWA). HavunCore-Laravel niet — die is API/orchestrator, al gedekt door 1243 PHPUnit-tests.
+- **Aanpak:** volledige API-mock via Playwright route-interception (`e2e/helpers.js` → `mockApi` + `loginAs`). Geen backend/DB/Socket.io nodig; CI start alleen de Vite-server.
+- **Specs (8 tests, ~3s):** `auth.spec.js` (login QR-default + wachtwoord→dashboard), `dashboard.spec.js` (StatusView, Projects-tab, NotificationBell badge/dismiss/leeg), `qr-approve.spec.js` (`/qr/:code` geldig + ongeldig).
+- **Dependency:** `@playwright/test` als devDep in `webapp/frontend` (Henk's go). Scripts: `test:e2e`, `:ui`, `:report`. `test` wijst nu ook naar playwright.
+- **CI:** workflow in de **havuncore-webapp repo** (`webapp/.github/workflows/webapp-e2e.yml`) — `webapp` is aparte repo, staat in HavunCore's `.gitignore`. Path-filter `frontend/**`, cachet Chromium, uploadt HTML-rapport.
+- **Twee valkuilen opgelost (zie KB-runbook):** (1) dev-server i.p.v. `vite preview` want preview's PWA service-worker abort't `page.goto`; (2) `workers:1` want dev-server compileert on-demand en racet parallel. Plus: emoji-knoppen (🔔/✕) locaten op `title`, niet accessible name.
+- **Docs:** `docs/kb/runbooks/playwright-e2e-webapp.md` aangelegd.
+- **Nog te doen door Henk:** niets blokkerends. Optioneel later: e2e uitbreiden naar QrScanner/biometric-setup (vereist WebAuthn virtual authenticator) of meer projecten.
 
 ## Wat is er gedaan (9 juni)
 
