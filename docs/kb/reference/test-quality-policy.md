@@ -3,7 +3,7 @@ title: Test-kwaliteit — bindend beleid voor alle Havun projecten
 type: reference
 scope: alle-projecten
 status: BINDING
-last_reviewed: 2026-04-20
+last_reviewed: 2026-06-10
 supersedes: "havun-quality-standards.md §Coverage"
 ---
 
@@ -32,9 +32,9 @@ standaard; `havun-quality-standards.md` verwijst hiernaar.
 
 | Laag | Domein | Eis | Test-type |
 |------|--------|-----|-----------|
-| **1. Kritiek** | auth, betalingen, migraties, security headers, data-integriteit, externe integraties met credentials | **100 %** — elke branch, elke edge-case, elk faalpad, expliciete assertie | Integration + Unit + **Mutation** |
+| **1. Kritiek** | auth, betalingen, migraties, security headers, data-integriteit, externe integraties met credentials | **100 %** — elke branch, elke edge-case, elk faalpad, expliciete assertie | Integration + Unit + **Mutation** + **E2E** (frontend-flows) |
 | **2. Business-logic** | services, queries, workflows, commands die business-regels afdwingen | 70-85 % — happy path + belangrijke errors | Unit + Feature |
-| **3. Glue** | thin controllers, getters, DTOs, views, framework-boilerplate | **zo laag als praktisch** (typisch 20-40 %) | Smoke via feature-routes |
+| **3. Glue** | thin controllers, getters, DTOs, views, framework-boilerplate | **zo laag als praktisch** (typisch 20-40 %) | Smoke via feature-routes / **E2E** |
 
 **Projectgemiddelde komt dan typisch op 65-75 %.** Dat is geen zwakte — dat is
 **juist gekalibreerd**: moeite gaat naar waar het ertoe doet.
@@ -141,8 +141,28 @@ Een externe reviewer moet in 5 minuten kunnen zien:
 bevatten. Wat wij verkopen is **aantoonbare kwaliteit op de paden die ertoe
 doen** — en aantoonbare discipline op de rest.
 
+## 10. Frontend E2E (browser-flows)
+
+Voor apps met een eigen UI (PWA's, dashboards) dekken **end-to-end browser-tests**
+de kritieke gebruikersflows die PHPUnit/feature-tests niet zien — het echte
+samenspel van scherm, auth en API in een browser. Dit is laag-1-dekking voor
+frontend-auth, geen vervanging van de backend-suite.
+
+- **Stack:** Playwright (Chromium). Tests mocken alle API-calls
+  (route-interception) → deterministisch, geen backend/DB nodig, CI-licht.
+- **Zinvol-eisen (§4) gelden ook hier:** assert waarneembare uitkomst (scherm
+  bereikt, melding zichtbaar), niet "pagina laadde". Geen smoke-padding.
+- **Pure-backend projecten** (HavunCore-Laravel, orchestrator/API) krijgen **geen**
+  E2E — er is geen UI; de PHPUnit-suite is daar de juiste laag.
+
+**Live voorbeeld — webapp PWA (`havuncore-webapp`):** 12 Playwright-tests over
+login (QR/wachtwoord/biometric), dashboard (status/projecten/meldingen) en
+QR-approve/scanner. Draait in CI op push/PR. Volledige aanpak:
+`runbooks/playwright-e2e-webapp.md`.
+
 ## Zie ook
 
+- `runbooks/playwright-e2e-webapp.md` — frontend E2E-aanpak (Playwright + API-mock).
 - `havun-quality-standards.md` — omvattende enterprise-normen (deze file
   is autoritatief voor de sectie "Testing").
 - `mutation-baseline-2026-04-17.md` — startpunt mutation testing.
