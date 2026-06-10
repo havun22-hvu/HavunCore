@@ -160,9 +160,15 @@ login (QR/wachtwoord/biometric), dashboard (status/projecten/meldingen) en
 QR-approve/scanner. Draait in CI op push/PR. Volledige aanpak:
 `runbooks/playwright-e2e-webapp.md`.
 
+**Twee blauwdrukken** (kies op stack):
+- `runbooks/playwright-e2e-webapp.md` — SPA/PWA (React) via **API-mock**.
+- `runbooks/playwright-e2e-laravel.md` — Laravel + Blade via **draaiende app +
+  test-database** (server-rendered, niets te mocken).
+
 ## Zie ook
 
-- `runbooks/playwright-e2e-webapp.md` — frontend E2E-aanpak (Playwright + API-mock).
+- `runbooks/playwright-e2e-webapp.md` — frontend E2E voor SPA/PWA (Playwright + API-mock).
+- `runbooks/playwright-e2e-laravel.md` — frontend E2E voor Laravel + Blade (draaiende app + test-DB).
 - `havun-quality-standards.md` — omvattende enterprise-normen (deze file
   is autoritatief voor de sectie "Testing").
 - `mutation-baseline-2026-04-17.md` — startpunt mutation testing.

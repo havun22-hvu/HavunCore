@@ -10,6 +10,9 @@ last_check: 2026-06-10
 > End-to-end browser-tests voor de status-only PWA (`webapp/frontend`).
 > Scope bewust beperkt tot de webapp — HavunCore Laravel is API/orchestrator en
 > wordt al gedekt door de PHPUnit-suite (1243 tests).
+>
+> Voor **server-rendered Laravel + Blade** projecten (JudoToernooi,
+> Herdenkingsportaal): zie de zusterblauwdruk `playwright-e2e-laravel.md`.
 
 ## Wat het dekt
 
