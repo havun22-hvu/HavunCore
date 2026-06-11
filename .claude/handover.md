@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-06-10
+last_updated: 2026-06-12
 ---
 
 # HavunCore — Handover
@@ -12,7 +12,7 @@ last_updated: 2026-06-10
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk:** Playwright E2E voor de webapp-PWA — **12 tests groen** (login QR/wachtwoord/biometric, dashboard, QR-approve/scanner, biometric-setup) + CI-workflow. HavunCore-Laravel bewust niet (API/orchestrator, al gedekt door 1243 PHPUnit-tests).
+**Laatste werk:** GitGuardian-melding opgeruimd — hardcoded WebAuthn-testsleutel nu runtime-gegenereerd + uit de webapp-historie gepurged (force-push) + server-checkout gereset naar origin. Open: Henk markeert GitGuardian-incident resolved + webapp-deploy (build+pm2 restart) om de benign-filter live te zetten.
 
 ## Wat is er gedaan (11 juni)
 
@@ -21,9 +21,10 @@ last_updated: 2026-06-10
 - **Bron gefixt:** sleutel wordt nu per testrun gegenereerd (`generateThrowawayPrivateKeyB64` via `crypto.generateKeyPairSync`) i.p.v. hardcoded. Beide biometrie-tests groen.
 - **Historie gepurged:** alleen `c78bd58` bevatte het secret. Via `git reset --soft <parent>` + `git commit -C c78bd58` de commit herschreven (schone tree, identieke inhoud — diff vs backup leeg), daarna `git push --force-with-lease`. Nieuwe commit `502c125`, oude `c78bd58`/`b400915` onbereikbaar op origin. `git log -S` op main = 0 treffers.
 - **Principe vastgelegd:** `docs/kb/runbooks/geen-hardcoded-secrets-in-tests.md` (runtime-keygen + purge-procedure + GitGuardian-checklist).
+- **Productie-checkout gereset (gedaan):** server stond op `1bd11b1` (achter, had de secret-commit nooit gepulld). `git fetch` + `git reset --hard origin/main` → nu op `502c125`. Lokale drift op `projectStatusService.js` was een redundante handmatige kopie van de benign-filter (origin had 'm al gecommit) → veilig gereset, backup op server `/tmp/projectStatusService.js.server-drift-2026-06-11.bak`. `?? public/` (build-artefacten) ongemoeid.
 - **NOG TE DOEN:**
   - [ ] Henk: incident #33883984 in GitGuardian op *Resolved / False positive* zetten.
-  - [ ] Productie-webapp-checkout (`/var/www/havuncore/webapp`) pullt deze repo → heeft de oude historie nog lokaal. Bij eerstvolgende deploy: `git fetch origin && git reset --hard origin/main` (anders divergeert de pull). Geen haast — geen actief lek meer (origin is schoon).
+  - [ ] **Webapp-deploy om de filter live te zetten:** reset wijzigde alleen de source; pm2 draait nog `1bd11b1`-code. Voor HavunAdmin groen in Projects-tab: frontend build → `dist`→`public` → `pm2 restart havuncore-backend`. Geen haast — gebeurt anders bij eerstvolgende reguliere deploy.
 
 ## Wat is er gedaan (10 juni)
 
