@@ -14,6 +14,17 @@ last_updated: 2026-06-10
 **Branch:** master (schoon, alles gepusht)
 **Laatste werk:** Playwright E2E voor de webapp-PWA — **12 tests groen** (login QR/wachtwoord/biometric, dashboard, QR-approve/scanner, biometric-setup) + CI-workflow. HavunCore-Laravel bewust niet (API/orchestrator, al gedekt door 1243 PHPUnit-tests).
 
+## Wat is er gedaan (11 juni)
+
+### GitGuardian-melding: hardcoded WebAuthn-testsleutel opgeruimd
+- GitGuardian (#33883984) flagde een P-256 PKCS#8 private key in `havuncore-webapp:frontend/e2e/webauthn.js` (commit `c78bd58`). Throwaway testsleutel (mock-backend, signatures nooit geverifieerd) → **geen rotatie nodig**, maar Henk: *"ook testsleutels netjes wegwerken, het gaat om het principe"*.
+- **Bron gefixt:** sleutel wordt nu per testrun gegenereerd (`generateThrowawayPrivateKeyB64` via `crypto.generateKeyPairSync`) i.p.v. hardcoded. Beide biometrie-tests groen.
+- **Historie gepurged:** alleen `c78bd58` bevatte het secret. Via `git reset --soft <parent>` + `git commit -C c78bd58` de commit herschreven (schone tree, identieke inhoud — diff vs backup leeg), daarna `git push --force-with-lease`. Nieuwe commit `502c125`, oude `c78bd58`/`b400915` onbereikbaar op origin. `git log -S` op main = 0 treffers.
+- **Principe vastgelegd:** `docs/kb/runbooks/geen-hardcoded-secrets-in-tests.md` (runtime-keygen + purge-procedure + GitGuardian-checklist).
+- **NOG TE DOEN:**
+  - [ ] Henk: incident #33883984 in GitGuardian op *Resolved / False positive* zetten.
+  - [ ] Productie-webapp-checkout (`/var/www/havuncore/webapp`) pullt deze repo → heeft de oude historie nog lokaal. Bij eerstvolgende deploy: `git fetch origin && git reset --hard origin/main` (anders divergeert de pull). Geen haast — geen actief lek meer (origin is schoon).
+
 ## Wat is er gedaan (10 juni)
 
 ### Playwright E2E voor webapp-PWA
