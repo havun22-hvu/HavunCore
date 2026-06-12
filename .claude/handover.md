@@ -12,7 +12,23 @@ last_updated: 2026-06-12
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk:** GitGuardian-melding opgeruimd — hardcoded WebAuthn-testsleutel nu runtime-gegenereerd + uit de webapp-historie gepurged (force-push) + server-checkout gereset naar origin. Open: Henk markeert GitGuardian-incident resolved + webapp-deploy (build+pm2 restart) om de benign-filter live te zetten.
+**Laatste werk:** Doc Intelligence detector structureel verbeterd — 5 false-positive-bronnen weggenomen, alle 202+ open issues over álle projecten naar 0 getrieerd.
+
+## Wat is er gedaan (13 juni)
+
+### Doc Intelligence — detector-kalibratie + issue-opruiming (0 open)
+Bij `/start` stonden 202+ open issues, waarvan 24 "HIGH" die in werkelijkheid puur leeftijds-staleness waren. 5 structurele fixes in `app/Services/DocIntelligence/IssueDetector.php` (+ tests, 78 unit-tests groen):
+1. **Archive-uitsluiting** (`detectOutdated`): `archive/`, `archived/`, `legacy/`, `_history/`-paden worden nooit meer als verouderd geflagd (bevroren docs). `isFrozenDoc()` + `frozenDocPatterns`.
+2. **Outdated-severity herijkt** (Henk's keuze): `>180d → MEDIUM` (was HIGH), `>90d → LOW`. HIGH blijft gereserveerd voor échte content-fouten (broken links, prijs-inconsistenties). `/start`'s HIGH-regel weer betekenisvol.
+3. **Non-file-schemes** (`detectBrokenLinks`): `mailto:`/`tel:`/`sms:`/`ftp:`/`data:` worden overgeslagen (stond bv. `taylor@laravel.com` als broken link).
+4. **Mermaid code-fences gestript** vóór link-extractie: `[label<br/>...]` in ```mermaid-blokken werd als broken markdown/wiki-link gelezen.
+5. **Memory-wikilinks in `.claude/`-docs** (`[[slug]]` in handover/context) worden overgeslagen — dat zijn memory-store-refs, geen doc-links.
+- **Resultaat na herdetect-all:** 0 HIGH, 0 broken links, 0 inconsistencies. Resterende 36 duplicaten (false-positive-principe) + 99 outdated (maintenance-signaal) bulk-genegeerd → **0 open over alle projecten**.
+- Duplicaten + non-archive outdated regenereren bij volgende `docs:detect` (docs zelf ongewijzigd) — dat is de geaccepteerde steady-state, `/start` bulk-negeert die. De gefixte categorieën (archive/mailto/Mermaid/memory-wikilinks/false-HIGH) komen NIET meer terug.
+
+### Nog open (GitGuardian, van 11 juni)
+- [ ] Henk: incident #33883984 in GitGuardian op *Resolved / False positive* zetten.
+- [ ] **Webapp-deploy om de benign-filter live te zetten** (build → `dist`→`public` → `pm2 restart havuncore-backend`). Geen haast.
 
 ## Wat is er gedaan (11 juni)
 

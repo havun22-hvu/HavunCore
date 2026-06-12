@@ -290,4 +290,68 @@ class IssueDetectorCoverageTest extends TestCase
         // Same price = no inconsistency
         $this->assertEquals(0, $found);
     }
+
+    // ===================================================================
+    // detectOutdated — frozen (archive) docs
+    // ===================================================================
+
+    public function test_detect_outdated_flags_stale_regular_doc(): void
+    {
+        DocEmbedding::create([
+            'project' => 'testproject',
+            'file_path' => 'docs/guide.md',
+            'content' => 'Stale guide content.',
+            'content_hash' => hash('sha256', 'stale-guide'),
+            'embedding' => null,
+            'embedding_model' => null,
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now()->subDays(200),
+        ]);
+
+        $this->assertEquals(1, $this->detector->detectOutdated('testproject'));
+
+        // Pure age-based staleness is never HIGH — >180d = MEDIUM, reserve HIGH for content faults
+        $issue = DocIssue::where('issue_type', DocIssue::TYPE_OUTDATED)->first();
+        $this->assertEquals(DocIssue::SEVERITY_MEDIUM, $issue->severity);
+    }
+
+    public function test_detect_outdated_uses_low_severity_under_180_days(): void
+    {
+        DocEmbedding::create([
+            'project' => 'testproject',
+            'file_path' => 'docs/recent-ish.md',
+            'content' => 'Mildly stale content.',
+            'content_hash' => hash('sha256', 'mild-stale'),
+            'embedding' => null,
+            'embedding_model' => null,
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now()->subDays(120),
+        ]);
+
+        $this->assertEquals(1, $this->detector->detectOutdated('testproject'));
+        $issue = DocIssue::where('issue_type', DocIssue::TYPE_OUTDATED)->first();
+        $this->assertEquals(DocIssue::SEVERITY_LOW, $issue->severity);
+    }
+
+    public function test_detect_outdated_skips_archived_docs(): void
+    {
+        // Archived/legacy docs are intentionally frozen — never flagged outdated
+        foreach (['docs/archive/old-fix.md', 'docs/archived/legacy.md', 'legacy/notes.md'] as $i => $path) {
+            DocEmbedding::create([
+                'project' => 'testproject',
+                'file_path' => $path,
+                'content' => 'Frozen archived content.',
+                'content_hash' => hash('sha256', 'frozen-' . $i),
+                'embedding' => null,
+                'embedding_model' => null,
+                'file_type' => 'docs',
+                'token_count' => 10,
+                'file_modified_at' => now()->subDays(300),
+            ]);
+        }
+
+        $this->assertEquals(0, $this->detector->detectOutdated('testproject'));
+    }
 }

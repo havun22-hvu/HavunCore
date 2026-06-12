@@ -149,6 +149,28 @@ class IssueDetector
     ];
 
     /**
+     * Path fragments for intentionally frozen docs — never flag these as outdated.
+     * Archived/legacy/historical docs are deliberately not maintained.
+     */
+    protected array $frozenDocPatterns = [
+        '/archive/', 'archive/', '/archived/', 'archived/', '/legacy/', 'legacy/', '/_history/',
+    ];
+
+    /**
+     * Check if a document is intentionally frozen (archived) and should never be flagged outdated.
+     */
+    protected function isFrozenDoc(string $filePath): bool
+    {
+        $normalized = str_replace('\\', '/', $filePath);
+        foreach ($this->frozenDocPatterns as $pattern) {
+            if (str_contains($normalized, $pattern)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Detect outdated documents (only .md files — code files are stable by nature)
      */
     public function detectOutdated(?string $project = null): int
@@ -169,6 +191,11 @@ class IssueDetector
                 continue;
             }
 
+            // Skip intentionally frozen docs (archive/legacy) — they are never "outdated"
+            if ($this->isFrozenDoc($doc->file_path)) {
+                continue;
+            }
+
             // Skip if already has open issue
             $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_OUTDATED)
                 ->where('status', DocIssue::STATUS_OPEN)
@@ -181,7 +208,9 @@ class IssueDetector
                 DocIssue::create([
                     'project' => $doc->project,
                     'issue_type' => DocIssue::TYPE_OUTDATED,
-                    'severity' => $daysSinceUpdate > 180 ? DocIssue::SEVERITY_HIGH : DocIssue::SEVERITY_LOW,
+                    // Pure age-based staleness is a maintenance reminder, never a critical problem.
+                    // HIGH is reserved for real content faults (broken links, price inconsistencies).
+                    'severity' => $daysSinceUpdate > 180 ? DocIssue::SEVERITY_MEDIUM : DocIssue::SEVERITY_LOW,
                     'title' => "Document not updated in {$daysSinceUpdate} days",
                     'details' => [
                         'last_modified' => $doc->file_modified_at->format('Y-m-d'),
@@ -210,15 +239,28 @@ class IssueDetector
         $issuesFound = 0;
 
         foreach ($documents as $doc) {
+            // Strip fenced code blocks first (```mermaid ... ```, ``` ... ```).
+            // Mermaid diagram labels use [ ] and <br/> which the link regexes
+            // otherwise misread as broken markdown/wiki links.
+            $content = preg_replace('/```.*?```/s', '', $doc->content);
+
             // Find markdown links in content
-            preg_match_all('/\[([^\]]+)\]\(([^)]+)\)/', $doc->content, $matches);
-            preg_match_all('/\[\[([^\]]+)\]\]/', $doc->content, $wikiMatches); // Wiki-style links
+            preg_match_all('/\[([^\]]+)\]\(([^)]+)\)/', $content, $matches);
+
+            // Wiki-style links [[...]] — skip in .claude/ docs (handover/context),
+            // where they are memory-store cross-references by convention, not doc links.
+            $isClaudeDoc = str_contains(str_replace('\\', '/', $doc->file_path), '.claude/');
+            $wikiMatches = [1 => []];
+            if (!$isClaudeDoc) {
+                preg_match_all('/\[\[([^\]]+)\]\]/', $content, $wikiMatches);
+            }
 
             $links = array_merge($matches[2] ?? [], $wikiMatches[1] ?? []);
 
             foreach ($links as $link) {
-                // Skip external URLs
+                // Skip external URLs and non-file schemes (mailto:, tel:, etc.)
                 if (preg_match('/^https?:\/\//', $link)) continue;
+                if (preg_match('/^(mailto|tel|sms|ftp|data):/i', $link)) continue;
                 if (str_starts_with($link, '#')) continue; // Anchor links
 
                 // Check if file exists

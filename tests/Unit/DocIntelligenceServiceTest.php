@@ -172,16 +172,17 @@ class DocIntelligenceServiceTest extends TestCase
         $this->assertStringContains('120', $issue->title);
     }
 
-    public function test_detect_outdated_high_severity_for_very_old_docs(): void
+    public function test_detect_outdated_medium_severity_for_very_old_docs(): void
     {
-        // 200 days ago → severity HIGH (> 180)
+        // 200 days ago → severity MEDIUM (> 180). Pure age is never HIGH;
+        // HIGH is reserved for real content faults (broken links, price inconsistencies).
         $this->createEmbedding('testproject', 'docs/ancient.md', 'Ancient doc', null, 'docs', now()->subDays(200));
 
         $found = $this->detector->detectOutdated('testproject');
 
         $this->assertEquals(1, $found);
         $issue = DocIssue::where('issue_type', DocIssue::TYPE_OUTDATED)->first();
-        $this->assertEquals(DocIssue::SEVERITY_HIGH, $issue->severity);
+        $this->assertEquals(DocIssue::SEVERITY_MEDIUM, $issue->severity);
     }
 
     public function test_detect_outdated_ignores_recent_documents(): void
@@ -283,6 +284,39 @@ class DocIntelligenceServiceTest extends TestCase
     {
         $content = 'See [section](#my-section) below.';
         $this->createEmbedding('testproject', 'docs/anchors.md', $content, null, 'docs');
+
+        $found = $this->detector->detectBrokenLinks('testproject');
+
+        $this->assertEquals(0, $found);
+    }
+
+    public function test_detect_broken_links_skips_non_file_schemes(): void
+    {
+        // mailto:/tel: etc. are not file references — never broken links
+        $content = 'Mail [Taylor](mailto:taylor@laravel.com) or call [us](tel:+31612345678).';
+        $this->createEmbedding('testproject', 'docs/contact.md', $content, null, 'docs');
+
+        $found = $this->detector->detectBrokenLinks('testproject');
+
+        $this->assertEquals(0, $found);
+    }
+
+    public function test_detect_broken_links_ignores_mermaid_code_fences(): void
+    {
+        // Mermaid node labels use [ ] and <br/> — must not be read as broken links
+        $content = "Diagram:\n\n```mermaid\nflowchart TD\n  A[Werk Rules<br/>5 Regels] --> B[CLAUDE.md per project]\n```\n\nDone.";
+        $this->createEmbedding('testproject', 'docs/flow.md', $content, null, 'docs');
+
+        $found = $this->detector->detectBrokenLinks('testproject');
+
+        $this->assertEquals(0, $found);
+    }
+
+    public function test_detect_broken_links_skips_memory_wikilinks_in_claude_docs(): void
+    {
+        // [[memory-slug]] in .claude/ docs are memory-store cross-refs, not doc links
+        $content = 'See [[project-health-alerts-broken]] and [[project-active-priorities]].';
+        $this->createEmbedding('testproject', '.claude/handover.md', $content, null, 'docs');
 
         $found = $this->detector->detectBrokenLinks('testproject');
 
