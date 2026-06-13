@@ -12,9 +12,21 @@ last_updated: 2026-06-12
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk:** Doc Intelligence detector structureel verbeterd — 5 false-positive-bronnen weggenomen, alle 202+ open issues over álle projecten naar 0 getrieerd.
+**Laatste werk:** Webapp-deploy + server-checkouts opgeschoond (SafeHavun + HavunAdmin) + Doc Intelligence detector structureel verbeterd + guzzle/psr7 security-patch.
 
 ## Wat is er gedaan (13 juni)
+
+### Webapp-deploy + server-checkouts opgeschoond (prod 188.245.159.115)
+Henk's go op alle drie de openstaande 9-juni-punten (A/B/C) + webapp-deploy.
+- **SafeHavun** (`/var/www/safehavun/production`): `reset --hard origin/master` → `1635042` (losse server-commit, landing al in origin) → **`96aa4a1`**. Checkout nu schoon.
+- **HavunAdmin** (`/var/www/havunadmin/production`): `reset --hard origin/main` → losse `d6068a4` (gemini-workflow drift, **niet bewaard** per Henk's keuze) → **`51f073b`**. Bleek dat origin de havun:gemini-config al in nieuwere vorm bevat (`51f073b` = "add autoMode allow for havun:gemini"), dus de losse commit was terecht achterhaald. Checkout nu schoon.
+- **Webapp-deploy** (`/var/www/havuncore/webapp`): source stond al op `502c125` (benign-filter), maar pm2 draaide 5d oude build. `npm run build` (frontend) → `rsync -a --delete --exclude=/downloads --exclude=/aeterna-snapshot.apk dist/ public/` (stale `index-utGneFkT.*` opgeruimd, apk+downloads behouden) → `pm2 restart havuncore-backend`.
+- **Geverifieerd:** PWA 200, live asset nu `index-CCbwtUpZ.js` (verse hash), backend schoon herstart op :3001 (401 = auth-protected, leeft). Beide checkouts `git status --porcelain` leeg → Projects-tab toont HavunAdmin + SafeHavun groen (benign-filter live).
+
+### guzzle/psr7 security-patch (commit 7f06279)
+- `composer update guzzlehttp/psr7` → **2.11.0** (was <2.10.2). Lost CVE-2026-48998 (Host Confusion) + CVE-2026-49214 (CRLF Injection) op. `composer audit` schoon. Volledige suite 1249 groen.
+
+### Doc Intelligence — detector-kalibratie + issue-opruiming (0 open, commit f9f70be)
 
 ### Doc Intelligence — detector-kalibratie + issue-opruiming (0 open)
 Bij `/start` stonden 202+ open issues, waarvan 24 "HIGH" die in werkelijkheid puur leeftijds-staleness waren. 5 structurele fixes in `app/Services/DocIntelligence/IssueDetector.php` (+ tests, 78 unit-tests groen):
@@ -26,9 +38,11 @@ Bij `/start` stonden 202+ open issues, waarvan 24 "HIGH" die in werkelijkheid pu
 - **Resultaat na herdetect-all:** 0 HIGH, 0 broken links, 0 inconsistencies. Resterende 36 duplicaten (false-positive-principe) + 99 outdated (maintenance-signaal) bulk-genegeerd → **0 open over alle projecten**.
 - Duplicaten + non-archive outdated regenereren bij volgende `docs:detect` (docs zelf ongewijzigd) — dat is de geaccepteerde steady-state, `/start` bulk-negeert die. De gefixte categorieën (archive/mailto/Mermaid/memory-wikilinks/false-HIGH) komen NIET meer terug.
 
-### Nog open (GitGuardian, van 11 juni)
+### Nog open (vereist Henk)
 - [ ] Henk: incident #33883984 in GitGuardian op *Resolved / False positive* zetten.
-- [ ] **Webapp-deploy om de benign-filter live te zetten** (build → `dist`→`public` → `pm2 restart havuncore-backend`). Geen haast.
+- [ ] Henk: WIP terughalen in webapp-repo (`git stash pop`, stash@{0} "henk-wip-claude-commands-2026-06-07").
+- [x] ~~Webapp-deploy benign-filter~~ — gedaan 13 jun (zie boven).
+- [x] ~~HavunAdmin/SafeHavun server-checkout opschonen (9-juni A/B/C)~~ — gedaan 13 jun.
 
 ## Wat is er gedaan (11 juni)
 
