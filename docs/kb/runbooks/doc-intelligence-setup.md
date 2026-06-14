@@ -81,7 +81,16 @@ php artisan docs:detect --index
 ## Wat wordt geindexeerd?
 
 ### MD Documenten
-Alle `.md` bestanden in elk project (excl. vendor, node_modules, .git, storage).
+Alle `.md` bestanden in elk project, **behalve**:
+- Dependency-/build-output: `vendor`, `node_modules`, `.git`, `storage`, `bootstrap/cache`, `public/build`, `public/hot`, `dist`, `build`
+- Test-output (auto-gegenereerd, geen docs): `playwright-report`, `test-results`, `coverage`
+- **Geneste projecten**: een map die zelf een geconfigureerd project is, wordt niet ook onder de parent geïndexeerd. Bijv. `havuncore-webapp` (`D:/GitHub/HavunCore/webapp`) zit fysiek ín `havuncore`, maar wordt alleen onder `havuncore-webapp` geteld — geen dubbele indexering meer.
+
+### Detectie-precisie (juni 2026)
+Twee gates voorkomen false-positives:
+- **Duplicaten** vereisen náást embedding-cosine ≥ 0.90 óók verbatim-overlap (Jaccard op word-trigrams ≥ 0.30). Twee docs over hetzelfde onderwerp (bv. twee `server.md`'s, parallelle per-project references, ADR's) delen vocabulaire maar geen verbatim tekst → niet meer geflagd. Echte copy-paste (bv. identieke build-artefacten) wordt wél gevangen.
+- **Broken links** strippen het `#anchor`-fragment vóór bestandsresolutie. `[x](./README.md#sectie)` verwijst naar een bestaand bestand en is dus geen broken link.
+- **Outdated** slaat gedateerde snapshots over (`*-YYYY-MM-DD.md`): die zijn point-in-time en worden door een nieuwere snapshot vervangen.
 
 ### Code Bestanden (nieuw, maart 2026)
 Code wordt niet raw opgeslagen maar als gestructureerde samenvatting:

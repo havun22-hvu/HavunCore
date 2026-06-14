@@ -12,7 +12,8 @@ class IssueDetector
     protected DocIndexer $indexer;
 
     // Thresholds
-    protected float $duplicateThreshold = 0.90;  // Similarity above this = duplicate (raised from 0.85 to reduce noise)
+    protected float $duplicateThreshold = 0.90;  // Embedding similarity above this = candidate duplicate
+    protected float $duplicateLexicalThreshold = 0.30; // Verbatim overlap (word-trigram Jaccard) required to confirm
     protected int $outdatedDays = 90;             // Days without update = outdated
 
     /**
@@ -80,7 +81,11 @@ class IssueDetector
 
                     $similarity = $this->indexer->calculateSimilarity($doc1->embedding ?? [], $doc2->embedding ?? []);
 
-                    if ($similarity >= $this->duplicateThreshold) {
+                    // Embedding cosine catches same-TOPIC docs (e.g. two server docs, parallel
+                    // per-project references, ADRs) which are not real duplicates. Require verbatim
+                    // overlap as a second gate so only genuine copy-paste is flagged.
+                    if ($similarity >= $this->duplicateThreshold
+                        && $this->lexicalOverlap($doc1->content ?? '', $doc2->content ?? '') >= $this->duplicateLexicalThreshold) {
                         $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_DUPLICATE)
                             ->where('project', $proj)
                             ->where('status', DocIssue::STATUS_OPEN)
@@ -141,6 +146,48 @@ class IssueDetector
     }
 
     /**
+     * Verbatim overlap between two documents as the Jaccard index over word trigrams
+     * (3-word shingles). Real copy-paste duplicates share long verbatim passages and
+     * score high; documents that merely share a topic vocabulary score low.
+     *
+     * @return float 0.0–1.0
+     */
+    protected function lexicalOverlap(string $a, string $b): float
+    {
+        $shinglesA = $this->wordTrigrams($a);
+        $shinglesB = $this->wordTrigrams($b);
+
+        if (empty($shinglesA) || empty($shinglesB)) {
+            // Too short to compare reliably — fall back to "treat as overlapping"
+            // so very small near-identical stubs are still caught.
+            return 1.0;
+        }
+
+        $intersection = count(array_intersect_key($shinglesA, $shinglesB));
+        $union = count($shinglesA + $shinglesB);
+
+        return $union > 0 ? $intersection / $union : 0.0;
+    }
+
+    /**
+     * Build a set (keys = shingle) of normalized 3-word shingles from text.
+     */
+    protected function wordTrigrams(string $text): array
+    {
+        $normalized = mb_strtolower($text);
+        $normalized = preg_replace('/[^\p{L}\p{N}\s]/u', ' ', $normalized);
+        $words = preg_split('/\s+/', trim($normalized), -1, PREG_SPLIT_NO_EMPTY);
+
+        $shingles = [];
+        $count = count($words);
+        for ($i = 0; $i + 2 < $count; $i++) {
+            $shingles[$words[$i] . ' ' . $words[$i + 1] . ' ' . $words[$i + 2]] = true;
+        }
+
+        return $shingles;
+    }
+
+    /**
      * File types to skip for outdated detection (stable code doesn't need regular updates)
      */
     protected array $skipOutdatedTypes = [
@@ -167,6 +214,13 @@ class IssueDetector
                 return true;
             }
         }
+
+        // Date-stamped snapshot files (e.g. mutation-baseline-2026-04-17.md, qv-scan-2026-05-02.md)
+        // are point-in-time records — a newer snapshot supersedes them, the old one stays frozen.
+        if (preg_match('#[-_/]\d{4}-\d{2}-\d{2}\.md$#i', $normalized)) {
+            return true;
+        }
+
         return false;
     }
 
@@ -262,6 +316,12 @@ class IssueDetector
                 if (preg_match('/^https?:\/\//', $link)) continue;
                 if (preg_match('/^(mailto|tel|sms|ftp|data):/i', $link)) continue;
                 if (str_starts_with($link, '#')) continue; // Anchor links
+
+                // Strip a URL fragment (./README.md#section) and query — only the file part
+                // determines whether the target exists. Without this, "README.md#anchor"
+                // is treated as a (non-existent) filename and reported as a false positive.
+                $link = preg_replace('/[#?].*$/', '', $link);
+                if ($link === '') continue; // was a pure fragment/query
 
                 // Check if file exists
                 // Handle both absolute paths (D:/GitHub/...) and relative paths

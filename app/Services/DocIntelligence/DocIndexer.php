@@ -48,6 +48,11 @@ class DocIndexer
         'bootstrap/cache',
         'public/build',
         'public/hot',
+        'dist',
+        'build',
+        'playwright-report',
+        'test-results',
+        'coverage',
         '.idea',
         '.vscode',
         'offline',
@@ -198,6 +203,44 @@ class DocIndexer
     }
 
     /**
+     * Base paths of other configured projects that are nested *inside* the given
+     * project's path. Files under these belong to the nested project and must not
+     * be indexed again under the parent (e.g. havuncore-webapp lives inside havuncore).
+     *
+     * @return string[] normalized (forward-slash) base paths, each ending without trailing slash
+     */
+    protected function nestedProjectPaths(string $basePath): array
+    {
+        $normalizedBase = rtrim(str_replace('\\', '/', $basePath), '/');
+        $nested = [];
+
+        foreach ($this->projectPaths as $otherPath) {
+            $normalizedOther = rtrim(str_replace('\\', '/', $otherPath), '/');
+            // Strictly nested below the base (not the base itself)
+            if ($normalizedOther !== $normalizedBase
+                && str_starts_with($normalizedOther . '/', $normalizedBase . '/')) {
+                $nested[] = $normalizedOther;
+            }
+        }
+
+        return $nested;
+    }
+
+    /**
+     * Whether an absolute file path falls under one of the nested project paths.
+     */
+    protected function isUnderNestedProject(string $absolutePath, array $nestedPaths): bool
+    {
+        $normalized = str_replace('\\', '/', $absolutePath);
+        foreach ($nestedPaths as $nestedPath) {
+            if (str_starts_with($normalized, $nestedPath . '/')) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /**
      * Convert absolute path to relative path
      */
     protected function toRelativePath(string $filePath, string $basePath): string
@@ -213,6 +256,7 @@ class DocIndexer
     protected function findCodeFiles(string $basePath): array
     {
         $files = [];
+        $nestedPaths = $this->nestedProjectPaths($basePath);
 
         foreach ($this->codeDirectories as $subDir) {
             $dirPath = $basePath . '/' . $subDir;
@@ -230,6 +274,11 @@ class DocIndexer
                 }
 
                 $path = str_replace('\\', '/', $file->getPathname());
+
+                // Skip files that belong to a nested configured project (indexed separately)
+                if ($this->isUnderNestedProject($path, $nestedPaths)) {
+                    continue;
+                }
 
                 // Check excluded paths
                 $excluded = false;
@@ -508,6 +557,7 @@ class DocIndexer
     protected function findMdFiles(string $basePath): array
     {
         $files = [];
+        $nestedPaths = $this->nestedProjectPaths($basePath);
         $iterator = new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator($basePath, \RecursiveDirectoryIterator::SKIP_DOTS)
         );
@@ -516,6 +566,11 @@ class DocIndexer
             if ($file->isFile() && strtolower($file->getExtension()) === 'md') {
                 $path = $file->getPathname();
                 $relativePath = str_replace($basePath, '', $path);
+
+                // Skip files that belong to a nested configured project (indexed separately)
+                if ($this->isUnderNestedProject($path, $nestedPaths)) {
+                    continue;
+                }
 
                 // Check if path contains excluded directories
                 $excluded = false;

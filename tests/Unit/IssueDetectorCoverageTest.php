@@ -354,4 +354,135 @@ class IssueDetectorCoverageTest extends TestCase
 
         $this->assertEquals(0, $this->detector->detectOutdated('testproject'));
     }
+
+    public function test_detect_outdated_skips_date_stamped_snapshots(): void
+    {
+        // Date-stamped snapshots (mutation-baseline-2026-04-17.md) are point-in-time
+        // records, superseded by newer snapshots — never flagged outdated.
+        foreach (['docs/kb/reference/mutation-baseline-2026-04-17.md', 'reports/qv-scan-2026-05-02.md'] as $i => $path) {
+            DocEmbedding::create([
+                'project' => 'testproject',
+                'file_path' => $path,
+                'content' => 'Snapshot taken at a fixed point in time.',
+                'content_hash' => hash('sha256', 'snapshot-' . $i),
+                'embedding' => null,
+                'embedding_model' => null,
+                'file_type' => 'docs',
+                'token_count' => 10,
+                'file_modified_at' => now()->subDays(300),
+            ]);
+        }
+
+        $this->assertEquals(0, $this->detector->detectOutdated('testproject'));
+    }
+
+    // ===================================================================
+    // detectBrokenLinks — anchor/fragment handling
+    // ===================================================================
+
+    public function test_detect_broken_links_ignores_fragment_on_existing_file(): void
+    {
+        // A link to an existing sibling file WITH a section anchor must not be flagged.
+        // The detector resolves against the indexer's project path; an unknown project
+        // resolves to null base path, so file resolution would fail for a real missing
+        // file — here we assert the fragment itself is not what trips the check by using
+        // a self-reference that always resolves: the document's own file.
+        DocEmbedding::create([
+            'project' => 'havuncore', // real configured project path exists on disk
+            'file_path' => 'README.md',
+            'content' => 'See [the readme section](./README.md#installation) for details.',
+            'content_hash' => hash('sha256', 'frag-ok'),
+            'embedding' => null,
+            'embedding_model' => null,
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now(),
+        ]);
+
+        $this->assertEquals(0, $this->detector->detectBrokenLinks('havuncore'));
+    }
+
+    public function test_detect_broken_links_still_flags_missing_file_with_fragment(): void
+    {
+        DocEmbedding::create([
+            'project' => 'havuncore',
+            'file_path' => 'README.md',
+            'content' => 'See [missing](./this-file-does-not-exist-xyz.md#section).',
+            'content_hash' => hash('sha256', 'frag-missing'),
+            'embedding' => null,
+            'embedding_model' => null,
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now(),
+        ]);
+
+        $this->assertEquals(1, $this->detector->detectBrokenLinks('havuncore'));
+    }
+
+    // ===================================================================
+    // detectDuplicates — lexical-overlap gate
+    // ===================================================================
+
+    public function test_detect_duplicates_ignores_same_topic_without_verbatim_overlap(): void
+    {
+        // Identical embeddings pass the cosine gate, but the content shares no
+        // verbatim passages (only a topic) — must NOT be flagged as duplicate.
+        DocEmbedding::create([
+            'project' => 'testproject',
+            'file_path' => 'docs/server-quickref.md',
+            'content' => 'Hetzner server IP and SSH deploy keys for every Havun project deployment.',
+            'content_hash' => hash('sha256', 'topic-a'),
+            'embedding' => ['server' => 1.0],
+            'embedding_model' => 'tfidf-fallback',
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now(),
+        ]);
+
+        DocEmbedding::create([
+            'project' => 'testproject',
+            'file_path' => 'docs/server-reference.md',
+            'content' => 'Directory layout, nginx vhost configs, Vite versus CDN build tooling matrix.',
+            'content_hash' => hash('sha256', 'topic-b'),
+            'embedding' => ['server' => 1.0],
+            'embedding_model' => 'tfidf-fallback',
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now(),
+        ]);
+
+        $this->assertEquals(0, $this->detector->detectDuplicates('testproject'));
+    }
+
+    public function test_detect_duplicates_flags_verbatim_copy(): void
+    {
+        // Same embedding AND shared verbatim passages = a real copy-paste duplicate.
+        $body = 'This is a shared icons readme describing every generated icon size and the build output directory layout for the progressive web app frontend bundle.';
+
+        DocEmbedding::create([
+            'project' => 'testproject',
+            'file_path' => 'frontend/public/ICONS-README.md',
+            'content' => $body,
+            'content_hash' => hash('sha256', 'copy-a'),
+            'embedding' => ['icons' => 1.0],
+            'embedding_model' => 'tfidf-fallback',
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now(),
+        ]);
+
+        DocEmbedding::create([
+            'project' => 'testproject',
+            'file_path' => 'docs/ICONS-README.md',
+            'content' => $body,
+            'content_hash' => hash('sha256', 'copy-b'),
+            'embedding' => ['icons' => 1.0],
+            'embedding_model' => 'tfidf-fallback',
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now(),
+        ]);
+
+        $this->assertEquals(1, $this->detector->detectDuplicates('testproject'));
+    }
 }

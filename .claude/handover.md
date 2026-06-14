@@ -12,7 +12,25 @@ last_updated: 2026-06-12
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk:** Webapp-deploy + server-checkouts opgeschoond (SafeHavun + HavunAdmin) + Doc Intelligence detector structureel verbeterd + guzzle/psr7 security-patch.
+**Laatste werk:** Doc Intelligence detector + indexer structureel verbeterd — alle duplicate- en broken-link-false-positives over álle projecten geëlimineerd (0 open issues).
+
+## Wat is er gedaan (14 juni)
+
+### Doc Intelligence — false-positives bij de bron weggenomen (0 open over alle projecten)
+Bij `/start` stonden 143 open issues (53 duplicate + 75 outdated + ...). Henk: "pak alle issues op" → niet negeren maar structureel oplossen. 5 SaaS-brede fixes (werken voor élk project, voorkomen regeneratie). Suite **1257 groen** (+8 tests).
+
+**`DocIndexer.php`:**
+1. **Nested-project-uitsluiting**: een map die zélf een geconfigureerd project is wordt niet ook onder de parent geïndexeerd. `havuncore-webapp` (`/webapp`) zat ín `havuncore` → elke webapp-doc werd dubbel geteld (alle 20 havuncore-"outdated" + 3 duplicaten waren phantom `webapp/*`). 44 phantom-embeddings verwijderd.
+2. **Build-/test-output uitgesloten**: `dist`, `build`, `playwright-report`, `test-results`, `coverage` toegevoegd aan `excludePaths`. JudoToernooi's 10 "duplicaten" bleken Playwright `error-context.md`-artefacten (terecht als duplicaat herkend door de nieuwe gate, maar horen niet geïndexeerd).
+
+**`IssueDetector.php`:**
+3. **Lexicale-overlap-gate op duplicaten**: náást cosine ≥ 0.90 nu óók verbatim-overlap vereist (Jaccard word-trigrams ≥ 0.30). Elimineert "zelfde-onderwerp-andere-inhoud" (twee `server.md`'s, ADR's, parallelle per-project refs) → havuncore 20→0, idsee 5→0, safehavun 3→0, havunadmin 4→0, infosyst 1→0.
+4. **Broken-link `#anchor`-fragment strippen** vóór bestandsresolutie. JudoToernooi's enige broken link (`./README.md#uitslag-...`) was een false positive — README.md bestaat, alleen het fragment werd als bestandsnaam gelezen.
+5. **Gedateerde snapshots frozen**: `*-YYYY-MM-DD.md` (bv. `mutation-baseline-2026-04-17.md`) niet meer als outdated.
+
+**Eindresultaat:** alle duplicate- + broken-link-false-positives weg (0 over alle projecten, regenereren niet). Resterende 65 `outdated` = echte leeftijds-staleness van stabiele docs in **andere project-repos** (havuncore-webapp 19, vpdupdate 17, havunclub 11, idsee 8, infosyst 5, judotoernooi 3, havunadmin 2) — updaten vereist per-project-sessies (scope: alleen HavunCore). Bulk-genegeerd met reden `age-staleness-external-repos-2026-06-14`. KB: `doc-intelligence-setup.md` bijgewerkt.
+
+> **Observatie voor Henk:** de `outdated`-categorie is een treadmill — flagt elke stabiele doc >90d, wordt elke `/start` weer genegeerd, regenereert. Overweeg: drempel omhoog, scopen tot living-docs, of de categorie als puur informatief markeren. Business-keuze, niet eigenhandig aangepast.
 
 ## Wat is er gedaan (13 juni)
 

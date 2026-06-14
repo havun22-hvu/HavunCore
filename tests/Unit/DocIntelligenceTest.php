@@ -299,6 +299,47 @@ PHP;
         $this->assertFalse($method->invoke($detector, 'docs/kb/runbooks/deploy.md'));
     }
 
+    // -- Nested project exclusion (e.g. havuncore-webapp lives inside havuncore) --
+
+    public function test_nested_project_paths_detects_webapp_under_havuncore(): void
+    {
+        $method = new \ReflectionMethod(DocIndexer::class, 'nestedProjectPaths');
+        $method->setAccessible(true);
+
+        $base = $this->indexer->getProjectPath('havuncore');
+        $nested = $method->invoke($this->indexer, $base);
+
+        // havuncore-webapp (D:/GitHub/HavunCore/webapp) is nested inside havuncore
+        $this->assertContains('D:/GitHub/HavunCore/webapp', $nested);
+        // The parent itself is never listed as nested
+        $this->assertNotContains(rtrim(str_replace('\\', '/', $base), '/'), $nested);
+    }
+
+    public function test_nested_project_paths_empty_for_standalone_project(): void
+    {
+        $method = new \ReflectionMethod(DocIndexer::class, 'nestedProjectPaths');
+        $method->setAccessible(true);
+
+        // havuncore-webapp has no other configured project nested below it
+        $nested = $method->invoke($this->indexer, 'D:/GitHub/HavunCore/webapp');
+
+        $this->assertSame([], $nested);
+    }
+
+    public function test_is_under_nested_project(): void
+    {
+        $method = new \ReflectionMethod(DocIndexer::class, 'isUnderNestedProject');
+        $method->setAccessible(true);
+
+        $nested = ['D:/GitHub/HavunCore/webapp'];
+
+        $this->assertTrue($method->invoke($this->indexer, 'D:/GitHub/HavunCore/webapp/README.md', $nested));
+        $this->assertTrue($method->invoke($this->indexer, 'D:\\GitHub\\HavunCore\\webapp\\docs\\SETUP.md', $nested));
+        $this->assertFalse($method->invoke($this->indexer, 'D:/GitHub/HavunCore/docs/kb/server.md', $nested));
+        // A sibling dir that merely shares a prefix is not "under" the nested path
+        $this->assertFalse($method->invoke($this->indexer, 'D:/GitHub/HavunCore/webapp-extra/x.md', $nested));
+    }
+
     // -- DocIssue Model --
 
     public function test_doc_issue_type_labels(): void
