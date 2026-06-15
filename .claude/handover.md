@@ -12,7 +12,18 @@ last_updated: 2026-06-12
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk:** Doc Intelligence detector + indexer structureel verbeterd — alle duplicate- en broken-link-false-positives over álle projecten geëlimineerd (0 open issues).
+**Laatste werk (16 juni):** cross-project — nieuw project **The Last Matchstick** (.NET MAUI game) opgezet in `D:\GitHub\LastMatch`. HavunCore-code zelf ongewijzigd.
+
+## Wat is er gedaan (16 juni)
+
+### The Last Matchstick — projectsetup + freemium/PWA-onderzoek (cross-project, in `D:\GitHub\LastMatch`)
+MAUI-game uit Visual Studio geïmporteerd. Lite + full → samenvoegen tot één app met freemium-unlock.
+- **Werkwijze-infra aangelegd in LastMatch:** `CLAUDE.md`, `.claude/{context,rules,handover,blueprint,platform-onderzoek}.md` + commands (`start`/`mpc`/`test`, MAUI-passend; geen KB/Laravel-commands). Staan nog **uncommitted** in LastMatch's eigen git — wordt in de LastMatch-sessie gecommit.
+- **Freemium-blauwdruk** op basis van het Studieplanner-model (bunq.me/Havun + `lm-`-prefix → HavunAdmin bunq-sync → premium-API). Legaliteitsbasis = distributie buiten de Play Store.
+- **Platform-onderzoek:** Google verplicht vanaf 2026 (NL ~2027) developer-verificatie voor álle Android-apps, óók sideload. Conclusie: **PWA** (JS/TS + Vite) omzeilt dit en houdt het Havun-freemium intact. Beslissing PWA-vs-native ligt bij Henk.
+
+### ⚠️ Security-bevinding (actie in HavunAdmin-sessie)
+- [ ] **HavunAdmin:** hardcoded **staging Bearer-token** in `docs/05-api-integration/API-SYNC-HERDENKINGSPORTAAL.md` (regel 257 + 423). Strijdig met "geen secrets in code/docs" — opruimen + uit historie purgen in een HavunAdmin-sessie. Zie [[feedback-no-hardcoded-test-secrets]].
 
 ## Wat is er gedaan (14 juni)
 
