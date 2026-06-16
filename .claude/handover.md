@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-06-12
+last_updated: 2026-06-17
 ---
 
 # HavunCore — Handover
@@ -12,7 +12,20 @@ last_updated: 2026-06-12
 ## Huidige status
 
 **Branch:** master (schoon, alles gepusht)
-**Laatste werk (16 juni):** cross-project — nieuw project **The Last Matchstick** (.NET MAUI game) opgezet in `D:\GitHub\LastMatch`. HavunCore-code zelf ongewijzigd.
+**Laatste werk (17 juni):** diagnose `lastmatch.havun.nl` "niet beveiligd" → lokaal Avast HTTPS-scanning MITM, server gezond. Henk besloot PWA te verlaten → LastMatch wordt **native Android**. HavunCore-code ongewijzigd.
+
+## Wat is er gedaan (17 juni)
+
+### lastmatch.havun.nl onbereikbaar — gediagnosticeerd (geen serverprobleem)
+Henk meldde "niet beveiligd / kan niet geopend worden". Diagnose: DNS ✅ (→188.245.159.115), HTTP 301→HTTPS ✅, site draait ✅ (PWA HTML, `curl -k` = 200), echt **Let's Encrypt-cert geldig** (vandaag 07:08 uitgegeven, t/m 14 sep 2026, bevestigd in crt.sh CT-logs). Oorzaak = **lokaal**: Avast Web/Mail Shield onderschept HTTPS (cert-issuer "Avast Antivirus for SSL/TLS scanning") en de browser vertrouwt dat her-signeerde cert niet. Fix ligt bij Henk (incognito / Avast HTTPS-scanning uit). NB: `curl` op deze Windows-machine gaat door Avast → revocatiefout `CRYPT_E_NO_REVOCATION_CHECK`; omzeil met `--ssl-no-revoke`.
+
+### Beslissing: The Last Matchstick wordt native Android (PWA verlaten)
+Henk stopt met de PWA-route → native Android-app. Vastgelegd in memory `project-lastmatch`. **Opvolging (alleen met Henk's go, raakt serverconfig):** de uitgefaseerde PWA-deploy op prod opruimen — nginx-vhost `lastmatch.havun.nl` + Let's Encrypt-cert + gedeployde files. Draait nu nog live, doet geen kwaad. LastMatch zelf = apart project (eigen git, buiten HavunCore-scope).
+
+## Wat is er gedaan (16 juni)
+
+### The Last Matchstick — projectsetup + freemium/PWA-onderzoek (cross-project, in `D:\GitHub\LastMatch`)
+MAUI-game uit Visual Studio geïmporteerd. Lite + full → samenvoegen tot één app met freemium-unlock.
 
 ## Wat is er gedaan (16 juni)
 
@@ -20,7 +33,7 @@ last_updated: 2026-06-12
 MAUI-game uit Visual Studio geïmporteerd. Lite + full → samenvoegen tot één app met freemium-unlock.
 - **Werkwijze-infra aangelegd in LastMatch:** `CLAUDE.md`, `.claude/{context,rules,handover,blueprint,platform-onderzoek}.md` + commands (`start`/`mpc`/`test`, MAUI-passend; geen KB/Laravel-commands). Staan nog **uncommitted** in LastMatch's eigen git — wordt in de LastMatch-sessie gecommit.
 - **Freemium-blauwdruk** op basis van het Studieplanner-model (bunq.me/Havun + `lm-`-prefix → HavunAdmin bunq-sync → premium-API). Legaliteitsbasis = distributie buiten de Play Store.
-- **Platform-onderzoek:** Google verplicht vanaf 2026 (NL ~2027) developer-verificatie voor álle Android-apps, óók sideload. Conclusie: **PWA** (JS/TS + Vite) omzeilt dit en houdt het Havun-freemium intact. Beslissing PWA-vs-native ligt bij Henk.
+- **Platform-onderzoek:** Google verplicht vanaf 2026 (NL ~2027) developer-verificatie voor álle Android-apps, óók sideload. Conclusie destijds: **PWA** (JS/TS + Vite) omzeilt dit en houdt het Havun-freemium intact. **→ Achterhaald 17 jun: Henk koos alsnog native Android (zie 17-juni-sectie boven).**
 
 ### ⚠️ Security-bevinding (actie in HavunAdmin-sessie)
 - [ ] **HavunAdmin:** hardcoded **staging Bearer-token** in `docs/05-api-integration/API-SYNC-HERDENKINGSPORTAAL.md` (regel 257 + 423). Strijdig met "geen secrets in code/docs" — opruimen + uit historie purgen in een HavunAdmin-sessie. Zie [[feedback-no-hardcoded-test-secrets]].
