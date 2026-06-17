@@ -11,10 +11,18 @@ last_updated: 2026-06-17
 
 ## Huidige status
 
-**Branch:** master (schoon, alles gepusht)
-**Laatste werk (17 juni):** diagnose `lastmatch.havun.nl` "niet beveiligd" → lokaal Avast HTTPS-scanning MITM, server gezond. Henk besloot PWA te verlaten → LastMatch wordt **native Android**. HavunCore-code ongewijzigd.
+**Branch:** master (schoon, alles gepusht — `91397d0`)
+**Laatste werk (17 juni, sessie 2):** phpseclib SSRF-patch (medium) verholpen, audit schoon. Toon/feedback-gedragsregels uitgerold (geen geslijm, actief corrigeren, straight-forward) in globale CLAUDE.md + /start.
 
-## Wat is er gedaan (17 juni)
+## Wat is er gedaan (17 juni — sessie 2)
+
+### phpseclib SSRF-patch (medium, GHSA-m557-wrgg-6rp4)
+`composer audit` bij /start meldde phpseclib 3.0.15 kwetsbaar (X.509 AIA → SSRF, gemeld 16 jun). `composer update phpseclib/phpseclib` binnen de bestaande `^3.0`-constraint (transitief via league/flysystem-sftp-v3) → gepatcht, audit schoon. Commit `2837f92` (alleen composer.lock).
+
+### Toon & feedback-gedragsregels uitgerold
+Henk wil nuchter: geen complimenten/bevestigend meepraten, actief corrigeren (*"klopt, maar..."*), conclusie eerst zonder omslachtige inleiding. Vastgelegd in globale `~/.claude/CLAUDE.md` (§Toon & feedback), `HavunCore/.claude/commands/start.md` (commit `91397d0`) en memory `feedback-tone-no-flattery`. NB: globale CLAUDE.md + memory liggen buiten de git-repo (lokaal op deze machine, niet in versiebeheer).
+
+## Wat is er gedaan (17 juni — sessie 1)
 
 ### lastmatch.havun.nl onbereikbaar — gediagnosticeerd (geen serverprobleem)
 Henk meldde "niet beveiligd / kan niet geopend worden". Diagnose: DNS ✅ (→188.245.159.115), HTTP 301→HTTPS ✅, site draait ✅ (PWA HTML, `curl -k` = 200), echt **Let's Encrypt-cert geldig** (vandaag 07:08 uitgegeven, t/m 14 sep 2026, bevestigd in crt.sh CT-logs). Oorzaak = **lokaal**: Avast Web/Mail Shield onderschept HTTPS (cert-issuer "Avast Antivirus for SSL/TLS scanning") en de browser vertrouwt dat her-signeerde cert niet. Fix ligt bij Henk (incognito / Avast HTTPS-scanning uit). NB: `curl` op deze Windows-machine gaat door Avast → revocatiefout `CRYPT_E_NO_REVOCATION_CHECK`; omzeil met `--ssl-no-revoke`.
