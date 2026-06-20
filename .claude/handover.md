@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-06-17
+last_updated: 2026-06-20
 ---
 
 # HavunCore — Handover
@@ -11,8 +11,21 @@ last_updated: 2026-06-17
 
 ## Huidige status
 
-**Branch:** master (schoon, alles gepusht — `91397d0`)
-**Laatste werk (17 juni, sessie 2):** phpseclib SSRF-patch (medium) verholpen, audit schoon. Toon/feedback-gedragsregels uitgerold (geen geslijm, actief corrigeren, straight-forward) in globale CLAUDE.md + /start.
+**Branch:** master (schoon, alles gepusht — `e5a6642`)
+**Laatste werk (20 juni):** guzzle/psr7 security-patch (3 medium advisories) verholpen bij /start, audit schoon. Doc Intelligence 0 open (83 outdated-issues externe repos bulk-genegeerd).
+
+## Wat is er gedaan (20 juni — /start)
+
+### guzzle + psr7 security-patch (3 medium, commit e5a6642)
+`composer audit` bij /start meldde 3 medium advisories binnen de bestaande `^7.8`-constraint:
+- CVE-2026-55568: silent HTTPS proxy downgrade to cleartext (guzzle)
+- CVE-2026-55767: CRLF injection in HTTP start-line (guzzle)
+- CVE-2026-55766: CRLF injection in start-line serialization (psr7)
+
+`composer update guzzlehttp/guzzle guzzlehttp/psr7 --with-dependencies` → guzzle **7.12.1**, psr7 **2.12.1**. composer.json ongewijzigd (lockfile-only, constraint dekte de patch al). `composer audit` schoon. npm audit n.v.t. (geen package.json in repo-root).
+
+### Doc Intelligence — 0 open
+havuncore zelf 0 issues. 83 open issues in externe project-repos (havuncore-webapp 24, vpdupdate 18, idsee 9, havun 5, infosyst 5, havunvet 2, studieplanner(-api) 3, e.a.) waren allemaal "Verouderd" (age-staleness, geen HIGH/broken links/inconsistenties) → bulk-genegeerd `auto-start-2026-06-20`. Bekende treadmill, buiten HavunCore-scope.
 
 ## Wat is er gedaan (17 juni — sessie 2)
 
