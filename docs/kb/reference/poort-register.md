@@ -122,6 +122,7 @@ De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2
 |---------|---------------|-----------------|--------|
 | **Munus** | Laravel 12 module binnen HavunCore monorepo | geen TCP (via php-fpm socket) zoals overige Laravel projecten | Fase 1 — docs gereed, nog geen code (`D:\GitHub\Munus\`) |
 | Havunity | (paginabuilder, apart product) | TBD | geparkeerd (`D:\GitHub\Havunity\`) — niet aanraken |
+| **Agorano** | Laravel 12 backend + Vite React PWA (`D:\GitHub\Agorano\`) | prod = php-fpm socket (TBD, nog niet gedeployd) | Fase 1 — scaffold staat, nog geen server. Domein nog te kiezen |
 
 ## Lokale dev (per ontwikkelaar)
 
@@ -142,6 +143,8 @@ De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2
 | JudoToernooi | `php artisan serve` | 8000 | idem — gebruik `--port=8005` parallel |
 | JudoToernooi | Reverb | 8080 | gelijk aan prod |
 | Studieplanner-API | `php artisan serve` | 8001 | gelijk aan prod |
+| Agorano (backend) | `php artisan serve --port=8007` | 8007 | 8006 bezet (Infosyst); Vite proxyt `/api` hierheen |
+| Agorano (frontend) | Vite | 5173 | default; PWA (vite-plugin-pwa) |
 | Mailpit | SMTP | 1025 | gedeeld voor alle projecten |
 | Mailpit | web | 8025 | gedeeld |
 

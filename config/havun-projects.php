@@ -67,4 +67,9 @@ return [
         'local_url' => null,
         'endpoints' => [],
     ],
+    'agorano' => [
+        'path'      => 'D:/GitHub/Agorano',
+        'local_url' => 'http://localhost:8007',
+        'endpoints' => [],
+    ],
 ];
