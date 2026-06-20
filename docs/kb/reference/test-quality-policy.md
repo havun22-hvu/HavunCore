@@ -167,6 +167,7 @@ QR-approve/scanner. Draait in CI op push/PR. Volledige aanpak:
 
 ## Zie ook
 
+- `playwright-rollout-plan.md` — status + uitrolvolgorde van §10 over alle projecten.
 - `runbooks/playwright-e2e-webapp.md` — frontend E2E voor SPA/PWA (Playwright + API-mock).
 - `runbooks/playwright-e2e-laravel.md` — frontend E2E voor Laravel + Blade (draaiende app + test-DB).
 - `havun-quality-standards.md` — omvattende enterprise-normen (deze file

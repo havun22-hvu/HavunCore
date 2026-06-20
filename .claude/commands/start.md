@@ -125,6 +125,7 @@ Bij ELKE code wijziging:
 - Coverage >80%, Form Requests, Rate limiting, Custom exceptions, Circuit breaker
 - Policies, Audit log, CSRF + Security headers, CSP nonce op inline scripts
 - Docs-first — plan in MD voor code
+- **UI in dit project?** → E2E (Playwright) op kritieke flows verplicht — `test-quality-policy.md` §10. Pure-backend/native uitgezonderd. Ontbreekt het terwijl er een UI is → gat melden.
 
 ```bash
 php artisan docs:search "havun quality standards"
