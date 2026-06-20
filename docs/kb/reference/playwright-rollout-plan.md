@@ -18,7 +18,7 @@ last_reviewed: 2026-06-20
 | Project | UI-type | Playwright-status | Blauwdruk |
 |---------|---------|-------------------|-----------|
 | **havuncore-webapp** | React PWA | ✅ **werkend** — 6 specs (12 tests), CI draait | webapp |
-| **JudoToernooi** | Laravel + Blade | ⚠️ 7 specs aanwezig, **CI draait ze niet** | laravel |
+| **JudoToernooi** | Laravel + Blade | ⚠️ 9 specs, **CI draait ze niet** + **4+ falen lokaal** (20-06) | laravel |
 | **Herdenkingsportaal** | Laravel + Blade | 🟡 dep + `playwright.config.ts`, **0 specs** | laravel |
 | **HavunAdmin** | Laravel + Blade | ❌ niets | laravel |
 | **Infosyst** | Laravel + Blade | ❌ niets | laravel |
@@ -41,8 +41,13 @@ last_reviewed: 2026-06-20
 Prioriteit volgt §10-laag-1: betalingen en auth zijn het hoogste risico; projecten
 waar de setup al deels staat zijn de goedkoopste winst.
 
-1. **JudoToernooi — CI-stap toevoegen** (quick win). 7 specs bestaan al, maar `ci.yml`
-   draait ze niet → dode dekking. Alleen een Playwright-job toevoegen. Geen nieuwe dep.
+1. **JudoToernooi — eerst specs repareren, dán CI-stap** (geen quick win meer). Lokale run
+   (20-06) is NIET schoon groen: ≥4 authenticated specs falen — `mat overview`/`mat interface`
+   (vergezeld van Windows "pad niet gevonden"-fouten → mogelijk lokaal/Windows-specifiek) en
+   2× CSP-violation-checks (`dashboard`, `wedstrijddag/poules` → waarschijnlijk echte CSP-drift).
+   **CI-job NIET toevoegen tot de specs lokaal groen zijn** (anders wordt hun pipeline rood).
+   In een JudoToernooi-sessie: draaien, oorzaak per spec uitzoeken (Windows-pad vs echte CSP),
+   fixen, dán de Playwright-job aan `ci.yml` toevoegen. Geen nieuwe dep nodig (setup compleet).
 2. **Herdenkingsportaal — specs schrijven** (quick win). Dep + config staan al; alleen de
    flows afdekken: login → memorial CRUD → **Mollie-betaling** → PDF/export.
 3. **HavunAdmin — opzetten** (hoogste risico). Betalingen **Mollie + Stripe** + reconciliation
