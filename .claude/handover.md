@@ -11,8 +11,22 @@ last_updated: 2026-06-20
 
 ## Huidige status
 
-**Branch:** master (schoon, alles gepusht — `e5a6642`)
-**Laatste werk (20 juni):** guzzle/psr7 security-patch (3 medium advisories) verholpen bij /start, audit schoon. Doc Intelligence 0 open (83 outdated-issues externe repos bulk-genegeerd).
+**Branch:** master (schoon, alles gepusht — `1bb8a54`)
+**Laatste werk (20 juni):** nieuw project **Agorano** opgezet (greenfield, eigen repo). Playwright E2E-werkwijze beleidsconform gemaakt + uitrolplan. guzzle/psr7 security-patch bij /start.
+
+## Wat is er gedaan (20 juni — Agorano opzet + Playwright-uitrol)
+
+### Nieuw project Agorano (politiek + crypto intelligence + B2B/B2C-netwerk)
+Greenfield opgezet vanuit deze sessie (meta-setup). Eigen repo: **GitHub private `havun22-hvu/Agorano`**, lokaal `D:\GitHub\Agorano`.
+- **Kernkeuzes (Henk):** beide gecombineerd (info + netwerk, gefaseerd), hybride KB, Havun-patroon. **Crypto-scope: puur info + gebruikerstoepassingen, GEEN markt/speculatie → buiten MiCA/AFM.**
+- **Scaffold:** Laravel 12.62 backend + Vite React PWA (`vite-plugin-pwa`, `/api`-proxy). 14 Claude-commands + alle werkwijze-docs + architectuur/compliance-docs.
+- **In HavunCore geregistreerd:** `havun-projects.php` (agorano → :8007, want 8006=Infosyst) + poort-register. `config:clear` gedaan, herkend.
+- **Open (Henk):** server-deploy (domein + DNS + vhost + deploy-key — verboden-zonder-overleg, per stap), Fase 1-bronkeuze. Verder werk = **Agorano-sessie**.
+
+### Playwright E2E — werkwijze-gat gedicht + uitrolplan
+- **Gat:** beleid (`test-quality-policy.md` §10) schreef E2E voor, maar `/test` en `/start` dwongen het niet af. **Gedicht:** `/test` stap 3 (Playwright bij UI, meldt gat + blauwdruk) + `/start` kwaliteitsnorm — in HavunCore-template én Agorano.
+- **Nieuw doc:** `docs/kb/reference/playwright-rollout-plan.md` — per-project status + volgorde. Slechts 2 projecten hadden het echt (webapp ✅, JudoToernooi specs-maar-CI-draait-niet). JudoScoreBoard/Studieplanner = React Native **native** (geen web-E2E), Aeterna = Tauri → buiten scope.
+- **JudoToernooi-bevinding:** lokaal de 9 specs gedraaid (geïsoleerde e2e.sqlite) → **≥4 falen** (mat overview/interface + Windows pad-fouten; 2× CSP-violations). **CI bewust NIET gewired** op rode specs. Repo heeft al WIP (`testplan-playwright.md`, `diag.auth.spec.ts`, `flows.auth.spec.ts`) → afronden in **JudoToernooi-sessie**.
 
 ## Wat is er gedaan (20 juni — /start)
 
