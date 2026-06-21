@@ -20,7 +20,7 @@ last_updated: 2026-06-20
 Greenfield opgezet vanuit deze sessie (meta-setup). Eigen repo: **GitHub private `havun22-hvu/Agorano`**, lokaal `D:\GitHub\Agorano`.
 - **Kernkeuzes (Henk):** beide gecombineerd (info + netwerk, gefaseerd), hybride KB, Havun-patroon. **Crypto-scope: puur info + gebruikerstoepassingen, GEEN markt/speculatie → buiten MiCA/AFM.**
 - **Scaffold:** Laravel 12.62 backend + Vite React PWA (`vite-plugin-pwa`, `/api`-proxy). 14 Claude-commands + alle werkwijze-docs + architectuur/compliance-docs.
-- **In HavunCore geregistreerd:** `havun-projects.php` (agorano → :8007, want 8006=Infosyst) + poort-register. `config:clear` gedaan, herkend.
+- **In HavunCore geregistreerd:** `havun-projects.php` (agorano → :8007, want 8006=Infosyst) + poort-register. **Let op:** dat is NIET genoeg voor Doc Intelligence — de DocIndexer heeft een **eigen hardcoded projectlijst** (`$localPaths`/`$serverPaths`). Agorano daar ook toegevoegd (localPaths). `docs:index agorano` werkt nu (31 docs, /kb getest). server-pad nog niet (niet gedeployd). **Structureel verbeterpunt:** projectlijst is gedupliceerd (havun-projects.php ↔ DocIndexer) — ooit consolideren.
 - **Open (Henk):** server-deploy (domein + DNS + vhost + deploy-key — verboden-zonder-overleg, per stap), Fase 1-bronkeuze. Verder werk = **Agorano-sessie**.
 
 ### Playwright E2E — werkwijze-gat gedicht + uitrolplan

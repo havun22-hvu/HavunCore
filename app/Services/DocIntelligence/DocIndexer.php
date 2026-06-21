@@ -25,6 +25,7 @@ class DocIndexer
         'idsee' => 'D:/GitHub/IDSee',
         'havunvet' => 'D:/GitHub/HavunVet',
         'havuncore-webapp' => 'D:/GitHub/HavunCore/webapp',
+        'agorano' => 'D:/GitHub/Agorano',
     ];
 
     protected array $serverPaths = [
