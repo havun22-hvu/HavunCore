@@ -250,13 +250,40 @@ class IssueDetector
                 continue;
             }
 
-            // Skip if already has open issue
+            // Skip if there is already an open issue, or a deliberately handled one.
+            //
+            // Pure age-based staleness is a soft maintenance reminder. Once a human
+            // ignores or resolves it, regenerating the same flag on every detect run
+            // is a treadmill — the reminder reappears forever without the doc having
+            // changed. So we also honour ignored/resolved issues, but only while the
+            // document has NOT been touched since that decision. If the doc is edited
+            // afterwards (file_modified_at moves past resolved_at), staleness may be
+            // re-evaluated. (Scoped to outdated only — broken links / inconsistencies
+            // are real content faults and should keep resurfacing.)
             $existingIssue = DocIssue::where('issue_type', DocIssue::TYPE_OUTDATED)
-                ->where('status', DocIssue::STATUS_OPEN)
+                ->whereIn('status', [
+                    DocIssue::STATUS_OPEN,
+                    DocIssue::STATUS_IGNORED,
+                    DocIssue::STATUS_RESOLVED,
+                ])
                 ->whereJsonContains('affected_files', "{$doc->project}:{$doc->file_path}")
+                ->orderByDesc('created_at')
                 ->first();
 
-            if (!$existingIssue) {
+            $suppressed = false;
+            if ($existingIssue) {
+                if ($existingIssue->status === DocIssue::STATUS_OPEN) {
+                    $suppressed = true;
+                } else {
+                    // Dismissed: keep it dismissed unless the doc changed afterwards.
+                    $dismissedAt = $existingIssue->resolved_at ?? $existingIssue->updated_at;
+                    if ($dismissedAt && Carbon::parse($doc->file_modified_at)->lte($dismissedAt)) {
+                        $suppressed = true;
+                    }
+                }
+            }
+
+            if (!$suppressed) {
                 $daysSinceUpdate = Carbon::parse($doc->file_modified_at)->diffInDays(Carbon::now());
 
                 DocIssue::create([

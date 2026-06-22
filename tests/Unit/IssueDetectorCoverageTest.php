@@ -376,6 +376,70 @@ class IssueDetectorCoverageTest extends TestCase
         $this->assertEquals(0, $this->detector->detectOutdated('testproject'));
     }
 
+    public function test_detect_outdated_does_not_regenerate_dismissed_unchanged_doc(): void
+    {
+        // A staleness reminder that a human already ignored must not reappear on
+        // every detect run while the document itself is untouched (treadmill fix).
+        DocEmbedding::create([
+            'project' => 'testproject',
+            'file_path' => 'docs/dismissed.md',
+            'content' => 'Stable doc deliberately left as-is.',
+            'content_hash' => hash('sha256', 'dismissed'),
+            'embedding' => null,
+            'embedding_model' => null,
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now()->subDays(200),
+        ]);
+
+        DocIssue::create([
+            'project' => 'testproject',
+            'issue_type' => DocIssue::TYPE_OUTDATED,
+            'severity' => DocIssue::SEVERITY_MEDIUM,
+            'title' => 'Previously dismissed',
+            'details' => [],
+            'affected_files' => ['testproject:docs/dismissed.md'],
+            'suggested_action' => '',
+            'status' => DocIssue::STATUS_IGNORED,
+            'resolved_at' => now(),
+        ]);
+
+        // Doc unchanged since the dismissal → no new issue created.
+        $this->assertEquals(0, $this->detector->detectOutdated('testproject'));
+    }
+
+    public function test_detect_outdated_reflags_when_doc_changed_after_dismissal(): void
+    {
+        // If the doc is edited after a dismissal, the old decision is stale and
+        // staleness may be re-evaluated.
+        DocEmbedding::create([
+            'project' => 'testproject',
+            'file_path' => 'docs/touched.md',
+            'content' => 'Doc edited after being dismissed.',
+            'content_hash' => hash('sha256', 'touched'),
+            'embedding' => null,
+            'embedding_model' => null,
+            'file_type' => 'docs',
+            'token_count' => 10,
+            'file_modified_at' => now()->subDays(95),
+        ]);
+
+        DocIssue::create([
+            'project' => 'testproject',
+            'issue_type' => DocIssue::TYPE_OUTDATED,
+            'severity' => DocIssue::SEVERITY_MEDIUM,
+            'title' => 'Dismissed before the edit',
+            'details' => [],
+            'affected_files' => ['testproject:docs/touched.md'],
+            'suggested_action' => '',
+            'status' => DocIssue::STATUS_IGNORED,
+            'resolved_at' => now()->subDays(100),
+        ]);
+
+        // Doc modified (95d ago) after the dismissal (100d ago) → re-flagged.
+        $this->assertEquals(1, $this->detector->detectOutdated('testproject'));
+    }
+
     // ===================================================================
     // detectBrokenLinks — anchor/fragment handling
     // ===================================================================

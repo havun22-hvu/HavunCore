@@ -91,6 +91,7 @@ Twee gates voorkomen false-positives:
 - **Duplicaten** vereisen náást embedding-cosine ≥ 0.90 óók verbatim-overlap (Jaccard op word-trigrams ≥ 0.30). Twee docs over hetzelfde onderwerp (bv. twee `server.md`'s, parallelle per-project references, ADR's) delen vocabulaire maar geen verbatim tekst → niet meer geflagd. Echte copy-paste (bv. identieke build-artefacten) wordt wél gevangen.
 - **Broken links** strippen het `#anchor`-fragment vóór bestandsresolutie. `[x](./README.md#sectie)` verwijst naar een bestaand bestand en is dus geen broken link.
 - **Outdated** slaat gedateerde snapshots over (`*-YYYY-MM-DD.md`): die zijn point-in-time en worden door een nieuwere snapshot vervangen.
+- **Outdated regenereert niet na een bewuste afhandeling** (juni 2026): zodra een staleness-reminder is *ignored* of *resolved*, maakt `docs:detect` 'm niet opnieuw aan zolang de doc niet is gewijzigd. Pas als het bestand ná die beslissing wordt aangepast (`file_modified_at` > `resolved_at`) mag het opnieuw geëvalueerd worden. Dit stopt de "treadmill" waarbij dezelfde leeftijds-flag elke `/start` terugkwam en weer bulk-genegeerd moest worden. Geldt **alleen** voor `outdated` — broken links en inconsistenties zijn echte content-fouten en blijven wél terugkomen tot ze écht zijn opgelost.
 
 ### Code Bestanden (nieuw, maart 2026)
 Code wordt niet raw opgeslagen maar als gestructureerde samenvatting:
