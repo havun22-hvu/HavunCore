@@ -75,6 +75,7 @@ waar de setup al deels staat zijn de goedkoopste winst.
 
 ## Zie ook
 
+- `test-quality-compliance.md` — naleving per project over de héle policy (dit plan is het §10/E2E-deel daarvan).
 - `test-quality-policy.md` §10 — bindend beleid (bron).
 - `runbooks/playwright-e2e-webapp.md` — SPA/PWA-blauwdruk.
 - `runbooks/playwright-e2e-laravel.md` — Laravel+Blade-blauwdruk.

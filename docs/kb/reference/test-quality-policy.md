@@ -217,6 +217,7 @@ gedekt is — een onzichtbaar gat telt als regressierisico.
 
 ## Zie ook
 
+- `test-quality-compliance.md` — **naleving per project** over de héle policy (matrix + gaten + volgorde). Single source of truth voor "voldoet project X?".
 - `playwright-rollout-plan.md` — status + uitrolvolgorde van §10 over alle projecten.
 - `runbooks/playwright-e2e-webapp.md` — frontend E2E voor SPA/PWA (Playwright + API-mock).
 - `runbooks/playwright-e2e-laravel.md` — frontend E2E voor Laravel + Blade (draaiende app + test-DB).
