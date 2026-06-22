@@ -11,8 +11,25 @@ last_updated: 2026-06-20
 
 ## Huidige status
 
-**Branch:** master (schoon, alles gepusht — `6c6dbaa`)
-**Laatste werk (22 juni):** Doc Intelligence outdated-treadmill structureel gestopt — bewust genegeerde staleness-flags regenereren niet meer. Schone lei (0 open) blijft nu staan.
+**Branch:** master (schoon, alles gepusht — `2eecde1`)
+**Laatste werk (22-23 juni):** test-quality-policy uitgebreid met §11 (realtime/visual/device) + nieuwe master-compliance-matrix die álle projecten tegen de héle policy afzet. Doc Intelligence outdated-treadmill structureel gestopt.
+
+## Wat is er gedaan (22-23 juni — strengere testeisen, policy-breed)
+
+Henk wil dat **álle** projecten aan strenge test/kwaliteitseisen voldoen — niet alleen waar het toevallig al staat. Twee docs-deliverables (geen code, expliciet "geen code"):
+
+### §11 toegevoegd aan `test-quality-policy.md` (commit `e4120c6`)
+Vier eisen die mock-gebaseerde E2E (§10) niet dekt, generiek geformuleerd (judo als voorbeeld):
+- **11.1 Realtime/cross-device** — echte broadcaster aan (geen `BROADCAST_CONNECTION=null`), ≥2 browser-contexts, assert B-update na A-actie, incl. reconnect. §10's mock-regel heeft hiervoor nu een uitzondering.
+- **11.2 Full-suite mutation-sweep** — als audit bovenop kritieke-paden-mutation (§7).
+- **11.3 Visual regression** (`toHaveScreenshot`) op pixel-fragiele schermen, desktop-only.
+- **11.4 Echt-device sweep** — handmatige/BrowserStack-gate; gat hoort in project-handover.
+
+### Master-compliance-matrix `test-quality-compliance.md` (commit `2eecde1`)
+Nieuw, BINDING. Zet elk project af tegen alle dimensies (KP/MUT/E2E/RT/VIS/DEV) met ✅/🟡/❌/❓/n.v.t. + gaten-prioriteit + bewaking. Single source of truth voor "voldoet project X?". Policy + playwright-rollout-plan linken ernaar (rollout-plan = het §10-deel hiervan).
+- **Grootste gaten:** (1) JudoToernooi realtime E2E (kern, nooit echt getest), (2) HavunAdmin E2E (Mollie+Stripe, niets), (3) JudoToernooi specs groen+CI, (4) Herdenkingsportaal specs, (5) visual JudoToernooi, (6) mutation-status overal vaststellen.
+- **MUT-kolom staat overal op ❓:** actuele mutation-score is nergens centraal bijgehouden — eerste actie per project-sessie.
+- **Scope:** dit overzicht bijhouden = HavunCore. Gaten dichten = eigen project-sessie.
 
 ## Wat is er gedaan (22 juni — outdated-treadmill gestopt)
 
