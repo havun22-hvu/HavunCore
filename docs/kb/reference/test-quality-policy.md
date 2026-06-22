@@ -3,7 +3,7 @@ title: Test-kwaliteit — bindend beleid voor alle Havun projecten
 type: reference
 scope: alle-projecten
 status: BINDING
-last_reviewed: 2026-06-10
+last_reviewed: 2026-06-22
 supersedes: "havun-quality-standards.md §Coverage"
 ---
 
@@ -150,6 +150,8 @@ frontend-auth, geen vervanging van de backend-suite.
 
 - **Stack:** Playwright (Chromium). Tests mocken alle API-calls
   (route-interception) → deterministisch, geen backend/DB nodig, CI-licht.
+  **Uitzondering:** realtime/cross-device-flows (websockets/broadcasting) mág
+  je niet wegmocken — die test je met de echte broadcaster aan, zie §11.1.
 - **Zinvol-eisen (§4) gelden ook hier:** assert waarneembare uitkomst (scherm
   bereikt, melding zichtbaar), niet "pagina laadde". Geen smoke-padding.
 - **Pure-backend projecten** (HavunCore-Laravel, orchestrator/API) krijgen **geen**
@@ -164,6 +166,54 @@ QR-approve/scanner. Draait in CI op push/PR. Volledige aanpak:
 - `runbooks/playwright-e2e-webapp.md` — SPA/PWA (React) via **API-mock**.
 - `runbooks/playwright-e2e-laravel.md` — Laravel + Blade via **draaiende app +
   test-database** (server-rendered, niets te mocken).
+
+## 11. Realtime, visuele regressie & device-dekking
+
+Mock-gebaseerde E2E (§10) dekt scherm + auth + API-vorm, maar **niet** drie
+klassen bugs die juist op gevoelige producten breken. Voor projecten waar deze
+van toepassing zijn, gelden onderstaande eisen als laag-1-dekking.
+
+### 11.1 Realtime / cross-device — broadcaster áán (verplicht waar live de kern is)
+
+Als het product *is* dat een actie op apparaat A live apparaat B/C bijwerkt
+(scorebord, dashboards, collaboratie), dan is een gemockte single-context-test
+**geen dekking van de kern**. Losse PHPUnit-event-tests bewijzen dat een event
+*afgaat*, niet dat de keten A→broadcaster→B daadwerkelijk update.
+
+**Eis:** minstens één E2E met de **echte broadcaster aan** (Reverb/websockets,
+dus géén `BROADCAST_CONNECTION=null`), **≥2 browser-contexts** in één test,
+die assert dat context B verandert nadat A een actie doet. Dek óók het
+**reconnect-pad** na een broadcaster-uitval — dat is waar het op een
+productiedag (toernooidag) stuk gaat.
+*Voorbeeld: JudoToernooi mat scoort → scorebord + LCD + spreker-scherm updaten
+live; reconnect na Reverb-herstart.* Hoogste waarde, meeste werk.
+
+### 11.2 Mutation-sweep over de volledige suite (audit-instrument)
+
+§7.1 schrijft mutation-score voor op **kritieke paden**. Aanvullend: draai
+periodiek een **full-suite mutation-sweep** (Infection PHP / Stryker TS) als
+audit. Coverage-% en zelfs een grote suite (~3500 tests) zeggen niets over of
+die tests echt iets vangen; een mutant die overleeft (bv. `>` → `>=` zonder
+falende test) legt een loze test bloot. Relatief goedkoop, hoog inzicht.
+Survivors → test repareren of als padding wegsnijden (§6). Niet elke commit —
+periodiek of vóór een release/audit.
+
+### 11.3 Visual regression op pixel-fragiele schermen
+
+Schermen met fragiele layout-logica (CSSOM-positionering, absolute lay-out,
+canvas/LCD-rendering) breken visueel zonder dat een DOM-assertie het ziet — nu
+vangt het oog van de bouwer dat, wat niet schaalt. **Eis voor zulke schermen:**
+Playwright `toHaveScreenshot()` als regressie-baseline. *Voorbeeld: JudoToernooi
+eliminatie-bracket, scorebord, LCD.* Beperk tot **desktop** — mobiele emulatie
+(Pixel) is te onbetrouwbaar voor pixel-vergelijking en geeft flakes.
+
+### 11.4 Echt-device sweep (handmatige gate, niet automatiseerbaar)
+
+Mobiele responsiveness op echte toestellen valt buiten betrouwbare automatisering
+(emulatie ≠ echt toestel). Dit blijft een **gedocumenteerde handmatige gate**:
+een vaste device-checklist (of BrowserStack) vóór release van mobiel-kritische
+UI. Het gat zelf moet expliciet in de project-handover staan zolang het niet
+gedekt is — een onzichtbaar gat telt als regressierisico.
 
 ## Zie ook
 
