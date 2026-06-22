@@ -11,7 +11,18 @@ last_updated: 2026-06-20
 
 ## Huidige status
 
-**Branch:** master (schoon, alles gepusht — `1bb8a54`)
+**Branch:** master (schoon, alles gepusht — `6c6dbaa`)
+**Laatste werk (22 juni):** Doc Intelligence outdated-treadmill structureel gestopt — bewust genegeerde staleness-flags regenereren niet meer. Schone lei (0 open) blijft nu staan.
+
+## Wat is er gedaan (22 juni — outdated-treadmill gestopt)
+
+Henk: "werk die 85 issues ook weg, schone lei staat het best." De 85 open issues waren allemaal `outdated` (puur age-staleness) in **externe** project-repos (havuncore-webapp 24, vpdupdate 18, idsee 9, havun 6, studieplanner(-api) 3, havunvet 2, agorano 1). Bulk-ignoren = symptoombestrijding: `detectOutdated()` dedupte alleen op **open** issues, dus elke `docs:detect` maakte ze opnieuw aan (de treadmill die ik 14 juni als observatie meldde).
+
+**Structurele fix** (`IssueDetector::detectOutdated()`, commit `6c6dbaa`): de dedup-check telt nu óók `ignored`/`resolved` outdated-issues mee — een bewust afgehandelde staleness-reminder regenereert niet **zolang de doc niet is gewijzigd**. Wordt het bestand ná de afhandeling aangepast (`file_modified_at` > `resolved_at`), dan mag het opnieuw geëvalueerd worden. Alleen `outdated` — broken links/inconsistenties zijn echte content-fouten en blijven wél terugkomen.
+- 2 unit-tests toegevoegd (regenereert-niet + reflag-na-wijziging). Suite **1259 groen**.
+- KB bijgewerkt: `runbooks/doc-intelligence-setup.md` §Detectie-precisie.
+- Geverifieerd: `docs:detect` over álle projecten → 0 nieuwe outdated, `docs:issues` → **0 open**. Komt niet meer terug bij volgende /start.
+
 **Laatste werk (20 juni):** nieuw project **Agorano** opgezet (greenfield, eigen repo). Playwright E2E-werkwijze beleidsconform gemaakt + uitrolplan. guzzle/psr7 security-patch bij /start.
 
 ## Wat is er gedaan (20 juni — Agorano opzet + Playwright-uitrol)
