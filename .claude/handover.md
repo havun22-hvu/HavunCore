@@ -23,6 +23,9 @@ Overdracht uit een JudoToernooi-sessie (`scratchpad/HAVUNCORE-forms-coverage-pla
 - **Verificatie op 7 lokale projecten** (zie `docs/kb/runbooks/forms-coverage-heuristic.md`): `use% ≥ occ%` overal, **0 regressies** → default `usages` veilig.
 - **JudoToernooi: 56%→59%, blijft `high`.** Optie C is hier ontoereikend — het gat zit in input-loze write-routes (215 routes) + mogelijke service-laag-validatie, **niet** in de gedeelde-FormRequest-ondertelling. Geen HavunCore-fix: vereist write-route-audit in een **JudoToernooi-sessie** (de bijlage die het overdracht-doc openliet). Bewust niet groen geforceerd (§4.3: teller niet losser maken).
 
+### Residu opgeruimd — JudoToernooi prod
+`.env.bak.2026-05-02-225842` (52d) op `/var/www/judotoernooi/repo-prod/laravel/` was archief-kandidaat. Pre-check (live `.env` 2972b >100) → `mv` naar `/var/backups/havun-env/judotoernooi/` (600, root:root). Residu-scan daarna 0 findings. Purge (`rm`) pas ~eind juli (90d), handmatig.
+
 ## Vorig werk (22-23 juni)
 test-quality-policy §11 (realtime/visual/device) + master-compliance-matrix. Doc Intelligence outdated-treadmill structureel gestopt.
 
