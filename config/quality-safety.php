@@ -92,6 +92,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Form-validation coverage mode
+    |--------------------------------------------------------------------------
+    |
+    | Selects which of the two coverage estimates the `forms` check gates on:
+    |   - 'usages'      : counts FormRequest type-hint injection points (default,
+    |                     route-proportional — a shared FormRequest is credited
+    |                     once per route it guards).
+    |   - 'occurrences' : legacy class-definition count (rollback valve).
+    | Both numbers are always reported in the finding payload regardless of mode.
+    | See docs/kb/runbooks/forms-coverage-heuristic.md.
+    |
+    */
+
+    'forms_coverage_mode' => env('QV_FORMS_COVERAGE_MODE', 'usages'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Thresholds
     |--------------------------------------------------------------------------
     */

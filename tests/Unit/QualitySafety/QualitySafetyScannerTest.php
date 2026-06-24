@@ -621,6 +621,95 @@ UNITS,
         $this->assertSame(10, $run['findings'][0]['coverage_pct']);
     }
 
+    public function test_forms_check_usage_mode_credits_shared_formrequest_per_route(): void
+    {
+        config()->set('quality-safety.thresholds.forms_warning_pct', 60);
+        config()->set('quality-safety.thresholds.forms_critical_pct', 30);
+        config()->set('quality-safety.forms_coverage_mode', 'usages');
+
+        // One shared FormRequest guarding 2 write-routes (store + update).
+        // Occurrence heuristic sees 1 class → 50 % → would flag `high`.
+        // Usage heuristic sees 2 type-hints → 100 % → clean. This is the
+        // core undercount the route-proportional mode fixes.
+        $this->buildSharedFormRequestSkeleton();
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['shared' => $this->project()], ['forms']);
+
+        $this->assertEmpty($run['findings'], 'shared FormRequest should reach 100% under usage mode');
+    }
+
+    public function test_forms_check_occurrence_mode_is_a_rollback_valve(): void
+    {
+        config()->set('quality-safety.thresholds.forms_warning_pct', 60);
+        config()->set('quality-safety.thresholds.forms_critical_pct', 30);
+        // Pin to the legacy heuristic — same skeleton now undercounts to 50 %.
+        config()->set('quality-safety.forms_coverage_mode', 'occurrences');
+
+        $this->buildSharedFormRequestSkeleton();
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['shared' => $this->project()], ['forms']);
+
+        $this->assertCount(1, $run['findings']);
+        $this->assertSame('high', $run['findings'][0]['severity']);
+        $this->assertSame(50, $run['findings'][0]['coverage_pct']);
+        $this->assertSame('occurrences', $run['findings'][0]['coverage_mode']);
+    }
+
+    public function test_forms_check_payload_reports_both_estimates(): void
+    {
+        config()->set('quality-safety.thresholds.forms_warning_pct', 60);
+        config()->set('quality-safety.thresholds.forms_critical_pct', 30);
+        config()->set('quality-safety.forms_coverage_mode', 'occurrences');
+
+        // Undercounts under occurrences (50 %, flagged) but both numbers must
+        // ride along so a reviewer sees the usage estimate (100 %) too.
+        $this->buildSharedFormRequestSkeleton();
+
+        $scanner = new QualitySafetyScanner;
+        $run = $scanner->scan(['shared' => $this->project()], ['forms']);
+
+        $this->assertCount(1, $run['findings']);
+        $finding = $run['findings'][0];
+        $this->assertSame(50, $finding['coverage_occurrence_pct']);
+        $this->assertSame(100, $finding['coverage_usage_pct']);
+        $this->assertSame(1, $finding['form_requests']);
+        $this->assertSame(2, $finding['form_request_usages']);
+    }
+
+    /**
+     * Skeleton with a single FormRequest class type-hinted on two write-routes,
+     * exposing the divergence between the occurrence (50 %) and usage (100 %)
+     * heuristics.
+     */
+    private function buildSharedFormRequestSkeleton(): void
+    {
+        file_put_contents($this->tempProject . '/artisan', "#!/usr/bin/env php\n");
+
+        mkdir($this->tempProject . '/routes', 0755, true);
+        file_put_contents(
+            $this->tempProject . '/routes/web.php',
+            "<?php\nRoute::post('/toernooi', [ToernooiController::class, 'store']);\n"
+                . "Route::put('/toernooi/{id}', [ToernooiController::class, 'update']);\n"
+        );
+
+        mkdir($this->tempProject . '/app/Http/Requests', 0755, true);
+        file_put_contents(
+            $this->tempProject . '/app/Http/Requests/ToernooiRequest.php',
+            "<?php\nclass ToernooiRequest extends FormRequest {}\n"
+        );
+
+        mkdir($this->tempProject . '/app/Http/Controllers', 0755, true);
+        file_put_contents(
+            $this->tempProject . '/app/Http/Controllers/ToernooiController.php',
+            "<?php\nclass ToernooiController {\n"
+                . "    public function store(ToernooiRequest \$request) { return null; }\n"
+                . "    public function update(ToernooiRequest \$request, \$id) { return null; }\n"
+                . "}\n"
+        );
+    }
+
     public function test_ratelimit_check_skips_non_laravel_project(): void
     {
         $scanner = new QualitySafetyScanner;
@@ -1218,17 +1307,26 @@ PHP;
         }
         file_put_contents($this->tempProject . '/routes/web.php', $routesPhp);
 
-        // FormRequests
+        // FormRequests — each is both defined (`extends FormRequest`, the
+        // occurrence signal) AND type-hinted in a controller method (the usage
+        // signal), so the skeleton scores identically under both heuristics.
+        // Named `*Request` to satisfy the usage pattern's naming convention.
         mkdir($this->tempProject . '/app/Http/Requests', 0755, true);
-        for ($i = 0; $i < $formRequests; $i++) {
-            file_put_contents(
-                $this->tempProject . "/app/Http/Requests/Req{$i}.php",
-                "<?php\nclass Req{$i} extends FormRequest {}\n"
-            );
+        mkdir($this->tempProject . '/app/Http/Controllers', 0755, true);
+        if ($formRequests > 0) {
+            $frController = "<?php\nclass FormReqController {\n";
+            for ($i = 0; $i < $formRequests; $i++) {
+                file_put_contents(
+                    $this->tempProject . "/app/Http/Requests/Req{$i}Request.php",
+                    "<?php\nclass Req{$i}Request extends FormRequest {}\n"
+                );
+                $frController .= "    public function store{$i}(Req{$i}Request \$request) { return null; }\n";
+            }
+            $frController .= "}\n";
+            file_put_contents($this->tempProject . '/app/Http/Controllers/FormReqController.php', $frController);
         }
 
         // Inline validates
-        mkdir($this->tempProject . '/app/Http/Controllers', 0755, true);
         if ($inlineValidates > 0) {
             $controller = "<?php\nclass C {\n";
             for ($i = 0; $i < $inlineValidates; $i++) {

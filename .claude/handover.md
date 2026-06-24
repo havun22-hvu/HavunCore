@@ -11,8 +11,20 @@ last_updated: 2026-06-20
 
 ## Huidige status
 
-**Branch:** master (schoon, alles gepusht — `2eecde1`)
-**Laatste werk (22-23 juni):** test-quality-policy uitgebreid met §11 (realtime/visual/device) + nieuwe master-compliance-matrix die álle projecten tegen de héle policy afzet. Doc Intelligence outdated-treadmill structureel gestopt.
+**Branch:** master
+**Laatste werk (24 juni):** forms-coverage heuristiek van `qv:scan` route-evenredig gemaakt (optie C — usage-based). Veilig uitgerold, 0 regressies. JudoToernooi blijft `high` (residu = JudoToernooi-scope, geen meetartefact).
+
+## Wat is er gedaan (24 juni — forms-coverage usage-based)
+
+Overdracht uit een JudoToernooi-sessie (`scratchpad/HAVUNCORE-forms-coverage-plan.md`): de `forms`-check ondertelde omdat een **gedeelde** FormRequest (op `store`+`update`) als 1 klasse telde. Henk koos **optie C** + direct implementeren.
+
+- **Fix** (`QualitySafetyScanner::formsCoverage()`): naast de legacy occurrence-telling nu een **usage-telling** — FormRequest type-hint-injectiepunten (`function store(FooRequest $r)`) i.p.v. klassedefinities. Gedeelde FormRequest telt 1× per route. Regex leunt op de `*Request`-naamconventie (sluit base `Request $request` uit). Gating-mode via `config('quality-safety.forms_coverage_mode')` (default `usages`, `occurrences` = rollback-valve). **Dual-compute:** beide getallen altijd in de finding-payload.
+- **Tests:** skeleton type-hint nu elke FormRequest (`*Request`-genaamd) → 6 bestaande forms-tests groen onder beide modi. 3 nieuwe: gedeelde-FormRequest (kern), mode-rollback, dual-compute-payload. Scanner-suite **73 groen**.
+- **Verificatie op 7 lokale projecten** (zie `docs/kb/runbooks/forms-coverage-heuristic.md`): `use% ≥ occ%` overal, **0 regressies** → default `usages` veilig.
+- **JudoToernooi: 56%→59%, blijft `high`.** Optie C is hier ontoereikend — het gat zit in input-loze write-routes (215 routes) + mogelijke service-laag-validatie, **niet** in de gedeelde-FormRequest-ondertelling. Geen HavunCore-fix: vereist write-route-audit in een **JudoToernooi-sessie** (de bijlage die het overdracht-doc openliet). Bewust niet groen geforceerd (§4.3: teller niet losser maken).
+
+## Vorig werk (22-23 juni)
+test-quality-policy §11 (realtime/visual/device) + master-compliance-matrix. Doc Intelligence outdated-treadmill structureel gestopt.
 
 ## Wat is er gedaan (22-23 juni — strengere testeisen, policy-breed)
 

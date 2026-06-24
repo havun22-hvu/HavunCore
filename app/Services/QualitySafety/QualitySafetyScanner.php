@@ -703,9 +703,23 @@ BASH;
     /**
      * Static-analysis estimate of form-validation coverage for Laravel projects.
      *
-     * Heuristic: ratio between (FormRequest classes + inline `->validate(`) and
-     * write-routes (POST/PUT/PATCH/DELETE). Below the warn-threshold becomes a
-     * `high` finding, below the critical-threshold a `critical`. Skipped for
+     * Two estimates are computed against the same write-route denominator
+     * (POST/PUT/PATCH/DELETE), both capped at 100 %:
+     *
+     *  - `occurrence`: legacy heuristic — (# `extends FormRequest` classes +
+     *    inline `->validate(`). Undercounts because a shared FormRequest reused
+     *    on several routes (e.g. `store` + `update`) counts as a single class.
+     *  - `usage`: counts FormRequest *type-hint injection points* in method
+     *    signatures (`function store(FooRequest $r)`) instead of class
+     *    definitions, so a shared FormRequest is credited once per route it
+     *    guards. Leans on the `*Request` naming convention to tell a FormRequest
+     *    type-hint apart from the base `Request $request` (which never matches).
+     *
+     * The gating estimate is selected by `quality-safety.forms_coverage_mode`
+     * ('usages' default, 'occurrences' for rollback). Both numbers ride along in
+     * the finding payload (dual-compute) so a project can be verified before the
+     * gate trusts the new value. Below the warn-threshold becomes a `high`
+     * finding, below the critical-threshold a `critical`. Skipped for
      * non-Laravel projects (no `artisan` file at the project root).
      *
      * @param  array<string,mixed>  $project
@@ -730,19 +744,33 @@ BASH;
         // Inline-validate covers four Laravel idioms: $req->validate([...]),
         // $req->validateWithBag('bag', [...]), Validator::make($data, [...]),
         // and $this->validate($req, [...]).
+        //
+        // The `usage` pattern requires a `*Request`-named type-hint immediately
+        // followed by a `$var` parameter; the leading `[^)]*` lets it match the
+        // FormRequest in any parameter position, the trailing `\b` excludes the
+        // base `Request` (which lacks the prefix the convention requires).
         $appCounts = is_dir($appDir)
             ? $this->countMatches($appDir, [
                 'fr' => '/extends\s+FormRequest\b/',
+                'usage' => '/function\s+\w+\s*\([^)]*\b[A-Z][A-Za-z0-9_]*Request\b\s+\$/',
                 'iv' => '/->validate(?:WithBag)?\s*\(|Validator::make\s*\(|\$this->validate\s*\(/',
             ])
-            : ['fr' => 0, 'iv' => 0];
+            : ['fr' => 0, 'usage' => 0, 'iv' => 0];
         $formRequests = $appCounts['fr'];
+        $formRequestUsages = $appCounts['usage'];
         $inlineValidates = $appCounts['iv'];
-        $covered = $formRequests + $inlineValidates;
 
-        // Cap at write-route count: a single route covered by both a FormRequest
-        // and an inline ::validate must not push coverage above 100 %.
-        $coverage = (int) round((min($covered, $writeRoutes) / $writeRoutes) * 100);
+        // Cap each estimate at the write-route count: a route covered by both a
+        // FormRequest and an inline ::validate must not push coverage above 100 %.
+        $coveredOcc = min($formRequests + $inlineValidates, $writeRoutes);
+        $coveredUsage = min($formRequestUsages + $inlineValidates, $writeRoutes);
+        $coverageOcc = (int) round(($coveredOcc / $writeRoutes) * 100);
+        $coverageUsage = (int) round(($coveredUsage / $writeRoutes) * 100);
+
+        $mode = (string) config('quality-safety.forms_coverage_mode', 'usages');
+        [$coverage, $covered] = $mode === 'occurrences'
+            ? [$coverageOcc, $coveredOcc]
+            : [$coverageUsage, $coveredUsage];
 
         $warn = (int) config('quality-safety.thresholds.forms_warning_pct', 60);
         $crit = (int) config('quality-safety.thresholds.forms_critical_pct', 30);
@@ -758,10 +786,16 @@ BASH;
                 'severity' => $severity,
                 'title' => "Form validation coverage {$coverage}% ({$covered}/{$writeRoutes} write-routes)",
                 'coverage_pct' => $coverage,
+                'coverage_mode' => $mode,
+                'coverage_occurrence_pct' => $coverageOcc,
+                'coverage_usage_pct' => $coverageUsage,
                 'write_routes' => $writeRoutes,
                 'form_requests' => $formRequests,
+                'form_request_usages' => $formRequestUsages,
                 'inline_validates' => $inlineValidates,
-                'message' => "{$coverage}% form-validation coverage ({$formRequests} FormRequest + {$inlineValidates} inline ::validate vs {$writeRoutes} write-routes)",
+                'message' => "{$coverage}% form-validation coverage [{$mode}] "
+                    . "({$covered}/{$writeRoutes} write-routes; occurrence={$coverageOcc}%, usage={$coverageUsage}%; "
+                    . "{$formRequests} FormRequest classes, {$formRequestUsages} type-hint usages, {$inlineValidates} inline ::validate)",
             ]],
         ];
     }
