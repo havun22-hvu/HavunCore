@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-06-20
+last_updated: 2026-06-26
 ---
 
 # HavunCore — Handover
@@ -12,7 +12,21 @@ last_updated: 2026-06-20
 ## Huidige status
 
 **Branch:** master
-**Laatste werk (24 juni):** forms-coverage heuristiek van `qv:scan` route-evenredig gemaakt (optie C — usage-based). Veilig uitgerold, 0 regressies. JudoToernooi blijft `high` (residu = JudoToernooi-scope, geen meetartefact).
+**Laatste werk (26 juni):** integratiecontract HavunClub ↔ JudoToernooi ↔ HavunAdmin vastgesteld + uitgeschreven als HavunCore-spec (`docs/kb/contracts/havunclub-koppelingen.md`). 3 beslispunten door Henk beslist. JT + HA moeten nog bouwen (eigen sessies); HavunClub = kleine aanpassing.
+
+## Wat is er gedaan (26 juni — integratiecontract 3 SaaS-apps)
+
+HavunClub leverde z'n kant (`HavunClub/docs/integratie-contract.md`, al live) + 3 open beslispunten. Vastgesteld + uitgeschreven naar `docs/kb/contracts/havunclub-koppelingen.md` (naast bestaande `memorial-reference.md`).
+
+- **Architectuur:** HavunClub = hub; JT en HA praten onderling niet. HavunClub push't stamdata/inschrijving naar JT, HA trekt facturen/betalingen op uit HavunClub.
+- **Beslissing 1 (tenant-id):** geen centrale HavunCore-id. Elke app master van eigen id; HavunClub bewaart crosswalk (`judotoernooi_tenant_id`/`havunadmin_tenant_id`). **Koppelsleutel = opgeslagen bevestigde mapping, NIET runtime e-mailvergelijking** (correctie op Henks eerste idee — e-mail/naam = enkel menselijke herkenning in `/koppelingen`-UI).
+- **Beslissing 2 (HA-richting):** HA trekt op (pull). HavunClub master financiële data. `havunadmin_api_key`-pushveld vervalt.
+- **Beslissing 3 (factuurvelden):** HavunClub levert platte factuur + **regels met BTW per regel** (HA's `invoice_items` ondersteunt het al). HA wijst grootboek/kostenplaats zelf toe (heeft `LedgerAccount` + `category_id` + import-filters).
+- **Grounding:** JT heeft géén tenant maar wél Bearer-token-patroon (`scoreboard.token`) → key = tenant, `tenant`-param overbodig. JT's `SyncApiController` is app↔cloud, NIET de judoka-push → 3 endpoints zijn nieuw. HA heeft al multi-tenant + `InvoiceSyncController` → pull sluit naadloos aan.
+- **Open punten** (in het contract-doc): JT base-URL + `resultaat`-waardenset; HA header- vs regel-BTW + `?sinds=`-akkoord; HavunClub `havunadmin_api_key` verwijderen.
+- **Vervolg = eigen project-sessies:** JT bouwt 3 endpoints, HA bouwt pull-job. HavunCore-scope hier was alleen het contract vaststellen.
+
+**Vorig werk (24 juni):** forms-coverage heuristiek van `qv:scan` route-evenredig gemaakt (optie C — usage-based). Veilig uitgerold, 0 regressies. JudoToernooi blijft `high` (residu = JudoToernooi-scope, geen meetartefact).
 
 ## Wat is er gedaan (24 juni — forms-coverage usage-based)
 
