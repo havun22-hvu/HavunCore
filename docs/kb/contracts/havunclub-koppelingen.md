@@ -2,8 +2,8 @@
 title: "Contract: HavunClub ↔ JudoToernooi ↔ HavunAdmin"
 type: reference
 scope: havuncore
-last_check: 2026-06-26
-status: vastgesteld — klaar voor implementatie JT + HA
+last_check: 2026-06-27
+status: JT + HA geïmplementeerd (feature-branches) — wacht op HavunClub-bevestiging
 ---
 
 # Integratiecontract HavunClub ↔ JudoToernooi ↔ HavunAdmin
@@ -137,7 +137,23 @@ HA zet `source = "havunclub"`, bewaart `external_reference` voor dedup, en wijst
 - **JudoToernooi:** `docs/kb/plans/havunclub-koppeling-jt-blueprint.md` → kopieer naar `JudoToernooi/laravel/.claude/blueprint.md`.
 - **HavunAdmin:** `docs/kb/plans/havunclub-koppeling-ha-blueprint.md` → kopieer naar `HavunAdmin/.claude/blueprint.md`.
 
-## Open punten (terugkoppelen in dit doc)
-- [ ] JT: base-URL (`judotoernooi.nl/api` vs `api.`-subdomein) + `resultaat`-waardenset.
-- [ ] HA: header- of regel-BTW; akkoord op `?sinds=`-paginering.
-- [ ] HavunClub: `havunadmin_api_key`-veld verwijderen na bevestiging richting.
+## Implementatiestatus (27 jun 2026)
+
+**JudoToernooi** — branch `feat/havunclub-koppeling` (commit `9102e6f`). 3 endpoints live op het
+`club.token`-patroon (token = Organisator = tenant). Token uitgeven: `php artisan club:token-create`.
+7 tests groen. Doc: `JudoToernooi/laravel/docs/2-FEATURES/HAVUNCLUB-KOPPELING.md`.
+- **Antwoord `resultaat`-waardenset:** = `eindpositie` van de poule → **1 = goud, 2 = zilver, 3 = brons, …**; `partijen` = gewonnen+verloren+gelijk.
+- **Let op veld-mapping:** JT mapt `voornaam`+`achternaam` → `naam` en `geboortedatum` → **alleen `geboortejaar`** (StamJudoka kent geen volledige datum). Optioneel `havunclub_judoka_id` meesturen = robuustere idempotentie.
+
+**HavunAdmin** — branch `feat/havunclub-koppeling` (commit `adcfe32`). Pull via `sync:havunclub`
+(scheduler elke 15 min, no-op zonder config). 4 tests groen. Doc: `HavunAdmin/docs/05-api-integration/HAVUNCLUB-SYNC.md`.
+- **Antwoord BTW:** HA gebruikt **regel-BTW** (`regels[]` → `InvoiceItem`). Grootboek wijst HA zelf toe.
+- **Nuance richting:** HA's bestaande `InvoiceSyncController` is een *push-ontvanger* (Herdenkingsportaal), geen puller. De pull is nieuw, maar hergebruikt `Invoice::createFromHavunClub()` + `TransactionMatchingService`. Pull-config: `HAVUNCLUB_BASE_URL` + `HAVUNCLUB_API_TOKEN`.
+- **Betaling-payload die HA verwacht** (`/api/v1/betalingen`): `factuur_external_reference`, `status`, `betaald_op?`, `methode?`.
+
+## Open punten (HavunClub-zijde / terugkoppelen)
+- [ ] HavunClub: bevestig base-URL JT (`judotoernooi.nl/api` vs `api.`-subdomein).
+- [ ] HavunClub: `geslacht`-waarden die je stuurt (JT normaliseert m/man/male resp. v/f/vrouw → M/V).
+- [ ] HavunClub: betaling-payload gelijktrekken met bovenstaande veldnamen.
+- [ ] HavunClub: `havunadmin_api_key`-pushveld verwijderen (richting = pull bevestigd).
+- [ ] Beide PR's reviewen + mergen, daarna deploy + migraties (JT: 2 migraties).
