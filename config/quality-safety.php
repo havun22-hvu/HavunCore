@@ -22,6 +22,13 @@ return [
             'url' => 'https://havunadmin.havun.nl',
         ],
 
+        'havunclub' => [
+            'enabled' => env('QV_HAVUNCLUB_ENABLED', true),
+            'path' => env('HAVUNCLUB_LOCAL_PATH', 'D:/GitHub/HavunClub'),
+            'remote_path' => '/var/www/havunclub/production',
+            'url' => 'https://havunclub.havun.nl',
+        ],
+
         'herdenkingsportaal' => [
             'enabled' => env('QV_HERDENKINGSPORTAAL_ENABLED', true),
             'path' => env('HERDENKINGSPORTAAL_LOCAL_PATH', 'D:/GitHub/Herdenkingsportaal'),
