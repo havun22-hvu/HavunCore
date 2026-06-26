@@ -24,7 +24,8 @@ HavunClub leverde z'n kant (`HavunClub/docs/integratie-contract.md`, al live) + 
 - **Beslissing 3 (factuurvelden):** HavunClub levert platte factuur + **regels met BTW per regel** (HA's `invoice_items` ondersteunt het al). HA wijst grootboek/kostenplaats zelf toe (heeft `LedgerAccount` + `category_id` + import-filters).
 - **Grounding:** JT heeft géén tenant maar wél Bearer-token-patroon (`scoreboard.token`) → key = tenant, `tenant`-param overbodig. JT's `SyncApiController` is app↔cloud, NIET de judoka-push → 3 endpoints zijn nieuw. HA heeft al multi-tenant + `InvoiceSyncController` → pull sluit naadloos aan.
 - **Open punten** (in het contract-doc): JT base-URL + `resultaat`-waardenset; HA header- vs regel-BTW + `?sinds=`-akkoord; HavunClub `havunadmin_api_key` verwijderen.
-- **Vervolg = eigen project-sessies:** JT bouwt 3 endpoints, HA bouwt pull-job. HavunCore-scope hier was alleen het contract vaststellen.
+- **Vervolg = eigen project-sessies:** JT bouwt 3 endpoints, HA bouwt pull-job. HavunCore-scope hier was alleen het contract vaststellen + voorbereiden.
+- **Blueprints geschreven** (27 jun) zodat de project-sessies direct kunnen: `docs/kb/plans/havunclub-koppeling-jt-blueprint.md` (JT: `club_api_tokens`-tabel + `CheckClubToken` gespiegeld op `scoreboard.token`, `ClubSyncController`, `InschrijvingService`-extractie uit `CoachPortalController`) en `havunclub-koppeling-ha-blueprint.md` (HA: `sync:havunclub`-command gespiegeld op `sync:bunq`, `HavunClubSyncService`, `updateOrCreate` op source+external_reference, scheduler `everyFifteenMinutes`). Beide bevatten Havun-kwaliteitseisen + testplan. Droppen in `<project>/.claude/blueprint.md` → `/mpc` + "ga maar".
 
 **Vorig werk (24 juni):** forms-coverage heuristiek van `qv:scan` route-evenredig gemaakt (optie C — usage-based). Veilig uitgerold, 0 regressies. JudoToernooi blijft `high` (residu = JudoToernooi-scope, geen meetartefact).
 

@@ -133,6 +133,10 @@ HA zet `source = "havunclub"`, bewaart `external_reference` voor dedup, en wijst
 | **HavunClub** | `tenant`-param uit JT-calls halen (key volstaat); `havunadmin_api_key`-veld verwijderen; `?sinds=` op facturen/betalingen; verder bevestigen | **kleine aanpassing** (rest staat live) |
 | **HavunCore** | Dit contract = single source of truth; mappings/keys eventueel via Vault (scoped per project) | **coördinatie** |
 
+## Implementatie-blueprints (klaar om te droppen in de project-sessie)
+- **JudoToernooi:** `docs/kb/plans/havunclub-koppeling-jt-blueprint.md` → kopieer naar `JudoToernooi/laravel/.claude/blueprint.md`.
+- **HavunAdmin:** `docs/kb/plans/havunclub-koppeling-ha-blueprint.md` → kopieer naar `HavunAdmin/.claude/blueprint.md`.
+
 ## Open punten (terugkoppelen in dit doc)
 - [ ] JT: base-URL (`judotoernooi.nl/api` vs `api.`-subdomein) + `resultaat`-waardenset.
 - [ ] HA: header- of regel-BTW; akkoord op `?sinds=`-paginering.
