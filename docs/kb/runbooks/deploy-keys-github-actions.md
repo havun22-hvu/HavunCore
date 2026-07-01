@@ -29,7 +29,7 @@ Vereist: SSH `root@188.245.159.115` + `gh auth` met scopes `repo` + `workflow`.
 
 > De private key hoort **alleen** in GitHub Secrets, nooit in git of een bestand.
 > Gebruik NOOIT je persoonlijke `~/.ssh/id_ed25519` als CI-secret — dat is je
-> volledige server-toegang. Zie [[feedback-no-hardcoded-test-secrets]] voor het principe.
+> volledige server-toegang. Zie `runbooks/geen-hardcoded-secrets-in-tests.md` voor het principe.
 
 ## De workflow (handmatige knop)
 
