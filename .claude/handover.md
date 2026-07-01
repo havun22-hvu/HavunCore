@@ -12,7 +12,16 @@ last_updated: 2026-06-26
 ## Huidige status
 
 **Branch:** master
-**Laatste werk (26 juni):** integratiecontract HavunClub ↔ JudoToernooi ↔ HavunAdmin vastgesteld + uitgeschreven als HavunCore-spec (`docs/kb/contracts/havunclub-koppelingen.md`). 3 beslispunten door Henk beslist. JT + HA moeten nog bouwen (eigen sessies); HavunClub = kleine aanpassing.
+**Laatste werk (1 juli):** CI-deploytoegang uitgerold over de web-apps. Aanleiding: HavunClub-deploy wachtte op de GitHub-secret `SSH_PRIVATE_KEY`. Henk koos "volledig: workflow + key per web-app" en **handmatige knop (workflow_dispatch), geen auto-op-push** (prod = bewuste keuze).
+
+- **Herbruikbaar gemaakt:** `scripts/setup-deploy-key.sh <Repo>` — genereert (idempotent) een **dedicated** ed25519 deploy-key per repo op de server (`/root/.ssh/github_deploy_<slug>`), zet de public in root's `authorized_keys` en pipet de private key **zonder te printen** naar de GitHub-secret `SSH_PRIVATE_KEY`. Plus centraal `/root/deploy-havun.sh <dir> <branch> [subdir] [build] [migrate]` op de server (git pull --ff-only + composer --no-dev + npm build + artisan optimize; **migrate alleen bij expliciete input**, want auto-migrate op prod mag niet).
+- **Klaar + geverifieerd deploybaar (server-pull getest):** HavunClub (staging, had workflow), HavunAdmin (had alles), Herdenkingsportaal (key gezet, workflow bestond al), **infosyst / SafeHavun / Judotoernooi** (key+secret+nieuwe handmatige prod-workflow `deploy-production.yml`; Judotoernooi via `laravel/`-subdir). Alle 7 secrets ✓.
+- **⚠️ VPDUpdate — nog NIET deploybaar:** key+secret+workflow staan, maar server-`git fetch` faalt met `Repository not found` (server mist leestoegang-deploykey voor die repo) én het is geen Laravel-app. Fix = read-deploykey op de server toevoegen (raakt server-git-auth → Henks go). Workflow bewust laten staan.
+- **5 web-apps zonder server-target:** havuncore-webapp, IDSee, Agorano, Studieplanner-api, HavunVet — géén deploy-dir op de server. Vereisen eerst server-setup (clone + nginx + DB = verboden zonder overleg, per project). Geen key/workflow gezet: zonder target faalt het toch.
+- **Buiten scope:** native apps (judoscoreboard, LastMatch, Studieplanner, Aeterna) + geparkeerd Munus = geen server-deploy.
+- **Eerste deploy per app = Henk klikt bewust** (Actions → Deploy to Production → Run workflow). Ik heb geen prod-deploy getriggerd. Runbook: `docs/kb/runbooks/deploy-keys-github-actions.md`.
+
+**Vorig werk (26 juni):** integratiecontract HavunClub ↔ JudoToernooi ↔ HavunAdmin vastgesteld + uitgeschreven als HavunCore-spec (`docs/kb/contracts/havunclub-koppelingen.md`). 3 beslispunten door Henk beslist. JT + HA moeten nog bouwen (eigen sessies); HavunClub = kleine aanpassing.
 
 ## Wat is er gedaan (26 juni — integratiecontract 3 SaaS-apps)
 
