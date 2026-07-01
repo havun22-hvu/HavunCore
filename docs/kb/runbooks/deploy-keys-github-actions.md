@@ -49,7 +49,7 @@ nooit scp/rsync), `composer install --no-dev`, `npm ci && npm run build` (indien
 `package.json`), en bij Laravel `artisan config/route/view:cache` (+ migrate alleen
 bij `migrate=yes`). Faalt luid bij lokale wijzigingen op de server (ff-only).
 
-## Stand per project (1 juli 2026)
+## Stand per project (2 juli 2026)
 
 | Project | Server-pad | Branch | Deploybaar |
 |---|---|---|---|
@@ -59,11 +59,20 @@ bij `migrate=yes`). Faalt luid bij lokale wijzigingen op de server (ff-only).
 | infosyst | `/var/www/infosyst/production` | master | ✅ |
 | SafeHavun | `/var/www/safehavun/production` | master | ✅ |
 | Judotoernooi | `/var/www/judotoernooi` (laravel/) | main | ✅ |
-| VPDUpdate | `/var/www/vpdupdate` | main | ⚠️ server-`git fetch` faalt (`Repository not found`) — server mist read-deploykey; ook non-Laravel |
-| havuncore-webapp, IDSee, Agorano, Studieplanner-api, HavunVet | — | — | ❌ geen server-dir; eerst server-setup (clone+nginx+DB) |
+| VPDUpdate | `/var/www/vpdupdate` | main | ✅ (read-deploykey `deploy_vpdupdate` op repo gezet + remote → alias `github-vpdupdate`; non-Laravel, deploy = git pull + `npm run build`) |
+| Studieplanner-api | `/var/www/studieplanner/production` | master | ✅ |
+| havuncore-webapp | `/var/www/havuncore/webapp` | main | ⚠️ draait (Node/PWA, geen artisan/composer) — centrale Laravel-`deploy-havun.sh` past NIET; vereist Node-variant (npm install + build + `pm2 restart`) |
+| HavunVet | vhost `staging.havunvet.havun.nl` → `/var/www/havunvet/staging` (bestaat niet) | — | ❌ vhost wijst naar leeg pad; clone + DB + `.env` nodig |
+| IDSee, Agorano | — | — | ❌ niets op server; server-setup (clone+nginx+DB). Agorano mist ook DNS/domein |
 
 Native apps (judoscoreboard, LastMatch, Studieplanner, Aeterna) + geparkeerd
 Munus: geen server-deploy.
+
+> **Read-deploykey vs CI-key.** Twee verschillende keys per repo:
+> `deploy_<slug>` (host-alias `github-<slug>` in `/root/.ssh/config`) = server pullt
+> de repo. `github_deploy_<slug>` = GitHub Action SSH't als root de server in.
+> `git@github.com:` in een server-remote gebruikt de default `id_ed25519` en faalt
+> voor private repos → altijd de host-alias gebruiken (zie VPDUpdate-fix).
 
 ## Nieuw project toevoegen
 
