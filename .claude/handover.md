@@ -19,7 +19,8 @@ last_updated: 2026-06-26
 - **VPDUpdate — nu OPGELOST (2 juli):** de server-remote stond op `git@github.com:` (default key, geen toegang tot private repo). Read-deploykey `deploy_vpdupdate.pub` als deploy key op de GitHub-repo gezet + remote omgezet naar host-alias `github-vpdupdate` → pull werkt. Non-Laravel: deploy = git pull + `npm run build` (check bij eerste klik of dat script bestaat).
 - **Studieplanner-api — deploybaar gemaakt (2 juli):** draait op `/var/www/studieplanner/production` (repo `Studieplanner-api`, master, Laravel). Key+secret+handmatige workflow gezet, pull geverifieerd.
 - **havuncore-webapp — draait maar apart deploy-recept:** `/var/www/havuncore/webapp` is Node/PWA (geen artisan/composer) → de centrale Laravel-`deploy-havun.sh` past niet. Vereist een Node-variant (npm install + build + `pm2 restart`). Nog niet gedaan; geen verkeerde Laravel-workflow gepusht.
-- **3 web-apps zonder server-target:** HavunVet (vhost `staging.havunvet.havun.nl` wijst naar niet-bestaand `/var/www/havunvet/staging`), IDSee, Agorano (mist ook DNS/domein). Vereisen server-setup (clone + nginx + DB = verboden zonder overleg, per project) + Henks beslissingen (domein/DB-naam/prod-of-staging).
+- **GEPARKEERD (Henk, 2 juli) — niet aanwerken:** **HavunVet = obsoleet** (vhost + leeg pad mag ooit opgeruimd, server-config → Henks go). **IDSee + Agorano = "nog lang niet aan de beurt"** — server-setup pas als ze aan de beurt zijn.
+- **Enige openstaande deploy-taak:** havuncore-webapp Node/pm2-deployvariant (zie punt hierboven) — vereist pm2-procesnaam.
 - **Buiten scope:** native apps (judoscoreboard, LastMatch, Studieplanner, Aeterna) + geparkeerd Munus = geen server-deploy.
 - **Eerste deploy per app = Henk klikt bewust** (Actions → Deploy to Production → Run workflow). Ik heb geen prod-deploy getriggerd. Runbook: `docs/kb/runbooks/deploy-keys-github-actions.md`.
 
