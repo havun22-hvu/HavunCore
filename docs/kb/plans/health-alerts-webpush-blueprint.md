@@ -40,12 +40,26 @@ status: backend-gebouwd-wacht-op-prod-deploy+frontend
   best-effort, breekt de health-check nooit.
 - 10 tests; volledige suite **1272 groen**.
 
-## Nog te doen op de server (prod = Henks go)
+## Server-deploy — ✅ LIVE (2 juli)
 
-1. Deploy HavunCore-backend (git pull + `composer install --no-dev` op `/var/www/havuncore/production`).
-2. `php artisan migrate` (nieuwe `push_subscriptions`-tabel — **prod-migratie = overleg**).
-3. `php artisan vapid:setup` (genereert + zet VAPID-keys in de Vault, eenmalig).
-4. **nginx-allowlist** `/api/push/*` toevoegen (zoals `/api/health-alerts` — anders 403).
+Uitgevoerd op `/var/www/havuncore/production`: reset naar origin/master, `composer install --no-dev`,
+`migrate` (push_subscriptions), `vapid:setup` (keys in Vault), nginx-allowlist `push` toegevoegd aan
+de Laravel-regex-location + reload. Geverifieerd: `GET /api/push/vapid-public-key` → 200,
+`POST /api/push/subscribe` → 201, lege body → 422.
+
+> ⚠️ **Deploy-valkuil (kostte hier ~een uur):** `composer install` als **root** draait
+> `artisan package:discover` als root en maakt `storage/**` + `bootstrap/cache` **root-owned**
+> (625 bestanden). Daarna faalt elke request die de file-cache of het log schrijft met een
+> **500 die zichzelf niet kan loggen** (permission denied op het logbestand → originele fout
+> onzichtbaar). **Altijd** na een root-`composer install`:
+> `chown -R www-data:www-data storage bootstrap/cache`. Beter: composer als www-data draaien.
+
+> ⚠️ **Prod-checkout divergeert:** een server-cron (`auto:commit-regenerated`) committ dagelijks
+> `handover`/`qv-scan-latest` op de prod-checkout maar **pusht nooit** → `git pull --ff-only` faalt.
+> Opgelost met backup-branch `backup-prod-autocommits-2026-07-02` + `git reset --hard origin/master`.
+> Structureel: die cron zou niet op een deploy-checkout moeten committen (of moeten pushen).
+
+## Nog te doen — frontend (havuncore-webapp, eigen sessie)
 
 ## Frontend (havuncore-webapp) — eigen sessie
 
