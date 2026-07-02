@@ -19,8 +19,14 @@ HAVUNCORE_DIR="/var/www/havuncore/production"
 # cache/logs stay owned correctly. Stateless: the health_alerts table dedupes
 # (down upserts an open alert, up resolves it — up on a healthy key is a no-op).
 emit_alert() {  # key scope project status severity title
-    ( cd "$HAVUNCORE_DIR" && sudo -u www-data php artisan health:alert "$1" \
-        --scope="$2" --project="$3" --status="$4" --severity="$5" --title="$6" ) >/dev/null 2>&1
+    local out rc
+    out=$( cd "$HAVUNCORE_DIR" && sudo -u www-data php artisan health:alert "$1" \
+        --scope="$2" --project="$3" --status="$4" --severity="$5" --title="$6" 2>&1 )
+    rc=$?
+    # Don't swallow failures silently — a broken alert path is why an outage can go unseen.
+    if [ "$rc" -ne 0 ]; then
+        echo "$(date '+%Y-%m-%d %H:%M:%S') [ALERT-FAIL rc=$rc] $1: $(echo "$out" | tr '\n' ' ')" >> "$LOG_FILE"
+    fi
 }
 
 check_url() {  # name url scope project
@@ -65,5 +71,27 @@ check_url "HavunAdmin"         "https://havunadmin.havun.nl"       "project" "Ha
 check_url "SafeHavun"          "https://safehavun.havun.nl"        "project" "SafeHavun"
 check_url "Infosyst"           "https://infosyst.havun.nl"         "project" "Infosyst"
 
+# Other supervisor processes (queue workers, heartbeat) — reverb has its own check.
+# Alarms on FATAL/BACKOFF (always a real fault); server-scope so critical infra
+# surfaces at the top of the panel, not buried under a project. The 23 jun–2 jul
+# outage also took down laravel-worker + toernooi-heartbeat, which were unmonitored.
+check_supervisor() {
+    local bad
+    bad=$(supervisorctl status 2>/dev/null | grep -iv reverb \
+        | grep -iE 'FATAL|BACKOFF' | awk '{print $1"("$2")"}' | paste -sd ', ' -)
+
+    if [ -z "$bad" ]; then
+        emit_alert "supervisor-workers" "server" "" "up" "info" "supervisor-workers draaien"
+        return 0
+    fi
+
+    echo "$(date '+%Y-%m-%d %H:%M:%S') [DOWN] supervisor: $bad" >> "$LOG_FILE"
+    emit_alert "supervisor-workers" "server" "" "down" "critical" \
+        "supervisor-processen niet gezond: $bad — fix: supervisorctl restart <naam>"
+    return 1
+}
+
 # Check reverb broadcasting (separate from the website checks above)
 check_reverb
+# Check remaining supervisor-managed processes (workers, heartbeat, ...)
+check_supervisor
