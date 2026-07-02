@@ -156,11 +156,16 @@ MySQL-restart geen permanente FATAL meer geeft:
 >
 > **Incident 23 juni – 2 juli 2026 (HERHALING):** MySQL-blip 23 jun ~06:07 UTC → **reverb, reverb-staging,
 > laravel-worker, laravel-worker-staging én toernooi-heartbeat** allemaal FATAL → **~10 dagen down**.
-> Ditmaal **niet opgemerkt door monitoring** (regressie t.o.v. 4-6 juni). Ontdekt op Henks vraag "waarom
-> draait reverb niet". Alle 5 processen hersteld met `supervisorctl start` (DB was allang gezond;
-> handmatige `reverb:start` bewees dat). **Twee openstaande gaten:** (1) de structurele preventie hierboven,
-> (2) de bewaking ving deze reverb/worker/heartbeat-outage niet af — zie
-> `runbooks/uptime-monitoring.md`.
+> Ontdekt op Henks vraag "waarom draait reverb niet". Alle 5 processen hersteld met `supervisorctl start`
+> (DB was allang gezond; handmatige `reverb:start` bewees dat).
+>
+> **Monitoring wérkte** (correctie op een eerdere aanname): de health-check-cron detecteerde de FATAL elke
+> 5 min en maakte op 23 jun 08:10 een open `critical` health-alert aan die stateless dedupte en 10 dagen
+> open bleef. **Het gat is de notificatie, niet de detectie:** sinds mail is uitgefaseerd (7 jun) leeft een
+> alert alleen in het passieve webapp-paneel (project-scope = niet bovenaan) → niemand zag het. **Open gaten:**
+> (1) structurele preventie = TOEGEPAST 2 jul (zie boven); (2) **actief alertkanaal** voor `critical`
+> (push/mail/Telegram) — Henks keuze; (3) `laravel-worker` + `toernooi-heartbeat` worden **niet** door de
+> health-check bewaakt (alleen reverb + de 6 web-apps). Zie `runbooks/uptime-monitoring.md`.
 
 ## Server poorten
 

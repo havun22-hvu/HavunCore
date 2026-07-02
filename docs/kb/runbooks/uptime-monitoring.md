@@ -54,6 +54,19 @@ last_check: 2026-06-07
 - Herdenkingsportaal, JudoToernooi (`judotournament.org`), HavunAdmin, SafeHavun, Infosyst → scope=project
 - **reverb** (broadcasting prod + staging, supervisor) → scope=project, JudoToernooi
 
+### ⚠️ Bekende gaten (vastgesteld 2 juli 2026)
+
+1. **Geen actief kanaal voor kritieke alerts.** De reverb-outage 23 jun–2 jul werd correct
+   gedetecteerd én opgeslagen (open `critical` alert, 10 dagen), maar bleef onopgemerkt: sinds mail
+   uit is (7 jun) leeft een alert alleen in het passieve webapp-paneel, en project-scope alerts staan
+   niet bovenaan. **Nodig:** een push/mail/Telegram-kanaal voor `critical` (Henks keuze; raakt mogelijk
+   `.env`/credentials → overleg). Zie `runbooks/reverb-troubleshoot.md` §6.
+2. **`emit_alert` slikt fouten** (`>/dev/null 2>&1`) en logt `[DOWN]` vóór de alert-call — als
+   `health:alert` ooit faalt, is dat onzichtbaar. Overweeg stderr naar `$LOG_FILE`.
+3. **Alleen reverb + web-apps worden bewaakt.** `laravel-worker(-staging)` en `toernooi-heartbeat`
+   (óók FATAL geweest 23 jun–2 jul) zitten NIET in de health-check. Overweeg een generieke
+   supervisor-FATAL-check i.p.v. alleen reverb.
+
 ### Troubleshooting:
 ```bash
 # Handmatig draaien:
