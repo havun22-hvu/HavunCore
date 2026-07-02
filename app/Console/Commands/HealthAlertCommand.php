@@ -46,6 +46,7 @@ class HealthAlertCommand extends Command
 
         // status = down → upsert an open alert
         $existing = HealthAlert::where('key', $key)->first();
+        $wasOpen = $existing && $existing->status === 'open';
         $title = $this->option('title') ?: "{$key} is niet bereikbaar";
 
         HealthAlert::updateOrCreate(
@@ -66,9 +67,33 @@ class HealthAlertCommand extends Command
         );
 
         $this->notifyWebapp(['event' => 'health-alert', 'key' => $key, 'status' => 'open']);
+
+        // Push only on a *fresh* critical outage — not every 5 min while it stays
+        // down. This is the active channel the reverb outage (23 jun–2 jul) lacked.
+        if (! $wasOpen && $this->option('severity') === 'critical') {
+            $this->pushCritical($key, $title, $this->option('body'));
+        }
+
         $this->info("Recorded alert: {$key}");
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Best-effort PWA push for a new critical alert. Never throws — a push
+     * failure must not break the health check.
+     */
+    private function pushCritical(string $key, string $title, ?string $body): void
+    {
+        try {
+            app(\App\Services\WebPushService::class)->send(
+                $title,
+                $body ?: $title,
+                ['key' => $key, 'url' => 'https://havuncore.havun.nl']
+            );
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('health:alert push failed: '.$e->getMessage());
+        }
     }
 
     /**

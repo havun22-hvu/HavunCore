@@ -63,4 +63,21 @@ return [
 
     'webapp_notify_url' => env('WEBAPP_NOTIFY_URL', 'http://127.0.0.1:3001/api/internal/notify'),
 
+    /*
+    |--------------------------------------------------------------------------
+    | Web Push (VAPID)
+    |--------------------------------------------------------------------------
+    |
+    | PWA push for critical health-alerts. The public/private VAPID keys live in
+    | the HavunCore Vault (VaultSecret keys 'vapid_public_key'/'vapid_private_key')
+    | and are read at runtime by WebPushService — NOT here, because config:cache
+    | can't read the database. Only the non-secret subject lives in config.
+    | Generate + store the keys with `php artisan vapid:setup`.
+    |
+    */
+
+    'vapid' => [
+        'subject' => env('VAPID_SUBJECT', 'mailto:alerts@havun.nl'),
+    ],
+
 ];

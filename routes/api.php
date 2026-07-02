@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\DeviceController;
 use App\Http\Controllers\Api\DocIntelligenceController;
 use App\Http\Controllers\Api\HealthAlertController;
 use App\Http\Controllers\Api\ObservabilityController;
+use App\Http\Controllers\Api\PushController;
 use App\Http\Controllers\Api\QrAuthController;
 use App\Http\Controllers\Api\StudySessionController;
 use App\Http\Controllers\Api\VaultController;
@@ -163,6 +164,13 @@ Route::prefix('studieplanner')->group(function () {
 Route::prefix('health-alerts')->group(function () {
     Route::get('/', [HealthAlertController::class, 'index'])->name('api.health-alerts.index');
     Route::post('/{id}/dismiss', [HealthAlertController::class, 'dismiss'])->name('api.health-alerts.dismiss');
+});
+
+// Web Push (PWA) — subscribe browsers so critical health-alerts can be pushed.
+Route::prefix('push')->group(function () {
+    Route::get('/vapid-public-key', [PushController::class, 'vapidPublicKey'])->name('api.push.vapid');
+    Route::post('/subscribe', [PushController::class, 'subscribe'])->middleware('throttle:30,1')->name('api.push.subscribe');
+    Route::post('/unsubscribe', [PushController::class, 'unsubscribe'])->middleware('throttle:30,1')->name('api.push.unsubscribe');
 });
 
 // AutoFix API - Central error analysis and fix proposals
