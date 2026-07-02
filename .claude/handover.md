@@ -24,6 +24,8 @@ last_updated: 2026-06-26
 - **Buiten scope:** native apps (judoscoreboard, LastMatch, Studieplanner, Aeterna) + geparkeerd Munus = geen server-deploy.
 - **Eerste deploy per app = Henk klikt bewust** (Actions → Deploy to Production → Run workflow). Ik heb geen prod-deploy getriggerd. Runbook: `docs/kb/runbooks/deploy-keys-github-actions.md`.
 
+**Ook 2 juli — Reverb-outage JudoToernooi hersteld:** Henk vroeg "waarom draait reverb niet". Bleek: MySQL-blip 23 jun ~06:07 UTC → supervisor-processen `reverb`, `reverb-staging`, `laravel-worker`, `laravel-worker-staging` én `toernooi-heartbeat` naar **FATAL** ("exited too quickly"; boot-cachecheck faalde op `Connection refused`) → **~10 dagen down**, DB was allang gezond. Alle 5 hersteld met `supervisorctl start` (handmatige `reverb:start` bewees dat de config klopt); reverb draait stabiel op 8080/8081. **Dit is de 3e keer (april, 4-6 jun, 23 jun) — zelfde failure mode.** Twee gaten blijven open (beide raken config/bewaking → Henks go): (1) supervisor `startretries`↑ of DB-tolerante reverb-boot, (2) **de monitoring ving deze outage NIET af** (regressie t.o.v. 4-6 jun). Details: `docs/kb/runbooks/reverb-troubleshoot.md` §6.
+
 **Vorig werk (26 juni):** integratiecontract HavunClub ↔ JudoToernooi ↔ HavunAdmin vastgesteld + uitgeschreven als HavunCore-spec (`docs/kb/contracts/havunclub-koppelingen.md`). 3 beslispunten door Henk beslist. JT + HA moeten nog bouwen (eigen sessies); HavunClub = kleine aanpassing.
 
 ## Wat is er gedaan (26 juni — integratiecontract 3 SaaS-apps)

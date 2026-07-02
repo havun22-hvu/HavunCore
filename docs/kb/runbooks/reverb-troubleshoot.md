@@ -2,7 +2,7 @@
 title: Runbook: Reverb WebSocket Troubleshooting
 type: runbook
 scope: havuncore
-last_check: 2026-06-06
+last_check: 2026-07-02
 ---
 
 # Runbook: Reverb WebSocket Troubleshooting
@@ -137,11 +137,22 @@ supervisorctl restart reverb reverb-staging
 sudo -u www-data php artisan reverb:health   # verifieer
 ```
 
-**Structurele preventie (JudoToernooi-config):** verhoog `startretries` in de supervisor-conf, of maak
-reverb tolerant voor een korte DB-hapering bij boot, zodat een MySQL-restart geen permanente FATAL geeft.
+**Structurele preventie (JudoToernooi-config) — NOG STEEDS OPEN, nu 3x voorgekomen:** verhoog
+`startretries`/`startsecs` in de supervisor-conf, of maak reverb tolerant voor een korte DB-hapering
+bij boot (retry-wachtlus vóór de `BroadcastConfigValidator`-cachecheck), zodat een MySQL-restart geen
+permanente FATAL geeft. Zolang dit niet gebeurt, herhaalt het incident zich bij elke MySQL-restart.
+Raakt supervisor-config → Henks go.
 
 > **Incident 4-6 juni 2026:** MySQL-restart 4 jun 06:21 UTC → reverb prod+staging FATAL → 2,5 dag down
 > ondanks gezonde DB. Opgelost met `supervisorctl restart`. Status-monitoring toonde dit correct.
+>
+> **Incident 23 juni – 2 juli 2026 (HERHALING):** MySQL-blip 23 jun ~06:07 UTC → **reverb, reverb-staging,
+> laravel-worker, laravel-worker-staging én toernooi-heartbeat** allemaal FATAL → **~10 dagen down**.
+> Ditmaal **niet opgemerkt door monitoring** (regressie t.o.v. 4-6 juni). Ontdekt op Henks vraag "waarom
+> draait reverb niet". Alle 5 processen hersteld met `supervisorctl start` (DB was allang gezond;
+> handmatige `reverb:start` bewees dat). **Twee openstaande gaten:** (1) de structurele preventie hierboven,
+> (2) de bewaking ving deze reverb/worker/heartbeat-outage niet af — zie
+> `runbooks/uptime-monitoring.md`.
 
 ## Server poorten
 
