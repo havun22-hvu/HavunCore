@@ -137,11 +137,19 @@ supervisorctl restart reverb reverb-staging
 sudo -u www-data php artisan reverb:health   # verifieer
 ```
 
-**Structurele preventie (JudoToernooi-config) — NOG STEEDS OPEN, nu 3x voorgekomen:** verhoog
-`startretries`/`startsecs` in de supervisor-conf, of maak reverb tolerant voor een korte DB-hapering
-bij boot (retry-wachtlus vóór de `BroadcastConfigValidator`-cachecheck), zodat een MySQL-restart geen
-permanente FATAL geeft. Zolang dit niet gebeurt, herhaalt het incident zich bij elke MySQL-restart.
-Raakt supervisor-config → Henks go.
+**Structurele preventie — TOEGEPAST 2 juli 2026 (server-side, NIET in git):** twee lagen zodat een
+MySQL-restart geen permanente FATAL meer geeft:
+1. **MySQL-wait-lus** vooraan in `/usr/local/bin/reverb-prod-start.sh` en `reverb-staging-start.sh`:
+   `until (echo > /dev/tcp/127.0.0.1/3306); do sleep 2; done` (max 60 pogingen = 2 min, daarna toch
+   starten). Reverb wacht nu tot MySQL luistert i.p.v. te crashen op `Connection refused`.
+2. **`startretries=10` + `startsecs=5`** toegevoegd aan `/etc/supervisor/conf.d/reverb.conf` en
+   `reverb-staging.conf` als vangnet.
+
+> ⚠️ **Deze bestanden staan op de server, niet in een git-repo** (`/usr/local/bin/reverb-*-start.sh`,
+> `/etc/supervisor/conf.d/reverb*.conf`). Backups: `*.bak.2026-07-02`. Bij server-herbouw of provisioning
+> opnieuw aanbrengen. Idealiter ooit naar JudoToernooi infra-as-code (JudoToernooi-scope).
+> Diepere fix (JudoToernooi-repo) blijft optioneel: `BroadcastConfigValidator` de DB-cachecheck
+> fail-soft maken.
 
 > **Incident 4-6 juni 2026:** MySQL-restart 4 jun 06:21 UTC → reverb prod+staging FATAL → 2,5 dag down
 > ondanks gezonde DB. Opgelost met `supervisorctl restart`. Status-monitoring toonde dit correct.
