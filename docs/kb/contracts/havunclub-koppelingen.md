@@ -12,6 +12,11 @@ status: JT + HA geïmplementeerd (feature-branches) — wacht op HavunClub-beves
 > **Dit doc** = de door HavunCore vastgestelde afspraken + werklijst per app.
 > Coördinatie loopt via HavunCore; elke app bouwt alleen in z'n eigen repo.
 
+> ⚠️ **CORRECTIE 03-07:** het JT-platform is **`judotournament.org`**, NIET `judotoernooi.nl` (bestaat niet).
+> De weegkaart + judoschool-portals + deterministische ID-koppeling staan in het herziene
+> **`havunclub-judotournament-integratie.md`** (zelfde map). Onderstaande JT-details in dit doc zijn deels
+> achterhaald (domein/match-endpoint) — leidend is de nieuwe spec.
+
 ## Architectuur in één regel
 
 **HavunClub is de hub.** Het is de enige app die met JudoToernooi én HavunAdmin praat.
