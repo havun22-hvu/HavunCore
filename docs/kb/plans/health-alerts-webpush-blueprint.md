@@ -3,7 +3,7 @@ title: Blueprint — Web push voor kritieke health-alerts
 type: plan
 scope: havuncore
 last_check: 2026-07-02
-status: wacht-op-go
+status: backend-gebouwd-wacht-op-prod-deploy+frontend
 ---
 
 # Blueprint — Web push voor kritieke health-alerts
@@ -27,19 +27,25 @@ status: wacht-op-go
    i.p.v. los in `.env` — netter dan SafeHavuns `.env`-aanpak. `config/services.php` leest de
    keys (uit Vault-injectie of env). Subject `mailto:alerts@havun.nl`.
 
-## Backend (HavunCore) — na go
+## Backend (HavunCore) — ✅ GEBOUWD (commit 2acd428, 2 juli)
 
-1. `composer require minishlink/web-push`.
-2. VAPID-keypair genereren (`VAPID::createVapidKeys()`), private in Vault, public naar config.
-3. `config/services.php` → `vapid` block (subject/public/private) — kopie SafeHavun.
-4. Migratie `push_subscriptions` (id, user_id?, endpoint uniek, p256dh, auth, created_at) + model.
-5. `POST /api/push/subscribe` + `POST /api/push/unsubscribe` (+ nginx-allowlist zoals `/api/health-alerts`).
-6. `GET /api/push/vapid-public-key` zodat de frontend de key kan ophalen.
-7. `WebPushService::send(title, body, data)` — port van SafeHavuns `PushNotificationService`
-   (active subs ophalen, `WebPush` met VAPID, 410/404 → sub opruimen).
-8. **Hook:** in het `health:alert`-command, bij `status=down && severity=critical`, na het
-   opslaan van de alert → `WebPushService::send(...)`. Rate-limit per key (hergebruik alert-dedup).
-9. Tests: subscribe-endpoint, send bouwt correcte payload, 410 ruimt sub op, critical-hook vuurt.
+- `minishlink/web-push:^10` toegevoegd.
+- `push_subscriptions` migratie + `PushSubscription` model (dedup op endpoint-sha256).
+- `WebPushService::send()` — leest VAPID **at-runtime uit de Vault** (niet config, want
+  `config:cache` kan geen DB lezen); 404/410 → sub opruimen. `config/services.php` → `vapid.subject`.
+- `PushController`: `GET /api/push/vapid-public-key`, `POST /api/push/subscribe`,
+  `POST /api/push/unsubscribe` (throttled) + `SubscribePushRequest`.
+- `vapid:setup`-command genereert het keypair en zet het in de Vault (idempotent, `--rotate`).
+- **Hook** in `HealthAlertCommand`: push alleen bij een **verse** `down`+`critical` (niet elke 5 min);
+  best-effort, breekt de health-check nooit.
+- 10 tests; volledige suite **1272 groen**.
+
+## Nog te doen op de server (prod = Henks go)
+
+1. Deploy HavunCore-backend (git pull + `composer install --no-dev` op `/var/www/havuncore/production`).
+2. `php artisan migrate` (nieuwe `push_subscriptions`-tabel — **prod-migratie = overleg**).
+3. `php artisan vapid:setup` (genereert + zet VAPID-keys in de Vault, eenmalig).
+4. **nginx-allowlist** `/api/push/*` toevoegen (zoals `/api/health-alerts` — anders 403).
 
 ## Frontend (havuncore-webapp) — eigen sessie
 
