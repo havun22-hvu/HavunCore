@@ -12,6 +12,15 @@ last_updated: 2026-06-26
 ## Huidige status
 
 **Branch:** master
+
+**Laatste werk (4 juli — reis-sync, Henk gaat op vakantie met laptop):** Alle 21 lokale git-repos in `D:\GitHub\*` gesynct naar GitHub zodat Henk vanaf de laptop kan clonen+werken. Werkscope op reis: **judotoernooi, havunclub, havunadmin, havuncore, agorano**.
+- **Lokaal gecommit+gepusht** (allemaal benign docs/kb/`.claude`-commands): Demo, HavunVet, Studieplanner, Studieplanner-api, SafeHavun (`.continue/` → gitignore), VPDUpdate, Infosyst (2 verwijderde metadata-json's `content/metadata/{categories,tags}.json` **hersteld** i.p.v. deletion gecommit). havuncore-webapp was 5 achter → ff-pull. Studieplanner-api/Infosyst waren ook behind → rebase+push.
+- **Security-schuld gemeld (niet opgelost):** `VPDUpdate/users.json` is getrackt en bevat bcrypt-hashes (password+pincode) van Henks account. Staat al jaren in de repo; push verandert exposure niet. Hoort niet in git — opruimen + purgen is aparte taak.
+- **Bewust NIET naar GitHub (Henk gekozen "overslaan"):** Havunity (leeg scaffold, geen remote), Munus (geparkeerd, geen remote), JS-Blocker-Extension (echte extensie, geen git), LastMatch_lite (obsoleet). Blijven lokaal op de thuis-PC.
+- **Feature-branches staan op origin** (clone pakt default branch): HavunAdmin `feat/havunclub-koppeling`, HavunClub `staging`, JudoScoreBoard `chore/expo-sdk-56-upgrade`.
+- **Deploys (Henk go, HavunClub prod = later):** JudoToernooi **prod+staging** naar `4a3742ad` (scoreboard version endpoint → 1.1.6/116) — **live geverifieerd** (`/api/scoreboard/version` geeft 1.1.6). HavunCore **prod** drift-reset (auto-commit `de215e3` bewaard in branch `backup/pre-travel-2026-07-04`) + pull naar `3a2e13b`. HavunAdmin prod = al synced. Agorano draait niet op server (lokaal werk, GitHub ✓).
+- **Openstaand:** HavunClub prod (1 docs-commit behind, Henk doet later). **HavunAdmin staging zwaar gedivergeerd** (a=267 b=33) — oude verwaarloosde checkout, geen blocker voor prod-werk, ooit resetten. Overige niet-scope checkouts lopen achter (infosyst prod b=14, vpdupdate b=41, herdenkingsportaal/safehavun/studieplanner/havun.nl) — buiten reis-scope gelaten.
+
 **Laatste werk (1 juli):** CI-deploytoegang uitgerold over de web-apps. Aanleiding: HavunClub-deploy wachtte op de GitHub-secret `SSH_PRIVATE_KEY`. Henk koos "volledig: workflow + key per web-app" en **handmatige knop (workflow_dispatch), geen auto-op-push** (prod = bewuste keuze).
 
 - **Herbruikbaar gemaakt:** `scripts/setup-deploy-key.sh <Repo>` — genereert (idempotent) een **dedicated** ed25519 deploy-key per repo op de server (`/root/.ssh/github_deploy_<slug>`), zet de public in root's `authorized_keys` en pipet de private key **zonder te printen** naar de GitHub-secret `SSH_PRIVATE_KEY`. Plus centraal `/root/deploy-havun.sh <dir> <branch> [subdir] [build] [migrate]` op de server (git pull --ff-only + composer --no-dev + npm build + artisan optimize; **migrate alleen bij expliciete input**, want auto-migrate op prod mag niet).
