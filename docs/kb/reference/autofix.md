@@ -2,7 +2,7 @@
 title: AutoFix System
 type: reference
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-07-14
 ---
 
 # AutoFix System
@@ -289,6 +289,39 @@ find /var/www/judotoernooi/laravel/storage/app/autofix-backups -type f
 # In .env: AUTOFIX_ENABLED=false
 # Dan: php artisan config:clear
 ```
+
+### Achterhaalde "AutoFix failed" — schema/DDL-fout blijft als open `system_alert` hangen
+
+**Symptoom:** Je ziet bij sessiestart of in monitoring een `AutoFix failed: ... SQLSTATE[42S01]: Base table or view already exists: 1050 Table 'jobs' already exists` (of een andere DDL-fout), terwijl prod-code én database aantoonbaar in orde zijn.
+
+**Oorzaak:** AutoFix kan schema-/DDL-fouten **niet** repareren (fix-strategie regel COLUMN/SCHEMA → `NOTIFY_ONLY`, geen code-fix). Bij zo'n fout schrijft het een `system_alert` (`type=autofix`). Die alert wordt **niet automatisch gesloten** wanneer het onderliggende probleem later via een deploy/migratie wél is opgelost. De alert blijft dus `open` (`resolved_at IS NULL`) en wordt bij elke `/start` opnieuw als "AutoFix failed" gezien — ook al is de fout maanden oud en al verholpen.
+
+Typisch scenario: een `create_*_table`-migratie stond op prod als *Pending* terwijl de tabel al bestond (migratie-rij ooit verloren) → `migrate --force` gaf 1050. Opgelost met een **idempotente guarded migratie** (`if (Schema::hasTable('x')) return;`) + deploy. De code is daarna goed, maar de historische alert blijft open.
+
+**Diagnose (read-only, bewijs verzamelen vóór je iets doet):**
+```bash
+cd /var/www/<project>/repo-prod/laravel   # let op: 'laravel' is vaak een symlink → repo-prod/laravel
+git rev-parse --abbrev-ref HEAD && git fetch -q && git rev-list --left-right --count HEAD...@{u}  # 0  0 = up-to-date
+sudo -u www-data php artisan migrate:status | grep -i pending    # leeg = geen pending
+curl -s -o /dev/null -w "%{http_code}\n" https://<domein>/       # 200 = live
+grep -rl "1050\|already exists" storage/logs/ | head             # datum van de fout → historisch?
+sudo -u www-data php artisan tinker --execute="echo App\Models\SystemAlert::whereNull('resolved_at')->count();"
+```
+
+**Fix (alléén als prod aantoonbaar consistent is — NIET blind deployen/migreren):** sluit de achterhaalde alert netjes via Eloquent, met een guard op de message zodat je zeker de juiste sluit. `system_alerts` heeft géén `status`-kolom; "resolved" = `resolved_at` vullen (+ `is_read`).
+```bash
+# 1. ALTIJD eerst backup (DB-write op prod):
+MYSQL_PWD="$(grep ^DB_PASSWORD= .env|cut -d= -f2-|tr -d '"')" mysqldump --single-transaction --quick --no-tablespaces \
+  -h 127.0.0.1 -u "$(grep ^DB_USERNAME= .env|cut -d= -f2-)" "$(grep ^DB_DATABASE= .env|cut -d= -f2-)" \
+  | gzip > /var/backups/havun-db/<project>/db_$(date +%Y%m%d-%H%M%S).sql.gz
+# 2. Alert sluiten (guarded):
+sudo -u www-data php artisan tinker --execute="
+\$a = App\Models\SystemAlert::find(<id>);
+if (str_contains(\$a->message, '1050')) { \$a->resolved_at = now(); \$a->is_read = true; \$a->save(); echo 'resolved'; }
+else { echo 'ABORT: verkeerde alert'; }"
+```
+
+**Kernles:** een openstaande `system_alert` bewijst niet dat prod stuk is — het kan een niet-gesloten historische melding zijn. Verifieer code + migrate:status + live-status; forceer geen deploy/migrate "voor de zekerheid" (dat is juist onnodig prod-risico). Casus 14-07-2026: JudoToernooi alert id=3 (1050 `create_jobs_table`, 26 juni) — opgelost door guarded migratie `50bda4c9` + deploy 4 juli, alert bleef 18 dagen open.
 
 ## Afhankelijkheden
 
