@@ -65,12 +65,12 @@ async function platformBioBeschikbaar(timeoutMs = 2000) {
 
 ## Checklist per app (invoeringsstatus 14 jul 2026)
 
-| App | Detectie | QR-op-mobiel-risico | Bio-bug | Status |
-|-----|----------|---------------------|---------|--------|
-| HavunClub | geen (bio=false → QR!) | JA | `WEBAUTHN_ID/ORIGINS` ontbreken op server | plan-punt 2 |
-| havuncore-webapp | UA+breedte | JA (iPad/desktopmodus) | `available`-check zonder username → knop verschijnt nooit | plan-punt 3 |
-| JudoToernooi | touch+`screen<768` | JA (grote toestellen) | knop zonder passkey → verwarrend falen | plan-punt 4 |
-| Herdenkingsportaal | CSS `md:hidden` | nee | `allowCredentials` niet geïnjecteerd | plan-punt 5 |
+| App | Detectie | QR-op-mobiel | Bio-bug | Status (14 jul 2026) |
+|-----|----------|--------------|---------|----------------------|
+| HavunClub | ✅ recept | ✅ gefixt | ✅ WEBAUTHN-env gezet (server); oude passkeys opnieuw registreren | staging live, prod na Henks test |
+| havuncore-webapp | ✅ recept | ✅ gefixt | ✅ `available`-check gefixt | code klaar, deploy = Henks go |
+| JudoToernooi | ✅ recept | ✅ gefixt | ✅ timeout + magic-link-fallback | staging live, prod na Henks test |
+| Herdenkingsportaal | CSS `md:hidden` (ok) | n.v.t. | ✅ `allowCredentials` geïnjecteerd | code klaar, deploy = Henks go |
 | Studieplanner | n.v.t. (native) | n.v.t. | bio nooit gebouwd | apart traject |
 
 Plan: `docs/kb/plans/pwa-login-uniform-plan.md`.

@@ -95,9 +95,14 @@ oude rp.id moeten opnieuw geregistreerd worden). **Prod-deploys = Henks go per a
 Grootste risico: rp.id-wijziging HavunClub maakt eerder geregistreerde (kapotte)
 passkeys definitief ongeldig — verwacht en eenmalig.
 
-## Status
-- [ ] 1. KB-standaard `havun-mobile-login.md`
-- [ ] 2. HavunClub (env + JS + fouten + QR-guard + tests)
-- [ ] 3. havuncore-webapp (available-fix + detectie + E2E)
-- [ ] 4. JudoToernooi (detectie + fallback)
-- [ ] 5. Herdenkingsportaal (allowCredentials)
+## Status — GEBOUWD 14 jul 2026 (avond)
+- [x] 1. KB-standaard `havun-mobile-login.md` (HavunCore `70324a6`)
+- [x] 2. HavunClub: WEBAUTHN-env op prod+staging server gezet, login-views + JS op recept, `[object Response]`-fix, bio-voorstel-banner na magic-login; 353 tests groen; **staging live**. QR-`scan()`-redirect naar `gezin.login` bewust gelaten (cross-links op beide loginpagina's dekken het).
+- [x] 3. havuncore-webapp: `available`-endpoint antwoordt zonder username nu op "bestaan er passkeys" (bio-knop verscheen anders nooit), `last_username` gebruikt voor available/login-options/QrApprove (hardcoded adres weg), detectie op recept; 12 E2E groen (`d3bd3a0`). **Nog niet gedeployed** (webapp = build+rsync = prod; Henks go).
+- [x] 4. JudoToernooi: detectie op recept + bio-timeout + foutteksten → magic link (`140045ab`); 264 auth-tests groen; **staging live**.
+- [x] 5. Herdenkingsportaal: `allowCredentials`-injectie (JT-patroon, `e961edf`); 55 passkey-tests groen; **nog niet gedeployed** (prod = Henks go).
+
+### Door Henk te testen (echte toestellen, staging waar beschikbaar)
+1. HavunClub staging: login-pagina's (bio-knop op telefoon, GEEN QR op telefoon, magic-link-knop, wachtwoord-collapse), passkey opnieuw registreren (oude zijn dood door rp.id-fix), bio-voorstel-banner na magic-login.
+2. JT staging: login op telefoon → geen QR-knop; desktop → wel.
+3. Daarna per app prod-go: HavunClub (merge naar main + deploy), JT (deploy-knop), HP (deploy), webapp (build+rsync+pm2).
