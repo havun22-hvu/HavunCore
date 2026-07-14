@@ -21,6 +21,16 @@ last_check: 2026-04-22
 - **Dashboard:** https://my.mollie.com
 - **Credentials:** Zie `.claude/context.md`
 
+## Key-beheer (vastgelegd 14 jul 2026)
+
+- **Per app een eigen key/profiel** — test en live gescheiden; keys in de **Vault**, niet los in `.env`/DB.
+- Mollie ondersteunt 2 keys per profiel → **rotatie zonder downtime**.
+- **Third-party/SaaS-integraties:** Mollie's eigen regel is *"Do not use API keys for third party integrations, use OAuth instead."* Zodra klanten hun **eigen** Mollie-rekening aansluiten (bv. HavunClub-tenants), is een per-tenant API-key in de DB fout → **Mollie Connect / OAuth app-tokens** (geld direct naar de klant, geen aansprakelijkheid via Havun).
+
+## Mock-checkout voor dev/staging (HavunClub-patroon)
+
+Geen key geconfigureerd + omgeving ≠ production → toon een **mock-checkoutpagina** i.p.v. een echte Mollie-call (zie HavunClub `app/Services/MollieService.php`). Zo blijft de hele bestelflow lokaal/staging testbaar zonder testaccount en kan E2E de flow dekken.
+
 ## Implementatie (HTTP-based, geen SDK)
 
 ### 1. .env configureren

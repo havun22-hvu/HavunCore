@@ -58,6 +58,16 @@ axios.interceptors.response.use(
 );
 ```
 
+### Optie 3: Pre-submit refresh voor klassieke forms / PWA's (HavunClub)
+
+Voor Blade-forms op pagina's die uit een service-worker-cache kunnen komen (PWA):
+markeer het form met `data-csrf-refresh`; JS haalt vlak vóór submit een vers token
+(+ sessie-cookie) op via `GET /csrf-token` en vervangt het hidden `_token`-veld.
+Voorkomt "inloggen lukt niet" op mobiel zonder retry-logica.
+→ HavunClub `resources/js/app.js` (`initCsrfRefresh`), tests `CsrfTokenTest.php` +
+`LoginCacheHeaderTest.php`. Flankerend: HTML nooit cachen in de SW én
+`Cache-Control: no-store` op HTML-responses (zie `patterns/pwa-blade-laravel.md`).
+
 ## Laravel Route (verplicht in elk project)
 
 ```php

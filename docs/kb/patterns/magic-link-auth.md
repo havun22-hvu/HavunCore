@@ -11,6 +11,14 @@ last_check: 2026-04-27
 > **Laatste update:** 27 april 2026 — wachtwoord opt-in toegevoegd
 > **Gebruikt in:** Studieplanner (referentie), Herdenkingsportaal, JudoToernooi
 
+> **Variant zonder token-tabel (HavunClub, jul 2026):** magic link als
+> `URL::temporarySignedRoute()` (15 min TTL) + `hasValidSignature()`-check — geen
+> `magic_link_tokens`-tabel nodig. Single-use kan via een Cache-nonce (`Cache::pull()`).
+> Ook wachtwoord-reset kan broker-loos: `sha1(huidig wachtwoord)` in de handtekening →
+> link sterft zodra het wachtwoord wijzigt. Zie `patterns/cross-guard-login.md`.
+> Kies de tabel-variant hieronder als je metadata (naam, extra velden) of een
+> audit-spoor per link nodig hebt; kies de signed-route-variant voor minimale opzet.
+
 ## Overzicht
 
 Magic links worden gebruikt voor:

@@ -13,7 +13,12 @@ last_updated: 2026-06-26
 
 **Branch:** master
 
-**Laatste werk (14 juli — nieuw project Vusista opgezet, meta-setup vanuit deze sessie):**
+**Laatste werk (14 juli, later — KB/bibliotheek aangevuld vanuit HavunClub):** Henk vroeg herbruikbare, beproefde procedures uit HavunClub in de KB te zetten. Twee inventarisatie-agents over de HavunClub-working-tree, daarna 4 nieuwe patterns + 4 uitbreidingen:
+- **Nieuw:** `patterns/havunclub-bouwstenen.md` (bibliotheek-index: circuit breaker, audit log, custom exceptions, security headers, rate limiters, health endpoint, exception→redirect-hook, Form Request-conventie, testPassword-patroon, deploy-script — met exacte HavunClub-paden), `patterns/cross-guard-login.md` (CrossGuardLogin, magic link zonder tabel via signed route + Cache-nonce, broker-loze wachtwoord-reset, QR-login), `patterns/webauthn-passkey-laravel.md` (Laragear ^4.1, UseAuthGuard multi-guard, `secureRegistration()`, WEBAUTHN_ID/ORIGINS-valkuil), `patterns/pwa-blade-laravel.md` (SW network-first, HTML nooit cachen wegens CSRF→419, versie-bust, iOS-meta's, web-push), `patterns/multi-tenant-scoping.md` (ClubScope-middleware + alle valkuilen incl. het 0-judoka's-incident; plus "wanneer NIET": Vusista = Policies+user_id).
+- **Uitgebreid:** `mollie-payments.md` (key-beheer/Vault, OAuth-randvoorwaarde SaaS, mock-checkout), `magic-link-auth.md` (signed-route-variant), `csrf-token-refresh.md` (pre-submit `data-csrf-refresh`), `INDEX.md` (5 nieuwe entries).
+- **Bewust genoteerd wat HavunClub NIET heeft:** uploads/media, quota, E2E, honeypot/dubbele opt-in (gaten — niet zoeken, vers bouwen). Doc Intelligence: 0 issues na herindex.
+
+**Vorig werk (14 juli — nieuw project Vusista opgezet, meta-setup vanuit deze sessie):**
 - **Vusista = fotoalbum-webapp** (Picasa-eenvoud, spec v0.1 van Henk). Eigen repo (afwijking van spec §2 "monorepo" — gemeld, conform alle andere Havun-projecten). Volledige keten opgezet en geverifieerd:
   - **Lokaal:** `D:\GitHub\Vusista` — kale Laravel 12.63-scaffold (bewust géén Livewire/Spatie etc.; die komen bij fasering-stap 1 in een Vusista-sessie), Havun-werkwijze-infra (CLAUDE.md, `.claude/{context,rules,handover,blueprint}` + 14 commands van Agorano overgenomen en ontdaan van crypto/politiek/backend-frontend-split-residu). Spec staat als `.claude/blueprint.md` → Vusista-sessie start met `/mpc` + "ga maar". Tests groen (2), lockfile gecommit.
   - **GitHub:** private `havun22-hvu/Vusista`, `main` (prod) + `staging` (werkbranch). CI-workflow (tests+audit) + deploy-workflows: staging auto op push, prod = handmatige knop (`workflow_dispatch`, migrate-keuze) via `/root/deploy-havun.sh`.
