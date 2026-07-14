@@ -16,8 +16,9 @@ last_check: 2026-07-14
 | **Circuit breaker** | `app/Services/CircuitBreaker.php` | Cache-gebaseerd, threshold 3 / cooldown 30s, `call($operation, $fallback)`. Volledig generiek, geen projectafhankelijkheid. |
 | **Audit log** | `app/Services/AuditLogger.php` + `app/Models/AuditLog.php` | Statisch `AuditLogger::log($actie, $beschrijving, $clubId, $reden, $properties)` — wie/wat/wanneer/waarom + IP. |
 | **Custom exceptions** | `app/Exceptions/HavunClubException.php` (+ subclasses `MollieException`, `ExternalServiceException`, ...) | Basisklasse met `getUserMessage()` (veilig voor gebruiker) gescheiden van `getContext()` (intern). Zie ook `patterns/error-handling-strategies.md`. |
-| **Security headers + CSP** | `app/Http/Middleware/SecurityHeaders.php` (globaal in `bootstrap/app.php`) | X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy (camera=self alleen als je QR/camera gebruikt!), HSTS op https, `Cache-Control: no-store` op HTML (CSRF/419). **Let op:** CSP daar nog permissief (`unsafe-inline`/`unsafe-eval` voor Alpine) — nieuw project: direct nonce-based beginnen i.p.v. later migreren. |
-| **Rate limiters** | `app/Providers/AppServiceProvider.php` | Named limiters: `login` 5/min·IP, `form-submit` 10/min·IP, `api` 60/min·user→IP, `webhook` 100/min·IP. Toepassen op álle publieke POST-routes (HavunClub's beheer-`/register` vergat dit — niet overnemen). |
+| **Security headers + CSP** | `app/Http/Middleware/SecurityHeaders.php` (globaal in `bootstrap/app.php`) | X-Frame-Options, nosniff, Referrer-Policy, Permissions-Policy (camera=self alleen als je QR/camera gebruikt!), HSTS op https, `Cache-Control: no-store` op HTML (CSRF/419). CSP is **nonce-based** (sinds 14 jul 2026): `Vite::useCspNonce()` in de middleware, inline scripts dragen `nonce="{{ Vite::cspNonce() }}"`, inline event-handlers verboden (Alpine `x-on:` gebruiken; guard-test in `SmokeTest` bewaakt dit). Alleen `unsafe-eval` blijft (Alpine-standaardbuild). |
+| **Rate limiters** | `app/Providers/AppServiceProvider.php` | Named limiters: `login` 5/min·IP, `form-submit` 10/min·IP, `api` 60/min·user→IP, `webhook` 100/min·IP. Toepassen op álle publieke POST-routes (incl. `/register` — gedicht 14 jul 2026). |
+| **Honeypot** | `app/Http/Support/Honeypot.php` + `resources/views/components/honeypot.blade.php` | Dependency-loos anti-bot-veld voor publieke formulieren: onzichtbaar veld, gevuld → stille afwijzing (bootst succes-flow na) + `AuditLogger`-regel. `<x-honeypot />` na `@csrf`, check bovenin de controller. |
 | **Health endpoint** | `app/Http/Controllers/SystemController.php` (`/health`) | Test DB + cache actief (write-then-read), `200 ok`/`503 degraded`. Controller i.p.v. closure zodat `route:cache` werkt. Naast Laravel's `/up`. |
 | **Exception→redirect-hook** | `bootstrap/app.php` (respond-hook) | Centrale mapping 419/401/403/404 → redirect + flash, per guard een eigen login-route; JSON/API blijft ongemoeid. Onmisbaar bij multi-guard. |
 | **Form Request-conventie** | `app/Http/Requests/JudokaRequest.php` | `authorize()`, context-afhankelijke rules (store vs update), `withValidator()` voor businessregels, NL `messages()`, tenant-scoped `Rule::exists(...)->where(...)`. |
@@ -36,5 +37,5 @@ last_check: 2026-07-14
 
 - **File-upload/media-verwerking** — nergens aanwezig (voor Vusista: Spatie Media Library, vers)
 - **Gebruikersquota** — bestaat niet
-- **Playwright/E2E** — alleen Laravel Feature-tests (71); E2E-blauwdruk = `runbooks/playwright-e2e-laravel.md`
-- **Honeypot/captcha/dubbele opt-in** op open registratie — bekend gat, bij nieuw project meteen meenemen
+- **Playwright/E2E** — alleen Laravel Feature-tests; E2E-blauwdruk = `runbooks/playwright-e2e-laravel.md`
+- **Captcha/dubbele opt-in** op open registratie — bewust niet gebouwd (honeypot + throttle dekken het bot-risico; opt-in = businesskeuze). Honeypot + `/register`-throttle zijn er wél (gedicht 14 jul 2026).

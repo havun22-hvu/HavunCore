@@ -48,11 +48,12 @@ zonder wachtwoord logt het lid in via magic link.
 - Anti-enumeration: onbekend e-mailadres → zelfde "verzonden"-view.
 - `session()->regenerate()` bij elke succesvolle (re)login; logout = `invalidate()` + `regenerateToken()`.
 
-## Gaten in de referentie (meenemen bij hergebruik)
+## Registratie-vangrails (gedicht 14 jul 2026)
 
-HavunClub's open registratiepaden hebben **geen honeypot/captcha en geen dubbele opt-in**;
-de beheer-`/register` heeft **geen throttle**. Bij een nieuwe app: throttle op álle publieke
-POST-routes + overweeg honeypot. Zie ook `patterns/magic-link-auth.md` §Security.
+Open registratiepaden hebben een **honeypot** (`app/Http/Support/Honeypot.php` +
+`<x-honeypot />`, stille afwijzing + audit-log) en **throttle** op álle publieke
+POST-routes incl. `/register`. Dubbele e-mail-opt-in is er bewust niet (businesskeuze).
+Bij een nieuwe app: beide meteen meenemen. Zie `patterns/havunclub-bouwstenen.md`.
 
 ## Zie ook
 
