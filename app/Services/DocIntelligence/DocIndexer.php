@@ -27,6 +27,7 @@ class DocIndexer
         'havuncore-webapp' => 'D:/GitHub/HavunCore/webapp',
         'agorano' => 'D:/GitHub/Agorano',
         'havunclub' => 'D:/GitHub/HavunClub',
+        'vusista' => 'D:/GitHub/Vusista',
     ];
 
     protected array $serverPaths = [
@@ -41,6 +42,7 @@ class DocIndexer
         'havun' => '/var/www/havun.nl',
         'havunvet' => '/var/www/havunvet/staging',
         'havunclub' => '/var/www/havunclub/production',
+        'vusista' => '/var/www/vusista/production',
     ];
 
     protected array $excludePaths = [

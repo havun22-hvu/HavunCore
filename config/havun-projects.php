@@ -72,4 +72,9 @@ return [
         'local_url' => 'http://localhost:8007',
         'endpoints' => [],
     ],
+    'vusista' => [
+        'path'      => 'D:/GitHub/Vusista',
+        'local_url' => 'http://localhost:8008',
+        'endpoints' => [],
+    ],
 ];

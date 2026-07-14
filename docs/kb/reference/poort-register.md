@@ -115,6 +115,7 @@ De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2
 | Demo | `demo.havun.nl` | `/var/www/demo/...` |
 | JudoScoreBoard | `judoscoreboard.havun.nl` | `/var/www/judoscoreboard/...` |
 | HavunClub | `havunclub.havun.nl` + staging | **geparkeerd** — nginx config bestaat, deploy-key actief |
+| Vusista | `vusista.havun.nl` + `staging.vusista.havun.nl` | `/var/www/vusista/{production,staging}` |
 
 ### Toekomstige / geparkeerde projecten (nog geen poort)
 
@@ -145,6 +146,7 @@ De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2
 | Studieplanner-API | `php artisan serve` | 8001 | gelijk aan prod |
 | Agorano (backend) | `php artisan serve --port=8007` | 8007 | 8006 bezet (Infosyst); Vite proxyt `/api` hierheen |
 | Agorano (frontend) | Vite | 5173 | default; PWA (vite-plugin-pwa) |
+| Vusista | `php artisan serve --port=8008` | 8008 | 8000-8007 bezet; prod via php-fpm socket |
 | Mailpit | SMTP | 1025 | gedeeld voor alle projecten |
 | Mailpit | web | 8025 | gedeeld |
 
