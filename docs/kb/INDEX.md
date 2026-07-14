@@ -189,6 +189,7 @@ docs/audit/                   ← Kwartaal-audit (extern)
 - [password-hashing.md](patterns/password-hashing.md) - Wachtwoord hashing
 - [magic-link-auth.md](patterns/magic-link-auth.md) - Magic link registratie + wachtwoord vergeten (Laravel)
 - [qr-code-url-matching.md](patterns/qr-code-url-matching.md) - QR code URL matching
+- [havun-mobile-login.md](patterns/havun-mobile-login.md) - **BINDEND:** uniforme login-beslislogica (magic link + bio primair; QR nooit op smartphone)
 - [havunclub-bouwstenen.md](patterns/havunclub-bouwstenen.md) - **Bibliotheek:** K&V-bouwstenen met beste referentie-implementatie (circuit breaker, audit log, exceptions, headers, limiters, health, testPassword)
 - [cross-guard-login.md](patterns/cross-guard-login.md) - Twee guards, één login + magic link zonder tabel + QR-login (HavunClub)
 - [webauthn-passkey-laravel.md](patterns/webauthn-passkey-laravel.md) - Passkey/biometrie via Laragear, multi-guard (HavunClub)

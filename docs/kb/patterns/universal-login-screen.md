@@ -8,7 +8,7 @@ last_check: 2026-04-27
 # Universal Login Screen Pattern
 
 > **Status:** Standaard voor alle Havun projecten
-> **Laatste update:** 27 april 2026 — wachtwoord opt-in toegevoegd, Google OAuth verwijderd
+> **Laatste update:** 14 juli 2026 — device-beslislogica + methode-prioriteit (magic link + bio) nu BINDEND in `havun-mobile-login.md`
 > **Basis:** Studieplanner design (dark theme, centered card)
 > **Gerelateerd:** `magic-link-auth.md`, `reference/authentication-methods.md`, `standards/unified-auth-strategy.md`
 

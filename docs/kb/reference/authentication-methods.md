@@ -9,7 +9,7 @@ last_check: 2026-04-30
 
 > **Status:** Vastgelegd — portfolio-standaard (passwordless + biometric/QR)
 > **Datum:** 13 april 2026
-> **Laatst bijgewerkt:** 30 april 2026 — Herdenkingsportaal-uitzondering (wachtwoord-primair) gemarkeerd
+> **Laatst bijgewerkt:** 14 juli 2026 — richting Henk: zoveel mogelijk **magic link + biometrie**; device-detectie + beslisregels nu BINDEND in `patterns/havun-mobile-login.md` (QR nooit op smartphone, ook niet als bio-detectie faalt)
 
 ## Email-First Flow (geen tabs)
 
