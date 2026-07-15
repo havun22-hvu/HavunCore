@@ -57,29 +57,19 @@ last_updated: 2026-07-16
   > een browser-test. Zie het blueprint. **Leesval:** de code valt terug op `localhost:8009` = de
   > Node-backend, waar push een lege stub is — wie alleen die default leest denkt dat de knop dood is.
 
-## Let op: slash-commands bestaan twee keer
+## Twee regels die uit de 16-07-ronde volgen
 
-`~/.claude/commands/*.md` (globaal) wint van `HavunCore/.claude/commands/*.md` (project). Op 16-07
-bleek de **globale `/end` nog `## Laatste Sessie: [DATUM]` voor te schrijven** terwijl de
-projectversie sessieblokken al verbood — dát is waarom vijf projecten na de regel van 15-07 alsnog
-sessieblokken hadden. Gefixt in de globale versie.
+**Slash-commands bestaan twee keer** — `~/.claude/commands/` (globaal) wint van
+`HavunCore/.claude/commands/`. De globale `/end` schreef nog `## Laatste Sessie: [DATUM]` voor
+terwijl de projectversie dat al verbood; dát is waarom vijf projecten ná de regel van 15-07 alsnog
+sessieblokken kregen. Gefixt. Werk je een command bij → **controleer beide**. Let op: `~/.claude`
+staat **niet** onder versiebeheer.
 
-> **Twee dingen om te weten.** (1) Werk je een slash-command bij, controleer **beide** locaties —
-> anders schrijft de globale het oude gedrag terug. (2) **`~/.claude` staat niet onder
-> versiebeheer.** Die commands leven alleen op deze schijf; schijf weg = weg. Eigen keuze, maar
-> weet het.
-
-## Cross-project items staan vanaf nu in het bronproject
-
-Deze handover hield kopieën bij van open punten uit andere projecten. Sinds de ronde van 16-07
-staan **alle** projecthandovers in de levende vorm en kloppen ze met git — dus de kopieën zijn weg.
-Het item hoort waar het thuishoort: HavunAdmin's token-purge in HavunAdmin, VPDUpdate's
-`users.json` in VPDUpdate, de Studieplanner-rescue-branch in Studieplanner-api.
-
-> **Waarom dit hard is.** Op 15-07 stond hier een tenant-lek in HavunClub dat **al was opgelost**
-> (`dae025c`, op prod). Overgenomen bij het opschonen, nooit geverifieerd. Een kopie veroudert
-> zonder dat iemand het merkt. Wil je een portfolio-overzicht: lees de handovers, of laat een
-> agent-ronde ze verifiëren — schrijf ze niet hier over.
+**Cross-project items horen in het bronproject, niet hier.** Alle handovers staan nu in de levende
+vorm en kloppen met git, dus de kopieën zijn weg (HavunAdmin's token-purge in HavunAdmin, enz.).
+Op 15-07 stond hier nog een HavunClub-tenant-lek dat **al was opgelost** (`dae025c`, op prod) —
+overgenomen, nooit geverifieerd. Een kopie veroudert ongemerkt. Portfolio-overzicht nodig? Lees de
+handovers of laat een agent-ronde ze verifiëren; schrijf ze niet over.
 
 ## Recent afgerond (context die nog nut heeft)
 
