@@ -55,12 +55,14 @@ Vier lekken in JT, alle gefixt (`f3445e46` + reset-fix, main):
 - `/result` scoopte niet op het toernooi van het token → elk token kon uitslagen zetten op élk toernooi.
 - `/event` broadcastte het hele `DeviceToegang`-record (incl. `api_token`) op een **publiek** kanaal —
   empirisch bewezen vóór de fix. Oorzaak: `$request->merge()` zet het model in de input-bag.
-- **"Reset" nulde `api_token` niet** → een gereset device schreef gewoon door. Reset trekt nu écht in
-  (token weg, device los, **nieuwe code**); `resetAll` idem. Correctie op Henks aanname dat dit al werkte.
+- **"Reset" nulde `api_token` niet** → een gereset device schreef gewoon door (`34bd9549`). Reset trekt
+  nu écht in: token weg, device los, **nieuwe code**; `resetAll` idem. Correctie op Henks aanname dat
+  dit al werkte. Daarmee is token-revocatie geen open punt meer.
 - Geen rate limit → `throttle:scoreboard` 120/min **per token** (niet per IP: één NAT-IP per zaal).
 Plus `config/cors.php` (wildcard weg) en een 500 bij ontbrekende optionele `updated_at`.
-**Bewust geaccepteerd door Henk:** publieke Reverb-kanalen (data = wat in de zaal op het scherm staat;
-lekt na fix geen token meer) en JSB die scores schrijft (jury corrigeert achteraf in de webapp).
+**Bewust geaccepteerd door Henk:** publieke Reverb-kanalen (*"prima, als je de url weet"*) en JSB die
+scores schrijft (jury corrigeert achteraf) → vastgelegd als JSB `CONTRACTS.md` C-11; C-02 gold alleen
+de display-rol en pretendeerde het hele plaatje.
 
 **2. 🔴 KB-kernbug: alle 2758 embeddings waren woordmaps, geen vectoren** (`2c43318`). De KB deed
 maandenlang keyword-matching terwijl `CLAUDE.md` semantisch zoeken belooft. Drie oorzaken:
@@ -75,6 +77,7 @@ Details: `docs/kb/reference/doc-intelligence-embedding-fallback-bug.md`.
 **3. Nieuwe bindende regel: MD-doc grootte** (`docs/kb/standards/md-doc-grootte.md`), verwerkt in de
 CLAUDE.md van **alle 22 projecten**. Aanleiding: Henk — "anders kan Claude het ook niet allemaal
 lezen, laatste tekst wordt zinloos". Extra grond: de KB indexeert alleen het begin van een bestand.
+Eigen docs meteen aangepakt: deze handover 446→104 regels, security-review 60. Rest = zie Open.
 
 ## Sessie 14 juli — PWA-logins portfolio-breed + webapp-deploy
 

@@ -8,10 +8,11 @@ last_check: 2026-07-15
 # Security-review JudoToernooi ↔ JudoScoreBoard
 
 **Aanleiding:** mogen externe testers een scorebord-code krijgen?
-**Antwoord:** ja, na de fixes hieronder — mits op een **eigen staging-instance met eigen DB**.
-Nooit een code op de productie-DB voor een partij die je niet kent.
+**Antwoord:** ja, na de fixes hieronder. Voor een **onbekende** partij: alleen op een eigen
+staging-instance met eigen DB — nooit een code op de productie-DB. Voor een bekende tester volstaat
+**Reset** achteraf (trekt token in + vervangt de code).
 
-Alles hieronder is gefixt (JT `f3445e46` + reset-fix). Details staan in de JT-handover.
+Alles hieronder is gefixt (JT `f3445e46` + `34bd9549`).
 
 ## Bevindingen
 
@@ -30,12 +31,10 @@ base-URL. Geen certificate pinning (bekend, geaccepteerd).
 
 ## Bewust geaccepteerd (Henk, 15 jul)
 
-- **Publieke Reverb-kanalen** — meeluisteren kan als je de URL kent. Data = wedstrijdinfo die in de
-  zaal op het scherm staat. Ná fix #2 lekt er geen token meer. Prima dus.
-- **Code blijft geldig na Reset** — de mat logt opnieuw in met dezelfde code van het briefje.
-  Is de code zelf gelekt: toegang verwijderen + nieuw aanmaken (= nieuwe code).
-- **JSB schrijft scores** — dat is by design; JT's jury kan achteraf handmatig corrigeren in de
-  webapp. Zie `JudoScoreBoard/CONTRACTS.md` C-02.
+- **Publieke Reverb-kanalen** — *"publiek-openbaar: prima (als je de url weet)"*. Data =
+  wedstrijdinfo die in de zaal op het scherm staat. Ná fix #2 lekt er geen token meer.
+- **JSB schrijft scores** — by design; de jury corrigeert achteraf handmatig in de JT-webapp.
+  Vastgelegd als `JudoScoreBoard/CONTRACTS.md` **C-11** (C-02 gold alleen de display-rol).
 
 ## Dreigingsmodel — waarom "wie is de tester" telt
 
