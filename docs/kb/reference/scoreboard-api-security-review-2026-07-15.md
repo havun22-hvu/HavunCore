@@ -8,9 +8,29 @@ last_check: 2026-07-15
 # Security-review — JudoToernooi ↔ JudoScoreBoard
 
 > **Aanleiding:** Henk vroeg (15 jul 2026) of de koppeling veilig genoeg is om externe testers toe te laten.
-> **Conclusie:** Nee, niet in de huidige staat — maar niet vanwege de testers. Elk uitgegeven
-> scorebord-token heeft nu schrijfrechten op het héle systeem, ook op andere toernooien.
-> **Fixen = JudoToernooi-sessie.** Dit doc is de bevindingenlijst.
+> **Conclusie:** Elk uitgegeven scorebord-token had schrijfrechten op het héle systeem.
+> **Status:** de blokkerende bevindingen (#1–#4) zijn dezelfde dag gefixt — zie §Status onderaan.
+> Wat resteert (publieke kanalen, geen token-revocatie) staat in de JudoToernooi-handover.
+
+## Dreigingsmodel — waarom "wie is de tester" wél uitmaakt
+
+Eerste versie van dit doc zei "herkomst van de tester is niet de risicofactor". Dat is te kort door
+de bocht en is hier gecorrigeerd. Capability en intent zijn niet hetzelfde: dat *iedereen* een lek
+kán misbruiken, zegt niets over hoe waarschijnlijk het is dat iemand het dóét.
+
+De as die telt is niet nationaliteit maar: **heb je verhaal op deze partij, en verliest zij iets als
+ze je schaadt?**
+
+| | Bekende tester (vriend/kennis) | Onbekende partij die zich aanbiedt |
+|---|---|---|
+| Realistisch risico | vergissing (verkeerd ID → foute uitslag) | doelgericht misbruik, stil meelezen |
+| Verhaalsmogelijkheid | ja (relatie, vindbaar) | nee (geen afdwingbaar contract, geen reputatieverlies) |
+| Detectie | meldt het zelf | merk je niet |
+
+Snijd de maatregel op die as, niet op het land: dan dekt hij élke onbekende partij — ook de volgende
+die niet uit hetzelfde land komt. Concreet: onbekende partijen krijgen een **eigen staging-instance
+met eigen DB**, nooit een code op de productie-DB — zeker zolang token-revocatie ontbreekt en
+uitgegeven toegang dus permanent is.
 
 ## Het beveiligingsmodel (zoals gebouwd)
 
@@ -103,6 +123,34 @@ Contract of code moet bijgewerkt — bewuste keuze van Henk.
 **Aanbevolen daarna:** private channels (vereist `withBroadcasting()` + echte auth-callbacks),
 token-expiry/revocatie, expliciete `config/cors.php`.
 
-**Testers los daarvan:** geef ze een **eigen staging-instance met eigen DB** en wegwerp-toernooien —
-nooit een code op de productie-DB. Dan is #1/#2 niet ineens ongevaarlijk, maar de blast radius is
-beperkt tot testdata. Herkomst van de tester is niet de risicofactor; het uitgegeven token is dat.
+**Testers los daarvan:** geef onbekende partijen een **eigen staging-instance met eigen DB** en
+wegwerp-toernooien — nooit een code op de productie-DB. Zie §Dreigingsmodel bovenaan.
+
+## Status (15 jul 2026 — gefixt in JudoToernooi)
+
+| # | Bevinding | Status |
+|---|-----------|--------|
+| 1 | Cross-tenant write op `/result` | ✅ 404 via `Wedstrijd::toernooiId()`, fail closed |
+| 2 | Token-lek via `/event` op publiek kanaal | ✅ `attributes` i.p.v. `merge()` + `$hidden` op het model |
+| 3 | Geen throttle op beschermde routes | ✅ `throttle:scoreboard` = 120/min **per token** (niet per IP: één NAT-IP per zaal) |
+| 4 | CORS wildcard op `/api/*` | ✅ `config/cors.php` beperkt tot `app.url` |
+| 5 | Geen token-expiry/revocatie | ❌ **open** — blocker vóór onbekende testers; raakt organisator-UI |
+| 6 | Publieke Reverb-kanalen | ❌ open — vereist app-release; lekt na #2 geen token meer |
+| 7 | Datagevoeligheid (namen op ongeauth. endpoints) | ⚠️ AVG-afweging voor Henk, geen hack |
+
+Regressietests: `laravel/tests/Feature/Api/ScoreboardApiSecurityTest.php` — alle drie de
+kern-tests zijn geverifieerd door de fix terug te draaien (worden dan rood).
+
+**Bijvangst:** `result()` gaf een 500 bij een ontbrekende optionele `updated_at`
+("Undefined array key"). Meegefixt.
+
+**Zelfde patroon elders:** `CheckDeviceBinding` gebruikt óók `$request->merge()` met dit model.
+Lekt nu niet (geen `$request->all()`-broadcast in dat pad) en `$hidden` dekt het af — maar het is
+dezelfde constructie. Omzetten raakt 12+ call-sites incl. de `$request->device_toegang` magic getter.
+
+## Les voor andere Havun-projecten
+
+`$request->merge()` om een geauthenticeerd model door te geven aan een controller is een
+**anti-patroon**: het schrijft in de input-bag, dus het model komt mee in `$request->all()` en
+lekt in elke echo/broadcast van de request-body. Gebruik `$request->attributes->set()`.
+Zet daarnaast `$hidden` op elk model dat een credential draagt — vangnet, geen vervanging.
