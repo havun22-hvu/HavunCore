@@ -45,7 +45,10 @@ class DocSearchCommand extends Command
 
             $this->line("{$rank}. [{$result['project']}] {$result['file_path']}");
             $this->line("   Relevance: {$similarity}% | Modified: {$modified}");
-            $this->line("   Preview: " . substr($result['snippet'], 0, 100) . '...');
+            if (!empty($result['heading'])) {
+                $this->line("   Section: {$result['heading']}");
+            }
+            $this->line("   Preview: " . str_replace("\n", ' ', mb_substr($result['snippet'], 0, 100)) . '...');
             $this->line('');
         }
 

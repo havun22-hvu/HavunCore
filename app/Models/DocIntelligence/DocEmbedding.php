@@ -90,6 +90,16 @@ class DocEmbedding extends Model
     }
 
     /**
+     * The embedded slices of this document, in reading order. Empty for files
+     * indexed before chunking existed — search() falls back to this row's own
+     * embedding until the next index run fills them in.
+     */
+    public function chunks(): HasMany
+    {
+        return $this->hasMany(DocChunk::class, 'doc_embedding_id')->orderBy('chunk_index');
+    }
+
+    /**
      * Get issues related to this document
      */
     public function issues(): HasMany

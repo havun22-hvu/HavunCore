@@ -88,9 +88,11 @@ class DocIndexer
 
     protected string $ollamaUrl = 'http://127.0.0.1:11434';
     protected string $embeddingModel = 'nomic-embed-text';
+    protected DocumentChunker $chunker;
 
-    public function __construct()
+    public function __construct(?DocumentChunker $chunker = null)
     {
+        $this->chunker = $chunker ?? new DocumentChunker();
         $this->claudeApiKey = config('services.claude.api_key') ?? env('CLAUDE_API_KEY');
         $this->ollamaUrl = env('OLLAMA_URL', 'http://127.0.0.1:11434');
         $this->embeddingModel = env('OLLAMA_EMBEDDING_MODEL', 'nomic-embed-text');
@@ -314,30 +316,36 @@ class DocIndexer
             ->first();
 
         if ($existing && !$force && $existing->content_hash === $contentHash
-            && !$this->needsEmbeddingUpgrade($existing)) {
+            && !$this->needsEmbeddingUpgrade($existing) && !$this->needsChunking($existing)) {
             return false;
         }
 
         // Extract a structured summary instead of embedding raw code
         $summary = $this->extractCodeSummary($relativePath, $rawContent);
+        $fileType = $this->detectFileType($relativePath);
 
         // Generate embedding from the summary
         $ollamaEmbedding = $this->generateOllamaEmbedding($summary);
         $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($summary);
         $tokenCount = $this->estimateTokenCount($summary);
 
-        DocEmbedding::updateOrCreate(
+        $document = DocEmbedding::updateOrCreate(
             ['project' => $project, 'file_path' => $relativePath],
             [
                 'content' => $summary,
                 'content_hash' => $contentHash,
                 'embedding' => $embedding,
                 'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
-                'file_type' => $this->detectFileType($relativePath),
+                'file_type' => $fileType,
                 'token_count' => $tokenCount,
                 'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
             ]
         );
+
+        // The summary is not automatically small: JudoToernooi's routes/web.php
+        // boils down to 92k characters of route lines, so it gets truncated just
+        // like a long document would.
+        $this->indexChunks($document, $summary, $fileType, $ollamaEmbedding);
 
         return true;
     }
@@ -598,30 +606,90 @@ class DocIndexer
             ->first();
 
         if ($existing && !$force && $existing->content_hash === $contentHash
-            && !$this->needsEmbeddingUpgrade($existing)) {
-            return false; // No changes and the embedding is real, skip
+            && !$this->needsEmbeddingUpgrade($existing) && !$this->needsChunking($existing)) {
+            return false; // No changes, the embedding is real and the chunks are there
         }
 
         // Generate embedding
         $ollamaEmbedding = $this->generateOllamaEmbedding($content);
         $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($content);
         $tokenCount = $this->estimateTokenCount($content);
+        $fileType = $this->detectFileType($relativePath);
 
         // Create or update record
-        DocEmbedding::updateOrCreate(
+        $document = DocEmbedding::updateOrCreate(
             ['project' => $project, 'file_path' => $relativePath],
             [
                 'content' => $content,
                 'content_hash' => $contentHash,
                 'embedding' => $embedding,
                 'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
-                'file_type' => $this->detectFileType($relativePath),
+                'file_type' => $fileType,
                 'token_count' => $tokenCount,
                 'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
             ]
         );
 
+        $this->indexChunks($document, $content, $fileType, $ollamaEmbedding);
+
         return true;
+    }
+
+    /**
+     * Embed the document in slices so its tail is searchable too.
+     *
+     * Rewritten wholesale rather than updated per chunk: an edit can leave a
+     * file with fewer chunks than before, and a stale chunk 7 would keep
+     * matching text that no longer exists.
+     */
+    protected function indexChunks(
+        DocEmbedding $document,
+        string $content,
+        string $fileType,
+        ?array $documentOllamaEmbedding = null
+    ): void {
+        $chunks = $this->chunker->chunk($content, $fileType);
+
+        $document->chunks()->delete();
+
+        // Most files fit in one chunk, and that chunk is the document. Embedding
+        // it again would double every index run for no gain.
+        $herbruikbaar = count($chunks) === 1 && $chunks[0]['content'] === $content;
+
+        foreach ($chunks as $index => $chunk) {
+            if ($herbruikbaar) {
+                $ollamaEmbedding = $documentOllamaEmbedding;
+                $embedding = $document->embedding;
+            } else {
+                $embeddable = $this->chunker->embeddableText(
+                    $document->file_path,
+                    $chunk['heading'],
+                    $chunk['content']
+                );
+                $ollamaEmbedding = $this->generateOllamaEmbedding($embeddable);
+                $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($embeddable);
+            }
+
+            $document->chunks()->create([
+                'chunk_index' => $index,
+                'heading' => $chunk['heading'],
+                'content' => $chunk['content'],
+                'embedding' => $embedding,
+                'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
+                'token_count' => $this->estimateTokenCount($chunk['content']),
+            ]);
+        }
+    }
+
+    /**
+     * Everything indexed before chunking existed still carries a single
+     * begin-of-file vector. Those rows must be re-chunked even though the file
+     * never changed — otherwise they stay half-searchable forever, the same
+     * trap the TF-fallback fell into (see needsEmbeddingUpgrade).
+     */
+    protected function needsChunking(?DocEmbedding $existing): bool
+    {
+        return $existing !== null && $existing->chunks()->doesntExist();
     }
 
     /**
@@ -869,7 +937,7 @@ class DocIndexer
     {
         $queryEmbedding = $this->generateEmbedding($query);
 
-        $documents = DocEmbedding::when($project, function ($q) use ($project) {
+        $documents = DocEmbedding::with('chunks')->when($project, function ($q) use ($project) {
             return $q->where('project', strtolower($project));
         })->when($fileType, function ($q) use ($fileType) {
             return $q->where('file_type', $fileType);
@@ -877,12 +945,14 @@ class DocIndexer
 
         $results = [];
         foreach ($documents as $doc) {
-            $similarity = $this->calculateSimilarity($queryEmbedding, $doc->embedding ?? []);
+            $best = $this->bestChunk($doc, $queryEmbedding);
+
             $results[] = [
                 'project' => $doc->project,
                 'file_path' => $doc->file_path,
-                'similarity' => $similarity,
-                'snippet' => substr($doc->content, 0, 200) . '...',
+                'similarity' => $best['similarity'],
+                'heading' => $best['heading'],
+                'snippet' => mb_substr($best['snippet'], 0, 200) . '...',
                 'file_modified_at' => $doc->file_modified_at?->format('Y-m-d H:i'),
                 'indexed_at' => $doc->updated_at?->format('Y-m-d H:i'),
             ];
@@ -892,6 +962,46 @@ class DocIndexer
         usort($results, fn($a, $b) => $b['similarity'] <=> $a['similarity']);
 
         return array_slice($results, 0, $limit);
+    }
+
+    /**
+     * Score a document on its best-matching chunk, so one result stays one
+     * document: --limit=5 means five files, not five slices of the same file.
+     *
+     * The snippet becomes the passage that actually matched. It used to be the
+     * first 200 characters of the file, which for a KB doc is the YAML
+     * frontmatter — every preview read "--- title: ..." regardless of the query.
+     *
+     * @param  array<int|string, float>  $queryEmbedding
+     * @return array{similarity: float, snippet: string, heading: ?string}
+     */
+    protected function bestChunk(DocEmbedding $doc, array $queryEmbedding): array
+    {
+        // Not yet re-indexed since chunking arrived: fall back to the row's own
+        // begin-of-file vector so search keeps working while the index catches up.
+        if ($doc->chunks->isEmpty()) {
+            return [
+                'similarity' => $this->calculateSimilarity($queryEmbedding, $doc->embedding ?? []),
+                'snippet' => $doc->content,
+                'heading' => null,
+            ];
+        }
+
+        $best = ['similarity' => -1.0, 'snippet' => $doc->content, 'heading' => null];
+
+        foreach ($doc->chunks as $chunk) {
+            $similarity = $this->calculateSimilarity($queryEmbedding, $chunk->embedding ?? []);
+
+            if ($similarity > $best['similarity']) {
+                $best = [
+                    'similarity' => $similarity,
+                    'snippet' => $chunk->content,
+                    'heading' => $chunk->heading,
+                ];
+            }
+        }
+
+        return $best;
     }
 
     /**

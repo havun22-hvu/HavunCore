@@ -7,8 +7,12 @@ last_updated: 2026-07-15
 
 # Plan: KB-chunking
 
-> **Status:** geschreven, wacht op "ga maar". Aanleiding: het openstaande punt uit
-> `reference/doc-intelligence-embedding-fallback-bug.md` §Openstaand punt.
+> **Status: geïmplementeerd 15-07-2026.** 1305 tests groen. HavunCore herindexeerd: 444 docs →
+> 3216 chunks, 154 gesplitst, 0 op de TF-fallback. Geverifieerd: de `## Support`-sectie op 41k
+> tekens diep in `CHANGELOG.md` is nu de eerste treffer op *"github discussions support issues
+> melden"* (64%) — die was onvindbaar. Overige projecten herindexeren draait.
+>
+> Aanleiding: het openstaande punt uit `reference/doc-intelligence-embedding-fallback-bug.md`.
 
 ## Conclusie
 
@@ -108,22 +112,31 @@ dat er al is (`needsEmbeddingUpgrade`): een `doc_embeddings`-rij zonder chunks w
 eerstvolgende index-run gechunkt, ook als `content_hash` gelijk is. Geen `--force` nodig,
 geen big-bang.
 
-## Stappen
+## Stappen — allemaal gedaan
 
-1. **Migratie** `create_doc_chunks_table` + model `DocChunk` + `DocEmbedding::chunks()` (hasMany).
-2. **`DocumentChunker`-service** — pure functie `chunk(string $content, string $fileType): array{content, heading}[]`.
-   Volledig unit-testbaar zonder Ollama: koppen, fences, lange alinea's, lege input, code zonder koppen.
-3. **`DocIndexer`** — na het schrijven van de `doc_embeddings`-rij: chunks genereren, embedden,
-   oude chunks van dat bestand verwijderen, nieuwe wegschrijven (delete+insert, want het
-   chunk-aantal kan krimpen). Skip-check uitbreiden met "heeft dit bestand chunks?".
-4. **`search()`** — over chunks, groeperen per bestand, beste chunk als snippet, fallback op de
-   documentvector.
-5. **Tests** — chunker-units; een feature-test die bewijst dat een term **uit de staart** van een
-   lang document gevonden wordt (dat is de regressietest die deze bug zou hebben gevangen);
-   `CreatesDocIntelligenceTables.php` krijgt de nieuwe tabel.
-6. **Herindexeren** per project + verifiëren dat `business-rules.md` op een term uit z'n laatste
-   sectie vindbaar is.
-7. **Docs** — `reference/doc-intelligence-embedding-fallback-bug.md` §Openstaand punt afsluiten.
+1. ✅ **Migratie** `create_doc_chunks_table` + model `DocChunk` + `DocEmbedding::chunks()`.
+2. ✅ **`DocumentChunker`** — 11 unit-tests, geen DB en geen Ollama nodig.
+3. ✅ **`DocIndexer`** — `indexChunks()` na het schrijven van de rij; delete+insert, want een
+   bewerkt bestand kan krimpen en een verweesde chunk 7 blijft anders matchen op tekst die
+   niet meer bestaat. Skip-check uitgebreid met `needsChunking()`.
+4. ✅ **`search()`** — scoort chunks, houdt per document de beste over, valt terug op de
+   documentvector zolang een rij nog geen chunks heeft.
+5. ✅ **Tests** — `ChunkedSearchTest` (7) bewijst de staart, de één-resultaat-per-document-regel,
+   het opruimen van stale chunks en de cascade bij verwijderen.
+6. ✅ **Herindexeren** + geverifieerd (zie status bovenaan).
+7. ✅ **Docs** — het openstaande punt in de reference-doc is afgesloten.
+
+## Wat tijdens het bouwen bijgesteld is
+
+- **Code-bestanden worden óók gechunkt.** Het plan ging ervan uit dat `extractCodeSummary()`
+  code klein maakt. Dat doet het niet: JudoToernooi's `routes/web.php` levert een samenvatting
+  van 92k tekens op, die net zo hard werd afgekapt.
+- **Eén chunk = hergebruik de documentvector.** De eerste versie embedde elk kort document
+  twee keer (één keer als document, één keer als zijn enige chunk) — dat verdubbelde elke
+  index-run voor de 82% van de bestanden die in één chunk passen. Twee bestaande tests vingen
+  dit: ze telden exact 2× en 6× zoveel Ollama-calls als verwacht.
+- **`test_over_long_content_is_retried_shorter`** meet nu een document ónder de chunk-grens. Het
+  test de retry-ladder van `generateOllamaEmbedding()`, en chunk-calls vertroebelden die telling.
 
 ## Wat dit plan bewust NIET doet
 

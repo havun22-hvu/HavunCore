@@ -47,6 +47,21 @@ trait CreatesDocIntelligenceTables
             updated_at TIMESTAMP NULL
         )');
 
+        $db->statement('CREATE TABLE IF NOT EXISTS doc_chunks (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            doc_embedding_id INTEGER NOT NULL,
+            chunk_index INTEGER NOT NULL,
+            heading VARCHAR(500) NULL,
+            content TEXT NOT NULL,
+            embedding TEXT NULL,
+            embedding_model VARCHAR(100) NULL,
+            token_count INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMP NULL,
+            updated_at TIMESTAMP NULL,
+            UNIQUE (doc_embedding_id, chunk_index),
+            FOREIGN KEY (doc_embedding_id) REFERENCES doc_embeddings (id) ON DELETE CASCADE
+        )');
+
         $db->statement('CREATE TABLE IF NOT EXISTS doc_issues (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             project VARCHAR(50) NULL,
@@ -84,6 +99,7 @@ trait CreatesDocIntelligenceTables
         )');
 
         // Clean tables for fresh test state
+        $db->statement('DELETE FROM doc_chunks');
         $db->statement('DELETE FROM doc_embeddings');
         $db->statement('DELETE FROM doc_issues');
         $db->statement('DELETE FROM doc_relations');

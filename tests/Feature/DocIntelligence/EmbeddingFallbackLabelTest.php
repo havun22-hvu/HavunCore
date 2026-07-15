@@ -155,7 +155,11 @@ class EmbeddingFallbackLabelTest extends TestCase
      */
     public function test_over_long_content_is_retried_shorter_instead_of_falling_back(): void
     {
-        file_put_contents($this->docPad, str_repeat('scoreboard token beveiliging ', 400));
+        // Stays under the chunker's ceiling so this measures the retry ladder
+        // alone: a chunked file embeds each slice separately and would add calls
+        // that have nothing to do with shrinking. Ollama counts tokens, not
+        // characters, so it rejecting text this size is realistic enough.
+        file_put_contents($this->docPad, str_repeat('scoreboard token beveiliging ', 100));
 
         $pogingen = 0;
         Http::fake(function () use (&$pogingen) {

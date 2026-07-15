@@ -26,11 +26,6 @@ uitzonderingen na (VPDUpdate + de HavunClub-APK — zie Open). Prod draait overa
 
 ## Open — te doen
 
-- **KB-chunking — plan ligt klaar, wacht op "ga maar":** `docs/kb/plans/kb-chunking-plan.md`.
-  Gemeten: **22-59% van de KB-inhoud is onvindbaar** (568 van 3172 docs afgekapt op 4000 tekens),
-  o.a. `havunclub/docs/business-rules.md` (67k, ~8% vindbaar) en drie `routes/web.php`.
-  Aanpak: aparte tabel `doc_chunks` — **niet** meer rijen in `doc_embeddings`, want ~30 plekken
-  nemen aan dat één rij = één bestand (`IssueDetector` parst `content` als heel MD-bestand).
 - **JudoScoreBoard `context.md` op `master` is nog 1039 regels** (4 sessieblokken). De opgeschoonde
   versie (523) staat op `chore/expo-sdk-56-upgrade`, omdat die SDK 56-kennis bevat over code die
   alleen daar leeft. Lost zichzelf op zodra die branch merget; tot dan blijft master's versie oud.
@@ -69,6 +64,14 @@ uitzonderingen na (VPDUpdate + de HavunClub-APK — zie Open). Prod draait overa
 > **Cross-project items hier zijn kopieën; verifieer ze in het bronproject vóór je erop afgaat.**
 
 ## Recent afgerond (context die nog nut heeft)
+
+- **KB-chunking (15-07)** — `docs/kb/plans/kb-chunking-plan.md`. De staart van lange docs was
+  onvindbaar (22-59% van de KB). Nu een aparte tabel `doc_chunks`; `search()` scoort chunks en
+  houdt per document de beste, dus `--limit=5` blijft 5 documenten. Bijvangst: de preview toont
+  de gevonden passage + het koppad i.p.v. de YAML-frontmatter. **Les:** de handover schreef
+  "meer rijen in `doc_embeddings`" voor — dat zou ~30 aannames hebben gebroken (`IssueDetector`
+  parst `content` als heel MD-bestand, de API telt `COUNT(*)` als `total_files`). Eerst de
+  consumers inventariseren, dan pas het schema kiezen.
 
 - **Grote schoonmaak + deploys (15-07)** — `docs/kb/plans/grote-schoonmaak-2026-07-15.md`.
   29 stashes → 0, nginx-warnings → 0, alles gedeployd behalve VPDUpdate. Kern om te onthouden:
