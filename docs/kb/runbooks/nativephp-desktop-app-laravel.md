@@ -78,7 +78,54 @@ Resultaat: `dist/<AppNaam>-<versie>-setup.exe` (~110 MB; PHP + Electron zitten e
 
 Let op: de dev-server (`native:serve`) en een build tegelijk botsen — stop de eerste.
 
-## 6. Aandachtspunten voor uitlevering
+## 6. Alpine-componenten: bundel Livewire's Alpine zelf
+
+**Struikelblok #2, kostte een avond debuggen in Vusista.** Met de standaard
+`inject_assets = true` start Livewire Alpine zodra zijn eigen script draait. Laadt
+jouw `app.js` (via `@vite`, dus een module) net iets later, dan is `alpine:init`
+al gevuurd en worden je `Alpine.data(...)`-componenten **nooit geregistreerd** —
+een leeg scherm, afhankelijk van laadtiming. Symptoom: `mediaGrid is not defined`
+in de console, en tests die los slagen maar in een suite willekeurig omvallen.
+
+Deterministische opzet:
+
+```php
+// config/livewire.php
+'inject_assets' => false,
+```
+```blade
+{{-- layout --}}
+<head>@livewireStyles @vite(['resources/css/app.css','resources/js/app.js'])</head>
+<body>{{ $slot }} @livewireScriptConfig</body>
+```
+```js
+// resources/js/app.js
+import { Livewire, Alpine } from '../../vendor/livewire/livewire/dist/livewire.esm';
+import registerComponents from './components';
+
+registerComponents(Alpine);   // vóór de start: gegarandeerd geregistreerd
+Livewire.start();
+```
+
+Let ook op: zet **geen dynamische waarden in `x-data`** (bv. een URL die per
+navigatie verandert). Livewire's morph patcht het attribuut, Alpine
+herinitialiseert het component en je krijgt dubbele fetches en verdwijnende
+state. Geef zulke waarden mee via een `data-*`-attribuut en lees ze in `init()`.
+
+## 7. E2E met Playwright (zie ook `playwright-e2e-laravel.md`)
+
+Twee dingen die specifiek zijn voor een NativePHP/SQLite-project:
+
+- **Reset de test-database vanuit het serverproces**, niet van buitenaf. Een
+  `migrate:fresh` via `execSync` trekt het SQLite-bestand onder de draaiende
+  `artisan serve`-workers weg → willekeurig rode tests. Registreer in
+  `routes/web.php` een route achter `app()->environment('e2e')` die
+  `Artisan::call('migrate:fresh', [...])` doet, en roep die aan per test.
+- **`PHP_CLI_SERVER_WORKERS`**: met 1 worker blokkeert een trage request (bv.
+  thumbnail-generatie) je API-calls; met meerdere workers ziet de reset-route
+  niet dezelfde state. Kies 1 worker + warm de cache in de seeder.
+
+## 8. Aandachtspunten voor uitlevering
 
 - **Ongetekende installer** → Windows SmartScreen waarschuwt ("onbekende uitgever").
   Code-signing-certificaat kost geld: businessbeslissing, geen technische.
