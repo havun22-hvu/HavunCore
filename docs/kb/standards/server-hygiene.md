@@ -60,6 +60,33 @@ Deploy-scripts stashen bij drift. Dat is prima als vangnet, maar:
 `/start` controleert de prod-checkouts (dirty + stashes) van de projecten die op de server draaien
 en meldt afwijkingen. Zo blijft het een signaal in plaats van een verrassing na drie maanden.
 
+## Prod bijwerken — `/end` vraagt er actief om
+
+**Henk werkt prod uit zichzelf te weinig bij** (zijn eigen constatering, 15-07). Een notitie in de
+handover werkt niet: die leest hij niet. Daarom **vraagt `/end` het elke sessie actief**.
+
+Stand op 15-07 — tien checkouts liepen achter:
+
+| Checkout | Achter |
+|---|---|
+| vpdupdate | **49 commits** |
+| havuncore/production | 24 |
+| infosyst/production | 21 |
+| havun.nl | 17 |
+| herdenkingsportaal, safehavun, studieplanner | 10 elk |
+| havuncore/webapp | 8 |
+
+Zo'n achterstand is niet alleen "niet up-to-date": hij maakt élke deploy riskanter (grotere batch,
+meer migraties tegelijk, moeilijker terug te draaien), en gefixte bugs staan maanden niet live.
+
+**Regels:**
+- Vragen doe je alleen als er **code** klaarstaat. Puur docs/`.claude`/KB → niet vragen, dat lift
+  mee met de volgende deploy.
+- Benoem **wat** het oplost en **wat het risico is** (migraties? build? breaking?) — Henk moet ja/nee
+  kunnen zeggen zonder zelf te graven.
+- Zit er een **security-fix** bij → dat expliciet zeggen. Dat is een reden om nu te gaan.
+- **Nooit deployen zonder go.** Vragen is verplicht, doorduwen niet.
+
 ## Bij het opruimen: nooit blind wissen
 
 Volgorde, altijd:

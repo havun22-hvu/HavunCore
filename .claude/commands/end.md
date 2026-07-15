@@ -132,6 +132,53 @@ done'
 > was een outage geweest, geen opruiming. Regel: `docs/kb/standards/server-hygiene.md`.
 
 
+## 2c. Prod-deploy — ACTIEF vragen (VERPLICHT)
+
+**Henk werkt prod uit zichzelf te weinig bij.** Een notitie in de handover leest hij niet — dus
+`/end` **vraagt het actief**, elke sessie. Niet deployen zonder go, maar wél elke keer voorleggen.
+
+```bash
+ssh -o ConnectTimeout=15 root@188.245.159.115 '
+for d in $(find /var/www -maxdepth 3 -name .git -type d 2>/dev/null | sed "s|/.git||"); do
+  cd "$d" 2>/dev/null || continue
+  br=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); [ "$br" = "HEAD" ] && continue
+  git fetch -q origin 2>/dev/null
+  n=$(git rev-list --count "HEAD..origin/$br" 2>/dev/null)
+  [ -n "$n" ] && [ "$n" -gt 0 ] && echo "$d [$br] | $n commits achter"
+done'
+```
+
+**Kijk wát er klaarstaat** — een deploy voor alleen docs is zinloos:
+
+```bash
+ssh root@188.245.159.115 "git -C /var/www/<project>/production log --oneline HEAD..origin/<branch>" | head -10
+```
+
+### Hoe je het voorlegt
+
+Alleen als er **code** klaarstaat (geen docs-only). Geef Henk wat hij nodig heeft om ja/nee te zeggen:
+
+> **Prod-deploy?** `<project>` loopt `<n>` commits achter. Daarin zit: `<1 zin over wat het oplost>`.
+> Risico: `<migraties? build nodig? breaking?>`.
+
+Denk mee over de volgorde:
+- Zit er een **security-fix** of bugfix bij → benoem dat expliciet, dat is een reden om nu te gaan.
+- **Migraties** in de batch → apart benoemen: die zijn niet terug te draaien met `git revert`.
+  Altijd DB-backup vooraf.
+- Is het puur docs/`.claude`/KB → **niet vragen**, gewoon melden dat het meelift bij de volgende deploy.
+
+### Bij "ja"
+
+Volg het project-eigen deploy-pad (staat in `handover.md` → *Vaste context*; meestal de handmatige
+GitHub-workflow of `deploy-havun.sh`). DB-backup vóór migraties. Na afloop: rooktest + de checkout
+schoon achterlaten (stap 2b).
+
+### Bij "nee" of geen antwoord
+
+In de handover onder *Open — wacht op Henk*, met wat er klaarstaat en waarom het ertoe doet.
+Niet stilzwijgend laten liggen — dan is het over drie maanden 49 commits.
+
+
 ## 3. Doc Intelligence bijwerken
 
 ```bash
