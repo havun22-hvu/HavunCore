@@ -112,6 +112,12 @@ class DocIndexer
     ];
 
     protected ?string $claudeApiKey = null;
+    /** Marks a row that was embedded with the local word-frequency fallback. */
+    public const FALLBACK_MODEL = 'tfidf-fallback';
+
+    /** Successively smaller inputs to try when Ollama rejects the text as too long. */
+    private const EMBEDDING_CHAR_LIMITS = [8000, 4000, 2000];
+
     protected string $ollamaUrl = 'http://127.0.0.1:11434';
     protected string $embeddingModel = 'nomic-embed-text';
 
@@ -332,7 +338,8 @@ class DocIndexer
             ->where('file_path', $relativePath)
             ->first();
 
-        if ($existing && !$force && $existing->content_hash === $contentHash) {
+        if ($existing && !$force && $existing->content_hash === $contentHash
+            && !$this->needsEmbeddingUpgrade($existing)) {
             return false;
         }
 
@@ -340,7 +347,8 @@ class DocIndexer
         $summary = $this->extractCodeSummary($relativePath, $rawContent);
 
         // Generate embedding from the summary
-        $embedding = $this->generateEmbedding($summary);
+        $ollamaEmbedding = $this->generateOllamaEmbedding($summary);
+        $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($summary);
         $tokenCount = $this->estimateTokenCount($summary);
 
         DocEmbedding::updateOrCreate(
@@ -349,7 +357,7 @@ class DocIndexer
                 'content' => $summary,
                 'content_hash' => $contentHash,
                 'embedding' => $embedding,
-                'embedding_model' => $embedding ? $this->embeddingModel : 'tfidf-fallback',
+                'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
                 'file_type' => $this->detectFileType($relativePath),
                 'token_count' => $tokenCount,
                 'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
@@ -614,12 +622,14 @@ class DocIndexer
             ->where('file_path', $relativePath)
             ->first();
 
-        if ($existing && !$force && $existing->content_hash === $contentHash) {
-            return false; // No changes, skip
+        if ($existing && !$force && $existing->content_hash === $contentHash
+            && !$this->needsEmbeddingUpgrade($existing)) {
+            return false; // No changes and the embedding is real, skip
         }
 
         // Generate embedding
-        $embedding = $this->generateEmbedding($content);
+        $ollamaEmbedding = $this->generateOllamaEmbedding($content);
+        $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($content);
         $tokenCount = $this->estimateTokenCount($content);
 
         // Create or update record
@@ -629,7 +639,7 @@ class DocIndexer
                 'content' => $content,
                 'content_hash' => $contentHash,
                 'embedding' => $embedding,
-                'embedding_model' => $embedding ? $this->embeddingModel : 'tfidf-fallback',
+                'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
                 'file_type' => $this->detectFileType($relativePath),
                 'token_count' => $tokenCount,
                 'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
@@ -726,30 +736,100 @@ class DocIndexer
      */
     protected function generateEmbedding(string $content): ?array
     {
-        // Truncate content to avoid token limits (nomic-embed-text: 8192 tokens)
-        $truncated = mb_substr($content, 0, 8000);
+        return $this->generateOllamaEmbedding($content) ?? $this->generateLocalEmbedding($content);
+    }
 
-        try {
-            $response = \Illuminate\Support\Facades\Http::timeout(30)->post(
-                "{$this->ollamaUrl}/api/embeddings",
-                [
-                    'model' => $this->embeddingModel,
-                    'prompt' => $truncated,
-                ]
-            );
+    /**
+     * Ask Ollama for a real semantic vector. Returns null when unavailable, so the
+     * caller can tell a genuine embedding from the word-frequency fallback — the two
+     * are not interchangeable and must never be labelled the same.
+     */
+    protected function generateOllamaEmbedding(string $content): ?array
+    {
+        // Ollama serves nomic-embed-text with a ~2048 token context, not the 8192 the
+        // model itself supports, and it rejects (500) anything longer instead of
+        // truncating. Tokens-per-character varies with the content — dense code hits the
+        // ceiling far sooner than prose — so rather than guess one safe cut-off, start
+        // generous and halve on rejection. A real embedding of the first half beats the
+        // word-frequency fallback of the whole.
+        foreach (self::EMBEDDING_CHAR_LIMITS as $limiet) {
+            $truncated = mb_substr($content, 0, $limiet);
 
-            if ($response->successful()) {
-                $embedding = $response->json('embedding');
-                if (is_array($embedding) && count($embedding) > 0) {
-                    return $embedding;
+            try {
+                $response = \Illuminate\Support\Facades\Http::timeout(30)->post(
+                    "{$this->ollamaUrl}/api/embeddings",
+                    [
+                        'model' => $this->embeddingModel,
+                        'prompt' => $truncated,
+                    ]
+                );
+
+                if ($response->successful()) {
+                    $embedding = $response->json('embedding');
+                    if (is_array($embedding) && count($embedding) > 0) {
+                        return $embedding;
+                    }
                 }
+
+                // Too long is the one failure worth retrying smaller; anything else
+                // (model missing, Ollama down) will fail identically at every size.
+                if (!$this->isContextLengthError($response->body())) {
+                    Log::warning('Ollama embedding failed, falling back to TF: HTTP ' . $response->status());
+
+                    return null;
+                }
+            } catch (\Exception $e) {
+                Log::warning('Ollama embedding failed, falling back to TF: ' . $e->getMessage());
+
+                return null;
             }
-        } catch (\Exception $e) {
-            Log::warning("Ollama embedding failed, falling back to TF-IDF: " . $e->getMessage());
         }
 
-        // Fallback to TF-IDF if Ollama unavailable
-        return $this->generateLocalEmbedding($content);
+        Log::warning('Ollama embedding failed, falling back to TF: still too long at ' . end(self::EMBEDDING_CHAR_LIMITS) . ' chars');
+
+        return null;
+    }
+
+    protected function isContextLengthError(string $body): bool
+    {
+        return str_contains($body, 'exceeds the context length');
+    }
+
+    /**
+     * Was the last stored embedding a real Ollama vector, or the local fallback?
+     * Anything indexed while Ollama was down keeps working, but is marked so it can
+     * be found and re-indexed later — see needsEmbeddingUpgrade().
+     */
+    protected function embeddingModelFor(?array $ollamaEmbedding): string
+    {
+        return $ollamaEmbedding ? $this->embeddingModel : self::FALLBACK_MODEL;
+    }
+
+    /**
+     * A row indexed with the TF fallback is degraded: it only matches on literal
+     * words. Once Ollama is reachable again it must be re-embedded, even though the
+     * file itself never changed — otherwise it stays degraded forever.
+     *
+     * The label alone is not enough to go on: until 15-07-2026 every fallback was
+     * mislabelled as a real model, so rows are judged on their shape as well.
+     */
+    protected function needsEmbeddingUpgrade(?DocEmbedding $existing): bool
+    {
+        if ($existing === null) {
+            return false;
+        }
+
+        return $existing->embedding_model === self::FALLBACK_MODEL
+            || self::isFallbackEmbedding($existing->embedding);
+    }
+
+    /**
+     * A real Ollama embedding is a flat list of floats. The local fallback is a
+     * map of word => weight, so string keys give it away regardless of its label.
+     */
+    public static function isFallbackEmbedding(mixed $embedding): bool
+    {
+        return is_array($embedding) && $embedding !== [] && !array_is_list($embedding);
     }
 
     /**

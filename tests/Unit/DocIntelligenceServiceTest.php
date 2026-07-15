@@ -32,9 +32,13 @@ class DocIntelligenceServiceTest extends TestCase
         DocIssue::query()->delete();
         DocRelation::query()->delete();
 
-        // Fake HTTP to prevent real Ollama calls
+        // Fake HTTP to prevent real Ollama calls. Returns a real 768-dim vector:
+        // an empty embedding means "Ollama is broken", which now (correctly) marks
+        // rows as degraded and re-indexes them rather than skipping.
         Http::fake([
-            '127.0.0.1:11434/*' => Http::response(['embedding' => null], 200),
+            '127.0.0.1:11434/*' => Http::response([
+                'embedding' => array_map(static fn (int $i): float => $i / 768, range(1, 768)),
+            ], 200),
         ]);
 
         $this->indexer = new DocIndexer();
