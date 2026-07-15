@@ -46,9 +46,11 @@ schoon en up-to-date op twee bewuste uitzonderingen na (zie Open). Prod draait o
 
 ## Open — eigen project-sessie (hier alleen genoteerd)
 
-- **HavunAdmin** — hardcoded staging Bearer-token in
-  `docs/05-api-integration/API-SYNC-HERDENKINGSPORTAAL.md` (r257+423). Opruimen + purgen.
-  Zie [[feedback-no-hardcoded-test-secrets]].
+- **HavunAdmin — token uit de docs (15-07 gedaan), historie-purge open.** Het echte Sanctum-token
+  stond 2× in `docs/05-api-integration/API-SYNC-HERDENKINGSPORTAAL.md`; nu een placeholder.
+  Geverifieerd: **token id 9 bestaat niet meer op de server = al ingetrokken**, dus onbruikbaar.
+  Het zit nog in commit `bc6fbeb`; purgen = filter-repo + force-push → jouw go (verboden zonder
+  overleg). Zie [[feedback-no-hardcoded-test-secrets]].
 - **VPDUpdate — `users.json` getrackt mét live bcrypt-hashes én TOTP-secrets** (15-07 bevestigd).
   Staat dus in de GitHub-historie. Untracken raakt de deploy (verse clone heeft dan geen bestand)
   → eigen taak, niet een opruiming.
