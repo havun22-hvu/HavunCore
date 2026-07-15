@@ -50,7 +50,17 @@ last_updated: 2026-07-15
 - **HavunAdmin** — hardcoded staging Bearer-token in
   `docs/05-api-integration/API-SYNC-HERDENKINGSPORTAAL.md` (r257+423). Opruimen + purgen.
   Zie [[feedback-no-hardcoded-test-secrets]].
-- **VPDUpdate** — `users.json` is getrackt met bcrypt-hashes van Henks account. Hoort niet in git.
+- **VPDUpdate — `users.json` getrackt mét live bcrypt-hashes én TOTP-secrets** (15-07 bevestigd).
+  Staat dus in de GitHub-historie. Untracken raakt de deploy (verse clone heeft dan geen bestand)
+  → eigen taak, niet een opruiming.
+- **3 rescue-branches beoordelen, daarna opruimen** (van de schoonmaak 15-07; alles wat er in staat
+  bestond nergens anders): `Studieplanner-api rescue/prod-stashes-2026-07-15` (UserSettings +
+  Observability + syncSettings, WIP met een kapotte regel), `VPDUpdate rescue/prod-untracked-2026-07-15`
+  (PIN-login-variant, waarschijnlijk dood hout), `Herdenkingsportaal rescue/prod-stash-2026-07-15`
+  (route naar `settings/biometric.blade.php` — **die view staat in git maar is onbereikbaar**;
+  mogelijk achterhaald door het login-werk van 14-07).
+- **HavunClub `public/aeterna-latest.apk`** (26 MB, ander project). Laravel serveert `public/`, dus
+  `havunclub.havun.nl/aeterna-latest.apk` kan als link gedeeld zijn. Niet verwijderd — Henks keuze.
 
 > **Les 15-07:** het item "HavunClub — Cees ziet 0 judoka's / ClubScope leest `session('club_id')`
 > / tenant-lek in Aanwezigheid+BandExamen+Dashboard" stond hier nog, maar was **al opgelost**
@@ -60,6 +70,15 @@ last_updated: 2026-07-15
 > **Cross-project items hier zijn kopieën; verifieer ze in het bronproject vóór je erop afgaat.**
 
 ## Recent afgerond (context die nog nut heeft)
+
+- **Grote schoonmaak server (15-07)** — `docs/kb/plans/grote-schoonmaak-2026-07-15.md`.
+  **29 stashes → 0**, nginx-warnings → 0, verweesde `judotoernooi/.git` weg (oude historie met losse
+  root gebundeld: 103 MB, `verify` = complete). Alles eerst geback-upt in `/var/backups/`.
+  **Wat er tussen de "rommel" bleek te zitten:** 874 MB live APK's, 34 MB OTA-bundles, de gebouwde
+  PWA, en vier bestanden die **nergens anders bestonden** — SafeHavuns landingstekst, Infosysts
+  Python-zip, havun.nl's PM2-config, en Studieplanners favicon (waar de layout naar verwees terwijl
+  git 'm niet had). `git clean -fd` was een outage geweest.
+  **Preventie:** `standards/server-hygiene.md` + checks in `/start` en `/end` van 13 projecten.
 
 - **KB draaide maandenlang op keyword-matching** (`2c43318`). Alle 2758 embeddings waren
   woordfrequentie-maps, geen vectoren. Drie oorzaken: `generateLocalEmbedding()` geeft altijd een

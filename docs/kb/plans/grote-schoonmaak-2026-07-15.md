@@ -82,6 +82,37 @@ Dit had niet mogen gebeuren. Oorzaken en tegenmaatregelen:
 
 Vastleggen in: `docs/kb/standards/server-hygiene.md` + `/start` + `/end`.
 
+## UITGEVOERD (15-07-2026) — eindstand
+
+| Was | Nu |
+|---|---|
+| **29 stashes** verspreid over 10 checkouts | **0** — alle 30 patches geback-upt in `/var/backups/havun-stashes-2026-07-15` |
+| **3× nginx conflicting-server-name warning** | **0** — 2 dode vhosts weg (backup in `/var/backups/havun-nginx-2026-07-15`) |
+| Verweesde checkout `/var/www/judotoernooi/.git` | Weg. **Losse historie** (geen merge-base met origin, 2432 oude commits) → volledig gebundeld: `judotoernooi-oude-historie-tot-maart2026.bundle` (103 MB, `bundle verify` = complete history) |
+| 12 vervuilde checkouts | 6, en die wachten enkel op de volgende deploy |
+
+**Gered — bestond nergens anders (prod kan niet pushen):**
+
+| Wat | Waar nu |
+|---|---|
+| SafeHavun landing.html ("Gratis" → "Binnenkort") | `SafeHavun` master |
+| Infosyst `Infosyst-Import-Python.zip` (de `.exe` was wél getrackt) | `Infosyst` master |
+| havun.nl `ecosystem.config.js` (PM2, poort 3003) | `Havun` master |
+| Studieplanner `favicon.png` — layout verwijst ernaar, git had 'm niet | `Studieplanner-api` master |
+| Studieplanner stash{1}+{4} (UserSettings, Observability, syncSettings) | branch `rescue/prod-stashes-2026-07-15` |
+| VPDUpdate pin-endpoints/setup-pin/search | branch `rescue/prod-untracked-2026-07-15` |
+| HP biometric-wiring (route naar een gecommitte, onbereikbare view) | branch `rescue/prod-stash-2026-07-15` |
+| JudoScoreBoard 99 MB APK uit stash | `/var/backups/.../judoscoreboard-stash-99MB.apk` |
+
+**Nog open — vereist Henk:**
+- `havunclub/public/aeterna-latest.apk` (26 MB, APK van een ander project, 4 mei). Geen nginx-regel,
+  maar Laravel serveert `public/` → de link `havunclub.havun.nl/aeterna-latest.apk` kan gedeeld zijn
+  met Aeterna-testers. Niet verwijderd: dezelfde APK staat als `aeterna-snapshot.apk` in de webapp.
+- **VPDUpdate `users.json` is getrackt mét live bcrypt-hashes + TOTP-secrets** → staat in de
+  GitHub-historie. Untracken raakt de deploy (verse clone heeft dan geen bestand) = eigen taak.
+- De 3 rescue-branches: beoordelen en dan opruimen.
+- De 6 resterende dirty checkouts verdwijnen vanzelf bij hun volgende deploy.
+
 ## Grenzen
 
 - Server-config en prod-data = **Henks go per stap** (rules.md). Dit plan vraagt die go per punt.
