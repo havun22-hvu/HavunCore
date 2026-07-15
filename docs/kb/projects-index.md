@@ -27,6 +27,7 @@ last_check: 2026-04-22
 | **HavunClub** | Laravel 11 SaaS | havunclub.havun.nl | D:\GitHub\HavunClub | /var/www/havunclub/production |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (in development) |
 | **Aeterna** | Tauri 2.0 + Rust + React | github.com/havun22-hvu/Aeterna | D:\GitHub\Aeterna | (geen server — multi-mirror distributie) |
+| **Vusista** | Laravel 12 + NativePHP (desktop-app) | staging.vusista.havun.nl (demo) | D:\GitHub\Vusista | /var/www/vusista/ (bevroren — release = installer) |
 
 ## Korte beschrijving
 
@@ -59,6 +60,7 @@ last_check: 2026-04-22
 - **IDSee** - (details volgen)
 - **VPDUpdate** - Sync tool voor VPD data
 - **Aeterna** - Soeverein desktop/mobile instrument voor ADA-transacties op Cardano. Tauri 2.0 + Rust, censuur-resistant by design. Brainstorm-fase mei 2026, geen code nog.
+- **Vusista** - Picasa-opvolger: fotoalbum-**desktop-app** (NativePHP), lokale foto's in-place indexeren, metadata naar XMP, pixels nooit aanraken. Enige project dat als installer wordt uitgeleverd i.p.v. server-deploy. MVP af juli 2026; fase 2 = bewerken + gezichten (ONNX).
 
 ## Voor project-specifieke info
 
