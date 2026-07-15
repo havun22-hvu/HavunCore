@@ -57,6 +57,18 @@ last_updated: 2026-07-16
   > een browser-test. Zie het blueprint. **Leesval:** de code valt terug op `localhost:8009` = de
   > Node-backend, waar push een lege stub is — wie alleen die default leest denkt dat de knop dood is.
 
+## Let op: slash-commands bestaan twee keer
+
+`~/.claude/commands/*.md` (globaal) wint van `HavunCore/.claude/commands/*.md` (project). Op 16-07
+bleek de **globale `/end` nog `## Laatste Sessie: [DATUM]` voor te schrijven** terwijl de
+projectversie sessieblokken al verbood — dát is waarom vijf projecten na de regel van 15-07 alsnog
+sessieblokken hadden. Gefixt in de globale versie.
+
+> **Twee dingen om te weten.** (1) Werk je een slash-command bij, controleer **beide** locaties —
+> anders schrijft de globale het oude gedrag terug. (2) **`~/.claude` staat niet onder
+> versiebeheer.** Die commands leven alleen op deze schijf; schijf weg = weg. Eigen keuze, maar
+> weet het.
+
 ## Cross-project items staan vanaf nu in het bronproject
 
 Deze handover hield kopieën bij van open punten uit andere projecten. Sinds de ronde van 16-07
