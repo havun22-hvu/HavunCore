@@ -131,6 +131,24 @@ geen big-bang.
 6. ✅ **Herindexeren** + geverifieerd (zie status bovenaan).
 7. ✅ **Docs** — het openstaande punt in de reference-doc is afgesloten.
 
+## Eén weg de index in — `storeDocument()`
+
+Er waren **drie** producenten van een `doc_embeddings`-rij: `indexFile` (markdown),
+`indexCodeFile` (code-samenvatting) en `StructureIndexer` (projectplattegrond). Elk schreef
+embed-en-opslaan zelf uit. Gevolg: `StructureIndexer` droeg de mislabel-bug die op 15-07 in
+`DocIndexer` gefixt is (`$embedding ? $model : 'tfidf-fallback'` is altijd waar → elke
+fallback loog dat hij een echte vector was) nog maanden mee, en chunking landde op twee van
+de drie. Geen los gat: het symptoom van een ontbrekende definitie.
+
+`storeDocument()` bezit nu embedden + opslaan + chunken. Bewijs dat het geen theorie was:
+havuncore's structure-samenvatting is **7268 tekens**, ruim voorbij de grens → z'n staart was
+onvindbaar. Nu 11 chunks.
+
+**De chunker leest geen `file_type` meer.** Dat veld is een zoekfilter met 14 waarden, en
+structure-samenvattingen zijn markdown (`# Structure`, `## Models (12)`) mét `file_type`
+`'structure'` — de oude check had juist dat document als vormloze tekst behandeld. De
+producent kiest: `chunkMarkdown()` of `chunkPlain()`. Die weet het zeker.
+
 ## Wat tijdens het bouwen bijgesteld is
 
 - **Code-bestanden worden óók gechunkt.** Het plan ging ervan uit dat `extractCodeSummary()`
@@ -158,11 +176,6 @@ geen big-bang.
   `json_decode` van ~200 MB embedding-JSON (15 KB per vector). Als `pack('f*', ...)` → 3 KB per
   vector, en `unpack` is vele malen sneller. Raakt het schema + een herindexering. Pas de moeite
   als ongefilterd zoeken (8s) hindert; met `--project` is het 0,58s.
-- **`StructureIndexer` schrijft een `doc_embeddings`-rij zonder chunks.** Nu leeg (0 rijen in de
-  index), dus geen praktisch gat — maar zodra `docs:structure` draait, valt die rij terug op de
-  documentvector. De echte fix is één `storeDocument()` die embedt, de rij schrijft én chunkt,
-  gebruikt door alle drie de producenten (`indexFile`, `indexCodeFile`, `StructureIndexer`).
-  Dan wordt "elke rij heeft ≥1 chunk" een invariant en kan de fallback in `search()` ooit weg.
 - **`needsChunking()` doet 1 SELECT per bestand per run** (~3200 over alle projecten, 0,03s).
   Gemeten, niet de moeite; hooguit meenemen als `isUpToDate()` toch op de schop gaat.
 
