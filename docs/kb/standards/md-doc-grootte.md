@@ -14,11 +14,20 @@ De staart is dan zinloos. Schrijf voor iemand die alleen het begin leest.
 
 1. **Context-budget.** Claude leest meerdere docs per taak. Eén doc van 400 regels verdringt
    vijf andere. Lange docs maken de sessie dommer, niet slimmer.
-2. **De KB indexeert alleen het begin.** `docs:search` embed per document ~de eerste 2000-8000
-   tekens (Ollama-contextlimiet, zie `reference/doc-intelligence-embedding-fallback-bug.md`).
-   **Alles voorbij die grens is onvindbaar.** Wat achteraan staat, bestaat niet voor de zoekfunctie.
-3. **Afnemende trefkans.** Hoe langer het doc, hoe kleiner de kans dat het relevante stuk
+2. **Afnemende trefkans.** Hoe langer het doc, hoe kleiner de kans dat het relevante stuk
    überhaupt in beeld komt.
+3. **Een lang doc liegt eerder.** Niemand leest de staart na, dus daar blijft achterhaalde tekst
+   staan — zie het JudoToernooi-voorbeeld onderaan.
+
+> **Vervallen reden (16-07-2026): "de KB indexeert alleen het begin".** Dat gold tot 15-07 —
+> `docs:search` embedde per document alleen de eerste ~2000-8000 tekens, dus de staart was
+> onvindbaar. **Chunking heeft dat opgelost**: lange docs worden in stukken geëmbed en per stuk
+> doorzocht (`HavunCore/docs/kb/plans/kb-chunking-plan.md`). Vindbaarheid is dus **geen** argument
+> meer voor korte docs — de andere drie redenen zijn dat wel. Deze regel blijft staan, met een
+> eerlijker fundament.
+>
+> Let ook op de eenheid: de grenzen hieronder tellen **regels**, de indexer telde **tekens**.
+> Die twee zijn nooit gelijk geweest; sinds chunking maakt het voor de zoekfunctie niet meer uit.
 
 ## Harde grenzen
 

@@ -52,8 +52,9 @@ Volledig: `HavunCore/docs/kb/standards/docs-first.md`
 
 ## MD-docs schrijven — hou ze leesbaar voor Claude
 
-Een te lang doc wordt niet gelezen: het verdringt andere docs uit de context, en de KB indexeert
-alleen het **begin** van een bestand (~2000-8000 tekens) — alles daarna is onvindbaar via `docs:search`.
+Een te lang doc wordt niet gelezen: het verdringt andere docs uit de context, de trefkans op het
+relevante stuk daalt, en niemand leest de staart na — dus daar blijft achterhaalde tekst staan.
+(Vindbaarheid is sinds 15-07 géén argument meer: chunking embed lange docs in stukken.)
 
 - **Max:** KB-doc/runbook 200 regels · CLAUDE.md 120 · plan/blueprint 300 · handover 15-30 regels per sessie
 - **Hiërarchie:** conclusie + status bovenaan, tabel in het midden, onderbouwing onderaan
