@@ -12,18 +12,17 @@ last_updated: 2026-07-15
 > `docs/kb/standards/md-doc-grootte.md`.
 
 **Branch:** master · **Status:** stabiel. KB doet weer semantisch zoeken (2764 echte vectoren).
-**Server 15-07 opgeschoond en bijgewerkt:** 29 stashes → 0, nginx-warnings → 0, alle checkouts
-schoon en up-to-date op twee bewuste uitzonderingen na (zie Open). Prod draait overal.
+**Server:** 0 stashes, nginx-warnings 0, alle checkouts schoon en up-to-date op twee bewuste
+uitzonderingen na (VPDUpdate + de HavunClub-APK — zie Open). Prod draait overal.
 
 ## Open — wacht op Henk
 
 | Wat | Details |
 |-----|---------|
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `docs/kb/plans/blijvend-ingelogd-plan.md` |
-| **VPDUpdate: 49 commits achter + 3 dirty** | Bewust niet gedeployd 15-07. Werktree is 46 commits **ouder** met alleen CRLF-drift, en `users.json` (getrackt, mét live secrets) hangt eraan vast. Eerst uitzoeken, dan pas deployen. Bevat o.a. de passkey-fix `f6f5e1a` |
-| **HavunClub `public/aeterna-latest.apk`** | 26 MB, ander project, sinds 4 mei. Nu gitignored (op `staging`) zodat de checkout schoon is; **niet verwijderd** — Laravel serveert `public/`, dus de link kan bij Aeterna-testers liggen. Weg = jouw keuze |
+| **VPDUpdate: 49 commits achter + 5 dirty** | Bewust niet gedeployd 15-07. Werktree is 46 commits **ouder** met alleen CRLF-drift, en `users.json` (getrackt, mét live secrets) hangt eraan vast. Eerst uitzoeken, dan pas deployen. Bevat o.a. de passkey-fix `f6f5e1a` |
+| **HavunClub `public/aeterna-latest.apk`** | 26 MB, ander project, sinds 4 mei. De `.gitignore` staat alleen op `staging` — prod draait `main` en is daardoor nog dirty; schoon zodra staging→main merget. **Niet verwijderd** — Laravel serveert `public/`, dus de link kan bij Aeterna-testers liggen. Weg = jouw keuze |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
-| **WIP in webapp-repo** | `git stash pop`, stash@{0} |
 
 ## Open — te doen
 
@@ -34,8 +33,6 @@ schoon en up-to-date op twee bewuste uitzonderingen na (zie Open). Prod draait o
 - **JudoScoreBoard `context.md` op `master` is nog 1039 regels** (4 sessieblokken). De opgeschoonde
   versie (523) staat op `chore/expo-sdk-56-upgrade`, omdat die SDK 56-kennis bevat over code die
   alleen daar leeft. Lost zichzelf op zodra die branch merget; tot dan blijft master's versie oud.
-- **Sessieblokken nog in LastMatch + VPDUpdate handover** — die twee projecten draaien niet op de
-  server en zijn bij de opschoning van 15-07 overgeslagen. Klein werk.
 - **Actief kanaal voor `critical` health-alerts.** Alerts leven nu alleen in het passieve
   webapp-paneel; een 10-daagse Reverb-outage bereikte Henk daardoor niet. Keuze push/mail/Telegram
   is aan Henk (raakt mogelijk `.env`). `laravel-worker` + `toernooi-heartbeat` worden niet bewaakt.
