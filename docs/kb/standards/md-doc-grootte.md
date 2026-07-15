@@ -1,0 +1,61 @@
+---
+title: MD-docs moeten leesbaar blijven voor Claude (doc-grootte)
+type: standard
+scope: alle-projecten
+last_check: 2026-07-15
+---
+
+# MD-doc grootte — BINDEND voor alle Havun-projecten
+
+**Regel:** een doc dat te lang is, wordt niet gelezen — niet door Claude, niet door jou.
+De staart is dan zinloos. Schrijf voor iemand die alleen het begin leest.
+
+## Waarom (niet alleen netheid)
+
+1. **Context-budget.** Claude leest meerdere docs per taak. Eén doc van 400 regels verdringt
+   vijf andere. Lange docs maken de sessie dommer, niet slimmer.
+2. **De KB indexeert alleen het begin.** `docs:search` embed per document ~de eerste 2000-8000
+   tekens (Ollama-contextlimiet, zie `reference/doc-intelligence-embedding-fallback-bug.md`).
+   **Alles voorbij die grens is onvindbaar.** Wat achteraan staat, bestaat niet voor de zoekfunctie.
+3. **Afnemende trefkans.** Hoe langer het doc, hoe kleiner de kans dat het relevante stuk
+   überhaupt in beeld komt.
+
+## Harde grenzen
+
+| Soort doc | Richtlijn | Hard maximum |
+|-----------|-----------|--------------|
+| KB-pattern / standard / reference | 60-120 regels | **200** |
+| Runbook | 80-150 regels | **250** |
+| `CLAUDE.md` (per project) | 40-80 regels | **120** |
+| Handover | per sessie 15-30 regels | zie hieronder |
+| Plan / blueprint | 100-200 regels | **300** |
+
+**Over het maximum? Splitsen, niet persen.** Een index-doc + deeldocs leest beter dan één muur.
+
+## Hoe: hiërarchie, niet compressie
+
+Kort maken ≠ alles eruit gooien. Zet de conclusie bovenaan en de details eronder:
+
+1. **Bovenaan:** wat is dit, wat moet ik weten, wat is de status — in 3-5 regels.
+2. **Daarna:** een tabel met bevindingen/stappen. Tabellen zijn dichter dan proza.
+3. **Daarna pas:** onderbouwing, achtergrond, alternatieven.
+4. **Details die zelden nodig zijn:** eigen doc + link. Niet onderaan plakken.
+
+Vuistregel: **kan iemand na de eerste 20 regels handelen?** Zo nee, herschrijf de kop.
+
+## Handovers
+
+De grootste veroorzaker van muren. Regels:
+
+- **Nieuwste sessie bovenaan**, oudere eronder.
+- Per sessie **15-30 regels**: wat is gedaan, wat staat open, waar zit het (commit/pad).
+- **Ouder dan ~3 maanden → weg of naar `docs/kb/runbooks/session-handover-<jaar>.md`.**
+  Een handover is een doorgeefluik, geen archief. Git bewaart de historie al.
+- Geen procesverslag ("eerst deed ik X, toen Y"). Alleen de uitkomst en wat een volgende
+  sessie moet weten.
+
+## Wat je NIET doet
+
+- Tekst comprimeren tot telegramstijl of pijlketens (`A → B → faalt`). Onleesbaar ≠ kort.
+- Details schrappen die de volgende sessie een fout besparen. Die verhuizen naar een eigen doc.
+- Eén doc laten groeien "omdat het bij elkaar hoort". Splits op zodra het over het maximum gaat.
