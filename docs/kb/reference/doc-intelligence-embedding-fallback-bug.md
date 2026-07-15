@@ -7,9 +7,9 @@ last_check: 2026-07-15
 
 # Doc Intelligence — alle embeddings zijn TF-maps, niet nomic-embed-text
 
-> **Status:** ONTDEKT, NIET GEFIXT. Wacht op Henk (herindexering kost tijd + 2758 Ollama-calls).
-> **Impact:** de KB-zoekfunctie — de kernfunctie van HavunCore, verplicht bij elke taak volgens
-> `CLAUDE.md` — doet **keyword-matching, geen semantisch zoeken**. Al maanden.
+> **Status:** GEFIXT 15-07-2026 (commit `2c43318`) + herindexering uitgevoerd.
+> **Impact (was):** de KB-zoekfunctie — de kernfunctie van HavunCore, verplicht bij elke taak
+> volgens `CLAUDE.md` — deed **keyword-matching, geen semantisch zoeken**. Maandenlang, ongemerkt.
 
 ## Hoe het ontdekt is
 
@@ -40,25 +40,44 @@ truthy. Gevolg:
 3. **Het herstelt nooit vanzelf:** `indexFile()` skipt op `content_hash`. Zolang het bestand niet
    wijzigt, wordt de TF-map nooit vervangen — ook niet nu Ollama wél werkt.
 
-Geverifieerd op 15-07: Ollama draait, `nomic-embed-text:latest` is aanwezig, en een directe
-`POST /api/embeddings` geeft een correcte 768-dim vector. De fallback is dus ooit ingeslagen
-(Ollama uit/timeout tijdens indexeren) en daarna nooit meer teruggedraaid.
+### Derde oorzaak: Ollama's context is 2048 tokens, niet 8192
 
-## Voorgestelde fix
+Tijdens het herstel bleek de fallback niet "ooit een keer" te zijn ingeslagen — hij sloeg
+**structureel** toe op elk groter document. Ollama serveert `nomic-embed-text` met een context van
+~2048 tokens (niet de 8192 die het model zelf aankan) en **weigert** langere invoer met een HTTP 500
+in plaats van af te kappen:
 
-1. **Splits generatie en labeling** zodat het label de waarheid vertelt:
-   ```php
-   $embedding = $this->generateOllamaEmbedding($content);   // null bij falen
-   $model = $embedding ? $this->embeddingModel : 'tfidf-fallback';
-   $embedding ??= $this->generateLocalEmbedding($content);
-   ```
-2. **Herstel-trigger:** bij het skippen op `content_hash` óók herindexeren als
-   `embedding_model === 'tfidf-fallback'` en Ollama nu beschikbaar is. Anders blijft degraded
-   voor altijd degraded.
-3. **Eenmalige `docs:index --force`** over alle projecten om de 2758 TF-maps te vervangen door
-   echte vectoren. Kost ~2758 Ollama-calls; draaien wanneer het uitkomt.
-4. Overweeg te falen i.p.v. stil terug te vallen wanneer Ollama onbereikbaar is tijdens een
-   expliciete indexeer-actie — een stille degradatie van de kernfunctie is erger dan een foutmelding.
+```
+{"error":"the input length exceeds the context length"}
+```
+
+De code kapte af op **8000 tekens** met de comment *"nomic-embed-text: 8192 tokens"* — een
+verwarring tussen tekens en tokens. Alles boven ~2048 tokens viel dus terug op de TF-map.
+Gemeten grens lag voor een doorsnee `.claude/context.md` tussen 5000 en 6000 tekens; voor dichte
+code ligt hij lager. `options.num_ctx = 8192` meesturen helpt niet — Ollama negeert dat voor
+embeddings.
+
+## De fix (commit `2c43318`)
+
+1. **Generatie en labeling gesplitst** (`generateOllamaEmbedding()` geeft `null` bij falen) zodat
+   het label de waarheid vertelt.
+2. **Herstel-trigger** in beide `indexFile()`/`indexCodeFile()`-skips. Omdat het label van
+   historische rijen liegt, wordt de fallback óók op **vorm** herkend: een echte vector is een
+   `array_is_list` van floats, de fallback een `woord => gewicht`-map (`isFallbackEmbedding()`).
+   Daardoor is het self-healing — geen `--force` of relabel-migratie nodig.
+3. **Adaptieve truncatie:** 8000 → 4000 → 2000 tekens bij een context-lengte-fout. Een echte
+   embedding van de eerste helft is beter dan een woordmap van het geheel. Andere fouten
+   (model weg, Ollama down) worden **niet** herprobeerd — die falen op elk formaat identiek.
+
+Geverifieerd op Vusista: 82/82 rijen dragen nu echte 768-dim vectoren (was 0/82; eerst 77, en na
+de truncatie-fix ook de laatste 5 grote `.claude`-bestanden).
+
+Tests: `tests/Feature/DocIntelligence/EmbeddingFallbackLabelTest.php` (7).
+
+> **Openstaand punt voor Henk:** documenten langer dan ~2000-8000 tekens worden nog steeds alleen
+> op hun **begin** geëmbed — de staart is onvindbaar. Dat gold altijd al (de oude code kapte ook af),
+> maar het is nu zichtbaar. De echte oplossing is **chunking**: lange docs in stukken embedden en
+> per chunk zoeken. Aparte taak, raakt het DB-schema (meerdere rijen per bestand).
 
 ## Waarom dit ertoe doet
 
