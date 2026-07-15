@@ -28,6 +28,10 @@ class DocIndexer
         'agorano' => 'D:/GitHub/Agorano',
         'havunclub' => 'D:/GitHub/HavunClub',
         'vusista' => 'D:/GitHub/Vusista',
+        // Native apps: no server deploy, but their docs must be searchable like any other.
+        'judoscoreboard' => 'D:/GitHub/JudoScoreBoard',
+        'aeterna' => 'D:/GitHub/Aeterna',
+        'lastmatch' => 'D:/GitHub/LastMatch',
     ];
 
     protected array $serverPaths = [
