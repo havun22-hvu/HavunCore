@@ -24,7 +24,6 @@ schoon en up-to-date op twee bewuste uitzonderingen na (zie Open). Prod draait o
 | **HavunClub `public/aeterna-latest.apk`** | 26 MB, ander project, sinds 4 mei. Nu gitignored (op `staging`) zodat de checkout schoon is; **niet verwijderd** — Laravel serveert `public/`, dus de link kan bij Aeterna-testers liggen. Weg = jouw keuze |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
 | **WIP in webapp-repo** | `git stash pop`, stash@{0} |
-| **Auto-commit-cron op HavunCore prod** | De dagelijkse `auto:commit-regenerated` (06:00) commit lokaal terwijl prod niet kan pushen → **elke** deploy struikelt op ff-only (15-07 weer, opgelost met backup-branch + reset). Structureel: cron laten genereren zónder commit, óf die bestanden gitignoren. Raakt cron-config = jouw go |
 
 ## Open — te doen
 
@@ -44,8 +43,6 @@ schoon en up-to-date op twee bewuste uitzonderingen na (zie Open). Prod draait o
 - **havuncore-webapp** — push-frontend (SW + subscribe-knop bij de 🔔); backend staat live sinds
   2 juli. Plus: update-banner activeert de wachtende SW niet zichtbaar (pas na app-herstart);
   verdenk ontbrekende `clientsClaim`/`controllerchange`.
-- **Projectlijst is gedupliceerd** — `havun-projects.php` én de hardcoded lijst in `DocIndexer`.
-  Ooit consolideren; nu vergeet je er één (JudoScoreBoard/Aeterna/LastMatch ontbraken tot 15-07).
 
 ## Open — eigen project-sessie (hier alleen genoteerd)
 
@@ -55,12 +52,12 @@ schoon en up-to-date op twee bewuste uitzonderingen na (zie Open). Prod draait o
 - **VPDUpdate — `users.json` getrackt mét live bcrypt-hashes én TOTP-secrets** (15-07 bevestigd).
   Staat dus in de GitHub-historie. Untracken raakt de deploy (verse clone heeft dan geen bestand)
   → eigen taak, niet een opruiming.
-- **3 rescue-branches beoordelen, daarna opruimen** (van de schoonmaak 15-07; alles wat er in staat
-  bestond nergens anders): `Studieplanner-api rescue/prod-stashes-2026-07-15` (UserSettings +
-  Observability + syncSettings, WIP met een kapotte regel), `VPDUpdate rescue/prod-untracked-2026-07-15`
-  (PIN-login-variant, waarschijnlijk dood hout), `Herdenkingsportaal rescue/prod-stash-2026-07-15`
-  (route naar `settings/biometric.blade.php` — **die view staat in git maar is onbereikbaar**;
-  mogelijk achterhaald door het login-werk van 14-07).
+- **`Studieplanner-api` branch `rescue/prod-stashes-2026-07-15` — jouw keuze.** Bevat werk dat
+  nergens anders bestond: een `UserSettings`-model (pomodoro, alarm-instellingen), een
+  `ObservabilityServiceProvider` (slow-query-logging naar HavunCore), `config/observability.php` en
+  de `user_settings`-migratie. Geverifieerd: geen van die vier zit in master. Het is onaffe WIP (de
+  provider heeft een kapotte string-interpolatie), dus dit is een **productvraag**: wil je die
+  feature? Ja → afmaken. Nee → branch weg. De twee andere rescue-branches zijn afgehandeld.
 - **HavunClub `public/aeterna-latest.apk`** (26 MB, ander project). Laravel serveert `public/`, dus
   `havunclub.havun.nl/aeterna-latest.apk` kan als link gedeeld zijn. Niet verwijderd — Henks keuze.
 

@@ -11,43 +11,7 @@ class DocIndexer
 {
     protected array $projectPaths = [];
 
-    protected array $localPaths = [
-        'havuncore' => 'D:/GitHub/HavunCore',
-        'havunadmin' => 'D:/GitHub/HavunAdmin',
-        'herdenkingsportaal' => 'D:/GitHub/Herdenkingsportaal',
-        'judotoernooi' => 'D:/GitHub/JudoToernooi',
-        'infosyst' => 'D:/GitHub/Infosyst',
-        'studieplanner' => 'D:/GitHub/Studieplanner',
-        'studieplanner-api' => 'D:/GitHub/Studieplanner-api',
-        'safehavun' => 'D:/GitHub/SafeHavun',
-        'havun' => 'D:/GitHub/Havun',
-        'vpdupdate' => 'D:/GitHub/VPDUpdate',
-        'idsee' => 'D:/GitHub/IDSee',
-        'havunvet' => 'D:/GitHub/HavunVet',
-        'havuncore-webapp' => 'D:/GitHub/HavunCore/webapp',
-        'agorano' => 'D:/GitHub/Agorano',
-        'havunclub' => 'D:/GitHub/HavunClub',
-        'vusista' => 'D:/GitHub/Vusista',
-        // Native apps: no server deploy, but their docs must be searchable like any other.
-        'judoscoreboard' => 'D:/GitHub/JudoScoreBoard',
-        'aeterna' => 'D:/GitHub/Aeterna',
-        'lastmatch' => 'D:/GitHub/LastMatch',
-    ];
 
-    protected array $serverPaths = [
-        'havuncore' => '/var/www/havuncore/production',
-        'havunadmin' => '/var/www/havunadmin/production',
-        'herdenkingsportaal' => '/var/www/herdenkingsportaal/production',
-        'judotoernooi' => '/var/www/judotoernooi/laravel',
-        'infosyst' => '/var/www/infosyst/production',
-        'studieplanner' => '/var/www/studieplanner/production',
-        'studieplanner-api' => '/var/www/studieplanner/production',
-        'safehavun' => '/var/www/safehavun/production',
-        'havun' => '/var/www/havun.nl',
-        'havunvet' => '/var/www/havunvet/staging',
-        'havunclub' => '/var/www/havunclub/production',
-        'vusista' => '/var/www/vusista/production',
-    ];
 
     protected array $excludePaths = [
         'vendor',
@@ -139,10 +103,17 @@ class DocIndexer
             // Niet kritiek — ga door
         }
 
-        // Use server paths on Linux, local paths on Windows
-        $this->projectPaths = PHP_OS_FAMILY === 'Windows'
-            ? $this->localPaths
-            : $this->serverPaths;
+        // Use server paths on Linux, local paths on Windows.
+        // Source of truth is config/havun-projects.php — er was hier jarenlang een tweede,
+        // hardcoded lijst en dan vergeet je er altijd één: JudoScoreBoard (prioriteit 1),
+        // Aeterna en LastMatch stonden tot 15-07-2026 niet in de index, waardoor 190 docs
+        // onvindbaar waren terwijl CLAUDE.md voorschrijft elke taak met docs:search te beginnen.
+        $sleutel = PHP_OS_FAMILY === 'Windows' ? 'path' : 'server_path';
+
+        $this->projectPaths = collect(config('havun-projects', []))
+            ->map(fn (array $project) => $project[$sleutel] ?? null)
+            ->filter()   // projecten zonder pad voor deze omgeving (native apps) slaan we over
+            ->all();
     }
 
     /**

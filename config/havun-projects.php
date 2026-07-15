@@ -3,31 +3,37 @@
 return [
     'havuncore' => [
         'path'      => 'D:/GitHub/HavunCore',
+        'server_path' => '/var/www/havuncore/production',
         'local_url' => 'http://localhost:8000',
         'endpoints' => [],
     ],
     'herdenkingsportaal' => [
         'path'      => 'D:/GitHub/Herdenkingsportaal',
+        'server_path' => '/var/www/herdenkingsportaal/production',
         'local_url' => 'http://localhost:8001',
         'endpoints' => [],
     ],
     'judotoernooi' => [
         'path'      => 'D:/GitHub/JudoToernooi',
+        'server_path' => '/var/www/judotoernooi/repo-prod',
         'local_url' => 'http://localhost:8002',
         'endpoints' => [],
     ],
     'judoscoreboard' => [
         'path'      => 'D:/GitHub/JudoScoreBoard',
+        'server_path' => null,
         'local_url' => null,
         'endpoints' => [],
     ],
     'studieplanner' => [
         'path'      => 'D:/GitHub/Studieplanner',
+        'server_path' => '/var/www/studieplanner/production',
         'local_url' => 'http://localhost:8003',
         'endpoints' => [],
     ],
     'safehavun' => [
         'path'      => 'D:/GitHub/SafeHavun',
+        'server_path' => '/var/www/safehavun/production',
         'local_url' => 'http://localhost:8004',
         'endpoints' => [
             '/api/holder-scores',
@@ -39,42 +45,92 @@ return [
     ],
     'havunadmin' => [
         'path'      => 'D:/GitHub/HavunAdmin',
+        'server_path' => '/var/www/havunadmin/production',
         'local_url' => 'http://localhost:8005',
         'endpoints' => [],
     ],
     'infosyst' => [
         'path'      => 'D:/GitHub/Infosyst',
+        'server_path' => '/var/www/infosyst/production',
         'local_url' => 'http://localhost:8006',
         'endpoints' => [],
     ],
     'munus' => [
         'path'      => 'D:/GitHub/Munus',
+        'server_path' => null,
         'local_url' => null,
         'endpoints' => [],
     ],
     'aeterna' => [
         'path'      => 'D:/GitHub/Aeterna',
+        'server_path' => null,
         'local_url' => null,
         'endpoints' => [],
     ],
     'havunclub' => [
         'path'      => 'D:/GitHub/HavunClub',
+        'server_path' => '/var/www/havunclub/production',
         'local_url' => null,
         'endpoints' => [],
     ],
     'havunity' => [
         'path'      => 'D:/GitHub/Havunity',
+        'server_path' => null,
         'local_url' => null,
         'endpoints' => [],
     ],
     'agorano' => [
         'path'      => 'D:/GitHub/Agorano',
+        'server_path' => null,
         'local_url' => 'http://localhost:8007',
         'endpoints' => [],
     ],
     'vusista' => [
         'path'      => 'D:/GitHub/Vusista',
+        'server_path' => '/var/www/vusista/production',
         'local_url' => 'http://localhost:8008',
+        'endpoints' => [],
+    ],
+    'studieplanner-api' => [
+        'path'      => 'D:/GitHub/Studieplanner-api',
+        'server_path' => '/var/www/studieplanner/production',
+        'local_url' => null,
+        'endpoints' => [],
+    ],
+    'havun' => [
+        'path'      => 'D:/GitHub/Havun',
+        'server_path' => '/var/www/havun.nl',
+        'local_url' => 'http://localhost:3003',
+        'endpoints' => [],
+    ],
+    'vpdupdate' => [
+        'path'      => 'D:/GitHub/VPDUpdate',
+        'server_path' => '/var/www/vpdupdate',
+        'local_url' => null,
+        'endpoints' => [],
+    ],
+    'idsee' => [
+        'path'      => 'D:/GitHub/IDSee',
+        'server_path' => null,
+        'local_url' => null,
+        'endpoints' => [],
+    ],
+    'havunvet' => [
+        'path'      => 'D:/GitHub/HavunVet',
+        'server_path' => null,
+        'local_url' => null,
+        'endpoints' => [],
+    ],
+    'havuncore-webapp' => [
+        'path'      => 'D:/GitHub/HavunCore/webapp',
+        'server_path' => '/var/www/havuncore/webapp',
+        'local_url' => null,
+        'endpoints' => [],
+    ],
+    'lastmatch' => [
+        'path'      => 'D:/GitHub/LastMatch',
+        'server_path' => null,
+        'local_url' => null,
         'endpoints' => [],
     ],
 ];
