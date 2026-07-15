@@ -13,6 +13,44 @@ last_updated: 2026-06-26
 
 **Branch:** master
 
+**Laatste werk (15 juli — scoreboard-security + KB draaide maandenlang op keyword-search):**
+
+**1. JudoToernooi ↔ JudoScoreBoard security-review** (Henk wilde externe testers toelaten).
+Review: `docs/kb/reference/scoreboard-api-security-review-2026-07-15.md`. App-kant kwam schoon
+uit (geen hardcoded secrets, SecureStore, cleartext uit, historie schoon). Twee 🔴 in JT, beide
+gefixt (JT `f3445e46`, main, 3615 tests groen): (a) `/scoreboard/result` scoopte niet op het
+toernooi van het token → elk token kon uitslagen zetten op élk toernooi; (b) `/scoreboard/event`
+broadcastte `$request->all()` incl. het via `merge()` gemergede `DeviceToegang`-model — `api_token`,
+code, telefoon, e-mail — op een **publiek** Reverb-kanaal (empirisch bewezen vóór de fix).
+Plus `throttle:scoreboard` (120/min **per token**, niet per IP: één NAT-IP per zaal) en `config/cors.php`.
+**Open in JT:** geen token-expiry/revocatie (= de echte blocker voor onbekende testers) + publieke
+Reverb-kanalen. **Dreigingsmodel-notitie in de review:** snij op "heb je verhaal op deze partij",
+niet op herkomst — dat dekt élke onbekende partij.
+
+**2. 🔴 KB-kernbug gevonden en gefixt** (`2c43318`): **alle 2758 embeddings waren woordfrequentie-maps,
+geen vectoren** — de KB deed maandenlang keyword-matching terwijl `CLAUDE.md` semantisch zoeken
+belooft en het bij elke taak verplicht stelt. Drie oorzaken die elkaar maskeerden:
+- `generateLocalEmbedding()` geeft altijd een gevulde array → `$embedding ? $model : 'tfidf-fallback'`
+  was altijd waar → élke fallback stond als `nomic-embed-text`; het label `tfidf-fallback` was
+  **onbereikbare code**. Geen enkel signaal dat de KB degraded was.
+- `indexFile()` skipt op `content_hash` → degraded rijen herstelden **nooit**, ook niet toen Ollama weer werkte.
+- **Echte trigger:** Ollama serveert `nomic-embed-text` met ~2048 tokens context (niet 8192) en
+  weigert langere input met een 500. De code kapte af op 8000 **tekens** onder de comment
+  "8192 tokens" — tekens/tokens-verwarring. Elk groter doc viel dus structureel terug.
+
+Fix: generatie/labeling gesplitst, herstel-trigger die de fallback óók op **vorm** herkent
+(`array_is_list` = echte vector vs `woord => gewicht`-map — nodig omdat het label van historische
+rijen liegt → self-healing, geen `--force` nodig), en adaptieve truncatie 8000→4000→2000 bij een
+context-fout (andere fouten worden niet herprobeerd). Herindexering gedraaid: **2764/2764 echte
+768-dim vectoren, 0 woordmaps**. Bewijs: `docs:search "poort register"` geeft nu `poort-register.md`
+i.p.v. een PHP-bestand. Tests: `tests/Feature/DocIntelligence/EmbeddingFallbackLabelTest.php` (7),
+doc-intelligence-groep 324 groen.
+
+> **Openstaand (Henk):** lange docs worden alleen op hun **begin** geëmbed — de staart is
+> onvindbaar. Gold altijd al, is nu zichtbaar. Oplossing = **chunking** (meerdere rijen per bestand);
+> aparte taak, raakt het schema. Zie het bevindingen-doc
+> `docs/kb/reference/doc-intelligence-embedding-fallback-bug.md`.
+
 **Laatste werk (14 juli, laat — webapp-deploy, VPD-passkey-fix, blijvend-ingelogd-plan):**
 - **havuncore-webapp LIVE gedeployed** (build→rsync→pm2, met excludes `/downloads` + apk's): bio-login-fix staat op prod. `webauthn/available` geeft nu `{"available":true}` (was altijd false). **Henk bevestigt: biometrie werkt op zijn telefoon (na app-herstart).** Simplify-pass: gedeelde `utils/auth.js` (`lastUsernameQuery`/`rememberUsername`), `62446b1`.
 - **Open webapp-bug (in webapp-handover):** "Nu updaten"-knop in de update-banner activeert de wachtende SW niet zichtbaar; pas na app-herstart komt de update binnen. `UpdatePrompt.jsx`/`useServiceWorker.js` (vite-plugin-pwa `registerType:'prompt'`) — verdenk ontbrekende `clientsClaim`/`controllerchange` + interactie met de cache-bust-append op `sw.js`.
