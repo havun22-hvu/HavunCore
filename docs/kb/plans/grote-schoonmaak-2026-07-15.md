@@ -21,7 +21,7 @@ zijn grotendeels live content. Schoonmaken = het onderscheid maken, niet alles w
 | `studieplanner/public/ota` | **34 MB** Expo OTA-bundles | Live updates → **gitignore** |
 | `studieplanner/public/favicon.png` | asset | Uitzoeken: in git of gitignore |
 | `havuncore/webapp/public/` | gebouwde PWA + apk's | Deploy-output (rsync) → **gitignore** |
-| `herdenkingsportaal/public/fonts/` | `PlayfairDisplay-Regular.ttf` | Hoort **in git** — site gebruikt het |
+| `herdenkingsportaal/public/fonts/` | `PlayfairDisplay-Regular.ttf`, 300 KB, 24 apr | **Verweesd** — zie correctie hieronder |
 | `safehavun/public/landing.html` | 4 regels: "Gratis" → "Binnenkort beschikbaar" | **Bewuste tekstwijziging, alleen op server** → naar git (Henk bevestigt) |
 | `havunclub/public/aeterna-latest.apk` | APK van een ander project | Uitzoeken: wordt hij geserveerd? Zo nee → weg |
 | `infosyst` (14 dirty) | `CLAUDE.md`, `mpc.md`, `.gitignore`-churn | Achterhaalde drift → **reset** |
@@ -51,7 +51,12 @@ deep hash), SP `{1}` (198 ins, Observability), SP `{4}` (student invite system),
 ### A2 — Live content veiligstellen
 - **SafeHavun landing.html** → server-versie is nieuwer dan git. Via bundle naar lokaal + committen.
   De inhoud ("Gratis" eruit) is een **business-keuze** → Henk bevestigt vóór commit.
-- **Herdenkingsportaal fonts** → in git (hoort bij de site).
+- **Herdenkingsportaal fonts — CORRECTIE (geverifieerd 15-07):** hoort **niet** in git. Het font
+  wordt nergens geladen: de views halen Playfair Display van de **Google Fonts CDN**, en de
+  beeldgeneratie (`HandlesMemorialImages`) gebruikt GD's ingebouwde font (`$font = 5`). Nul
+  referenties naar `/fonts/` in de hele codebase. Staat er sinds 24 april ongebruikt = restant van
+  een experiment. → Naar `/var/backups/` verplaatsen (niet `rm`), zoals eerder met `.env.bak`.
+  *Les: ook "dit hoort duidelijk in git" moet je verifiëren.*
 
 ### A3 — Deploy-output gitignoren (checkout schoon zónder iets te wissen)
 `.gitignore` per project: `public/downloads/`, `public/ota/`, webapp `public/`.
