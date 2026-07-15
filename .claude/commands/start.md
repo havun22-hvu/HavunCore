@@ -68,6 +68,33 @@ npm audit --omit=dev 2>/dev/null && echo "✓ NPM OK" || echo "⚠️ NPM kwetsb
 
 Kritieke kwetsbaarheden → eerst oplossen. Low/medium → melden, doorgaan.
 
+## Stap 1c: Server-hygiëne (VERPLICHT — als dit project op de server draait)
+
+Zoek **alle** checkouts — gok geen pad. Niet elk project staat op `/var/www/<naam>/production`:
+JudoToernooi draait op `repo-prod`, VPDUpdate op `/var/www/vpdupdate`, de webapp op
+`/var/www/havuncore/webapp`. Op een pad-patroon scannen miste op 15-07 de helft.
+
+```bash
+ssh -o ConnectTimeout=15 root@188.245.159.115 '
+for d in $(find /var/www -maxdepth 3 -name .git -type d 2>/dev/null | sed "s|/.git||"); do
+  n=$(git -C "$d" status --porcelain 2>/dev/null | wc -l)
+  s=$(git -C "$d" stash list 2>/dev/null | wc -l)
+  [ "$n" -gt 0 ] || [ "$s" -gt 0 ] && printf "%-45s %4s dirty %2s stashes\n" "$d" "$n" "$s"
+done'
+```
+
+**Verwachting: 0 dirty, 0 stashes.** Anders → melden en oplossen:
+
+- **Dirty** → uitzoeken wát het is vóór je iets doet. Deploy-output/uploads → `.gitignore`
+  (niet wissen — de site heeft het nodig). Een asset die de app nodig heeft → juist in git.
+  Content die alleen op de server bestaat → **eerst via bundle naar git**.
+- **Stash** → dezelfde sessie oplossen: toepassen of droppen met reden. Prod kan niet pushen,
+  dus een blijvende stash is werk dat nergens anders bestaat.
+
+> **Nooit blind `git clean -fd` of `stash drop` op prod.** Op 15-07 stond er 874 MB aan live APK's,
+> 34 MB OTA-bundles, de gebouwde PWA en een alleen-op-de-server aangepaste landingspagina tussen de
+> "rommel". Wissen = outage. Regel: `docs/kb/standards/server-hygiene.md`.
+
 ## Stap 2: Lees project documentatie (VERPLICHT)
 
 ```

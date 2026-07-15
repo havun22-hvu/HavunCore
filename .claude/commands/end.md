@@ -88,6 +88,25 @@ node scripts/check-integrity.cjs 2>&1
 
 Falende tests → eerst fixen, DAN committen.
 
+## 2b. Server-hygiëne — laat niets achter (bij een deploy)
+
+Heb je deze sessie gedeployd of iets op de server aangeraakt? Dan laat je de checkout **schoon**
+achter:
+
+```bash
+ssh root@188.245.159.115 "d=/var/www/<project>/production; \
+  echo \"dirty: \$(git -C \$d status --porcelain | wc -l) | stashes: \$(git -C \$d stash list | wc -l)\""
+```
+
+- **Een stash die je maakte (of die het deploy-script maakte) los je nu op** — toepassen of droppen
+  met de reden in de handover. Prod kan niet pushen: een blijvende stash is werk dat **nergens
+  anders bestaat** en dat over drie maanden niemand meer durft weg te gooien.
+- **Drift die je zelf veroorzaakte** → nu terug naar git (bundle) of gitignoren.
+- Blijft er iets staan dat je niet kon oplossen → **expliciet in de handover**, met wat en waarom.
+
+> Op 15-07 stonden er 17 vergeten stashes en 8 vervuilde checkouts. Elke sessie dacht: "ruimt de
+> volgende wel op." Regel: `docs/kb/standards/server-hygiene.md`.
+
 ## 3. Doc Intelligence bijwerken
 
 ```bash
