@@ -74,10 +74,12 @@ de truncatie-fix ook de laatste 5 grote `.claude`-bestanden).
 
 Tests: `tests/Feature/DocIntelligence/EmbeddingFallbackLabelTest.php` (7).
 
-> **Openstaand punt voor Henk:** documenten langer dan ~2000-8000 tekens worden nog steeds alleen
-> op hun **begin** geëmbed — de staart is onvindbaar. Dat gold altijd al (de oude code kapte ook af),
-> maar het is nu zichtbaar. De echte oplossing is **chunking**: lange docs in stukken embedden en
-> per chunk zoeken. Aparte taak, raakt het DB-schema (meerdere rijen per bestand).
+> **Openstaand punt — plan geschreven 15-07:** documenten langer dan ~2000-8000 tekens worden nog
+> steeds alleen op hun **begin** geëmbed — de staart is onvindbaar. Dat gold altijd al (de oude code
+> kapte ook af), maar het is nu zichtbaar. Gemeten: **22-59% van alle KB-inhoud**, afhankelijk van
+> waar Ollama's tokengrens per document valt. De oplossing is **chunking**, via een aparte tabel
+> `doc_chunks` — niet extra rijen in `doc_embeddings`, want te veel code neemt aan dat één rij één
+> bestand is. Plan: `docs/kb/plans/kb-chunking-plan.md` (wacht op "ga maar").
 
 ## Waarom dit ertoe doet
 

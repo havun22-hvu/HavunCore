@@ -26,10 +26,11 @@ uitzonderingen na (VPDUpdate + de HavunClub-APK — zie Open). Prod draait overa
 
 ## Open — te doen
 
-- **KB-chunking.** Lange docs worden alleen op hun **begin** geëmbed (~2000-8000 tekens, Ollama's
-  contextlimiet) — de staart is onvindbaar via `docs:search`. Gold altijd al, is nu zichtbaar.
-  Oplossing = chunking (meerdere rijen per bestand), raakt het schema.
-  Zie `docs/kb/reference/doc-intelligence-embedding-fallback-bug.md`.
+- **KB-chunking — plan ligt klaar, wacht op "ga maar":** `docs/kb/plans/kb-chunking-plan.md`.
+  Gemeten: **22-59% van de KB-inhoud is onvindbaar** (568 van 3172 docs afgekapt op 4000 tekens),
+  o.a. `havunclub/docs/business-rules.md` (67k, ~8% vindbaar) en drie `routes/web.php`.
+  Aanpak: aparte tabel `doc_chunks` — **niet** meer rijen in `doc_embeddings`, want ~30 plekken
+  nemen aan dat één rij = één bestand (`IssueDetector` parst `content` als heel MD-bestand).
 - **JudoScoreBoard `context.md` op `master` is nog 1039 regels** (4 sessieblokken). De opgeschoonde
   versie (523) staat op `chore/expo-sdk-56-upgrade`, omdat die SDK 56-kennis bevat over code die
   alleen daar leeft. Lost zichzelf op zodra die branch merget; tot dan blijft master's versie oud.
