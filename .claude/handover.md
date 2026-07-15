@@ -30,10 +30,11 @@ last_updated: 2026-07-15
   contextlimiet) — de staart is onvindbaar via `docs:search`. Gold altijd al, is nu zichtbaar.
   Oplossing = chunking (meerdere rijen per bestand), raakt het schema.
   Zie `docs/kb/reference/doc-intelligence-embedding-fallback-bug.md`.
-- **Handovers/docs over de limiet** (nieuwe regel): HavunClub 559 regels, JudoScoreBoard 351,
-  Herdenkingsportaal 243, IDSee 227. CLAUDE.md van Havun (128) en Studieplanner-api (147) net over
-  de 120. Per project een eigen sessie — ik moet weten wat er nog leeft voor ik schrap.
-  (JudoToernooi is gedaan: 842 → 75.)
+- **CLAUDE.md van Havun (128) en Studieplanner-api (147)** staan net over de 120 regels.
+  Klein, maar nog niet gedaan.
+- **JudoScoreBoard `context.md` op `master` is nog 1039 regels.** De opgeschoonde versie (523) staat
+  op `chore/expo-sdk-56-upgrade`, omdat die SDK 56-kennis bevat over code die alleen daar leeft.
+  Lost zichzelf op zodra die branch merget; tot dan is master's versie de oude.
 - **Actief kanaal voor `critical` health-alerts.** Alerts leven nu alleen in het passieve
   webapp-paneel; een 10-daagse Reverb-outage bereikte Henk daardoor niet. Keuze push/mail/Telegram
   is aan Henk (raakt mogelijk `.env`). `laravel-worker` + `toernooi-heartbeat` worden niet bewaakt.
@@ -74,8 +75,19 @@ last_updated: 2026-07-15
   `$request->merge()` om een geauthenticeerd model door te geven is een **anti-patroon** (het landt
   in `$request->all()` en lekt in elke echo/broadcast) → gebruik `$request->attributes`.
 - **Nieuwe bindende regels:** `standards/md-doc-grootte.md` (doc-grootte + één levende handover),
-  verwerkt in CLAUDE.md + `/end` van alle 22 projecten. Aanleiding: JudoToernooi's handover was
-  842 regels en sprak zichzelf tegen.
+  verwerkt in CLAUDE.md + `/end` van alle 22 projecten. **Oorzaak was het `/end`-template zelf:**
+  dat schreef voor om een blok `## Sessie [DATUM]` toe te voegen, aan `context.md` **of**
+  `handover.md` — dus stapelden sessies zich op in beide, en niemand haalde ooit iets weg.
+- **Achterstallig onderhoud weggewerkt (15-07), met verificatie per punt.** Elk project leverde
+  bewijs op dat de docs logen:
+  | Project | handover | context | Loog over |
+  |---|---|---|---|
+  | JudoToernooi | 842 → 75 | — | "Laravel 12 GEDEPLOYED" pal boven "NOG NIET gedeployed" (draait al weken op ^12.0) |
+  | HavunClub | 559 → 63 | — | "prod loopt ver achter" terwijl prod `82035f3` juist ná die reeks ligt |
+  | JudoScoreBoard | 351 → 107 | 1264 → 523 (branch) | handover liep 6 weken achter op context.md; grootste open punt (22-commit-branch) stond er niet in |
+  | Herdenkingsportaal | 243 → 61 | 575 → 173 | "Laravel 11 + Livewire" (is ^12.0, geen Livewire); 3× "Laatste Sessie", 2 met dezelfde datum |
+  | IDSee | 227 → 140 | — | bevatte een eigen disclaimer dat de lijst erboven achterhaald was |
+  | Havun | 29 → 31 | 294 → 153 | handover verlaten sinds 22 maart; 7 sessieblokken in context.md |
 - **Vusista opgezet** (14-07): fotoalbum-webapp, eigen repo, :8008, staging+prod op de server, CI +
   deploy werkend. Spec staat als `.claude/blueprint.md` → Vusista-sessie start met `/mpc` + "ga maar".
 
