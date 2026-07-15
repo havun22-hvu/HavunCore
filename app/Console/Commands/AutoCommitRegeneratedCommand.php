@@ -70,6 +70,19 @@ class AutoCommitRegeneratedCommand extends Command
             return 0;
         }
 
+        // Kan deze checkout überhaupt pushen? Productie heeft een read-only deploy key.
+        // Committen zonder te kunnen pushen levert elke dag een lokale commit op waardoor
+        // de checkout divergeert en élke volgende deploy struikelt op --ff-only. Liever
+        // niets doen dan onbereikbare commits stapelen; de docs worden morgen opnieuw
+        // gegenereerd. Zie docs/kb/standards/server-hygiene.md.
+        $canPush = Process::path($root)->timeout(30)->run(['git', 'push', '--dry-run']);
+        if (! $canPush->successful()) {
+            $this->warn('Push is hier niet mogelijk (read-only remote?) — niets gecommit.');
+            $this->line(trim($canPush->errorOutput() ?: $canPush->output()));
+
+            return 0;
+        }
+
         $stamp = Carbon::now()->toIso8601String();
         $message = 'chore(auto): refresh ' . implode(', ', array_map(
             fn ($p) => basename($p, '.md'),
@@ -93,7 +106,14 @@ class AutoCommitRegeneratedCommand extends Command
         $push = Process::path($root)->timeout(30)->run(['git', 'push']);
         if (! $push->successful()) {
             $this->error('git push faalde: ' . trim($push->errorOutput() ?: $push->output()));
-            $this->warn('Commit staat lokaal — handmatige push nodig.');
+
+            // Draai de commit terug: een commit die niet gepusht kan worden laat de checkout
+            // divergeren en blokkeert de eerstvolgende --ff-only deploy. De wijzigingen zelf
+            // blijven in de working tree staan, en de bestanden worden toch geregenereerd.
+            $undo = Process::path($root)->run(['git', 'reset', '--soft', 'HEAD~1']);
+            $this->warn($undo->successful()
+                ? 'Commit teruggedraaid — checkout blijft ff-only deploybaar.'
+                : 'LET OP: commit staat lokaal én kon niet teruggedraaid worden. Deploy zal falen op --ff-only.');
 
             return 2;
         }
