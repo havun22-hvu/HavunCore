@@ -2,8 +2,8 @@
 title: Blueprint — Web push voor kritieke health-alerts
 type: plan
 scope: havuncore
-last_check: 2026-07-02
-status: backend-gebouwd-wacht-op-prod-deploy+frontend
+last_check: 2026-07-16
+status: backend-live + frontend-blijkt-al-gebouwd — wacht op browser-test
 ---
 
 # Blueprint — Web push voor kritieke health-alerts
@@ -59,14 +59,27 @@ de Laravel-regex-location + reload. Geverifieerd: `GET /api/push/vapid-public-ke
 > Opgelost met backup-branch `backup-prod-autocommits-2026-07-02` + `git reset --hard origin/master`.
 > Structureel: die cron zou niet op een deploy-checkout moeten committen (of moeten pushen).
 
-## Nog te doen — frontend (havuncore-webapp, eigen sessie)
+## Frontend (havuncore-webapp) — ✅ BLIJKT AL GEBOUWD (geverifieerd 16-07-2026)
 
-## Frontend (havuncore-webapp) — eigen sessie
+Dit stond hier maandenlang als "nog te doen". **Het bestaat al**, en alle drie de punten zijn af:
 
-1. Service worker: `push` → `showNotification()`, `notificationclick` → focus webapp.
-2. Bij de 🔔 bel: `Notification.requestPermission()` → `pushManager.subscribe({applicationServerKey})`
-   met de opgehaalde VAPID public key → `POST /api/push/subscribe`.
-3. Deploy via de bestaande build-en-upload (`DEPLOY.md`) + `sw.js` cache-bust.
+1. `frontend/public/sw-push.js` — `push` → `showNotification()`, `notificationclick` → focus.
+   Gekoppeld via `vite.config.js` (`importScripts: ['/sw-push.js']`), dus hij zit in de
+   gegenereerde service worker.
+2. `frontend/src/hooks/usePushNotifications.js` (114 regels) — haalt de VAPID-key op,
+   `requestPermission()`, `pushManager.subscribe()`, `POST /api/push/subscribe`. De knop
+   ("Meldingen aan/uit") hangt in `Header.jsx`.
+3. `frontend/.env.production` zet `VITE_API_URL=https://havuncore.havun.nl`, dus productie praat
+   met de **Laravel**-backend hierboven — waar de `PushController` daadwerkelijk leeft.
+
+> **Let op de valkuil bij het lezen van deze code.** De frontend valt terug op
+> `http://localhost:8009` als `VITE_API_URL` ontbreekt, en dát is de **Node**-backend van de webapp,
+> waarvan `backend/src/routes/push.js` een lege stub is. Wie alleen de default leest concludeert
+> "dode knop". In productie klopt de bedrading wel; lokaal geeft de knop een 404 die in een `catch`
+> verdwijnt.
+
+**Wat dan nog open staat:** of het end-to-end wérkt (permissie, subscription, echte push binnen).
+Dat is een browser-test — Henks kant. Deploy: `DEPLOY.md` + `sw.js` cache-bust.
 
 ## Waarom push en niet mail
 

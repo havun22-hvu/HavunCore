@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-07-15
+last_updated: 2026-07-16
 ---
 
 # HavunCore — Handover
@@ -11,57 +11,63 @@ last_updated: 2026-07-15
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel:
 > `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel. KB doet weer semantisch zoeken (2764 echte vectoren).
-**Server:** 0 stashes, nginx-warnings 0, alle checkouts schoon en up-to-date op twee bewuste
-uitzonderingen na (VPDUpdate + de HavunClub-APK — zie Open). Prod draait overal.
+**Branch:** master · **Status:** stabiel. KB zoekt gechunkt: 3178 docs → 13.091 float32-vectoren,
+0,1s met `--project`. **Server:** 0 stashes, nginx-warnings 0. Prod draait overal.
+
+> **Portfolio-ronde 16-07:** alle handovers geverifieerd + rechtgezet (zie *Recent afgerond*).
+> **Let op:** Vusista en JudoToernooi hadden op 16-07 om 00:50 een **actieve sessie** (bestanden
+> seconden oud). Check `ls -la` op de working tree vóór je in een ander project opruimt.
 
 ## Open — wacht op Henk
 
 | Wat | Details |
 |-----|---------|
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `docs/kb/plans/blijvend-ingelogd-plan.md` |
-| **VPDUpdate: 49 commits achter + 5 dirty** | Bewust niet gedeployd 15-07. Werktree is 46 commits **ouder** met alleen CRLF-drift, en `users.json` (getrackt, mét live secrets) hangt eraan vast. Eerst uitzoeken, dan pas deployen. Bevat o.a. de passkey-fix `f6f5e1a` |
-| **HavunClub `public/aeterna-latest.apk`** | 26 MB, ander project, sinds 4 mei. De `.gitignore` staat alleen op `staging` — prod draait `main` en is daardoor nog dirty; schoon zodra staging→main merget. **Niet verwijderd** — Laravel serveert `public/`, dus de link kan bij Aeterna-testers liggen. Weg = jouw keuze |
+| **Prod-deploys staan klaar (5 checkouts achter)** | Herdenkingsportaal (12 commits, waarvan 3 code — **passkey-login is af maar niet live**), HavunClub (15 code-commits: compliance/SEPA-batch), JudoToernooi (6), HavunAdmin (9, alleen docs), HavunCore zelf (17: het KB-werk). Deploy = altijd jouw klik |
+| **Security: dependencies** | HavunAdmin **19 composer-advisories, 2 high** (geverifieerd 16-07: `laravel/framework` CRLF email-rule, `symfony/mime` CRLF). JudoScoreBoard: **6 GitHub-advisories, 1 critical + 2 high**. Beide = `composer update`/`npm` → overleg vereist |
+| **VPDUpdate: 54 commits achter + 5 dirty** | Bewust niet gedeployd. `users.json` (getrackt, mét live secrets) hangt eraan vast. Zie de handover daar |
+| **HavunClub `public/aeterna-latest.apk`** | 26 MB, ander project, sinds 4 mei. De `.gitignore` staat alleen op `staging` — prod draait `main` en is daardoor nog dirty. **Niet verwijderd** — Laravel serveert `public/`, dus de link kan bij Aeterna-testers liggen |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
+| **Aeterna** | Production keystore + update-adres. Het week2-plan blijkt **dood** (vraagt go voor crates die al bestaan) — archiveren of weg. Plus: `feat/v1.1-tor-socks5-3b` (PR #16 closed, niet merged) |
+| **Studieplanner** | `chore/expo-sdk-55-upgrade`: code is af (230/230 groen) maar **nooit device-getest**; 3 maanden oud, dus versies achterhaald. Mergen of verwerpen |
+| **Studieplanner-api** | `rescue/prod-stashes-2026-07-15`: wil je user settings (pomodoro/alarm) + observability? Ja → afmaken, nee → branch weg |
+| **LastMatch** | Avast HTTPS-scanning uit = enige blocker voor de APK-build |
+| **Vusista** | Vier vragen over gezichten (G1-G4) blokkeren het plan |
+| **JudoScoreBoard** | Google-review AAB 116 (ingediend 9 juni) — alleen Play Console weet de status |
 
 ## Open — te doen
 
 - **JudoScoreBoard `context.md` op `master` is nog 1039 regels** (4 sessieblokken). De opgeschoonde
   versie (523) staat op `chore/expo-sdk-56-upgrade`, omdat die SDK 56-kennis bevat over code die
   alleen daar leeft. Lost zichzelf op zodra die branch merget; tot dan blijft master's versie oud.
-- **Actief kanaal voor `critical` health-alerts.** Alerts leven nu alleen in het passieve
-  webapp-paneel; een 10-daagse Reverb-outage bereikte Henk daardoor niet. Keuze push/mail/Telegram
-  is aan Henk (raakt mogelijk `.env`). `laravel-worker` + `toernooi-heartbeat` worden niet bewaakt.
+- **Actief kanaal voor `critical` health-alerts — de keuze is al gemaakt én gebouwd.** Dit stond
+  hier als open keuze push/mail/Telegram; onjuist. Push is gekozen (2 jul) en de hele keten staat
+  er: Laravel `PushController` + `WebPushService` + VAPID in de Vault + de hook in
+  `HealthAlertCommand`, en aan de webapp-kant `sw-push.js` + de subscribe-knop. **Wat rest is één
+  browser-test** (permissie geven, subscription laten aanmaken, een echte push zien binnenkomen).
+  Zie `plans/health-alerts-webpush-blueprint.md`.
+  Los daarvan nog wél open: `laravel-worker` + `toernooi-heartbeat` worden niet bewaakt —
   `runbooks/uptime-monitoring.md` §Bekende gaten.
-- **havuncore-webapp** — push-frontend (SW + subscribe-knop bij de 🔔); backend staat live sinds
-  2 juli. Plus: update-banner activeert de wachtende SW niet zichtbaar (pas na app-herstart);
-  verdenk ontbrekende `clientsClaim`/`controllerchange`.
+- **havuncore-webapp** — update-banner activeert de wachtende SW niet zichtbaar (pas na
+  app-herstart); verdenk ontbrekende `clientsClaim`/`controllerchange`. Verder: Vitest geblokkeerd
+  door een npm-registry SSL-issue, en `DEPLOY.md`'s Quick Deploy mist excludes.
+  > **De push-frontend stond hier als "nog te doen" — die bestaat al** (geverifieerd 16-07):
+  > `sw-push.js` + `usePushNotifications.js` (114 regels) + de knop in `Header.jsx`, en
+  > `.env.production` wijst naar de Laravel-backend waar de `PushController` leeft. Wat rest is
+  > een browser-test. Zie het blueprint. **Leesval:** de code valt terug op `localhost:8009` = de
+  > Node-backend, waar push een lege stub is — wie alleen die default leest denkt dat de knop dood is.
 
-## Open — eigen project-sessie (hier alleen genoteerd)
+## Cross-project items staan vanaf nu in het bronproject
 
-- **HavunAdmin — token uit de docs (15-07 gedaan), historie-purge open.** Het echte Sanctum-token
-  stond 2× in `docs/05-api-integration/API-SYNC-HERDENKINGSPORTAAL.md`; nu een placeholder.
-  Geverifieerd: **token id 9 bestaat niet meer op de server = al ingetrokken**, dus onbruikbaar.
-  Het zit nog in commit `bc6fbeb`; purgen = filter-repo + force-push → jouw go (verboden zonder
-  overleg). Zie [[feedback-no-hardcoded-test-secrets]].
-- **VPDUpdate — `users.json` getrackt mét live bcrypt-hashes én TOTP-secrets** (15-07 bevestigd).
-  Staat dus in de GitHub-historie. Untracken raakt de deploy (verse clone heeft dan geen bestand)
-  → eigen taak, niet een opruiming.
-- **`Studieplanner-api` branch `rescue/prod-stashes-2026-07-15` — jouw keuze.** Bevat werk dat
-  nergens anders bestond: een `UserSettings`-model (pomodoro, alarm-instellingen), een
-  `ObservabilityServiceProvider` (slow-query-logging naar HavunCore), `config/observability.php` en
-  de `user_settings`-migratie. Geverifieerd: geen van die vier zit in master. Het is onaffe WIP (de
-  provider heeft een kapotte string-interpolatie), dus dit is een **productvraag**: wil je die
-  feature? Ja → afmaken. Nee → branch weg. De twee andere rescue-branches zijn afgehandeld.
-- **HavunClub `public/aeterna-latest.apk`** (26 MB, ander project). Laravel serveert `public/`, dus
-  `havunclub.havun.nl/aeterna-latest.apk` kan als link gedeeld zijn. Niet verwijderd — Henks keuze.
+Deze handover hield kopieën bij van open punten uit andere projecten. Sinds de ronde van 16-07
+staan **alle** projecthandovers in de levende vorm en kloppen ze met git — dus de kopieën zijn weg.
+Het item hoort waar het thuishoort: HavunAdmin's token-purge in HavunAdmin, VPDUpdate's
+`users.json` in VPDUpdate, de Studieplanner-rescue-branch in Studieplanner-api.
 
-> **Les 15-07:** het item "HavunClub — Cees ziet 0 judoka's / ClubScope leest `session('club_id')`
-> / tenant-lek in Aanwezigheid+BandExamen+Dashboard" stond hier nog, maar was **al opgelost**
-> (multi-tenant hardening `dae025c`, staat op prod: `ClubScope` houdt een platform-eigenaar altijd
-> op de eigen club, en die drie controllers filteren expliciet op `club_id`). Ik had het bij het
-> opschonen overgenomen zónder te verifiëren — precies de fout die deze regel moet voorkomen.
-> **Cross-project items hier zijn kopieën; verifieer ze in het bronproject vóór je erop afgaat.**
+> **Waarom dit hard is.** Op 15-07 stond hier een tenant-lek in HavunClub dat **al was opgelost**
+> (`dae025c`, op prod). Overgenomen bij het opschonen, nooit geverifieerd. Een kopie veroudert
+> zonder dat iemand het merkt. Wil je een portfolio-overzicht: lees de handovers, of laat een
+> agent-ronde ze verifiëren — schrijf ze niet hier over.
 
 ## Recent afgerond (context die nog nut heeft)
 
