@@ -22,6 +22,11 @@ VERBODEN: "Mag ik de handover bijwerken?", "Zal ik committen?", "Weet je zeker d
 > onderaan of bovenaan.** De handover is een **levende status** ("hoe staat dit project ervoor"),
 > geen logboek ("wat deed ik wanneer"). Git bewaart de historie al; een tweede kopie in het doc
 > maakt hem alleen onbetrouwbaar.
+>
+> **Ook niet in `context.md`.** Dat is projectkennis (architectuur, regels, valkuilen), geen
+> tijdlijn. Een sessieverslag hoort daar net zomin. Levert een sessie een blijvend feit op
+> (beslissing, valkuil, geverifieerde constatering)? → als kennis in de juiste sectie zetten,
+> niet als "## Laatste Sessie: <datum>" eronder plakken.
 
 Wat je bij elke `/end` doet:
 
