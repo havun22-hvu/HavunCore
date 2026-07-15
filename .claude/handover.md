@@ -12,14 +12,16 @@ last_updated: 2026-07-15
 > `docs/kb/standards/md-doc-grootte.md`.
 
 **Branch:** master · **Status:** stabiel. KB doet weer semantisch zoeken (2764 echte vectoren).
+**Server 15-07 opgeschoond en bijgewerkt:** 29 stashes → 0, nginx-warnings → 0, alle checkouts
+schoon en up-to-date op twee bewuste uitzonderingen na (zie Open). Prod draait overal.
 
 ## Open — wacht op Henk
 
 | Wat | Details |
 |-----|---------|
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `docs/kb/plans/blijvend-ingelogd-plan.md` |
-| **PWA-login prod-go per app** | HavunClub (main-merge+deploy), JT (deploy-knop), HP, webapp (build+rsync+pm2). Eerst testen op staging |
-| **VPDUpdate passkey-fix** `f6f5e1a` | Klaar, niet gedeployed. `deploy vpd` = git pull op server |
+| **VPDUpdate: 49 commits achter + 3 dirty** | Bewust niet gedeployd 15-07. Werktree is 46 commits **ouder** met alleen CRLF-drift, en `users.json` (getrackt, mét live secrets) hangt eraan vast. Eerst uitzoeken, dan pas deployen. Bevat o.a. de passkey-fix `f6f5e1a` |
+| **HavunClub `public/aeterna-latest.apk`** | 26 MB, ander project, sinds 4 mei. Nu gitignored (op `staging`) zodat de checkout schoon is; **niet verwijderd** — Laravel serveert `public/`, dus de link kan bij Aeterna-testers liggen. Weg = jouw keuze |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
 | **WIP in webapp-repo** | `git stash pop`, stash@{0} |
 | **Server-opruiming** (raakt config) | `havuncore.havun.nl.bak.2026-07-02` hangt nog in `sites-enabled` → "conflicting server name"-warnings. HavunVet = obsoleet, vhost mag weg |
