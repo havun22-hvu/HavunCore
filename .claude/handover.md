@@ -46,15 +46,17 @@ last_updated: 2026-07-15
 
 ## Open — eigen project-sessie (hier alleen genoteerd)
 
-- **HavunClub — Cees ziet 0 judoka's i.p.v. 229.** Geen data-bug. Cees is `is_platform_eigenaar=true`
-  → `ClubScope.php:27-33` haalt zijn club uit `session('club_id')` (club-switcher), niet uit
-  `$user->club`. Directe fix: switcher op "Judoschool Cees Veen". Structureel = business-keuze Henk.
-  **Bijvangst-lek:** `Aanwezigheid/BandExamen/Dashboard` doen `Judoka::where('status','actief')`
-  zónder club_id-filter → tenant-lek.
 - **HavunAdmin** — hardcoded staging Bearer-token in
   `docs/05-api-integration/API-SYNC-HERDENKINGSPORTAAL.md` (r257+423). Opruimen + purgen.
   Zie [[feedback-no-hardcoded-test-secrets]].
 - **VPDUpdate** — `users.json` is getrackt met bcrypt-hashes van Henks account. Hoort niet in git.
+
+> **Les 15-07:** het item "HavunClub — Cees ziet 0 judoka's / ClubScope leest `session('club_id')`
+> / tenant-lek in Aanwezigheid+BandExamen+Dashboard" stond hier nog, maar was **al opgelost**
+> (multi-tenant hardening `dae025c`, staat op prod: `ClubScope` houdt een platform-eigenaar altijd
+> op de eigen club, en die drie controllers filteren expliciet op `club_id`). Ik had het bij het
+> opschonen overgenomen zónder te verifiëren — precies de fout die deze regel moet voorkomen.
+> **Cross-project items hier zijn kopieën; verifieer ze in het bronproject vóór je erop afgaat.**
 
 ## Recent afgerond (context die nog nut heeft)
 
