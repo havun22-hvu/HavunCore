@@ -66,12 +66,18 @@ uitzonderingen na (VPDUpdate + de HavunClub-APK — zie Open). Prod draait overa
 ## Recent afgerond (context die nog nut heeft)
 
 - **KB-chunking (15-07)** — `docs/kb/plans/kb-chunking-plan.md`. De staart van lange docs was
-  onvindbaar (22-59% van de KB). Nu een aparte tabel `doc_chunks`; `search()` scoort chunks en
-  houdt per document de beste, dus `--limit=5` blijft 5 documenten. Bijvangst: de preview toont
-  de gevonden passage + het koppad i.p.v. de YAML-frontmatter. **Les:** de handover schreef
-  "meer rijen in `doc_embeddings`" voor — dat zou ~30 aannames hebben gebroken (`IssueDetector`
-  parst `content` als heel MD-bestand, de API telt `COUNT(*)` als `total_files`). Eerst de
-  consumers inventariseren, dan pas het schema kiezen.
+  onvindbaar (22-59% van de KB). Nu een aparte tabel `doc_chunks` met float32-vectoren; 3178 docs
+  → 13.091 chunks. Zoeken: **0,1s met `--project`**, 1,2s ongefilterd, DB 272 → 118 MB. De preview
+  toont nu de gevonden passage + koppad i.p.v. de YAML-frontmatter.
+  **Drie lessen die breder gelden:**
+  1. De handover schreef "meer rijen in `doc_embeddings`" voor — dat zou ~30 aannames hebben
+     gebroken (`IssueDetector` parst `content` als heel MD-bestand, de API telt `COUNT(*)` als
+     `total_files`). Eerst de consumers inventariseren, dán het schema kiezen.
+  2. **Meten, niet redeneren.** `chunk()` pagineert met OFFSET (27s vs 8s t.o.v. `chunkById`);
+     Eloquent-hydratie kostte 9 van de 14s. Beide onzichtbaar zonder meting.
+  3. **Eén weg de index in.** Er waren 3 producenten van een `doc_embeddings`-rij, elk met een
+     eigen kopie — daardoor droeg `StructureIndexer` de 15-07-mislabelbug maanden later nog.
+     Nu `DocIndexer::storeDocument()`.
 
 - **Grote schoonmaak + deploys (15-07)** — `docs/kb/plans/grote-schoonmaak-2026-07-15.md`.
   29 stashes → 0, nginx-warnings → 0, alles gedeployd behalve VPDUpdate. Kern om te onthouden:

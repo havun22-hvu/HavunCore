@@ -14,8 +14,8 @@ last_updated: 2026-07-15
 > treffers uit z'n middenstuk (`Proefperiode` staat op teken 17.267 = 2,2× voorbij de gunstigste
 > embed-grens).
 >
-> **Zoeken:** 0,58s met `--project` (de voorgeschreven werkwijze), 7,9s ongefilterd over 13k
-> chunks, piek 64 MB.
+> **Zoeken:** 0,1s met `--project` (de voorgeschreven werkwijze), 1,2s ongefilterd over 13k
+> chunks, piek 62 MB. Vectoren staan binair (float32) opgeslagen — DB 272 → 118 MB.
 >
 > Aanleiding: het openstaande punt uit `reference/doc-intelligence-embedding-fallback-bug.md`.
 
@@ -170,14 +170,41 @@ producent kiest: `chunkMarkdown()` of `chunkPlain()`. Die weet het zeker.
   scoort +25,8 punten op een kop-achtige query en **−10,3 op een content-query**. De prefix
   compenseert wat het knippen wegnam; een heel document verloor niets. Bewust zo gelaten.
 
-## Vervolg (uit de review, niet gedaan)
+## Vectoren binair — gedaan
 
-- **Embeddings binair opslaan i.p.v. JSON.** Wat er nu nog staat aan zoektijd is vrijwel volledig
-  `json_decode` van ~200 MB embedding-JSON (15 KB per vector). Als `pack('f*', ...)` → 3 KB per
-  vector, en `unpack` is vele malen sneller. Raakt het schema + een herindexering. Pas de moeite
-  als ongefilterd zoeken (8s) hindert; met `--project` is het 0,58s.
+Een vector is 768 getallen die het model **al in float32** berekende. JSON schreef ze voluit
+(`0.7872941493988037`): 15.222 bytes waar 3.072 volstaat, en elke zoekopdracht parste ~200 MB
+tekst terug naar floats — vrijwel de hele looptijd.
+
+| | JSON | float32 |
+|---|---|---|
+| Per vector | 15.222 bytes | **3.072 bytes** |
+| DB-bestand | 272 MB | **118 MB** (na `VACUUM`) |
+| Ongefilterd zoeken | 7,9s | **1,2s** |
+| Met `--project` | 0,58s | **0,1s** |
+
+**Verliesvrij, niet "ongeveer":** 300 vectoren heen-en-terug door float32 weken **exact 0** af —
+float32 is immers wat het model produceerde. Bewijs: dezelfde query scoort nog steeds 64,4% op
+hetzelfde document. In-place geconverteerd (20s voor 13k rijen), dus geen Ollama en geen herindex.
+
+> `DROP COLUMN` geeft de pagina's niet terug aan het bestandssysteem — zonder `VACUUM` gróeit de
+> DB juist (272 → 322 MB).
+
+**Bijvangst: een gat dicht dat ik vanmiddag zelf maakte.** Een float32-blob kán de woordmap-fallback
+niet bevatten, en dat dwong de vraag af: wat als Ollama uitvalt **tussen** de documentvector en de
+chunkvectoren? Dan is het document gezond, zijn de chunks woordmaps, en `needsEmbeddingUpgrade()`
+beoordeelt alleen het document → die chunks blijven **voor altijd** degraded. Exact de val van de
+15-07-bug, één laag dieper. Nu: chunks dragen echte vectoren of géén — niets schrijven houdt
+`needsChunking()` waar, dus de volgende run herstelt terwijl `search()` terugvalt op de
+documentvector. Getest (`ChunkedSearchTest`).
+
+## Vervolg
+
 - **`needsChunking()` doet 1 SELECT per bestand per run** (~3200 over alle projecten, 0,03s).
   Gemeten, niet de moeite; hooguit meenemen als `isUpToDate()` toch op de schop gaat.
+- **`doc_embeddings.embedding` is nog JSON.** Bewust: `IssueDetector` (duplicaat-cosine) en
+  `scripts/HavunAIBridge.php` lezen die kolom rechtstreeks. 3178 rijen i.p.v. 13k, dus de winst is
+  klein en het risico (externe consumer) niet.
 
 ## Wat dit plan bewust NIET doet
 
