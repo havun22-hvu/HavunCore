@@ -53,7 +53,7 @@ trait CreatesDocIntelligenceTables
             chunk_index INTEGER NOT NULL,
             heading VARCHAR(500) NULL,
             content TEXT NOT NULL,
-            embedding TEXT NULL,
+            embedding BLOB NULL,
             embedding_model VARCHAR(100) NULL,
             token_count INTEGER NOT NULL DEFAULT 0,
             created_at TIMESTAMP NULL,

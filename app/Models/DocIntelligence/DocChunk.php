@@ -2,6 +2,7 @@
 
 namespace App\Models\DocIntelligence;
 
+use App\Casts\Float32Vector;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -29,7 +30,7 @@ class DocChunk extends Model
     ];
 
     protected $casts = [
-        'embedding' => 'array',
+        'embedding' => Float32Vector::class,
         'chunk_index' => 'integer',
         'token_count' => 'integer',
     ];

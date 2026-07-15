@@ -120,13 +120,18 @@ class ChunkedSearchTest extends TestCase
 
     public function test_the_snippet_is_the_matching_passage_not_the_frontmatter(): void
     {
-        // A real Ollama call gets the chunk's own text; the query gets its own
-        // vector. Steering the fake by content lets us assert which chunk wins.
+        // Steer the fake by content so we can assert which chunk wins. The two
+        // vectors must point in different *directions*: cosine ignores length,
+        // so array_fill(768, 1.0) and array_fill(768, 0.01) score identically
+        // and the winner comes down to rounding noise in the last decimal.
         Http::fake(function ($request) {
             $prompt = $request->data()['prompt'] ?? '';
             $isBetaling = str_contains($prompt, 'betaal') || str_contains($prompt, 'Betalingen');
 
-            return Http::response(['embedding' => array_fill(0, 768, $isBetaling ? 1.0 : 0.01)], 200);
+            $vector = array_fill(0, 768, 0.0);
+            $vector[$isBetaling ? 0 : 1] = 1.0;
+
+            return Http::response(['embedding' => $vector], 200);
         });
 
         file_put_contents($this->projectPad . '/docs/lang.md',
@@ -223,6 +228,62 @@ class ChunkedSearchTest extends TestCase
         $this->assertSame(DocIndexer::FALLBACK_MODEL, $doc->embedding_model);
 
         unlink($this->projectPad . '/artisan');
+    }
+
+    public function test_chunks_are_left_unwritten_rather_than_stored_degraded(): void
+    {
+        // If Ollama dies between the document vector and the chunk vectors, the
+        // document looks healthy while its chunks are word-maps -- and
+        // needsEmbeddingUpgrade() only judges the document, so nothing would
+        // ever re-embed them. Writing no chunks keeps needsChunking() true.
+        // One fake with a switch: calling Http::fake() again does not replace
+        // the first stub, it queues behind it, so the original would keep
+        // answering and "Ollama is back" would never happen.
+        $roep = 0;
+        $ollamaLeeft = false;
+        Http::fake(function () use (&$roep, &$ollamaLeeft) {
+            $roep++;
+
+            if ($ollamaLeeft) {
+                return Http::response(['embedding' => array_fill(0, 768, 0.3)], 200);
+            }
+
+            // First call (the document) succeeds, the chunks that follow fail.
+            return $roep === 1
+                ? Http::response(['embedding' => array_fill(0, 768, 0.5)], 200)
+                : Http::response(['error' => 'ollama down'], 500);
+        });
+
+        file_put_contents($this->projectPad . '/docs/lang.md',
+            "# Regels\n\n" . str_repeat("Algemene bepaling. ", 400)
+            . "\n\n## Slot\n\nDe laatste afspraak is bindend."
+        );
+
+        app(DocIndexer::class)->indexProject('testproject', includeCode: false);
+
+        $doc = DocEmbedding::where('file_path', 'docs/lang.md')->firstOrFail();
+        $this->assertSame(0, $doc->chunks()->count(), 'Degraded chunks must not be stored at all');
+        $this->assertSame('nomic-embed-text', $doc->embedding_model, 'The document itself did get a real vector');
+
+        // Ollama is back: the next run must fill them in without the file changing.
+        $ollamaLeeft = true;
+        app(DocIndexer::class)->indexProject('testproject', includeCode: false);
+
+        $this->assertGreaterThan(1, $doc->fresh()->chunks()->count(), 'The next run must recover');
+    }
+
+    public function test_a_chunk_vector_survives_the_float32_round_trip(): void
+    {
+        $this->fakeOllamaMetUniekeVectoren();
+
+        file_put_contents($this->projectPad . '/docs/lang.md', "# Kort\n\nEen document.");
+
+        app(DocIndexer::class)->indexProject('testproject', includeCode: false);
+
+        $chunk = DocEmbedding::where('file_path', 'docs/lang.md')->firstOrFail()->chunks()->first();
+
+        $this->assertCount(768, $chunk->embedding);
+        $this->assertContainsOnly('float', $chunk->embedding);
     }
 
     public function test_deleting_a_document_takes_its_chunks_with_it(): void

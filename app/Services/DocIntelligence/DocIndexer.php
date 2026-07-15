@@ -685,16 +685,27 @@ class DocIndexer
 
         foreach ($chunks as $index => $chunk) {
             if ($herbruikbaar) {
-                $ollamaEmbedding = $documentOllamaEmbedding;
-                $embedding = $document->embedding;
+                $vector = $documentOllamaEmbedding;
             } else {
-                $embeddable = $this->chunker->embeddableText(
+                $vector = $this->generateOllamaEmbedding($this->chunker->embeddableText(
                     $document->file_path,
                     $chunk['heading'],
                     $chunk['content']
-                );
-                $ollamaEmbedding = $this->generateOllamaEmbedding($embeddable);
-                $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($embeddable);
+                ));
+            }
+
+            // Chunks carry real vectors or none at all. Storing the
+            // word-frequency fallback here would recreate the trap this whole
+            // system was built to escape: needsEmbeddingUpgrade() judges the
+            // document row, so if Ollama died between the document and its
+            // chunks, a healthy document would hide degraded chunks and nothing
+            // would ever re-embed them. Writing nothing leaves needsChunking()
+            // true, so the next run retries — and search falls back to the
+            // document vector until it does.
+            if ($vector === null) {
+                Log::warning("Chunk embedding failed, leaving {$document->file_path} unchunked for the next run");
+
+                return;
             }
 
             $rijen[] = [
@@ -702,8 +713,8 @@ class DocIndexer
                 'chunk_index' => $index,
                 'heading' => $chunk['heading'],
                 'content' => $chunk['content'],
-                'embedding' => json_encode($embedding),
-                'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
+                'embedding' => pack('f*', ...$vector),
+                'embedding_model' => $this->embeddingModel,
                 'token_count' => $this->estimateTokenCount($chunk['content']),
                 'created_at' => $nu,
                 'updated_at' => $nu,
@@ -1052,7 +1063,11 @@ class DocIndexer
             ->whereIn('doc_embedding_id', $docIds)
             ->chunkById(500, function ($chunks) use (&$best, $queryEmbedding, $queryNorm) {
                 foreach ($chunks as $chunk) {
-                    $embedding = json_decode($chunk->embedding ?? '[]', true) ?: [];
+                    // Raw float32, so unpack rather than json_decode — that
+                    // parse was nearly all of an unfiltered search's runtime.
+                    $embedding = $chunk->embedding === null
+                        ? []
+                        : array_values(unpack('f*', $chunk->embedding));
                     $similarity = $this->cosine($queryEmbedding, $queryNorm, $embedding);
                     $docId = $chunk->doc_embedding_id;
 
