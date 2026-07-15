@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\DocIntelligence\DocIndexer;
 use Illuminate\Console\Command;
+use Illuminate\Support\Str;
 
 class DocSearchCommand extends Command
 {
@@ -48,7 +49,7 @@ class DocSearchCommand extends Command
             if (!empty($result['heading'])) {
                 $this->line("   Section: {$result['heading']}");
             }
-            $this->line("   Preview: " . str_replace("\n", ' ', mb_substr($result['snippet'], 0, 100)) . '...');
+            $this->line("   Preview: " . Str::limit(str_replace("\n", ' ', $result['snippet']), 100));
             $this->line('');
         }
 

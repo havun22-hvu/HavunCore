@@ -4,7 +4,9 @@ namespace Tests\Feature\DocIntelligence;
 
 use App\Models\DocIntelligence\DocEmbedding;
 use App\Services\DocIntelligence\DocIndexer;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\Group;
 use Tests\CreatesDocIntelligenceTables;
 use Tests\TestCase;
 
@@ -13,9 +15,11 @@ use Tests\TestCase;
  * Ollama's context ceiling used to be embedded away, leaving 22-59% of the KB
  * unsearchable. See docs/kb/plans/kb-chunking-plan.md.
  */
+#[Group('doc-intelligence')]
 class ChunkedSearchTest extends TestCase
 {
     use CreatesDocIntelligenceTables;
+    use RefreshDatabase;
 
     private string $projectPad;
 

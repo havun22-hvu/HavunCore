@@ -119,19 +119,17 @@ class DocumentChunkerTest extends TestCase
     }
 
     #[Test]
-    public function deeper_headings_build_a_path_and_siblings_replace_each_other(): void
+    public function headings_nest_into_a_path(): void
     {
+        // The sibling rule (## Twee replacing ## Een rather than nesting under
+        // it) is already proven by a_long_document_splits_on_headings; what only
+        // this case shows is a three-level path.
         $content = "# Doc\n\n## Een\n\n### Diep\n\n" . str_repeat("A. ", 800)
             . "\n\n## Twee\n\n" . str_repeat("B. ", 800);
 
         $headings = array_column($this->chunker->chunk($content), 'heading');
 
         $this->assertContains('Doc › Een › Diep', $headings);
-        $this->assertContains('Doc › Twee', $headings);
-        // "Een" must not linger in the path once a sibling at the same level opens.
-        foreach ($headings as $heading) {
-            $this->assertStringNotContainsString('Een › Twee', (string) $heading);
-        }
     }
 
     #[Test]

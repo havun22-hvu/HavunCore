@@ -80,10 +80,11 @@ class DocumentChunker
                     $sections[] = ['content' => implode("\n", $current), 'heading' => $heading];
                 }
 
+                // Keys stay ascending by construction: everything at or below
+                // this level is dropped before the deepest one is appended.
                 $level = strlen($m[1]);
                 $path = array_filter($path, fn($l) => $l < $level, ARRAY_FILTER_USE_KEY);
                 $path[$level] = trim($m[2]);
-                ksort($path);
                 $heading = implode(' › ', $path);
 
                 $current = [$line];
@@ -97,7 +98,7 @@ class DocumentChunker
             $sections[] = ['content' => implode("\n", $current), 'heading' => $heading];
         }
 
-        return $sections ?: [['content' => $content, 'heading' => null]];
+        return $sections;
     }
 
     /**
@@ -133,8 +134,9 @@ class DocumentChunker
     }
 
     /**
-     * Greedily fill chunks up to TARGET_CHARS, never past MAX_CHARS, keeping
-     * whole units together.
+     * Greedily fill chunks up to TARGET_CHARS, keeping whole units together. A
+     * single unit larger than that passes through as-is — enforceMaxSize() is
+     * what holds the ceiling.
      *
      * @param  array<int, string>  $units
      * @return array<int, string>

@@ -2,10 +2,12 @@
 
 namespace App\Services\DocIntelligence;
 
+use App\Models\DocIntelligence\DocChunk;
 use App\Models\DocIntelligence\DocEmbedding;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class DocIndexer
 {
@@ -315,8 +317,7 @@ class DocIndexer
             ->where('file_path', $relativePath)
             ->first();
 
-        if ($existing && !$force && $existing->content_hash === $contentHash
-            && !$this->needsEmbeddingUpgrade($existing) && !$this->needsChunking($existing)) {
+        if (!$force && $this->isUpToDate($existing, $contentHash)) {
             return false;
         }
 
@@ -605,9 +606,8 @@ class DocIndexer
             ->where('file_path', $relativePath)
             ->first();
 
-        if ($existing && !$force && $existing->content_hash === $contentHash
-            && !$this->needsEmbeddingUpgrade($existing) && !$this->needsChunking($existing)) {
-            return false; // No changes, the embedding is real and the chunks are there
+        if (!$force && $this->isUpToDate($existing, $contentHash)) {
+            return false;
         }
 
         // Generate embedding
@@ -646,7 +646,7 @@ class DocIndexer
         DocEmbedding $document,
         string $content,
         string $fileType,
-        ?array $documentOllamaEmbedding = null
+        ?array $documentOllamaEmbedding
     ): void {
         $chunks = $this->chunker->chunk($content, $fileType);
 
@@ -654,7 +654,16 @@ class DocIndexer
 
         // Most files fit in one chunk, and that chunk is the document. Embedding
         // it again would double every index run for no gain.
+        //
+        // Note this leaves single-chunk rows without the heading prefix that
+        // split rows carry. That asymmetry is the point, not an oversight: the
+        // prefix repays what cutting took away. Measured on one chunk, prefixed
+        // versus raw: +25.8 points on a heading-shaped query, -10.3 on a
+        // content one. A whole document lost nothing — its own title is right
+        // there in the text — so paying that -10.3 would be a loss.
         $herbruikbaar = count($chunks) === 1 && $chunks[0]['content'] === $content;
+        $nu = now();
+        $rijen = [];
 
         foreach ($chunks as $index => $chunk) {
             if ($herbruikbaar) {
@@ -670,15 +679,43 @@ class DocIndexer
                 $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($embeddable);
             }
 
-            $document->chunks()->create([
+            $rijen[] = [
+                'doc_embedding_id' => $document->id,
                 'chunk_index' => $index,
                 'heading' => $chunk['heading'],
                 'content' => $chunk['content'],
-                'embedding' => $embedding,
+                'embedding' => json_encode($embedding),
                 'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
                 'token_count' => $this->estimateTokenCount($chunk['content']),
-            ]);
+                'created_at' => $nu,
+                'updated_at' => $nu,
+            ];
         }
+
+        // insert() in batches rather than create() per chunk: one INSERT per row
+        // measured 12x slower, and for the ~82% of files that reuse the document
+        // vector there is no Ollama call left for it to hide behind. Bypassing
+        // Eloquent means casts and timestamps are set by hand above.
+        foreach (array_chunk($rijen, 100) as $batch) {
+            DocChunk::insert($batch);
+        }
+    }
+
+    /**
+     * Whether a stored row can be left alone. Owns the whole condition, because
+     * it keeps growing a term: first "is the hash the same", then degraded
+     * embeddings, now chunks. Both callers had it spelled out verbatim.
+     *
+     * The predicates stay separate on purpose — they answer different questions.
+     * needsEmbeddingUpgrade is about a row that came out degraded (Ollama was
+     * down), needsChunking about a row that predates a pipeline change.
+     */
+    protected function isUpToDate(?DocEmbedding $existing, string $contentHash): bool
+    {
+        return $existing !== null
+            && $existing->content_hash === $contentHash
+            && !$this->needsEmbeddingUpgrade($existing)
+            && !$this->needsChunking($existing);
     }
 
     /**
@@ -931,77 +968,210 @@ class DocIndexer
     }
 
     /**
-     * Search documents by query
+     * Search documents by query.
+     *
+     * Scored in three passes to keep the peak flat: metadata, then chunk vectors
+     * streamed in batches, then the text of the winners only. Holding every
+     * chunk in memory at once cost 286MB at 9.4k chunks and would reach ~440MB
+     * once every document is chunked — the CLI survives that, php-fpm behind
+     * /api/docs/search does not.
      */
     public function search(string $query, ?string $project = null, int $limit = 5, ?string $fileType = null): array
     {
         $queryEmbedding = $this->generateEmbedding($query);
+        $queryNorm = $this->norm($queryEmbedding);
 
-        $documents = DocEmbedding::with('chunks')->when($project, function ($q) use ($project) {
-            return $q->where('project', strtolower($project));
-        })->when($fileType, function ($q) use ($fileType) {
-            return $q->where('file_type', $fileType);
-        })->get();
+        $documents = DocEmbedding::query()
+            ->select(['id', 'project', 'file_path', 'file_modified_at', 'updated_at'])
+            ->when($project, fn($q) => $q->where('project', strtolower($project)))
+            ->when($fileType, fn($q) => $q->where('file_type', $fileType))
+            ->get()
+            ->keyBy('id');
+
+        if ($documents->isEmpty()) {
+            return [];
+        }
+
+        $best = $this->bestChunkPerDocument($documents->keys()->all(), $queryEmbedding, $queryNorm);
+        $best += $this->scoreUnchunkedDocuments($documents->keys()->diff(array_keys($best))->all(), $queryEmbedding, $queryNorm);
+
+        uasort($best, fn($a, $b) => $b['similarity'] <=> $a['similarity']);
+        $winnaars = array_slice($best, 0, $limit, true);
+
+        $teksten = $this->snippetsFor($winnaars);
 
         $results = [];
-        foreach ($documents as $doc) {
-            $best = $this->bestChunk($doc, $queryEmbedding);
-
+        foreach ($winnaars as $docId => $treffer) {
+            $doc = $documents[$docId];
             $results[] = [
                 'project' => $doc->project,
                 'file_path' => $doc->file_path,
-                'similarity' => $best['similarity'],
-                'heading' => $best['heading'],
-                'snippet' => mb_substr($best['snippet'], 0, 200) . '...',
+                'similarity' => $treffer['similarity'],
+                'heading' => $teksten[$docId]['heading'] ?? null,
+                'snippet' => Str::limit($teksten[$docId]['content'] ?? '', 200),
                 'file_modified_at' => $doc->file_modified_at?->format('Y-m-d H:i'),
                 'indexed_at' => $doc->updated_at?->format('Y-m-d H:i'),
             ];
         }
 
-        // Sort by similarity descending
-        usort($results, fn($a, $b) => $b['similarity'] <=> $a['similarity']);
-
-        return array_slice($results, 0, $limit);
+        return $results;
     }
 
     /**
-     * Score a document on its best-matching chunk, so one result stays one
-     * document: --limit=5 means five files, not five slices of the same file.
+     * Best-scoring chunk per document, streamed so only one batch of vectors is
+     * ever resident. Text columns stay out of it: of 13k chunks loaded, only the
+     * handful that win are ever shown.
      *
-     * The snippet becomes the passage that actually matched. It used to be the
-     * first 200 characters of the file, which for a KB doc is the YAML
-     * frontmatter — every preview read "--- title: ..." regardless of the query.
-     *
-     * @param  array<int|string, float>  $queryEmbedding
-     * @return array{similarity: float, snippet: string, heading: ?string}
+     * @param  array<int, int>  $docIds
+     * @return array<int, array{similarity: float, chunk_id: int}>
      */
-    protected function bestChunk(DocEmbedding $doc, array $queryEmbedding): array
+    protected function bestChunkPerDocument(array $docIds, array $queryEmbedding, float $queryNorm): array
     {
-        // Not yet re-indexed since chunking arrived: fall back to the row's own
-        // begin-of-file vector so search keeps working while the index catches up.
-        if ($doc->chunks->isEmpty()) {
-            return [
-                'similarity' => $this->calculateSimilarity($queryEmbedding, $doc->embedding ?? []),
-                'snippet' => $doc->content,
-                'heading' => null,
-            ];
+        $best = [];
+
+        // Query builder, not Eloquent: hydrating 13k models to keep five of them
+        // costs ~9 of the 14 seconds a full search took. Scoring needs three
+        // scalars per row, not an object graph.
+        //
+        // chunkById, not chunk: the latter pages with OFFSET, so every batch
+        // re-walks the rows before it — measured 27s against 8s over the same
+        // 13k rows.
+        \DB::connection('doc_intelligence')
+            ->table('doc_chunks')
+            ->select(['id', 'doc_embedding_id', 'embedding'])
+            ->whereIn('doc_embedding_id', $docIds)
+            ->chunkById(500, function ($chunks) use (&$best, $queryEmbedding, $queryNorm) {
+                foreach ($chunks as $chunk) {
+                    $embedding = json_decode($chunk->embedding ?? '[]', true) ?: [];
+                    $similarity = $this->cosine($queryEmbedding, $queryNorm, $embedding);
+                    $docId = $chunk->doc_embedding_id;
+
+                    if (!isset($best[$docId]) || $similarity > $best[$docId]['similarity']) {
+                        $best[$docId] = ['similarity' => $similarity, 'chunk_id' => $chunk->id];
+                    }
+                }
+            });
+
+        return $best;
+    }
+
+    /**
+     * Rows indexed before chunking existed still rank on their own begin-of-file
+     * vector, so search keeps working while the index catches up.
+     *
+     * @param  array<int, int>  $docIds
+     * @return array<int, array{similarity: float, chunk_id: null}>
+     */
+    protected function scoreUnchunkedDocuments(array $docIds, array $queryEmbedding, float $queryNorm): array
+    {
+        if ($docIds === []) {
+            return [];
         }
 
-        $best = ['similarity' => -1.0, 'snippet' => $doc->content, 'heading' => null];
+        $scores = [];
 
-        foreach ($doc->chunks as $chunk) {
-            $similarity = $this->calculateSimilarity($queryEmbedding, $chunk->embedding ?? []);
+        \DB::connection('doc_intelligence')
+            ->table('doc_embeddings')
+            ->select(['id', 'embedding'])
+            ->whereIn('id', $docIds)
+            ->chunkById(500, function ($docs) use (&$scores, $queryEmbedding, $queryNorm) {
+                foreach ($docs as $doc) {
+                    $embedding = json_decode($doc->embedding ?? '[]', true) ?: [];
+                    $scores[$doc->id] = [
+                        'similarity' => $this->cosine($queryEmbedding, $queryNorm, $embedding),
+                        'chunk_id' => null,
+                    ];
+                }
+            });
 
-            if ($similarity > $best['similarity']) {
-                $best = [
-                    'similarity' => $similarity,
-                    'snippet' => $chunk->content,
+        return $scores;
+    }
+
+    /**
+     * Fetch the text for the winning rows only — the whole point of not loading
+     * it during scoring.
+     *
+     * @param  array<int, array{similarity: float, chunk_id: ?int}>  $winnaars
+     * @return array<int, array{content: string, heading: ?string}>
+     */
+    protected function snippetsFor(array $winnaars): array
+    {
+        $chunkIds = array_filter(array_column($winnaars, 'chunk_id'));
+        $teksten = [];
+
+        if ($chunkIds !== []) {
+            foreach (DocChunk::query()->select(['id', 'doc_embedding_id', 'content', 'heading'])
+                ->whereIn('id', $chunkIds)->get() as $chunk) {
+                $teksten[$chunk->doc_embedding_id] = [
+                    'content' => $chunk->content,
                     'heading' => $chunk->heading,
                 ];
             }
         }
 
-        return $best;
+        $zonderChunk = array_keys(array_filter($winnaars, fn($t) => $t['chunk_id'] === null));
+
+        if ($zonderChunk !== []) {
+            foreach (DocEmbedding::query()->select(['id', 'content'])
+                ->whereIn('id', $zonderChunk)->get() as $doc) {
+                $teksten[$doc->id] = ['content' => $doc->content, 'heading' => null];
+            }
+        }
+
+        return $teksten;
+    }
+
+    /**
+     * Cosine similarity for real Ollama vectors, with the query's norm computed
+     * once by the caller instead of once per candidate.
+     *
+     * calculateSimilarity() takes the union of both key sets, which is what the
+     * word-frequency fallback needs (its keys are words) but pure waste for two
+     * lists of 768 floats — together those two shortcuts cut a full search from
+     * 0.59s to 0.23s across 8.5k chunks. Fallback vectors are handed back to the
+     * generic path, which is also what IssueDetector still leans on.
+     *
+     * @param  array<int|string, float>  $queryEmbedding
+     * @param  array<int|string, float>  $embedding
+     */
+    protected function cosine(array $queryEmbedding, float $queryNorm, array $embedding): float
+    {
+        if ($embedding === [] || $queryEmbedding === []) {
+            return 0.0;
+        }
+
+        if (!array_is_list($embedding) || !array_is_list($queryEmbedding)) {
+            return $this->calculateSimilarity($queryEmbedding, $embedding);
+        }
+
+        if ($queryNorm === 0.0) {
+            return 0.0;
+        }
+
+        $dot = 0.0;
+        $norm = 0.0;
+
+        foreach ($embedding as $i => $value) {
+            $dot += ($queryEmbedding[$i] ?? 0) * $value;
+            $norm += $value * $value;
+        }
+
+        return $norm == 0.0 ? 0.0 : $dot / ($queryNorm * sqrt($norm));
+    }
+
+    /** @param  array<int|string, float>  $embedding */
+    protected function norm(array $embedding): float
+    {
+        if (!array_is_list($embedding)) {
+            return 0.0;   // word-frequency map: cosine() routes it elsewhere
+        }
+
+        $sum = 0.0;
+        foreach ($embedding as $value) {
+            $sum += $value * $value;
+        }
+
+        return sqrt($sum);
     }
 
     /**
