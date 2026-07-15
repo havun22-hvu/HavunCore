@@ -36,6 +36,20 @@ php artisan test --no-coverage
 ## Verboden zonder overleg
 SSH keys, credentials, `.env`, composer/npm installs, prod migrations, systemd/cron.
 
+## ⛔ Docs-first — code zonder MD is geen code
+
+**Ga je implementeren? Werk EERST de MD bij (docs en/of plan), dan pas code. Andersom nooit.**
+
+- **Groot** (feature, architectuur, >5 bestanden) → volledige `/mpc`: docs → plan → wacht op "ga maar" → code
+- **Middel** (~2-5 bestanden) → plan-MD + de feature-doc die het raakt, dan bouwen
+- **Klein** (bugfix) → de doc die het gedrag beschrijft + het punt in de handover, dan fixen
+- **Triviaal** (typo, formatting) → enige uitzondering, geen MD nodig
+
+Wijkt de implementatie af van het plan? **Eerst de MD bijwerken, dan verder.** Nooit stilzwijgend.
+De omvang bepaalt hoevéél MD, niet óf. MD's bijwerken mag altijd zonder overleg.
+
+Volledig: `HavunCore/docs/kb/standards/docs-first.md`
+
 ## MD-docs schrijven — hou ze leesbaar voor Claude
 
 Een te lang doc wordt niet gelezen: het verdringt andere docs uit de context, en de KB indexeert
