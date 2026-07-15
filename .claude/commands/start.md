@@ -99,11 +99,15 @@ done'
 
 ```
 1. CLAUDE.md
-2. .claude/context.md
-3. .claude/rules.md (indien aanwezig)
-4. .claude/handover.md (indien aanwezig)
-5. .claude/blueprint.md (indien aanwezig) → zie hieronder
+2. .claude/rules.md (indien aanwezig)
+3. .claude/handover.md (indien aanwezig)
+4. .claude/blueprint.md (indien aanwezig) → zie hieronder
+5. ls .claude/ — lees wat er verder ligt, gok niet op deze lijst
 ```
+
+> **Geen `context.md` in HavunCore.** Bewust verwijderd 20-05-2026 (`5d98a77`, One Project One
+> Session) — de inhoud zit in `CLAUDE.md`. Andere projecten hebben er wél een. Stap 5 staat er
+> omdat een vaste lijst afvinken je juist laat missen wat er ligt.
 
 ### Blueprint check
 
@@ -162,7 +166,7 @@ php artisan docs:search "havun quality standards"
 
 ```
 ✓ Memory: [N bestanden geladen — actieve feedback: ...]
-✓ Gelezen: CLAUDE.md, context.md[, rules.md][, handover.md]
+✓ Gelezen: CLAUDE.md[, rules.md][, handover.md][, overige .claude/*.md]
 ✓ Issues: [X opgelost / 0 open]
 ✓ Security: [OK / kwetsbaarheden opgelost]
 

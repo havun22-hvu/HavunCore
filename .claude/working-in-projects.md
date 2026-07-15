@@ -15,9 +15,12 @@ last_check: 2026-04-22
 
 ```
 {project}/CLAUDE.md              ← Regels en korte context
-{project}/.claude/context.md     ← Alle project details
+{project}/.claude/context.md     ← Alle project details (niet elk project heeft er een)
 {project}/.claude/rules.md       ← Wat mag niet
 ```
+
+> Doe altijd eerst `ls {project}/.claude/` — deze lijst is een verwachting, geen inventaris.
+> HavunCore zelf heeft sinds 20-05-2026 géén `context.md` meer (opgegaan in `CLAUDE.md`).
 
 ### Stap 2: Lees bestanden direct
 
