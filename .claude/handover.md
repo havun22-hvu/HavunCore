@@ -14,9 +14,10 @@ last_updated: 2026-07-16
 **Branch:** master · **Status:** stabiel. KB zoekt gechunkt: 3178 docs → 13.091 float32-vectoren,
 0,1s met `--project`. **Server:** 0 stashes, nginx-warnings 0. Prod draait overal.
 
-> **Portfolio-ronde 16-07:** alle handovers geverifieerd + rechtgezet (zie *Recent afgerond*).
-> **Let op:** Vusista en JudoToernooi hadden op 16-07 om 00:50 een **actieve sessie** (bestanden
-> seconden oud). Check `ls -la` op de working tree vóór je in een ander project opruimt.
+> **Portfolio-ronde 16-07:** alle 15 handovers geverifieerd + rechtgezet (zie *Recent afgerond*).
+> **Les:** Vusista en JudoToernooi hadden tijdens die ronde een **actieve sessie** (bestanden
+> seconden oud). Check de working tree (`git status` + `ls -la`) vóór je in een ander project
+> opruimt — twee schrijvers op één bestand en de verkeerde wint.
 
 ## Open — wacht op Henk
 
@@ -32,7 +33,7 @@ last_updated: 2026-07-16
 | **Studieplanner** | `chore/expo-sdk-55-upgrade`: code is af (230/230 groen) maar **nooit device-getest**; 3 maanden oud, dus versies achterhaald. Mergen of verwerpen |
 | **Studieplanner-api** | `rescue/prod-stashes-2026-07-15`: wil je user settings (pomodoro/alarm) + observability? Ja → afmaken, nee → branch weg |
 | **LastMatch** | Avast HTTPS-scanning uit = enige blocker voor de APK-build |
-| **Vusista** | Vier vragen over gezichten (G1-G4) blokkeren het plan |
+| **Vusista** | Testen in de app (personen-kolom, twijfelvoorstellen, bewerkingsset) + **installer op een schone PC** = laatste MVP-punt. Plus: de installer wordt +119 MB (80 MB OpenCV-DLL — minimale build zou ~35 MB kunnen), en de licentieketen van het SFace-model is niet te verifiëren |
 | **JudoScoreBoard** | Google-review AAB 116 (ingediend 9 juni) — alleen Play Console weet de status |
 
 ## Open — te doen
