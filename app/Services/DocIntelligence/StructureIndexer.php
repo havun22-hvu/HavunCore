@@ -72,27 +72,27 @@ class StructureIndexer
             ->where('file_path', $filePath)
             ->first();
 
-        if ($existing && !$force && $existing->content_hash === $summaryHash) {
+        if (!$force && $this->docIndexer->isUpToDate($existing, $summaryHash)) {
             return array_merge($this->getCounts($structure), [
                 'summary_preview' => mb_substr($summary, 0, 500),
                 'status' => 'unchanged',
             ]);
         }
 
-        // Generate embedding and store
-        $embedding = $this->docIndexer->generateEmbeddingPublic($summary);
-
-        DocEmbedding::updateOrCreate(
-            ['project' => $project, 'file_path' => $filePath],
-            [
-                'content' => $summary,
-                'content_hash' => $summaryHash,
-                'embedding' => $embedding,
-                'embedding_model' => $embedding ? (env('OLLAMA_EMBEDDING_MODEL', 'nomic-embed-text')) : 'tfidf-fallback',
-                'file_type' => 'structure',
-                'token_count' => (int) ceil(strlen($summary) / 4),
-                'file_modified_at' => now(),
-            ]
+        // storeDocument() owns embedding, storing and chunking. This class used
+        // to do all three by hand, which is how it kept the mislabelling bug
+        // (`$embedding ? $model : 'tfidf-fallback'` is always truthy, so every
+        // fallback was stored as a real vector) months after DocIndexer's copy
+        // was fixed, and how it silently missed chunking. generateSummary()
+        // writes markdown — '# Structure', '## Models (12)' — so it splits on
+        // those headings.
+        $this->docIndexer->storeDocument(
+            $project,
+            $filePath,
+            $summary,
+            'structure',
+            $summaryHash,
+            isMarkdown: true
         );
 
         return array_merge($this->getCounts($structure), [

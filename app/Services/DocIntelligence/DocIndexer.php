@@ -321,32 +321,20 @@ class DocIndexer
             return false;
         }
 
-        // Extract a structured summary instead of embedding raw code
+        // Extract a structured summary instead of embedding raw code. Not
+        // automatically small: JudoToernooi's routes/web.php boils down to 92k
+        // characters of route lines, so it needs chunking like any long document.
         $summary = $this->extractCodeSummary($relativePath, $rawContent);
-        $fileType = $this->detectFileType($relativePath);
 
-        // Generate embedding from the summary
-        $ollamaEmbedding = $this->generateOllamaEmbedding($summary);
-        $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($summary);
-        $tokenCount = $this->estimateTokenCount($summary);
-
-        $document = DocEmbedding::updateOrCreate(
-            ['project' => $project, 'file_path' => $relativePath],
-            [
-                'content' => $summary,
-                'content_hash' => $contentHash,
-                'embedding' => $embedding,
-                'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
-                'file_type' => $fileType,
-                'token_count' => $tokenCount,
-                'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
-            ]
+        $this->storeDocument(
+            $project,
+            $relativePath,
+            $summary,
+            $this->detectFileType($relativePath),
+            $contentHash,
+            isMarkdown: false,
+            fileModifiedAt: date('Y-m-d H:i:s', $fileModified)
         );
-
-        // The summary is not automatically small: JudoToernooi's routes/web.php
-        // boils down to 92k characters of route lines, so it gets truncated just
-        // like a long document would.
-        $this->indexChunks($document, $summary, $fileType, $ollamaEmbedding);
 
         return true;
     }
@@ -610,29 +598,57 @@ class DocIndexer
             return false;
         }
 
-        // Generate embedding
-        $ollamaEmbedding = $this->generateOllamaEmbedding($content);
-        $embedding = $ollamaEmbedding ?? $this->generateLocalEmbedding($content);
-        $tokenCount = $this->estimateTokenCount($content);
-        $fileType = $this->detectFileType($relativePath);
+        $this->storeDocument(
+            $project,
+            $relativePath,
+            $content,
+            $this->detectFileType($relativePath),
+            $contentHash,
+            isMarkdown: true,   // findMdFiles() only ever yields .md
+            fileModifiedAt: date('Y-m-d H:i:s', $fileModified)
+        );
 
-        // Create or update record
+        return true;
+    }
+
+    /**
+     * Embed a document, store it, and chunk it — the one definition of what it
+     * means to put something in the index.
+     *
+     * There are three producers (markdown files, code summaries, project
+     * structures) and each used to spell this out itself. That is why
+     * StructureIndexer still carried the mislabelling bug fixed in DocIndexer on
+     * 15-07-2026 (`$embedding ? $model : 'tfidf-fallback'` — always truthy,
+     * since the fallback is never empty) and why chunking could be added twice
+     * and missed the third. A fourth producer cannot forget any of it now.
+     */
+    public function storeDocument(
+        string $project,
+        string $filePath,
+        string $content,
+        string $fileType,
+        string $contentHash,
+        bool $isMarkdown,
+        ?string $fileModifiedAt = null
+    ): DocEmbedding {
+        $ollamaEmbedding = $this->generateOllamaEmbedding($content);
+
         $document = DocEmbedding::updateOrCreate(
-            ['project' => $project, 'file_path' => $relativePath],
+            ['project' => $project, 'file_path' => $filePath],
             [
                 'content' => $content,
                 'content_hash' => $contentHash,
-                'embedding' => $embedding,
+                'embedding' => $ollamaEmbedding ?? $this->generateLocalEmbedding($content),
                 'embedding_model' => $this->embeddingModelFor($ollamaEmbedding),
                 'file_type' => $fileType,
-                'token_count' => $tokenCount,
-                'file_modified_at' => date('Y-m-d H:i:s', $fileModified),
+                'token_count' => $this->estimateTokenCount($content),
+                'file_modified_at' => $fileModifiedAt ?? now(),
             ]
         );
 
-        $this->indexChunks($document, $content, $fileType, $ollamaEmbedding);
+        $this->indexChunks($document, $content, $isMarkdown, $ollamaEmbedding);
 
-        return true;
+        return $document;
     }
 
     /**
@@ -645,10 +661,12 @@ class DocIndexer
     protected function indexChunks(
         DocEmbedding $document,
         string $content,
-        string $fileType,
+        bool $isMarkdown,
         ?array $documentOllamaEmbedding
     ): void {
-        $chunks = $this->chunker->chunk($content, $fileType);
+        $chunks = $isMarkdown
+            ? $this->chunker->chunkMarkdown($content)
+            : $this->chunker->chunkPlain($content);
 
         $document->chunks()->delete();
 
@@ -710,7 +728,7 @@ class DocIndexer
      * needsEmbeddingUpgrade is about a row that came out degraded (Ollama was
      * down), needsChunking about a row that predates a pipeline change.
      */
-    protected function isUpToDate(?DocEmbedding $existing, string $contentHash): bool
+    public function isUpToDate(?DocEmbedding $existing, string $contentHash): bool
     {
         return $existing !== null
             && $existing->content_hash === $contentHash
@@ -800,14 +818,6 @@ class DocIndexer
         }
 
         return 'code';
-    }
-
-    /**
-     * Public wrapper for generating embeddings (used by StructureIndexer)
-     */
-    public function generateEmbeddingPublic(string $content): ?array
-    {
-        return $this->generateEmbedding($content);
     }
 
     /**

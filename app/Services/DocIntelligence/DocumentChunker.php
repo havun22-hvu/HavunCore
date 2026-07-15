@@ -25,9 +25,36 @@ class DocumentChunker
     public const MAX_CHARS = 4000;
 
     /**
+     * Split markdown, keeping each heading with the text beneath it.
+     *
      * @return array<int, array{content: string, heading: ?string}>
      */
-    public function chunk(string $content, string $fileType = 'docs'): array
+    public function chunkMarkdown(string $content): array
+    {
+        return $this->chunk($content, true);
+    }
+
+    /**
+     * Split text with no structure to lean on — a code summary, a route dump.
+     *
+     * @return array<int, array{content: string, heading: ?string}>
+     */
+    public function chunkPlain(string $content): array
+    {
+        return $this->chunk($content, false);
+    }
+
+    /**
+     * The caller says whether this is markdown, rather than the chunker
+     * guessing from a file_type: that field is a search filter with fourteen
+     * values ('model', 'route', 'view', ...), and reading a chunk instruction
+     * into it means any change to detectFileType() silently changes chunking.
+     * The producers know — findMdFiles() yields markdown, extractCodeSummary()
+     * never does, and StructureIndexer builds markdown by hand.
+     *
+     * @return array<int, array{content: string, heading: ?string}>
+     */
+    protected function chunk(string $content, bool $isMarkdown): array
     {
         if (trim($content) === '') {
             return [];
@@ -37,7 +64,7 @@ class DocumentChunker
             return [['content' => $content, 'heading' => null]];
         }
 
-        $sections = $fileType === 'docs'
+        $sections = $isMarkdown
             ? $this->splitOnHeadings($content)
             : [['content' => $content, 'heading' => null]];
 

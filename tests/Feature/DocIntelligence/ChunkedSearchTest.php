@@ -189,6 +189,42 @@ class ChunkedSearchTest extends TestCase
         $this->assertStringNotContainsString('Deze sectie gaat weg', $doc->chunks()->first()->content);
     }
 
+    public function test_every_producer_chunks_including_the_structure_index(): void
+    {
+        // StructureIndexer writes a doc_embeddings row of its own. It used to do
+        // that by hand, so it kept the mislabelling bug months after DocIndexer
+        // was fixed, and missed chunking entirely. Its summary is markdown and
+        // grows with the project, so its tail matters like any other document's.
+        $this->fakeOllamaMetUniekeVectoren();
+
+        touch($this->projectPad . '/artisan');   // makes it look like Laravel
+        app(\App\Services\DocIntelligence\StructureIndexer::class)->indexProject('testproject');
+
+        $doc = DocEmbedding::where('file_type', 'structure')->firstOrFail();
+
+        $this->assertGreaterThanOrEqual(1, $doc->chunks()->count(), 'A structure row must be chunked too');
+        $this->assertSame('nomic-embed-text', $doc->embedding_model);
+
+        unlink($this->projectPad . '/artisan');
+    }
+
+    public function test_a_structure_row_on_the_fallback_is_labelled_honestly(): void
+    {
+        // The bug this class carried: `$embedding ? $model : 'tfidf-fallback'`
+        // is always truthy because the local fallback never returns empty, so
+        // every degraded row claimed to be a real vector.
+        Http::fake(['127.0.0.1:11434/*' => Http::response(['error' => 'model gone'], 500)]);
+
+        touch($this->projectPad . '/artisan');
+        app(\App\Services\DocIntelligence\StructureIndexer::class)->indexProject('testproject');
+
+        $doc = DocEmbedding::where('file_type', 'structure')->firstOrFail();
+
+        $this->assertSame(DocIndexer::FALLBACK_MODEL, $doc->embedding_model);
+
+        unlink($this->projectPad . '/artisan');
+    }
+
     public function test_deleting_a_document_takes_its_chunks_with_it(): void
     {
         $this->fakeOllamaMetUniekeVectoren();

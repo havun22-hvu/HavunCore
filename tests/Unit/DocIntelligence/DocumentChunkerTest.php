@@ -19,8 +19,9 @@ class DocumentChunkerTest extends TestCase
     #[Test]
     public function empty_content_yields_no_chunks(): void
     {
-        $this->assertSame([], $this->chunker->chunk(''));
-        $this->assertSame([], $this->chunker->chunk("   \n\n  "));
+        $this->assertSame([], $this->chunker->chunkMarkdown(''));
+        $this->assertSame([], $this->chunker->chunkMarkdown("   \n\n  "));
+        $this->assertSame([], $this->chunker->chunkPlain(''));
     }
 
     #[Test]
@@ -28,7 +29,7 @@ class DocumentChunkerTest extends TestCase
     {
         $content = "# Titel\n\nEen kort document.";
 
-        $chunks = $this->chunker->chunk($content);
+        $chunks = $this->chunker->chunkMarkdown($content);
 
         $this->assertCount(1, $chunks);
         $this->assertSame($content, $chunks[0]['content']);
@@ -41,7 +42,7 @@ class DocumentChunkerTest extends TestCase
             . "\n\n## Betalingen\n\n" . str_repeat("De club betaalt. ", 300)
             . "\n\n## Ledenbeheer\n\n" . str_repeat("Een lid heeft een band. ", 300);
 
-        $chunks = $this->chunker->chunk($content);
+        $chunks = $this->chunker->chunkMarkdown($content);
 
         $this->assertGreaterThan(1, count($chunks));
         $headings = array_column($chunks, 'heading');
@@ -57,7 +58,7 @@ class DocumentChunkerTest extends TestCase
         $content = "# Start\n\n" . str_repeat("Vulling. ", 2000)
             . "\n\n## Slot\n\nDe laatste afspraak is bindend.";
 
-        $chunks = $this->chunker->chunk($content);
+        $chunks = $this->chunker->chunkMarkdown($content);
 
         $alleTekst = implode("\n", array_column($chunks, 'content'));
         $this->assertStringContainsString('De laatste afspraak is bindend.', $alleTekst);
@@ -68,7 +69,7 @@ class DocumentChunkerTest extends TestCase
     {
         $content = "# Titel\n\n" . str_repeat("Een zin zonder alineagrenzen. ", 1000);
 
-        foreach ($this->chunker->chunk($content) as $chunk) {
+        foreach ($this->chunker->chunkMarkdown($content) as $chunk) {
             $this->assertLessThanOrEqual(DocumentChunker::MAX_CHARS, mb_strlen($chunk['content']));
         }
     }
@@ -83,7 +84,7 @@ class DocumentChunkerTest extends TestCase
             . "\n\n```bash\n# dit is een comment, geen kop\nrm -rf /tmp/x\n```\n\n"
             . str_repeat("Meer tekst. ", 400);
 
-        $headings = array_column($this->chunker->chunk($content), 'heading');
+        $headings = array_column($this->chunker->chunkMarkdown($content), 'heading');
 
         $this->assertNotContains('Echt › dit is een comment, geen kop', $headings);
         foreach ($headings as $heading) {
@@ -96,7 +97,7 @@ class DocumentChunkerTest extends TestCase
     {
         $content = str_repeat("Route::get('/pad', [Controller::class, 'method']);\n", 500);
 
-        $chunks = $this->chunker->chunk($content, 'code');
+        $chunks = $this->chunker->chunkPlain($content);
 
         $this->assertGreaterThan(1, count($chunks));
         foreach ($chunks as $chunk) {
@@ -110,7 +111,7 @@ class DocumentChunkerTest extends TestCase
     {
         $content = str_repeat('x', DocumentChunker::MAX_CHARS * 2 + 500);
 
-        $chunks = $this->chunker->chunk($content, 'code');
+        $chunks = $this->chunker->chunkPlain($content);
 
         $this->assertSame(
             mb_strlen($content),
@@ -127,7 +128,7 @@ class DocumentChunkerTest extends TestCase
         $content = "# Doc\n\n## Een\n\n### Diep\n\n" . str_repeat("A. ", 800)
             . "\n\n## Twee\n\n" . str_repeat("B. ", 800);
 
-        $headings = array_column($this->chunker->chunk($content), 'heading');
+        $headings = array_column($this->chunker->chunkMarkdown($content), 'heading');
 
         $this->assertContains('Doc › Een › Diep', $headings);
     }

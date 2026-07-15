@@ -737,15 +737,26 @@ PHP;
     }
 
     // ===================================================================
-    // generateEmbeddingPublic
+    // storeDocument — the one way into the index
     // ===================================================================
 
-    public function test_generate_embedding_public_delegates_to_protected(): void
+    public function test_store_document_embeds_writes_and_chunks_in_one_call(): void
     {
-        $result = $this->indexer->generateEmbeddingPublic('test content for embedding');
+        // Replaces the generateEmbeddingPublic test: that wrapper existed only
+        // for StructureIndexer, which now goes through storeDocument like every
+        // other producer.
+        $document = $this->indexer->storeDocument(
+            'testproject',
+            'docs/handmatig.md',
+            "# Titel\n\nEen document dat rechtstreeks wordt opgeslagen.",
+            'docs',
+            hash('sha256', 'handmatig'),
+            isMarkdown: true
+        );
 
-        // Should return an array (local fallback since Ollama returns null embedding)
-        $this->assertIsArray($result);
+        $this->assertIsArray($document->embedding);
+        $this->assertSame('docs/handmatig.md', $document->file_path);
+        $this->assertGreaterThanOrEqual(1, $document->chunks()->count());
     }
 
     // ===================================================================
