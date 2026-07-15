@@ -7,10 +7,15 @@ last_updated: 2026-07-15
 
 # Plan: KB-chunking
 
-> **Status: geïmplementeerd 15-07-2026.** 1305 tests groen. HavunCore herindexeerd: 444 docs →
-> 3216 chunks, 154 gesplitst, 0 op de TF-fallback. Geverifieerd: de `## Support`-sectie op 41k
+> **Status: geïmplementeerd + geherindexeerd 15-07-2026.** 1305 tests groen. Alle projecten:
+> **3178 docs → 13.091 chunks**, 0 op de TF-fallback. Geverifieerd: de `## Support`-sectie op 41k
 > tekens diep in `CHANGELOG.md` is nu de eerste treffer op *"github discussions support issues
-> melden"* (64%) — die was onvindbaar. Overige projecten herindexeren draait.
+> melden"* (64%) — die was onvindbaar; `havunclub/docs/business-rules.md` (67k, 73 chunks) geeft
+> treffers uit z'n middenstuk (`Proefperiode` staat op teken 17.267 = 2,2× voorbij de gunstigste
+> embed-grens).
+>
+> **Zoeken:** 0,58s met `--project` (de voorgeschreven werkwijze), 7,9s ongefilterd over 13k
+> chunks, piek 64 MB.
 >
 > Aanleiding: het openstaande punt uit `reference/doc-intelligence-embedding-fallback-bug.md`.
 
@@ -137,6 +142,29 @@ geen big-bang.
   dit: ze telden exact 2× en 6× zoveel Ollama-calls als verwacht.
 - **`test_over_long_content_is_retried_shorter`** meet nu een document ónder de chunk-grens. Het
   test de retry-ladder van `generateOllamaEmbedding()`, en chunk-calls vertroebelden die telling.
+- **Zoeken laadde alles in geheugen** (piek 286 MB, richting ~440 MB). Nu drie passes: metadata →
+  vectoren gestreamd → tekst van alleen de winnaars. Piek 64 MB, en vlak bij groei. Drie gemeten
+  oorzaken, geen ervan te raden: Eloquent-hydration kostte 9 van de 14s, `chunk()` pagineert met
+  OFFSET (27s vs 8s t.o.v. `chunkById`), en de cosinus nam de union van beide key-sets — nodig
+  voor de woordmap-fallback, verspilling voor twee lijsten floats.
+- **De prefix-asymmetrie is gemeten, niet weggepoetst.** Eén-chunk-rijen hergebruiken de
+  documentvector en missen dus het koppad dat gesplitste rijen wél hebben. Meting: mét prefix
+  scoort +25,8 punten op een kop-achtige query en **−10,3 op een content-query**. De prefix
+  compenseert wat het knippen wegnam; een heel document verloor niets. Bewust zo gelaten.
+
+## Vervolg (uit de review, niet gedaan)
+
+- **Embeddings binair opslaan i.p.v. JSON.** Wat er nu nog staat aan zoektijd is vrijwel volledig
+  `json_decode` van ~200 MB embedding-JSON (15 KB per vector). Als `pack('f*', ...)` → 3 KB per
+  vector, en `unpack` is vele malen sneller. Raakt het schema + een herindexering. Pas de moeite
+  als ongefilterd zoeken (8s) hindert; met `--project` is het 0,58s.
+- **`StructureIndexer` schrijft een `doc_embeddings`-rij zonder chunks.** Nu leeg (0 rijen in de
+  index), dus geen praktisch gat — maar zodra `docs:structure` draait, valt die rij terug op de
+  documentvector. De echte fix is één `storeDocument()` die embedt, de rij schrijft én chunkt,
+  gebruikt door alle drie de producenten (`indexFile`, `indexCodeFile`, `StructureIndexer`).
+  Dan wordt "elke rij heeft ≥1 chunk" een invariant en kan de fallback in `search()` ooit weg.
+- **`needsChunking()` doet 1 SELECT per bestand per run** (~3200 over alle projecten, 0,03s).
+  Gemeten, niet de moeite; hooguit meenemen als `isUpToDate()` toch op de schop gaat.
 
 ## Wat dit plan bewust NIET doet
 
