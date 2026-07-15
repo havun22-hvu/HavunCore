@@ -43,16 +43,28 @@ Kort maken ≠ alles eruit gooien. Zet de conclusie bovenaan en de details erond
 
 Vuistregel: **kan iemand na de eerste 20 regels handelen?** Zo nee, herschrijf de kop.
 
-## Handovers
+## Handovers — er is er precies één, en die werk je BIJ
 
-De grootste veroorzaker van muren. Regels:
+De grootste veroorzaker van muren. **Regel (Henk, 15 jul 2026): één `.claude/handover.md`,
+bijwerken — nooit een sessieblok toevoegen.** Het is een **levende status** ("hoe staat dit project
+ervoor"), geen logboek ("wat deed ik wanneer"). Git bewaart de historie al.
 
-- **Nieuwste sessie bovenaan**, oudere eronder.
-- Per sessie **15-30 regels**: wat is gedaan, wat staat open, waar zit het (commit/pad).
-- **Ouder dan ~3 maanden → weg of naar `docs/kb/runbooks/session-handover-<jaar>.md`.**
-  Een handover is een doorgeefluik, geen archief. Git bewaart de historie al.
-- Geen procesverslag ("eerst deed ik X, toen Y"). Alleen de uitkomst en wat een volgende
-  sessie moet weten.
+Bij elke `/end`:
+
+1. **Afgeronde taken weghalen** — niet doorstrepen, niet naar "Afgerond" schuiven. Weg.
+   Waarde voor later? → KB (`patterns/`, `runbooks/`, `decisions/`).
+2. **Nieuwe open punten toevoegen** aan de bestaande lijst.
+3. **Bestaande punten bijwerken** als de status veranderde.
+4. **Achterhaalde tekst schrappen** — verifieer bij twijfel (`git log`, `composer.json`, server)
+   in plaats van te laten staan.
+
+**Max ~120 regels.** Groeit hij daarboven → er staat afgeronde geschiedenis in. Weghalen, niet
+splitsen. Vaste vorm: status → open punten → recent afgerond (kort) → vaste projectcontext.
+
+> **Waarom dit hard is.** JudoToernooi's handover groeide naar **842 regels** met 20+ sessieblokken:
+> "(Afgerond) Laravel 12 — GEDEPLOYED" stond pal boven "⚠️ Laravel 12 — NOG NIET gedeployed", en
+> taken die al weken klaar waren (forms-coverage, `.env.bak`-residu) stonden nog open. Zo'n doc kost
+> niet alleen context — hij **liegt**, en dat is erger dan geen handover.
 
 ## Wat je NIET doet
 

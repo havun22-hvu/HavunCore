@@ -44,6 +44,7 @@ alleen het **begin** van een bestand (~2000-8000 tekens) — alles daarna is onv
 - **Max:** KB-doc/runbook 200 regels · CLAUDE.md 120 · plan/blueprint 300 · handover 15-30 regels per sessie
 - **Hiërarchie:** conclusie + status bovenaan, tabel in het midden, onderbouwing onderaan
 - **Te groot?** Splitsen in index + deeldocs. Niet persen tot telegramstijl — onleesbaar is niet kort
-- **Handover:** nieuwste bovenaan; sessies ouder dan ~3 maanden weg (git bewaart de historie)
+- **Handover:** er is er **één** en die werk je **bij** — nooit een sessieblok toevoegen.
+  Afgeronde taken eruit, nieuwe erbij. Levende status, geen logboek (git bewaart de historie)
 
 Volledig: `HavunCore/docs/kb/standards/md-doc-grootte.md`
