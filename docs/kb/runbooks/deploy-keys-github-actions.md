@@ -62,6 +62,7 @@ bij `migrate=yes`). Faalt luid bij lokale wijzigingen op de server (ff-only).
 | VPDUpdate | `/var/www/vpdupdate` | main | ✅ (read-deploykey `deploy_vpdupdate` op repo gezet + remote → alias `github-vpdupdate`; non-Laravel, deploy = git pull + `npm run build`) |
 | Studieplanner-api | `/var/www/studieplanner/production` | master | ✅ |
 | havuncore-webapp | `/var/www/havuncore/webapp` | main | ⚠️ draait (Node/PWA, geen artisan/composer) — centrale Laravel-`deploy-havun.sh` past NIET; vereist Node-variant (npm install + build + `pm2 restart`). Enige openstaande deploy-taak. |
+| Vusista | `/var/www/vusista/{production,staging}` | main/staging | ✅ — staging auto op push, prod = `workflow_dispatch`. Deploy-key `server-read (188.245.159.115)` SHA256:Tdjl6DmzEjWr3kW/lhWlNNWoXcABUc6HE4JTUPLmsqY toegevoegd 14 jul 2026. |
 | HavunVet | — | — | ⛔ **OBSOLEET — geparkeerd** (Henk, 2 juli). Niet aanwerken; vhost `staging.havunvet.havun.nl` + leeg pad mag ooit opgeruimd (server-config → Henks go). |
 | IDSee, Agorano | — | — | ⛔ **geparkeerd** (Henk, 2 juli): "nog lang niet aan de beurt". Server-setup pas als ze aan de beurt zijn. |
 
