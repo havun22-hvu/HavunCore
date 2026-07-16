@@ -56,10 +56,24 @@ Een te lang doc wordt niet gelezen: het verdringt andere docs uit de context, de
 relevante stuk daalt, en niemand leest de staart na — dus daar blijft achterhaalde tekst staan.
 (Vindbaarheid is sinds 15-07 géén argument meer: chunking embed lange docs in stukken.)
 
-- **Max:** KB-doc/runbook 200 regels · CLAUDE.md 120 · plan/blueprint 300 · handover 15-30 regels per sessie
+- **Max:** KB-doc/runbook 200 regels · CLAUDE.md 120 · plan/blueprint 300 · **handover 120**
 - **Hiërarchie:** conclusie + status bovenaan, tabel in het midden, onderbouwing onderaan
 - **Te groot?** Splitsen in index + deeldocs. Niet persen tot telegramstijl — onleesbaar is niet kort
 - **Handover:** er is er **één** en die werk je **bij** — nooit een sessieblok toevoegen.
   Afgeronde taken eruit, nieuwe erbij. Levende status, geen logboek (git bewaart de historie)
 
 Volledig: `HavunCore/docs/kb/standards/md-doc-grootte.md`
+
+## Een claim verifieer je hélemaal, of je laat 'm staan
+
+Docs die liegen zijn het probleem — maar een correcte regel "corrigeren" naar een foute is datzelfde
+probleem met meer zelfvertrouwen. **Raak je een claim aan, dan neem je 'm over, en dan moet je 'm hard
+hebben.**
+
+- **Meet tot het einde.** Stilte ≠ klaar. Een run is af als hij dat zelf zegt (`Tests:`, exit code).
+- **Niet af te maken? Laat de claim staan + meld de twijfel.** "Niet geverifieerd" is bruikbaar; een
+  verzonnen correctie niet.
+- **Verifieer bij de bron**, niet in een kopie (cross-project items in een handover zijn kopieën).
+- **Klopt het? Zet de datum erbij** — dan hoeft de volgende het niet over te doen.
+
+Volledig: `HavunCore/docs/kb/standards/claims-verifieren.md`
