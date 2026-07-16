@@ -2,8 +2,8 @@
 title: qv:scan latest report (auto-generated)
 type: reference
 scope: alle-projecten
-generated_from: qv-scans/2026-05-09/run-031703162-3626098.json
-generated_at: 2026-05-09T03:17:03+02:00
+generated_from: qv-scans/2026-07-16/run-031703588-3069317.json
+generated_at: 2026-07-16T03:17:03+02:00
 ---
 
 # qv:scan — laatste run (auto-generated)
@@ -11,8 +11,8 @@ generated_at: 2026-05-09T03:17:03+02:00
 > Dit bestand wordt overschreven door `php artisan qv:log` na elke scan.
 > Voor **post-mortem, prose en fix-statussen** zie `security-findings.md` (handmatig).
 
-**Started:** 2026-05-09T03:17:03+02:00  
-**Projects:** havunadmin, herdenkingsportaal, studieplanner, judotoernooi, infosyst, safehavun, havuncore, studieplanner-mobile, havunvet, munus, server-prod  
+**Started:** 2026-07-16T03:17:03+02:00  
+**Projects:** havunadmin, havunclub, herdenkingsportaal, studieplanner, judotoernooi, infosyst, safehavun, havuncore, studieplanner-mobile, munus, server-prod  
 **Checks:** npm
 
 ## Totals
@@ -35,13 +35,13 @@ _Geen HIGH/CRITICAL findings in laatste run._
 | Project | Check | Message |
 |---|---|---|
 | havunadmin | npm | Project path not found: D:/GitHub/HavunAdmin |
+| havunclub | npm | Project path not found: D:/GitHub/HavunClub |
 | herdenkingsportaal | npm | Project path not found: D:/GitHub/Herdenkingsportaal |
 | studieplanner | npm | Project path not found: D:/GitHub/Studieplanner-api |
 | judotoernooi | npm | Project path not found: D:/GitHub/JudoToernooi/laravel |
 | infosyst | npm | Project path not found: D:/GitHub/Infosyst |
 | safehavun | npm | Project path not found: D:/GitHub/SafeHavun |
 | studieplanner-mobile | npm | Project path not found: D:/GitHub/Studieplanner |
-| havunvet | npm | Project path not found: D:/GitHub/HavunVet |
 | munus | npm | Project path not found: D:/GitHub/Munus |
 
 ## Next actions
