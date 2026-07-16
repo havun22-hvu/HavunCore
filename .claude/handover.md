@@ -24,7 +24,9 @@ last_updated: 2026-07-16
 | Wat | Details |
 |-----|---------|
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `docs/kb/plans/blijvend-ingelogd-plan.md` |
-| **Prod-deploys staan klaar (5 checkouts achter)** | Herdenkingsportaal (12 commits, waarvan 3 code — **passkey-login is af maar niet live**), HavunClub (15 code-commits: compliance/SEPA-batch), JudoToernooi (6), HavunAdmin (9, alleen docs), HavunCore zelf (17: het KB-werk). Deploy = altijd jouw klik |
+| **Vite-build loopt achter op 5 checkouts — 3× production** | Gemeten 16-07: HP-prod (build 27-04 vs view-commit 17-05), HP-staging, Infosyst-prod, Studieplanner-prod, Vusista-staging. **Signaal, geen diagnose** — verifieer per project met de asset-hash-check in `runbooks/vite-build-bij-deploy.md`. Elk hoort in een eigen sessie; HP bouwt in GH Actions, dus daar kan de mtime misleiden |
+| **Hardcoded Hetzner-wachtwoord op de server** | `/usr/local/bin/havun-backup.sh` bevat het Storage Box-wachtwoord in plain text (`HETZNER_PASS=`). Server-config + credential → jouw beslissing. Hoort in de Vault. Zie [[feedback-no-hardcoded-test-secrets]] |
+| **Prod-deploys staan klaar (4 checkouts achter)** | Herdenkingsportaal (12 commits, waarvan 3 code — **passkey-login is af maar niet live**), HavunClub (15 code-commits: compliance/SEPA-batch), JudoToernooi (6), HavunCore zelf (17: het KB-werk). Deploy = altijd jouw klik. *HavunAdmin is 16-07 gedeployd (staging+prod) — van de lijst af* |
 | **Security: dependencies** | HavunAdmin **19 composer-advisories, 2 high** (geverifieerd 16-07: `laravel/framework` CRLF email-rule, `symfony/mime` CRLF). JudoScoreBoard: **6 GitHub-advisories, 1 critical + 2 high**. Beide = `composer update`/`npm` → overleg vereist |
 | **VPDUpdate: 54 commits achter + 5 dirty** | Bewust niet gedeployd. `users.json` (getrackt, mét live secrets) hangt eraan vast. Zie de handover daar |
 | **HavunClub `public/aeterna-latest.apk`** | 26 MB, ander project, sinds 4 mei. De `.gitignore` staat alleen op `staging` — prod draait `main` en is daardoor nog dirty. **Niet verwijderd** — Laravel serveert `public/`, dus de link kan bij Aeterna-testers liggen |
@@ -41,52 +43,42 @@ last_updated: 2026-07-16
 - **JudoScoreBoard `context.md` op `master` is nog 1039 regels** (4 sessieblokken). De opgeschoonde
   versie (523) staat op `chore/expo-sdk-56-upgrade`, omdat die SDK 56-kennis bevat over code die
   alleen daar leeft. Lost zichzelf op zodra die branch merget; tot dan blijft master's versie oud.
-- **Actief kanaal voor `critical` health-alerts — de keuze is al gemaakt én gebouwd.** Dit stond
-  hier als open keuze push/mail/Telegram; onjuist. Push is gekozen (2 jul) en de hele keten staat
-  er: Laravel `PushController` + `WebPushService` + VAPID in de Vault + de hook in
-  `HealthAlertCommand`, en aan de webapp-kant `sw-push.js` + de subscribe-knop. **Wat rest is één
-  browser-test** (permissie geven, subscription laten aanmaken, een echte push zien binnenkomen).
-  Zie `plans/health-alerts-webpush-blueprint.md`.
+- **Web-push voor `critical` health-alerts — gekozen én gebouwd, alleen nooit getest.** Stond hier
+  ooit als open keuze push/mail/Telegram; onjuist. Push is gekozen (2 jul) en de hele keten staat er
+  (geverifieerd 16-07): Laravel `PushController` + `WebPushService` + VAPID in de Vault + de hook in
+  `HealthAlertCommand`; webapp-kant `sw-push.js` + `usePushNotifications.js` + de knop in
+  `Header.jsx`, met `.env.production` naar de Laravel-backend. **Wat rest is één browser-test**
+  (permissie, subscription, echte push zien binnenkomen). Zie `plans/health-alerts-webpush-blueprint.md`.
+  > **Leesval:** de code valt terug op `localhost:8009` = de Node-backend, waar push een lege stub
+  > is — wie alleen die default leest denkt dat de knop dood is.
+
   Los daarvan nog wél open: `laravel-worker` + `toernooi-heartbeat` worden niet bewaakt —
   `runbooks/uptime-monitoring.md` §Bekende gaten.
 - **havuncore-webapp** — update-banner activeert de wachtende SW niet zichtbaar (pas na
-  app-herstart); verdenk ontbrekende `clientsClaim`/`controllerchange`. Verder: Vitest geblokkeerd
-  door een npm-registry SSL-issue, en `DEPLOY.md`'s Quick Deploy mist excludes.
-  > **De push-frontend stond hier als "nog te doen" — die bestaat al** (geverifieerd 16-07):
-  > `sw-push.js` + `usePushNotifications.js` (114 regels) + de knop in `Header.jsx`, en
-  > `.env.production` wijst naar de Laravel-backend waar de `PushController` leeft. Wat rest is
-  > een browser-test. Zie het blueprint. **Leesval:** de code valt terug op `localhost:8009` = de
-  > Node-backend, waar push een lege stub is — wie alleen die default leest denkt dat de knop dood is.
-
-## Twee regels die uit de 16-07-ronde volgen
-
-**Slash-commands bestaan twee keer** — `~/.claude/commands/` (globaal) wint van
-`HavunCore/.claude/commands/`. De globale `/end` schreef nog `## Laatste Sessie: [DATUM]` voor
-terwijl de projectversie dat al verbood; dát is waarom vijf projecten ná de regel van 15-07 alsnog
-sessieblokken kregen. Gefixt. Werk je een command bij → **controleer beide**. Let op: `~/.claude`
-staat **niet** onder versiebeheer.
-
-**Cross-project items horen in het bronproject, niet hier.** Alle handovers staan nu in de levende
-vorm en kloppen met git, dus de kopieën zijn weg (HavunAdmin's token-purge in HavunAdmin, enz.).
-Op 15-07 stond hier nog een HavunClub-tenant-lek dat **al was opgelost** (`dae025c`, op prod) —
-overgenomen, nooit geverifieerd. Een kopie veroudert ongemerkt. Portfolio-overzicht nodig? Lees de
-handovers of laat een agent-ronde ze verifiëren; schrijf ze niet over.
+  app-herstart); verdenk ontbrekende `clientsClaim`/`controllerchange`. Verder: `DEPLOY.md`'s Quick
+  Deploy mist excludes, en Vitest is geblokkeerd door wat hier "een npm-registry SSL-issue" heette —
+  **dat is het niet**: 16-07 gemeten dat curl op Henks machine faalt met schannel
+  `CRYPT_E_NO_REVOCATION_CHECK` (unpkg, raw.githubusercontent), terwijl github.com wél 200 geeft en
+  de server dezelfde URL's prima haalt. Lokale HTTPS-interceptie (Avast), niet de registry — zelfde
+  oorzaak als LastMatch's APK-blocker. Workaround: via de server ophalen + hash verifiëren.
 
 ## Recent afgerond (context die nog nut heeft)
+
+- **De auth-norm werd als status gelezen (16-07)** — `reference/authentication-methods.md` staat in
+  de tegenwoordige tijd en had een "Per Project"-tabel die las als een beschrijving. HavunAdmin nam
+  z'n rij over als feit ("magic-link primair (v5.1)") terwijl daar **geen magic link is gebouwd**;
+  Henk zocht een feature die nooit bestond. Tabel nu gelabeld als norm, met de geverifieerde
+  afwijking erbij en de rest expliciet "niet geverifieerd". Regel staat in
+  `standards/md-doc-grootte.md`. De drie HavunAdmin-gaten die eruit volgden staan in **hún**
+  handover, niet hier.
 
 - **KB-chunking (15-07)** — `docs/kb/plans/kb-chunking-plan.md`. De staart van lange docs was
   onvindbaar (22-59% van de KB). Nu een aparte tabel `doc_chunks` met float32-vectoren; 3178 docs
   → 13.091 chunks. Zoeken: **0,1s met `--project`**, 1,2s ongefilterd, DB 272 → 118 MB. De preview
-  toont nu de gevonden passage + koppad i.p.v. de YAML-frontmatter.
-  **Drie lessen die breder gelden:**
-  1. De handover schreef "meer rijen in `doc_embeddings`" voor — dat zou ~30 aannames hebben
-     gebroken (`IssueDetector` parst `content` als heel MD-bestand, de API telt `COUNT(*)` als
-     `total_files`). Eerst de consumers inventariseren, dán het schema kiezen.
-  2. **Meten, niet redeneren.** `chunk()` pagineert met OFFSET (27s vs 8s t.o.v. `chunkById`);
-     Eloquent-hydratie kostte 9 van de 14s. Beide onzichtbaar zonder meting.
-  3. **Eén weg de index in.** Er waren 3 producenten van een `doc_embeddings`-rij, elk met een
-     eigen kopie — daardoor droeg `StructureIndexer` de 15-07-mislabelbug maanden later nog.
-     Nu `DocIndexer::storeDocument()`.
+  toont nu de gevonden passage + koppad i.p.v. de YAML-frontmatter. Drie lessen die breder gelden
+  (uitgewerkt in het plan): eerst de **consumers** inventariseren dán het schema kiezen; **meten,
+  niet redeneren** (OFFSET-paginatie kostte 27s vs 8s, Eloquent-hydratie 9 van de 14s); en **één
+  weg de index in** — er waren 3 producenten van een `doc_embeddings`-rij, elk met een eigen kopie.
 
 - **Grote schoonmaak + deploys (15-07)** — `docs/kb/plans/grote-schoonmaak-2026-07-15.md`.
   29 stashes → 0, nginx-warnings → 0, alles gedeployd behalve VPDUpdate. Kern om te onthouden:
@@ -96,15 +88,10 @@ handovers of laat een agent-ronde ze verifiëren; schrijf ze niet over.
   Oorzaak + fix: `docs/kb/reference/doc-intelligence-embedding-fallback-bug.md`. Nu 2764 echte
   768-dim vectoren. Ook: JudoScoreBoard/Aeterna/LastMatch ontbraken in de index (190 docs
   onvindbaar) → toegevoegd aan `DocIndexer`.
-- **Scoreboard-API security** (JT, live) — `docs/kb/reference/scoreboard-api-security-review-2026-07-15.md`.
-  **Les breed toepasbaar:** `$request->merge()` om een geauthenticeerd model door te geven is een
-  anti-patroon (belandt in `$request->all()`, lekt in elke broadcast) → `$request->attributes`.
 - **Nieuwe bindende regels** (in alle 22 projecten): `standards/docs-first.md` (geen code zonder MD),
   `standards/md-doc-grootte.md` (doc-grootte + één levende handover), `standards/server-hygiene.md`.
   Aanleiding: JT's handover was 842 regels en sprak zichzelf tegen; `/end` schreef zelf voor om
   sessieblokken te stapelen.
-- **Vusista opgezet** (14-07): fotoalbum-webapp, eigen repo, :8008, staging+prod live, CI werkt.
-  Spec staat als `.claude/blueprint.md` → Vusista-sessie start met `/mpc` + "ga maar".
 
 ## Vaste context voor dit project
 

@@ -83,8 +83,8 @@ E-mail = identiteit. Geen gebruikersnaam. Geen login/register tabs.
 > **Waarom deze waarschuwing er staat:** HavunAdmin's `CLAUDE.md` en handover namen deze regel over
 > als feit (*"Auth: magic-link primair + bio/QR + wachtwoord-optioneel (v5.1)"*). HavunAdmin heeft
 > **geen magic link** — nooit gebouwd, geen route, geen commit — en wachtwoord is er juist primair
-> én verplicht. Gevolg (16-07): Henk zocht een feature die nooit bestond. Zie [[docs-first]] en
-> `standards/claims-verifieren.md`.
+> én verplicht. Gevolg (16-07): Henk zocht een feature die nooit bestond. Zie
+> `standards/claims-verifieren.md` en `standards/md-doc-grootte.md` (§norm ≠ status).
 >
 > **Geverifieerde afwijkingen:**
 > - **HavunAdmin** (16-07): magic link ontbreekt volledig; wachtwoord primair i.p.v. opt-in;

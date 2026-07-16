@@ -75,6 +75,25 @@ splitsen. Vaste vorm: status → open punten → recent afgerond (kort) → vast
 > taken die al weken klaar waren (forms-coverage, `.env.bak`-residu) stonden nog open. Zo'n doc kost
 > niet alleen context — hij **liegt**, en dat is erger dan geen handover.
 
+### Cross-project items horen in het bronproject
+
+Schrijf een punt uit project X niet over in de handover van project Y. **Een kopie veroudert
+ongemerkt.** Op 15-07-2026 stond in HavunCore's handover een HavunClub-tenant-lek dat al was
+opgelost (`dae025c`, op prod) — ooit overgenomen, nooit geverifieerd. Portfolio-overzicht nodig?
+Lees de handovers, of laat een agent-ronde ze verifiëren. Schrijf ze niet over.
+
+Zelfde reden waarom je een **norm** nooit als **status** overneemt: HavunAdmin's `CLAUDE.md` droeg
+jarenlang "Auth: magic-link primair (v5.1)" uit `reference/authentication-methods.md`, terwijl daar
+nooit een magic link is gebouwd (16-07). Een norm in de tegenwoordige tijd wordt vroeg of laat als
+beschrijving gelezen — label 'm als norm. Zie `standards/claims-verifieren.md`.
+
+### Slash-commands bestaan twee keer
+
+`~/.claude/commands/` (globaal) **wint van** `<project>/.claude/commands/`. De globale `/end`
+schreef nog `## Laatste Sessie: [DATUM]` voor terwijl de projectversie dat al verbood; dát is waarom
+vijf projecten ná de regel van 15-07 alsnog sessieblokken kregen. Werk je een command bij →
+**controleer beide**. Let op: `~/.claude` staat **niet** onder versiebeheer.
+
 ## Wat je NIET doet
 
 - Tekst comprimeren tot telegramstijl of pijlketens (`A → B → faalt`). Onleesbaar ≠ kort.
