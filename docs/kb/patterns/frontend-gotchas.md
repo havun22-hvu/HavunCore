@@ -2,7 +2,7 @@
 title: Frontend gotchas — herhalende valkuilen
 type: pattern
 scope: alle-projecten
-last_check: 2026-04-18
+last_check: 2026-07-16
 ---
 
 # Frontend gotchas
@@ -50,6 +50,58 @@ Zie runbook: `docs/kb/runbooks/alpine-csp-migratie.md` (9 conversie-patronen).
 **Voltooid voor:**
 - JudoToernooi (commit `5197c995`, 17-04-2026) — `'unsafe-eval'` uit SecurityHeaders
 - Herdenkingsportaal (feature branch `feat/vp11-alpine-csp-migration`, pending smoke test)
+
+---
+
+## `@alpinejs/csp`: `foo = x` mag, `foo.bar = x` niet — dus `x-model="a.b"` is stuk
+
+**Symptoom:** `Uncaught Error: Property assignments are prohibited in the CSP build` zodra je in een
+veld typt of een `<select>` kiest. **Werkt lokaal, breekt op staging/prod** — de strikte CSP staat
+meestal alleen buiten `local` aan.
+
+**Oorzaak.** De evaluator van de csp-build (`@alpinejs/csp/dist/module.esm.js`,
+`case "AssignmentExpression"`) doet:
+```js
+if (node.left.type === "Identifier") scope[node.left.name] = value;              // ✅
+else if (node.left.type === "MemberExpression") throw new Error("Property assignments are prohibited…");  // ❌
+```
+Drie gevallen, drie gedragingen — dit verklaart álle CSP-assignment-bugs:
+
+| Expressie | Gedrag |
+|---|---|
+| `open = false` op de **eigen** component | ✅ werkt |
+| `open = false` op een **ancestor** | ⚠️ **stil fout** — schrijft naar de *eigen* scope, ancestor verandert nooit, geen error |
+| `form.naam = x` — elk pad met een punt | ❌ harde error |
+
+`x-model` compileert intern naar de string `<expressie> = __placeholder`, dus **elke**
+`x-model="a.b"` valt in het derde geval.
+
+**Fix.** Geef `x-model` een getter/setter-paar: het checkt eerst `isGetterSetter()` en parset de
+assignment-string dan nooit (die is lazy).
+```js
+formModel(veld) { return { get: () => this.form[veld], set: (w) => { this.form[veld] = w; } }; }
+```
+```blade
+<input x-model="formModel('naam')">   {{-- i.p.v. x-model="form.naam" --}}
+```
+De datastructuur blijft heel, dus `JSON.stringify(this.form)` bij submit werkt onveranderd.
+
+**Guard** (statisch, geen browser nodig — e2e CSP-specs vangen dit **niet**: die checken alleen
+page-load terwijl deze bug interactie vereist):
+```bash
+grep -rn 'x-model="[a-zA-Z_$][A-Za-z0-9_$]*\.' resources/views/    # moet leeg zijn
+```
+JudoToernooi heeft dit als PHPUnit-test: `tests/Unit/Views/AlpineCspBindingTest.php`.
+
+**Status per project** (gemeten 16-07-2026 — `package.json` zegt niets, kijk wat `app.js` **importeert**):
+- **JudoToernooi** — importeert de csp-build. 22 bindings over 4 views; alle toevoeg/bewerk-formulieren
+  waren stuk. Gefixt + guard (`f46e77ed`).
+- **Herdenkingsportaal** — importeert de csp-build (`app.js:3`). **5 bindings in
+  `guestbook/register.blade.php` (`form.name/email/postcode/city/message`) → waarschijnlijk stuk;
+  niet geverifieerd, niet gefixt.** Eigen sessie nodig.
+- **HavunAdmin** — importeert **standaard** Alpine (`app.js`: "Standard Alpine (NOT @alpinejs/csp)").
+  43 nested bindings, maar **geen bug**; `@alpinejs/csp` in `package.json` is ongebruikt.
+- **Infosyst** — 0 bindings.
 
 ---
 
