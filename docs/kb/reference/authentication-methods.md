@@ -77,6 +77,21 @@ E-mail = identiteit. Geen gebruikersnaam. Geen login/register tabs.
 
 ## Per Project
 
+> ⚠️ **Dit is de norm, niet de gebouwde staat.** De tabel zegt wat een app *moet* hebben, niet wat
+> erin zit. Verifieer in de code vóór je erop bouwt of erover rapporteert.
+>
+> **Waarom deze waarschuwing er staat:** HavunAdmin's `CLAUDE.md` en handover namen deze regel over
+> als feit (*"Auth: magic-link primair + bio/QR + wachtwoord-optioneel (v5.1)"*). HavunAdmin heeft
+> **geen magic link** — nooit gebouwd, geen route, geen commit — en wachtwoord is er juist primair
+> én verplicht. Gevolg (16-07): Henk zocht een feature die nooit bestond. Zie [[docs-first]] en
+> `standards/claims-verifieren.md`.
+>
+> **Geverifieerde afwijkingen:**
+> - **HavunAdmin** (16-07): magic link ontbreekt volledig; wachtwoord primair i.p.v. opt-in;
+>   device-detectie gebruikt de verboden `innerWidth < 768`-drempel (regel 1 van
+>   `patterns/havun-mobile-login.md`). Openstaand — zie HavunAdmin's handover.
+> - Overige projecten: **niet geverifieerd**. Afwezigheid hier betekent niet dat ze voldoen.
+
 | Project | Registratie | Login smartphone | Login desktop | Wachtwoord-rol |
 |---------|------------|-----------------|---------------|----------------|
 | Studieplanner | Magic link | Biometric / magic link (herstel) | N.v.t. (alleen app) | Optioneel (opt-in) |
