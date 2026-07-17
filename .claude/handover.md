@@ -38,6 +38,27 @@ last_updated: 2026-07-16
 | **Vusista** | Testen in de app (personen-kolom, twijfelvoorstellen, bewerkingsset) + **installer op een schone PC** = laatste MVP-punt. Plus: de installer wordt +119 MB (80 MB OpenCV-DLL — minimale build zou ~35 MB kunnen), en de licentieketen van het SFace-model is niet te verifiëren |
 | **JudoScoreBoard** | Google-review AAB 116 (ingediend 9 juni) — alleen Play Console weet de status |
 
+## Open — Veen-ledenadministratie (nieuw project, gestart 17/18-07)
+
+Overname Cees Veen's EOL-app (Laravel 5.5 · PHP 7.0 · Ubuntu 16.04) als **eigen
+project** — HavunClub vervalt maar blijft staan (functies mogelijk herbruikbaar).
+Functioneel identiek aan HavunClub; tegengas gegeven, Henk kiest eigen project.
+
+- **Backup binnen** (`D:\GitHub\VeenLedenadministratie\_backup\`): 2 code-tarballs +
+  DB-dump + `INTAKE-NOTES.md` — door de HavunClub-sessie veiliggesteld. App-`.env`
+  zit in de tarball, dus DB/APP_KEY/SES-mail/Pusher-secrets zijn al mee. Mollie-key
+  ontbreekt in `.env` (zit in `.env1` of DB — uitzoeken).
+- **`vault:setup-veen`** command gebouwd + getest + gepusht (HavunCore master).
+  **Lokaal draaien lukt niet:** `database/database.sqlite` bestaat niet lokaal → de
+  Vault-DB is een prod-ding. Vault vullen dus later op production, geautomatiseerd
+  (plan: `vault:import-env` in fase 1) — géén handmatig overtypen.
+- **Fase 1 (repo-scaffold) wacht op "ga maar"** — volledig plan in
+  `D:\GitHub\VeenLedenadministratie\.claude\blueprint.md` (meldt zich bij `/start` daar).
+- **Open business (Cees):** hosting (TransIP-VPS vs onze server) + moderniseren
+  (L5.5→huidig) vs. EOL-app doorgebruiken. Advies staat in de blueprint: onze server
+  als doel, maar niet de EOL-stack meeverhuizen.
+- Nog apart op te halen bij Cees/HavunClub-sessie: TransIP-login, app-admin plaintext.
+
 ## Open — te doen
 
 - **JudoScoreBoard `context.md` op `master` is nog 1039 regels** (4 sessieblokken). De opgeschoonde
