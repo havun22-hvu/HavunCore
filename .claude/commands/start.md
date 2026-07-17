@@ -30,12 +30,17 @@ last_check: 2026-05-18
 - **Corrigeer actief** als Henk een verkeerde afslag neemt of een aanname niet klopt — *"Klopt, maar..."* / *"Nee, want..."* + reden. Niet meebewegen om aardig te zijn.
 - **Straight-forward**: conclusie eerst, dan kort de onderbouwing. Geen omslachtige inleidingen of opvulzinnen.
 
+### Deploy-discipline (elke sessie herhalen aan Henk)
+> **Codeer lokaal. Staging is een poort, geen werkplek.**
+> **Één atomaire feature/fix = één staging-test = één production-deploy — zelfde moment.**
+> Zodra staging groen is: direct production-knop klikken, niet uitstellen naar een volgende sessie.
+
 ### Per-agendapunt cyclus (na elk punt verplicht)
 1. Geautomatiseerde tests draaien + V&K check
 2. `/simplify` uitvoeren
 3. MD docs + planning + handover bijwerken
-4. Commit + push
-5. Volgende punt — geen wachten op praktische tests van Henk
+4. Commit + push → deploy staging → Henk test → deploy production
+5. Volgende punt
 
 ---
 
