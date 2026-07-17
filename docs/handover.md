@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Thu, Jul 16, 2026 4:00 AM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Fri, Jul 17, 2026 4:00 AM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,7 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-07-16 | `5f84953` | chore(auto): refresh handover, qv-scan-latest (2026-07-16T06:00:09+02:00) |
 | 2026-07-15 | `831c88b` | docs(end): actively ask for a prod deploy every session |
 | 2026-07-15 | `4e12d87` | docs(end): clean up every session -- only the prod deploy needs permission |
 | 2026-07-15 | `0f63250` | docs: record the server cleanup -- 29 stashes to 0, nothing lost |
@@ -49,7 +50,7 @@
 
 **Totals:** critical 0 | high 0 | medium 0 | low 0
 
-_Snapshot timestamp: 2026-07-16T03:57:03+02:00_
+_Snapshot timestamp: 2026-07-17T03:57:03+02:00_
 
 ## KB audit (laatste wekelijkse run)
 
