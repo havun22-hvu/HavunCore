@@ -2,133 +2,76 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-07-16
+last_updated: 2026-07-19
 ---
 
 # HavunCore — Handover
 
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
-> Afgerond = weg (git bewaart het). Max ~120 regels. Regel:
-> `docs/kb/standards/md-doc-grootte.md`.
+> Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel. KB zoekt gechunkt: 3178 docs → 13.091 float32-vectoren,
-0,1s met `--project`. **Server:** 0 stashes, nginx-warnings 0. Prod draait overal.
-
-> **Portfolio-ronde 16-07:** alle 15 handovers geverifieerd + rechtgezet (zie *Recent afgerond*).
-> **Les:** Vusista en JudoToernooi hadden tijdens die ronde een **actieve sessie** (bestanden
-> seconden oud). Check de working tree (`git status` + `ls -la`) vóór je in een ander project
-> opruimt — twee schrijvers op één bestand en de verkeerde wint.
+**Branch:** master · **Status:** stabiel. KB zoekt gechunkt (`--project` ~0,1s). **Server:** disk 67%
+(12 GB vrij na opschoning 18-07), prod draait overal.
 
 ## Open — wacht op Henk
 
 | Wat | Details |
 |-----|---------|
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `docs/kb/plans/blijvend-ingelogd-plan.md` |
-| **Vite-build loopt achter op 4 checkouts — 2× production** | Gemeten 16-07: HP-prod (build 27-04 vs view-commit 17-05), HP-staging, Studieplanner-prod, Vusista-staging. **Signaal, geen diagnose** — verifieer per project met de asset-hash-check in `runbooks/vite-build-bij-deploy.md`. Elk hoort in een eigen sessie; HP bouwt in GH Actions, dus daar kan de mtime misleiden. *Infosyst 18-07 verwijderd — van de lijst af* |
-| **Hardcoded Hetzner-wachtwoord op de server** | `/usr/local/bin/havun-backup.sh` bevat het Storage Box-wachtwoord in plain text (`HETZNER_PASS=`). Server-config + credential → jouw beslissing. Hoort in de Vault. Zie [[feedback-no-hardcoded-test-secrets]] |
-| **Prod-deploys staan klaar (3 checkouts achter)** | Herdenkingsportaal (12 commits, waarvan 3 code — **passkey-login is af maar niet live**), JudoToernooi (6), HavunCore zelf (17: het KB-werk). Deploy = altijd jouw klik. *HavunAdmin 16-07 gedeployd; HavunClub 18-07 van de server verwijderd — beide van de lijst af* |
-| **Security: dependencies** | HavunAdmin **19 composer-advisories, 2 high** (geverifieerd 16-07: `laravel/framework` CRLF email-rule, `symfony/mime` CRLF). JudoScoreBoard: **6 GitHub-advisories, 1 critical + 2 high**. Beide = `composer update`/`npm` → overleg vereist |
-| **VPDUpdate: 54 commits achter + 5 dirty** | Bewust niet gedeployd. `users.json` (getrackt, mét live secrets) hangt eraan vast. Zie de handover daar |
-| **Server-opschoning 18-07: HavunClub + Umami + Infosyst verwijderd** | Alle drie: checkout + DB('s) + user + cert + nginx-vhosts weg. Backups in `/root/backups/<naam>-2026-07-18/` (DB-dumps + vhost-configs; infosyst ook `.env`). **HavunClub** (391 MB, 0 RAM): code blijft op PC+GitHub; `aeterna-latest.apk` géén verlies (canonieke kopie op `havuncore/webapp`). **Umami** (1,8 GB + pm2 108 MB RAM): upstream software, geen repo — weg = weg; geen site laadt het script. **Infosyst** (153 MB): lokale repo (173 commits) blijft, GitHub-repo verwijderd; oude `GEMINI_API_KEY` vervallen (Henk niet meer nodig). **Netto disk 73%→67%** (12 GB vrij), Umami's pm2 gaf de RAM-winst |
+| **Prod-deploys staan klaar (3 checkouts achter)** | Herdenkingsportaal (3 code-commits — **passkey-login af maar niet live**), JudoToernooi (6), HavunCore zelf (KB-werk). Deploy = altijd jouw klik |
+| **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat **nergens actief meer** (JudoToernooi-prod = nieuwe sleutel, geverifieerd; HavunAdmin + `laravel-old` dode sleutels leeggemaakt). **Laat de oude in Stripe verlopen.** Optioneel: webhook-secret roteren + oude Stripe-regel in `credentials.md` opschonen. AWS SES-key = Cees' account, niet de onze |
+| **Vite-build achter op 4 checkouts — 2× prod** | HP-prod/staging, Studieplanner-prod, Vusista-staging. Signaal, geen diagnose — verifieer per project (`runbooks/vite-build-bij-deploy.md`), elk in eigen sessie |
+| **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault. Zie [[feedback-no-hardcoded-test-secrets]] |
+| **Security: dependencies** | HavunAdmin 19 composer-advisories (2 high); JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high). `composer update`/`npm` → overleg |
+| **VPDUpdate: 54 commits achter + 5 dirty** | Bewust niet gedeployd; `users.json` (getrackt, live secrets) hangt eraan. Zie handover daar |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
-| **Aeterna** | Production keystore + update-adres. Het week2-plan blijkt **dood** (vraagt go voor crates die al bestaan) — archiveren of weg. Plus: `feat/v1.1-tor-socks5-3b` (PR #16 closed, niet merged) |
-| **Studieplanner** | `chore/expo-sdk-55-upgrade`: code is af (230/230 groen) maar **nooit device-getest**; 3 maanden oud, dus versies achterhaald. Mergen of verwerpen |
-| **Studieplanner-api** | `rescue/prod-stashes-2026-07-15`: wil je user settings (pomodoro/alarm) + observability? Ja → afmaken, nee → branch weg |
-| **LastMatch** | Avast HTTPS-scanning uit = enige blocker voor de APK-build |
-| **Vusista** | Testen in de app (personen-kolom, twijfelvoorstellen, bewerkingsset) + **installer op een schone PC** = laatste MVP-punt. Plus: de installer wordt +119 MB (80 MB OpenCV-DLL — minimale build zou ~35 MB kunnen), en de licentieketen van het SFace-model is niet te verifiëren |
-| **JudoScoreBoard** | Google-review AAB 116 (ingediend 9 juni) — alleen Play Console weet de status |
+| **Aeterna** | Prod keystore + update-adres. Week2-plan dood (crates bestaan al) — archiveren. `feat/v1.1-tor-socks5-3b` (PR #16 closed, niet merged) |
+| **Studieplanner** | `chore/expo-sdk-55-upgrade`: 230/230 groen maar nooit device-getest, 3 mnd oud — mergen of verwerpen |
+| **Studieplanner-api** | `rescue/prod-stashes-2026-07-15`: user settings + observability afmaken of branch weg |
+| **LastMatch** | Avast HTTPS-scanning uit = enige APK-build-blocker |
+| **Vusista** | App testen + installer op schone PC = laatste MVP-punt. Installer +119 MB (80 MB OpenCV); SFace-licentieketen onverifieerbaar |
+| **JudoScoreBoard** | Google-review AAB 116 (9 juni ingediend) — status alleen in Play Console |
 
-## Open — Veen-ledenadministratie (nieuw project, gestart 17/18-07)
+## Open — Veen-ledenadministratie (orchestrator-deel afgerond)
 
-Overname Cees Veen's EOL-app (Laravel 5.5 · PHP 7.0 · Ubuntu 16.04) als **eigen
-project** — HavunClub vervalt maar blijft staan (functies mogelijk herbruikbaar).
-Functioneel identiek aan HavunClub; tegengas gegeven, Henk kiest eigen project.
-
-- **Backup binnen** (`D:\GitHub\VeenLedenadministratie\_backup\`): 2 code-tarballs +
-  DB-dump + `INTAKE-NOTES.md` — door de HavunClub-sessie veiliggesteld. App-`.env`
-  zit in de tarball, dus DB/APP_KEY/SES-mail/Pusher-secrets zijn al mee. Mollie-key
-  ontbreekt in `.env` (zit in `.env1` of DB — uitzoeken).
-- **`vault:setup-veen`** command gebouwd + getest + gepusht (HavunCore master).
-  Vault vullen later op production (plan: `vault:import-env`).
-- **Fase 1 + 2 UITGEVOERD 18-07 (later):** GitHub-repo (private, verse **Laravel 12**, oude
-  EOL-app in `_legacy`/`_backup` gitignored) + CI/deploy-workflows + server-omgevingen live:
-  **production `veen.havun.nl` + staging `staging.veen.havun.nl` (200, HTTPS)** — nu nog de
-  Laravel-welcome. Koers = **route B** (herbouw). Details in de Veen-blueprint.
-  ✅ Auto-deploy-key gezet + **pipeline E2E bewezen** (push staging → deploy groen → checkout
-  beweegt). ✅ HavunCore-registratie (`havun-projects.php` + poort-register + KB-index).
-  **Open:** (c) **Fase 3 `/arch`** = het eigenlijke vernieuwen (feature-inventaris +
-  datamigratie 15k payments/SEPA) — voor de Veen-sessie, na Cees' groen licht. (d) 2 logins
-  (`veen-ledenadministratie.nl` admin + TransIP-CP) staan als placeholder in `credentials.md`
-  regel 235/238 — **Henk vult de waarden zelf in** (sessies hadden ze niet).
-- **Business (Cees):** offerte + groen licht loopt via een aparte Veen-sessie
-  (`bericht-cees-offerte.md`). Modernisering (fase 3) begint pas ná dat groen licht.
-- **Open business (Cees):** hosting (TransIP-VPS vs onze server) + moderniseren
-  (L5.5→huidig) vs. EOL-app doorgebruiken. Advies staat in de blueprint: onze server
-  als doel, maar niet de EOL-stack meeverhuizen.
-- Nog apart op te halen bij Cees/HavunClub-sessie: TransIP-login, app-admin plaintext.
+Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
+- **Fase 1+2 klaar (18-07):** GitHub-repo (private) + server live — production `veen.havun.nl`
+  + staging `staging.veen.havun.nl` (HTTPS, auto-deploy E2E bewezen) + HavunCore-registratie.
+- **Fase 3 (de herbouw: feature-inventaris + SEPA-datamigratie 15k payments) = een Veen-sessie,
+  na Cees' groen licht — NIET vanuit HavunCore.** Eisen (o.a. SEPA-machtiging: geen internetvinkje,
+  eMandate/Twikey of PSP) staan in `VeenLedenadministratie/.claude/modernisering-scope.md`.
+- Credentials (admin-login + TransIP-CP) + `.env`-secrets staan in de centrale kluis.
 
 ## Open — te doen
 
-- **JudoScoreBoard `context.md` op `master` is nog 1039 regels** (4 sessieblokken). De opgeschoonde
-  versie (523) staat op `chore/expo-sdk-56-upgrade`, omdat die SDK 56-kennis bevat over code die
-  alleen daar leeft. Lost zichzelf op zodra die branch merget; tot dan blijft master's versie oud.
-- **Web-push voor `critical` health-alerts — gekozen én gebouwd, alleen nooit getest.** Stond hier
-  ooit als open keuze push/mail/Telegram; onjuist. Push is gekozen (2 jul) en de hele keten staat er
-  (geverifieerd 16-07): Laravel `PushController` + `WebPushService` + VAPID in de Vault + de hook in
-  `HealthAlertCommand`; webapp-kant `sw-push.js` + `usePushNotifications.js` + de knop in
-  `Header.jsx`, met `.env.production` naar de Laravel-backend. **Wat rest is één browser-test**
-  (permissie, subscription, echte push zien binnenkomen). Zie `plans/health-alerts-webpush-blueprint.md`.
-  > **Leesval:** de code valt terug op `localhost:8009` = de Node-backend, waar push een lege stub
-  > is — wie alleen die default leest denkt dat de knop dood is.
-
-  Los daarvan nog wél open: `laravel-worker` + `toernooi-heartbeat` worden niet bewaakt —
-  `runbooks/uptime-monitoring.md` §Bekende gaten.
-- **havuncore-webapp** — update-banner activeert de wachtende SW niet zichtbaar (pas na
-  app-herstart); verdenk ontbrekende `clientsClaim`/`controllerchange`. Verder: `DEPLOY.md`'s Quick
-  Deploy mist excludes, en Vitest is geblokkeerd door wat hier "een npm-registry SSL-issue" heette —
-  **dat is het niet**: 16-07 gemeten dat curl op Henks machine faalt met schannel
-  `CRYPT_E_NO_REVOCATION_CHECK` (unpkg, raw.githubusercontent), terwijl github.com wél 200 geeft en
-  de server dezelfde URL's prima haalt. Lokale HTTPS-interceptie (Avast), niet de registry — zelfde
-  oorzaak als LastMatch's APK-blocker. Workaround: via de server ophalen + hash verifiëren.
+- **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Hele keten staat (Laravel
+  `PushController`/`WebPushService` + VAPID; webapp `sw-push.js` + knop). Rest = één browser-test.
+  `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
+  Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt (`runbooks/uptime-monitoring.md`).
+- **havuncore-webapp** — update-banner activeert wachtende SW niet zichtbaar (verdenk `clientsClaim`/
+  `controllerchange`). Vitest geblokkeerd door Avast HTTPS-interceptie (niet de registry) — via server
+  ophalen + hash. Zie [[env-ssl-interception]].
+- **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde 523-versie op
+  `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
 
 ## Recent afgerond (context die nog nut heeft)
 
-- **De auth-norm werd als status gelezen (16-07)** — `reference/authentication-methods.md` staat in
-  de tegenwoordige tijd en had een "Per Project"-tabel die las als een beschrijving. HavunAdmin nam
-  z'n rij over als feit ("magic-link primair (v5.1)") terwijl daar **geen magic link is gebouwd**;
-  Henk zocht een feature die nooit bestond. Tabel nu gelabeld als norm, met de geverifieerde
-  afwijking erbij en de rest expliciet "niet geverifieerd". Regel staat in
-  `standards/md-doc-grootte.md`. De drie HavunAdmin-gaten die eruit volgden staan in **hún**
-  handover, niet hier.
-
-- **KB-chunking (15-07)** — `docs/kb/plans/kb-chunking-plan.md`. De staart van lange docs was
-  onvindbaar (22-59% van de KB). Nu een aparte tabel `doc_chunks` met float32-vectoren; 3178 docs
-  → 13.091 chunks. Zoeken: **0,1s met `--project`**, 1,2s ongefilterd, DB 272 → 118 MB. De preview
-  toont nu de gevonden passage + koppad i.p.v. de YAML-frontmatter. Drie lessen die breder gelden
-  (uitgewerkt in het plan): eerst de **consumers** inventariseren dán het schema kiezen; **meten,
-  niet redeneren** (OFFSET-paginatie kostte 27s vs 8s, Eloquent-hydratie 9 van de 14s); en **één
-  weg de index in** — er waren 3 producenten van een `doc_embeddings`-rij, elk met een eigen kopie.
-
-- **Grote schoonmaak + deploys (15-07)** — `docs/kb/plans/grote-schoonmaak-2026-07-15.md`.
-  29 stashes → 0, nginx-warnings → 0, alles gedeployd behalve VPDUpdate. Kern om te onthouden:
-  tussen de "rommel" zat 874 MB live APK's en vier bestanden die **nergens anders bestonden** →
-  `git clean -fd` was een outage geweest. Preventie: `standards/server-hygiene.md`.
-- **KB draaide maandenlang op keyword-matching** (`2c43318`) — alle embeddings waren woordmaps.
-  Oorzaak + fix: `docs/kb/reference/doc-intelligence-embedding-fallback-bug.md`. Nu 2764 echte
-  768-dim vectoren. Ook: JudoScoreBoard/Aeterna/LastMatch ontbraken in de index (190 docs
-  onvindbaar) → toegevoegd aan `DocIndexer`.
-- **Nieuwe bindende regels** (in alle 22 projecten): `standards/docs-first.md` (geen code zonder MD),
-  `standards/md-doc-grootte.md` (doc-grootte + één levende handover), `standards/server-hygiene.md`.
-  Aanleiding: JT's handover was 842 regels en sprak zichzelf tegen; `/end` schreef zelf voor om
-  sessieblokken te stapelen.
+- **credentials.md lekte in de KB-index (19-07)** — `docs:index` indexeerde de kluis (secrets in
+  `doc_embeddings`). Gepurged + `isSensitiveFile`-guard in `DocIndexer` (credentials.md/.env nooit
+  meer indexeren). Methode om secrets veilig te ontvangen zonder chat-lek: `runbooks/secrets-veilig-ontvangen.md`.
+- **Server-opschoning 18-07** — HavunClub + Umami + Infosyst van de server (disk 73%→67%, Umami's
+  pm2 gaf de RAM-winst). Backups in `/root/backups/*-2026-07-18/`. Code/repos blijven waar nodig.
+- **start2-command (19-07)** — werkwijze-primer voor de VS Code-extensie, uitgerold naar 16 projecten.
+- **De auth-norm werd als status gelezen (16-07)** — `reference/authentication-methods.md`: "Per
+  Project"-tabel las als beschrijving. Nu gelabeld als norm. Regel in `standards/md-doc-grootte.md`.
+- **KB-chunking (15-07)** — `plans/kb-chunking-plan.md`. Aparte `doc_chunks`-tabel, zoeken 0,1s met
+  `--project`. Lessen: eerst consumers dán schema; meten niet redeneren; één weg de index in.
 
 ## Vaste context voor dit project
 
-- **Rol:** centrale kennisbank + orchestrator voor alle Havun-projecten. Scope-regel: alleen
-  HavunCore aanwerken; ander project = eigen sessie (uitzondering: Henk geeft expliciet toestemming).
+- **Rol:** centrale kennisbank + orchestrator. Scope-regel: **alleen HavunCore aanwerken; ander
+  project = eigen sessie** (uitzondering: Henk geeft expliciet toestemming). Zie [[feedback-scope-waarschuwen]].
 - KB zoeken: `php artisan docs:search "<onderwerp>"` — vereist Ollama op :11434.
-- **Eerste prod-deploy per app = Henk klikt bewust** (Actions → Deploy to Production).
-  Runbook: `docs/kb/runbooks/deploy-keys-github-actions.md`. Nooit auto-migrate op prod.
-- havuncore-webapp deployt bewust anders: lokaal build → rsync + pm2. Zie `havuncore-webapp/DEPLOY.md`.
-- Server-quirk: `composer install` als root maakt `storage/**` root-owned → 500s die zichzelf niet
-  kunnen loggen. Fix: `chown -R www-data:www-data storage bootstrap/cache`.
+- **Eerste prod-deploy per app = Henk klikt bewust** (Actions → Deploy to Production). Nooit auto-migrate op prod.
+- havuncore-webapp deployt anders: lokaal build → rsync + pm2 (`havuncore-webapp/DEPLOY.md`).
+- Server-quirk: `composer install` als root maakt `storage/**` root-owned → 500s. Fix: `chown -R www-data:www-data storage bootstrap/cache`.
