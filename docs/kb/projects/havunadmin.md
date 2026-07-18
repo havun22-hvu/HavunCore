@@ -163,23 +163,33 @@ tenant_havun tenant_klantx tenant_klanty
 
 ## URL Structuur
 
+> **Let op: de routes zijn gemengd Nederlands/Engels.** Alleen de facturatie-URL's zijn
+> vertaald; de rest is Engels gebleven. Deze tabel stond tot 18-07-2026 vol Nederlandse namen
+> (`/klanten`, `/projecten`, `/rapportages`) die **404 geven** — geverifieerd tegen
+> `php artisan route:list` op production.
+
 | URL | Functie |
 |-----|---------|
 | `/dashboard` | Main dashboard (6 grafieken) |
 | `/verkoop` | Verkoop facturen CRUD |
 | `/inkoop` | Inkoop facturen (PDF parsing) |
 | `/inkoop/sync` | Map synchronisatie |
-| `/klanten` | Customer management |
-| `/leveranciers` | Supplier management |
-| `/projecten` | Project management |
-| `/urenregistratie` | Time entry CRUD |
-| `/vaste-activa` | Asset management |
-| `/journaalposten` | Handmatige boekingen |
-| `/offertes` | Quote management |
-| `/rapportages` | Tax export forms (CSV) |
-| `/reconciliatie` | Duplicate detection |
-| `/settings` | App settings + bankrekeningen |
+| `/customers` | Klantbeheer (**niet** `/klanten`) |
+| `/suppliers` | Leveranciersbeheer (**niet** `/leveranciers`) |
+| `/projects` | Projectbeheer |
+| `/uren` | Urenregistratie |
+| `/assets` | Bedrijfsmiddelen / vaste activa |
+| `/journal-entries` | Handmatige boekingen |
+| `/quotes` | Offertes |
+| `/reports` | Belastingdienst CSV-exports |
+| `/reconciliation` | Duplicate detection |
+| `/settings/general` · `/settings/bank-accounts` · `/settings/ledger-accounts` | Instellingen |
+| `/expenses` | Uitgaven |
+| `/invoice-archive` · `/invoice-templates` | Factuurarchief en -sjablonen |
+| `/transactions` · `/transactions/import` | Banktransacties |
 | `/register` | Tenant registratie + Mollie checkout |
+| `/observability/errors` · `/autofix` · `/slow-queries` | Monitoring |
+| `/super-admin/tenants` · `/super-admin/users` | Super-admin |
 
 Oude URLs (`/invoices`, `/local-invoices`) redirect automatisch.
 
