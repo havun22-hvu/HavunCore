@@ -2,14 +2,14 @@
 title: Project: HavunAdmin
 type: reference
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-07-18
 ---
 
 # Project: HavunAdmin
 
 **URL:** https://havunadmin.havun.nl
 **Type:** Laravel 12 multi-tenant SaaS boekhouding & facturatie
-**Versie:** v0.8.0 (10 jan 2026)
+**Versie:** v0.9.0 (18 jul 2026)
 **Status:** Live in production | 97% belastingcompliant
 **Platform:** Desktop-only (min 1024px)
 
@@ -90,7 +90,10 @@ tenant_havun tenant_klantx tenant_klanty
 - **Factuur Templates** - Automatische facturatie (eenmalig, maandelijks, per kwartaal, jaarlijks)
 - **Rapportages** - Belastingdienst CSV exports (kwartaal, jaar, BTW)
 - **AI Chat** - Claude Sonnet chat sessies
-- **Bankrekeningen** - Zakelijk, prive, creditcard beheer
+- **Bankrekeningen** - Zakelijk, prive, creditcard beheer (eigen rekeningen)
+- **Bankgegevens per relatie** - IBAN, bank en tenaamstelling bij klant en leverancier.
+  Gevalideerd met mod-97 (`App\Rules\Iban`), genormaliseerd opgeslagen via de
+  `HasBankDetails`-trait (18-07-2026)
 
 ## Auth Systeem
 
@@ -199,12 +202,14 @@ Oude URLs (`/invoices`, `/local-invoices`) redirect automatisch.
 
 ## Architectuur
 
+> Geteld 18-07-2026 met `find <map> -name '*.php' | wc -l` (dus inclusief submappen).
+
 | Onderdeel | Aantal | Opmerking |
 |-----------|--------|-----------|
-| Models | 32 | Incl. central (Tenant, CentralUser, TenantUser) |
-| Controllers | 45 | Auth, WebAuthn, admin, API, sync |
-| Services | 19 | AI, PDF parsing, banking, tax exports |
-| Migrations | 76 | Multi-tenant, compliance, banking |
+| Models | 32 | Incl. central (Tenant, CentralUser, TenantUser) en `Concerns/` |
+| Controllers | 48 | Auth, WebAuthn, admin, API, sync |
+| Services | 20 | AI, PDF parsing, banking, tax exports |
+| Migrations | 75 | Multi-tenant, compliance, banking |
 | Middleware | 5 | TenantMiddleware, SuperAdmin, Admin, Edit, Export |
 
 **Custom Artisan Commands:**
@@ -240,6 +245,8 @@ Dit project kan taken ontvangen van HavunCore:
 
 | Versie | Datum | Highlights |
 |--------|-------|-----------|
+| v0.9.0 | 18 jul 2026 | Bankgegevens bij klant + leverancier, mod-97 IBAN-validatie |
+| — | 17 feb 2026 | Assets/afschrijvingen module, integratie in alle rapportages |
 | v0.8.0 | 10 jan 2026 | Reconciliation, bank accounts |
 | v0.7.0 | 27 nov 2025 | Theme toggle, auto-logout, quotes, production deploy |
 | v0.6.0 | 22 nov 2025 | Compliance 81% -> 97%, audit trail, PDF checksums |
@@ -288,4 +295,4 @@ Dit project kan taken ontvangen van HavunCore:
 
 ---
 
-*Laatste update: 14 maart 2026*
+*Laatste update: 18 juli 2026*
