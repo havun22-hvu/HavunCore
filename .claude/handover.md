@@ -53,7 +53,9 @@ Functioneel identiek aan HavunClub; tegengas gegeven, Henk kiest eigen project.
   Vault-DB is een prod-ding. Vault vullen dus later op production, geautomatiseerd
   (plan: `vault:import-env` in fase 1) — géén handmatig overtypen.
 - **Fase 1 (repo-scaffold) wacht op "ga maar"** — volledig plan in
-  `D:\GitHub\VeenLedenadministratie\.claude\blueprint.md` (meldt zich bij `/start` daar).
+  `D:\GitHub\VeenLedenadministratie\.claude\blueprint.md`. Repo-opzet lokaal is aan de
+  HavunCore-sessie toegewezen (blueprint-taakverdeling). **Geparkeerd 18-07:** Henk wil
+  eerst groen licht van Cees + een offerte maken voordat Fase 1 draait.
 - **Open business (Cees):** hosting (TransIP-VPS vs onze server) + moderniseren
   (L5.5→huidig) vs. EOL-app doorgebruiken. Advies staat in de blueprint: onze server
   als doel, maar niet de EOL-stack meeverhuizen.
