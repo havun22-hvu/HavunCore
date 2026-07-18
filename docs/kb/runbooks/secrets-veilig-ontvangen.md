@@ -49,7 +49,7 @@ via `bcrypt()` in de DB — nooit in beeld (`runbooks/…` / commit 18-07).
 ## Verifiëren zonder lekken
 
 Bevestig dat het werkt met **alleen niet-gevoelige signalen**:
-- prefix + **laatste 4 tekens** (`sk_live_…kIA3`) — die toont de provider zelf ook;
+- prefix + **laatste 4 tekens** (`sk_live_…XXXX`) — die toont de provider zelf ook;
 - een **werkt/werkt-niet-status** tegen de echte API (bv. `HTTP 200` vs `401`);
 - nooit de volledige waarde.
 

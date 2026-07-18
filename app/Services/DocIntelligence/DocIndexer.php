@@ -36,6 +36,29 @@ class DocIndexer
     ];
 
     /**
+     * Bestanden die secrets kunnen bevatten en NOOIT geïndexeerd mogen worden —
+     * de KB-index (previews + embeddings) zou ze anders lekken. Toegevoegd 19-07-2026
+     * nadat credentials.md per ongeluk in de index belandde.
+     */
+    protected array $excludeFilenames = [
+        'credentials.md',
+    ];
+
+    /** True als het bestand secrets kan bevatten en dus overgeslagen moet worden. */
+    protected function isSensitiveFile(string $relativePath): bool
+    {
+        $name = strtolower(basename($relativePath));
+        if (in_array($name, $this->excludeFilenames, true)) {
+            return true;
+        }
+        // .env en .env.<omgeving> (maar .env.example bevat geen echte secrets)
+        if ($name === '.env' || (str_starts_with($name, '.env.') && $name !== '.env.example')) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
      * Code file extensions to index (in addition to .md)
      */
     protected array $codeExtensions = [
@@ -145,6 +168,10 @@ class DocIndexer
         $mdFiles = $this->findMdFiles($basePath);
         foreach ($mdFiles as $filePath) {
             $relativePath = $this->toRelativePath($filePath, $basePath);
+            if ($this->isSensitiveFile($relativePath)) {
+                $results['skipped']++;
+                continue;
+            }
             try {
                 $indexed = $this->indexFile($project, $relativePath, $filePath, $forceReindex);
                 if ($indexed) {
@@ -163,6 +190,10 @@ class DocIndexer
             $codeFiles = $this->findCodeFiles($basePath);
             foreach ($codeFiles as $filePath) {
                 $relativePath = $this->toRelativePath($filePath, $basePath);
+                if ($this->isSensitiveFile($relativePath)) {
+                    $results['skipped']++;
+                    continue;
+                }
                 try {
                     $indexed = $this->indexCodeFile($project, $relativePath, $filePath, $forceReindex);
                     if ($indexed) {
