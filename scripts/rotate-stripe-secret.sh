@@ -18,7 +18,8 @@ CRED="D:/GitHub/HavunCore/.claude/credentials.md"
 # echt Stripe gebruikt (anders die .env juist leegmaken).
 LIVE_ENVS=(
   "/var/www/judotoernooi/repo-prod/laravel"
-  "/var/www/havunadmin/production"   # HavunAdmin gebruikt Stripe echt (StripeService, payment-sync)
+  # HavunAdmin NIET: StripeService bestaat maar wordt nergens aangeroepen (dode feature).
+  # De dode live-sleutel in die .env is 19-07 leeggemaakt i.p.v. geroteerd.
 )
 
 read -rs -p "Plak de nieuwe Stripe sk_live_ sleutel (verborgen): " K; echo
