@@ -54,9 +54,12 @@ Functioneel identiek aan HavunClub; tegengas gegeven, Henk kiest eigen project.
   EOL-app in `_legacy`/`_backup` gitignored) + CI/deploy-workflows + server-omgevingen live:
   **production `veen.havun.nl` + staging `staging.veen.havun.nl` (200, HTTPS)** — nu nog de
   Laravel-welcome. Koers = **route B** (herbouw). Details in de Veen-blueprint.
-  **Open:** (a) GH Actions auto-deploy-key (`SSH_PRIVATE_KEY`) — geeft CI root-SSH, wacht op
-  Henks akkoord. (b) HavunCore-registratie (`havun-projects.php` + `DocIndexer`). (c) **Fase 3
-  `/arch`** = het eigenlijke vernieuwen (feature-inventaris + datamigratie 15k payments/SEPA).
+  ✅ Auto-deploy-key gezet + **pipeline E2E bewezen** (push staging → deploy groen → checkout
+  beweegt). ✅ HavunCore-registratie (`havun-projects.php` + poort-register + KB-index).
+  **Open:** (c) **Fase 3 `/arch`** = het eigenlijke vernieuwen (feature-inventaris +
+  datamigratie 15k payments/SEPA) — voor de Veen-sessie, na Cees' groen licht. (d) 2 logins
+  (`veen-ledenadministratie.nl` admin + TransIP-CP) staan als placeholder in `credentials.md`
+  regel 235/238 — **Henk vult de waarden zelf in** (sessies hadden ze niet).
 - **Business (Cees):** offerte + groen licht loopt via een aparte Veen-sessie
   (`bericht-cees-offerte.md`). Modernisering (fase 3) begint pas ná dat groen licht.
 - **Open business (Cees):** hosting (TransIP-VPS vs onze server) + moderniseren
