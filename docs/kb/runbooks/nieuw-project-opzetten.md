@@ -54,7 +54,9 @@ Workflows (kopieer van Vusista): `ci.yml` (tests + composer audit),
 ```bash
 # Read-deploykey (clonen) — patroon: key + host-alias + GitHub deploy key
 ssh-keygen -t ed25519 -N "" -C "deploy-read-<slug>" -f /root/.ssh/deploy_<slug>
-# ~/.ssh/config: Host github-<slug> → IdentityFile ~/.ssh/deploy_<slug>, IdentitiesOnly yes
+# ~/.ssh/config: Host github-<slug> → User git (VERPLICHT!), HostName github.com,
+#   IdentityFile ~/.ssh/deploy_<slug>, IdentitiesOnly yes
+#   Zonder "User git" gebruikt ssh de lokale user (root@github.com) → Permission denied (18-07)
 gh repo deploy-key add <pub> --repo havun22-hvu/<Naam> --title "server-read"
 
 mkdir /var/www/<slug>
@@ -72,12 +74,15 @@ Per omgeving (production/staging):
 6. `chown -R www-data:www-data storage bootstrap/cache` (composer als root maakt anders 500s die zichzelf niet kunnen loggen)
 7. `php artisan config:cache route:cache view:cache`
 
-**Nginx:** kopieer HavunClub-vhost-patroon (deny-blokken, sw.js no-cache, static immutable),
-eerst HTTP-only, dan:
+**Nginx:** kopieer een bestaand Laravel-vhost-patroon (bv. Studieplanner/Herdenkingsportaal —
+deny-blokken, sw.js no-cache, static immutable), eerst HTTP-only. **Elk server-block MOET
+zowel `listen 80;` als `listen [::]:80;` hebben** — de server heeft AAAA-records, dus Let's
+Encrypt doet de HTTP-01-challenge over IPv6; zonder IPv6-listen faalt certbot ("failed to
+authenticate", 18-07). Dan:
 ```bash
-certbot --nginx -d <slug>.havun.nl -d staging.<slug>.havun.nl --non-interactive --agree-tos --redirect
+certbot --nginx -d <slug>.havun.nl -d staging.<slug>.havun.nl --non-interactive --agree-tos -m henkvu@gmail.com --redirect
 ```
-Eén cert dekt beide hosts.
+Eén cert dekt beide hosts. (Certbot voegt zelf de `listen [::]:443 ssl` toe.)
 
 **GitHub Actions deploy-toegang:** `scripts/setup-deploy-key.sh <Naam>` (aparte
 Actions-key + `SSH_PRIVATE_KEY`-secret; de read-key uit de clone-stap is een andere key).

@@ -49,13 +49,16 @@ Functioneel identiek aan HavunClub; tegengas gegeven, Henk kiest eigen project.
   zit in de tarball, dus DB/APP_KEY/SES-mail/Pusher-secrets zijn al mee. Mollie-key
   ontbreekt in `.env` (zit in `.env1` of DB — uitzoeken).
 - **`vault:setup-veen`** command gebouwd + getest + gepusht (HavunCore master).
-  **Lokaal draaien lukt niet:** `database/database.sqlite` bestaat niet lokaal → de
-  Vault-DB is een prod-ding. Vault vullen dus later op production, geautomatiseerd
-  (plan: `vault:import-env` in fase 1) — géén handmatig overtypen.
-- **Fase 1 (repo-scaffold) wacht op "ga maar"** — volledig plan in
-  `D:\GitHub\VeenLedenadministratie\.claude\blueprint.md`. Repo-opzet lokaal is aan de
-  HavunCore-sessie toegewezen (blueprint-taakverdeling). **Geparkeerd 18-07:** Henk wil
-  eerst groen licht van Cees + een offerte maken voordat Fase 1 draait.
+  Vault vullen later op production (plan: `vault:import-env`).
+- **Fase 1 + 2 UITGEVOERD 18-07 (later):** GitHub-repo (private, verse **Laravel 12**, oude
+  EOL-app in `_legacy`/`_backup` gitignored) + CI/deploy-workflows + server-omgevingen live:
+  **production `veen.havun.nl` + staging `staging.veen.havun.nl` (200, HTTPS)** — nu nog de
+  Laravel-welcome. Koers = **route B** (herbouw). Details in de Veen-blueprint.
+  **Open:** (a) GH Actions auto-deploy-key (`SSH_PRIVATE_KEY`) — geeft CI root-SSH, wacht op
+  Henks akkoord. (b) HavunCore-registratie (`havun-projects.php` + `DocIndexer`). (c) **Fase 3
+  `/arch`** = het eigenlijke vernieuwen (feature-inventaris + datamigratie 15k payments/SEPA).
+- **Business (Cees):** offerte + groen licht loopt via een aparte Veen-sessie
+  (`bericht-cees-offerte.md`). Modernisering (fase 3) begint pas ná dat groen licht.
 - **Open business (Cees):** hosting (TransIP-VPS vs onze server) + moderniseren
   (L5.5→huidig) vs. EOL-app doorgebruiken. Advies staat in de blueprint: onze server
   als doel, maar niet de EOL-stack meeverhuizen.
