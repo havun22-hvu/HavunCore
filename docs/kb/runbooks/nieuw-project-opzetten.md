@@ -42,10 +42,10 @@ Workflows (kopieer van Vusista): `ci.yml` (tests + composer audit),
 
 ## 3. HavunCore-registratie (zelfde commit)
 
-1. `config/havun-projects.php` — pad + local_url
+1. `config/havun-projects.php` — key + `path` + `server_path` + `local_url`. **Dit is de
+   single source** — `DocIndexer` leest deze config (sinds 15-07, geen aparte lijst meer).
 2. `docs/kb/reference/poort-register.md` — php-fpm-socket-tabel + lokale-dev-tabel
-3. `app/Services/DocIntelligence/DocIndexer.php` — `$localPaths` + `$serverPaths` (gedupliceerde lijst!)
-4. `php artisan config:clear && php artisan docs:index <naam>`
+3. `php artisan config:clear && php artisan docs:index <naam>`
 
 ## 4. Server (188.245.159.115)
 

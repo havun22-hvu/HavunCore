@@ -110,12 +110,11 @@ De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2
 | HavunAdmin | `havunadmin.havun.nl` + `staging.havunadmin.havun.nl` | `/var/www/havunadmin/{production,staging}` |
 | Herdenkingsportaal | `herdenkingsportaal.nl` | `/var/www/herdenkingsportaal/production` |
 | JudoToernooi (HTTP) | `judotournament.org` + `staging.judotournament.org` | `/var/www/judotoernooi/{laravel,staging}` (alleen WS-deel proxyt naar Reverb 8080/8081) |
-| Infosyst | `infosyst.havun.nl` | `/var/www/infosyst/...` |
 | SafeHavun | `safehavun.havun.nl` | `/var/www/safehavun/...` |
 | Demo | `demo.havun.nl` | `/var/www/demo/...` |
 | JudoScoreBoard | `judoscoreboard.havun.nl` | `/var/www/judoscoreboard/...` |
-| HavunClub | `havunclub.havun.nl` + staging | **geparkeerd** — nginx config bestaat, deploy-key actief |
 | Vusista | `vusista.havun.nl` + `staging.vusista.havun.nl` | `/var/www/vusista/{production,staging}` |
+| VeenLedenadministratie | `veen.havun.nl` + `staging.veen.havun.nl` | `/var/www/veenledenadministratie/{production,staging}` |
 
 ### Toekomstige / geparkeerde projecten (nog geen poort)
 

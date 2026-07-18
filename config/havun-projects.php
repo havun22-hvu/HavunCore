@@ -133,4 +133,10 @@ return [
         'local_url' => null,
         'endpoints' => [],
     ],
+    'veen-ledenadministratie' => [
+        'path'      => 'D:/GitHub/VeenLedenadministratie',
+        'server_path' => '/var/www/veenledenadministratie',
+        'local_url' => null,
+        'endpoints' => [],
+    ],
 ];
