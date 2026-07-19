@@ -69,3 +69,5 @@ Project-specifieke kennis staat in het project zelf:
   klanten die dicht faalt, inclusief de schrijfkant
 - [legacy-gedrag-vastleggen.md](../patterns/legacy-gedrag-vastleggen.md) — karakterisatietests
   vóór een herbouw, en waarom gemaskeerde productiedata niet in git hoort
+- [unique-met-soft-deletes.md](../patterns/unique-met-soft-deletes.md) — een unique naast
+  `deleted_at` faalt altijd te streng of te los; hier op vijf tabellen tegelijk
