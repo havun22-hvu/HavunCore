@@ -1,0 +1,2 @@
+# Shell scripts must keep LF endings, or heredocs/shebang break in Git Bash + on the server.
+*.sh text eol=lf

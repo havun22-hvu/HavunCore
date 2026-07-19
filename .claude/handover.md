@@ -17,6 +17,7 @@ last_updated: 2026-07-19
 
 | Wat | Details |
 |-----|---------|
+| **Gelekt login-wachtwoord (`…ZxO#`) — rotatie loopt (19-07)** | Google meldde leak; waarde was over 10 havun.nl-sites hergebruikt. **Gedaan:** wachtwoord-login van `henkvu@` dood op HavunCore/SafeHavun/Studieplanner (random hash, magic-link blijft; rij-backups `/root/backups/pwreset-2026-07-19`). **Jij nog doen:** (1) `scripts/rotate-leaked-login.sh` draaien in Git Bash → nieuw uniek wachtwoord voor HavunAdmin (prod+staging) + JudoToernooi `.env`; (2) `infosyst`+`staging.havunclub` uit Google verwijderen (apps zijn 18-07 van server af — niks te roteren). **Apart (eigen sessie):** VPD/vpdupdate (`users.json`, Node/WebAuthn); HavunAdmin magic-link bouwen zodat wachtwoord ook dáár weg kan; password-kolommen nullable + wachtwoord-UI eruit op de 3 magic-link-apps |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `docs/kb/plans/blijvend-ingelogd-plan.md` |
 | **Prod-deploys staan klaar (3 checkouts achter)** | Herdenkingsportaal (3 code-commits — **passkey-login af maar niet live**), JudoToernooi (6), HavunCore zelf (KB-werk). Deploy = altijd jouw klik |
 | **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat **nergens actief meer** (JudoToernooi-prod = nieuwe sleutel, geverifieerd; HavunAdmin + `laravel-old` dode sleutels leeggemaakt). **Laat de oude in Stripe verlopen.** Optioneel: webhook-secret roteren + oude Stripe-regel in `credentials.md` opschonen. AWS SES-key = Cees' account, niet de onze |
