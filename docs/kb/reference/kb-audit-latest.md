@@ -2,7 +2,7 @@
 title: KB audit — havuncore
 type: reference
 scope: havuncore
-last_check: 2026-05-03
+last_check: 2026-07-19
 ---
 
 # KB audit — havuncore
@@ -11,11 +11,11 @@ last_check: 2026-05-03
 
 ## Samenvatting
 
-- Files gescand: **193**
-- 🔴 Critical: **2**
-- 🟠 High: **12**
+- Files gescand: **240**
+- 🔴 Critical: **3**
+- 🟠 High: **25**
 - 🟡 Medium: **0**
-- 🔵 Low: **9**
+- 🔵 Low: **10**
 - ⚪ Info: **0**
 
 ## 🔴 Critical findings
@@ -32,7 +32,79 @@ last_check: 2026-05-03
 
 **Voorstel:** Corrigeer of verwijder link
 
+### `docs/kb/runbooks/doc-intelligence-setup.md` _(detector: link)_
+
+**Probleem:** Broken link: [x](./README.md)
+
+**Voorstel:** Corrigeer of verwijder link
+
 ## 🟠 High findings
+
+### `.claude/commands/wu.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/contracts/havunclub-koppelingen.md` _(detector: zombie)_
+
+**Probleem:** Class-ref bestaat niet: `Invoice`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/contracts/havunclub-koppelingen.md` _(detector: zombie)_
+
+**Probleem:** Artisan command bestaat niet: `php artisan club:token-create`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Class-ref bestaat niet: `Havun\Core\Services\MCPService`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Class-ref bestaat niet: `Havun\Core\Services\TaskOrchestrator`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Class-ref bestaat niet: `Havun\Core\Services\APIContractRegistry`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Class-ref bestaat niet: `Havun\Core\Models\MCPMessage`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Artisan command bestaat niet: `php artisan havun:orchestrate`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Artisan command bestaat niet: `php artisan havun:status`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/judotoernooi-prod-deploy-repo-prod-2026-06-08.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/decisions/repo-hygiene-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Artisan command bestaat niet: `php artisan qv:scan-residu`
+
+**Voorstel:** Update doc of herstel class/command
 
 ### `docs/kb/decisions/reverb-safeguards-2026-04-05.md` _(detector: zombie)_
 
@@ -43,6 +115,12 @@ last_check: 2026-05-03
 ### `docs/kb/patterns/reverb-laravel.md` _(detector: zombie)_
 
 **Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/patterns/tauri-rust-reproducible-build.md` _(detector: zombie)_
+
+**Probleem:** Class-ref bestaat niet: `SystemTime`
 
 **Voorstel:** Update doc of herstel class/command
 
@@ -94,6 +172,12 @@ last_check: 2026-05-03
 
 **Voorstel:** Update doc of herstel class/command
 
+### `docs/kb/reference/security-findings.md` _(detector: zombie)_
+
+**Probleem:** Class-ref bestaat niet: `BackupService`
+
+**Voorstel:** Update doc of herstel class/command
+
 ### `docs/kb/runbooks/reverb-troubleshoot.md` _(detector: zombie)_
 
 **Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
@@ -138,6 +222,12 @@ last_check: 2026-05-03
 
 **Voorstel:** Overweeg splitsing
 
+### `docs/kb/plans/health-alerts-webpush-blueprint.md` _(detector: structure)_
+
+**Probleem:** Lege section: Nog te doen — frontend (havuncore-webapp, eigen sessie)
+
+**Voorstel:** Vul aan of verwijder
+
 ### `docs/kb/reference/api-kb-search.md` _(detector: structure)_
 
 **Probleem:** Lege section: Status: ACTIEF
@@ -152,7 +242,7 @@ last_check: 2026-05-03
 
 ### `docs/kb/reference/productie-deploy-eisen.md` _(detector: structure)_
 
-**Probleem:** File is 654 regels (> 500)
+**Probleem:** File is 844 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 
@@ -173,10 +263,30 @@ last_check: 2026-05-03
 
 ```bash
 git status --porcelain | grep -q . && { echo "Working tree not clean — abort"; exit 1; }
+# Class-ref bestaat niet: Invoice
+rm "docs/kb/contracts/havunclub-koppelingen.md"
+# Artisan command bestaat niet: php artisan club:token-create
+rm "docs/kb/contracts/havunclub-koppelingen.md"
+# Class-ref bestaat niet: Havun\Core\Services\MCPService
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Class-ref bestaat niet: Havun\Core\Services\TaskOrchestrator
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Class-ref bestaat niet: Havun\Core\Services\APIContractRegistry
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Class-ref bestaat niet: Havun\Core\Models\MCPMessage
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Artisan command bestaat niet: php artisan havun:orchestrate
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Artisan command bestaat niet: php artisan havun:status
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Artisan command bestaat niet: php artisan qv:scan-residu
+rm "docs/kb/decisions/repo-hygiene-2026-05-09.md"
 # Artisan command bestaat niet: php artisan reverb:health
 rm "docs/kb/decisions/reverb-safeguards-2026-04-05.md"
 # Artisan command bestaat niet: php artisan reverb:health
 rm "docs/kb/patterns/reverb-laravel.md"
+# Class-ref bestaat niet: SystemTime
+rm "docs/kb/patterns/tauri-rust-reproducible-build.md"
 # Class-ref bestaat niet: MagicLinkToken
 rm "docs/kb/patterns/zinvolle-tests.md"
 # Class-ref bestaat niet: TvKoppeling
@@ -193,6 +303,8 @@ rm "docs/kb/projects/judotoernooi.md"
 rm "docs/kb/projects/studieplanner.md"
 # Class-ref bestaat niet: Wedstrijd
 rm "docs/kb/reference/critical-paths-judotoernooi.md"
+# Class-ref bestaat niet: BackupService
+rm "docs/kb/reference/security-findings.md"
 # Artisan command bestaat niet: php artisan reverb:health
 rm "docs/kb/runbooks/reverb-troubleshoot.md"
 # Artisan command bestaat niet: php artisan gtag:refresh
