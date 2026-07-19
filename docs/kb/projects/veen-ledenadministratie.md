@@ -69,6 +69,8 @@ Project-specifieke kennis staat in het project zelf:
   klanten die dicht faalt, inclusief de schrijfkant
 - [legacy-gedrag-vastleggen.md](../patterns/legacy-gedrag-vastleggen.md) — karakterisatietests
   vóór een herbouw, en waarom gemaskeerde productiedata niet in git hoort
+- [constraints-die-werk-blokkeren.md](../patterns/constraints-die-werk-blokkeren.md) — elke
+  constraint blokkeert ergens gewoon werk; vijf keer aangetoond in dit project
 - [onveranderlijke-financiele-records.md](../patterns/onveranderlijke-financiele-records.md) — verstuurde
   incassos vastzetten met triggers; drie lagen, elk gebroken door een controleronde
 - [testen-op-de-echte-database.md](../patterns/testen-op-de-echte-database.md) — waarom de
