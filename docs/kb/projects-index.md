@@ -27,6 +27,7 @@ last_check: 2026-04-22
 | **HavunClub** | Laravel 11 SaaS | havunclub.havun.nl | D:\GitHub\HavunClub | /var/www/havunclub/production |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (in development) |
 | **Aeterna** | Tauri 2.0 + Rust + React | github.com/havun22-hvu/Aeterna | D:\GitHub\Aeterna | (geen server — multi-mirror distributie) |
+| **VeenLedenadministratie** | Laravel 12 SaaS | veen.havun.nl | D:\GitHub\VeenLedenadministratie | (in herbouw — oude app op TransIP) |
 | **Vusista** | Laravel 12 + NativePHP (desktop-app) | staging.vusista.havun.nl (demo) | D:\GitHub\Vusista | /var/www/vusista/ (bevroren — release = installer) |
 
 ## Korte beschrijving

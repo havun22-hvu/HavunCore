@@ -176,6 +176,8 @@ docs/audit/                   ← Kwartaal-audit (extern)
 ### Patterns (herbruikbare code)
 - [zinvolle-tests.md](patterns/zinvolle-tests.md) - **VERPLICHT:** Wat wel/niet testen (geen padding, alleen contract/invariant/regressie/domein)
 - [regression-guard-tests.md](patterns/regression-guard-tests.md) - **VERPLICHT:** Regression/guard/smoke tests + coverage targets
+- [multi-tenant-fail-closed.md](patterns/multi-tenant-fail-closed.md) - Klanten scheiden in één database; scope die NIETS teruggeeft bij onbekende tenant, ook bij schrijven
+- [legacy-gedrag-vastleggen.md](patterns/legacy-gedrag-vastleggen.md) - Karakterisatietests vóór een herbouw; waarom gemaskeerde productiedata niet in git hoort
 - [integrity-check.md](patterns/integrity-check.md) - Shadow file `.integrity.json` validatie
 - [email-verification.md](patterns/email-verification.md) - Email verificatie met 6-cijferige code
 - [pdf-to-image-conversion.md](patterns/pdf-to-image-conversion.md) - PDF naar JPEG (Imagick)
