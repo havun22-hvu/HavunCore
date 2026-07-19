@@ -69,5 +69,9 @@ Project-specifieke kennis staat in het project zelf:
   klanten die dicht faalt, inclusief de schrijfkant
 - [legacy-gedrag-vastleggen.md](../patterns/legacy-gedrag-vastleggen.md) — karakterisatietests
   vóór een herbouw, en waarom gemaskeerde productiedata niet in git hoort
+- [onveranderlijke-financiele-records.md](../patterns/onveranderlijke-financiele-records.md) — verstuurde
+  incassos vastzetten met triggers; drie lagen, elk gebroken door een controleronde
+- [testen-op-de-echte-database.md](../patterns/testen-op-de-echte-database.md) — waarom de
+  suite hier op MySQL draait en niet op SQLite
 - [unique-met-soft-deletes.md](../patterns/unique-met-soft-deletes.md) — een unique naast
   `deleted_at` faalt altijd te streng of te los; hier op vijf tabellen tegelijk

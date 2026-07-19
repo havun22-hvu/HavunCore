@@ -180,6 +180,7 @@ docs/audit/                   ← Kwartaal-audit (extern)
 - [legacy-gedrag-vastleggen.md](patterns/legacy-gedrag-vastleggen.md) - Karakterisatietests vóór een herbouw; waarom gemaskeerde productiedata niet in git hoort
 - [unique-met-soft-deletes.md](patterns/unique-met-soft-deletes.md) - Een unique naast `deleted_at` faalt altijd te streng of te los; oplossen met een gegenereerde kolom
 - [testen-op-de-echte-database.md](patterns/testen-op-de-echte-database.md) - SQLite-in-memory negeert kolomlengtes en CHECK-constraints; groene tests bewijzen dan minder dan ze lijken
+- [onveranderlijke-financiele-records.md](patterns/onveranderlijke-financiele-records.md) - Verstuurde betalingen en bestanden vastzetten: waarom een unique index verdwijnen en verhuizen niet dekt, en een trigger wel
 - [integrity-check.md](patterns/integrity-check.md) - Shadow file `.integrity.json` validatie
 - [email-verification.md](patterns/email-verification.md) - Email verificatie met 6-cijferige code
 - [pdf-to-image-conversion.md](patterns/pdf-to-image-conversion.md) - PDF naar JPEG (Imagick)
