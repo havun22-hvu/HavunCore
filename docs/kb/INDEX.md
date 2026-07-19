@@ -179,6 +179,7 @@ docs/audit/                   ← Kwartaal-audit (extern)
 - [multi-tenant-fail-closed.md](patterns/multi-tenant-fail-closed.md) - Klanten scheiden in één database; scope die NIETS teruggeeft bij onbekende tenant, ook bij schrijven
 - [legacy-gedrag-vastleggen.md](patterns/legacy-gedrag-vastleggen.md) - Karakterisatietests vóór een herbouw; waarom gemaskeerde productiedata niet in git hoort
 - [unique-met-soft-deletes.md](patterns/unique-met-soft-deletes.md) - Een unique naast `deleted_at` faalt altijd te streng of te los; oplossen met een gegenereerde kolom
+- [testen-op-de-echte-database.md](patterns/testen-op-de-echte-database.md) - SQLite-in-memory negeert kolomlengtes en CHECK-constraints; groene tests bewijzen dan minder dan ze lijken
 - [integrity-check.md](patterns/integrity-check.md) - Shadow file `.integrity.json` validatie
 - [email-verification.md](patterns/email-verification.md) - Email verificatie met 6-cijferige code
 - [pdf-to-image-conversion.md](patterns/pdf-to-image-conversion.md) - PDF naar JPEG (Imagick)
