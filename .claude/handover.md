@@ -23,6 +23,7 @@ last_updated: 2026-07-19
 | **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat **nergens actief meer** (JudoToernooi-prod = nieuwe sleutel, geverifieerd; HavunAdmin + `laravel-old` dode sleutels leeggemaakt). **Laat de oude in Stripe verlopen.** Optioneel: webhook-secret roteren + oude Stripe-regel in `credentials.md` opschonen. AWS SES-key = Cees' account, niet de onze |
 | **Vite-build achter op 4 checkouts — 2× prod** | HP-prod/staging, Studieplanner-prod, Vusista-staging. Signaal, geen diagnose — verifieer per project (`runbooks/vite-build-bij-deploy.md`), elk in eigen sessie |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault. Zie [[feedback-no-hardcoded-test-secrets]] |
+| **Server OS-update: volgende kwartaalcheck oktober 2026** | Gedaan 19-07: kernel 5.15.0-186, alle packages bij. `ondrej/nginx`-PPA verwijderd (IPv6 403). Runbook: `runbooks/server-os-updates.md` |
 | **Security: dependencies** | HavunAdmin 19 composer-advisories (2 high); JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high). `composer update`/`npm` → overleg |
 | **VPDUpdate: 54 commits achter + 5 dirty** | Bewust niet gedeployd; `users.json` (getrackt, live secrets) hangt eraan. Zie handover daar |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
