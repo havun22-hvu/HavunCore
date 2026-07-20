@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Sun, Jul 19, 2026 4:00 AM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Mon, Jul 20, 2026 4:00 AM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,7 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-07-19 | `76a0ef7` | chore(auto): refresh handover, kb-audit-latest, qv-scan-latest (2026-07-19T06:00:07+02:00) |
 | 2026-07-18 | `ba5e16d` | chore(auto): refresh handover, qv-scan-latest (2026-07-18T06:00:09+02:00) |
 | 2026-07-17 | `0994c56` | chore(auto): refresh handover, qv-scan-latest (2026-07-17T06:00:10+02:00) |
 | 2026-07-16 | `5f84953` | chore(auto): refresh handover, qv-scan-latest (2026-07-16T06:00:09+02:00) |
@@ -52,11 +53,11 @@
 
 **Totals:** critical 0 | high 0 | medium 0 | low 0
 
-_Snapshot timestamp: 2026-07-19T03:57:02+02:00_
+_Snapshot timestamp: 2026-07-20T03:57:03+02:00_
 
 ## KB audit (laatste wekelijkse run)
 
-**Totals:** critical 2 | high 12 | medium 0 | low 9
+**Totals:** critical 3 | high 25 | medium 0 | low 10
 
 _Zie `docs/kb/reference/kb-audit-latest.md` voor detail._
 

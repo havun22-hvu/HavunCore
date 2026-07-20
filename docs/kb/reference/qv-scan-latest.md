@@ -2,8 +2,8 @@
 title: qv:scan latest report (auto-generated)
 type: reference
 scope: alle-projecten
-generated_from: qv-scans/2026-07-19/run-031703278-3724889.json
-generated_at: 2026-07-19T03:17:03+02:00
+generated_from: qv-scans/2026-07-20/run-031703185-3922619.json
+generated_at: 2026-07-20T03:17:03+02:00
 ---
 
 # qv:scan — laatste run (auto-generated)
@@ -11,7 +11,7 @@ generated_at: 2026-07-19T03:17:03+02:00
 > Dit bestand wordt overschreven door `php artisan qv:log` na elke scan.
 > Voor **post-mortem, prose en fix-statussen** zie `security-findings.md` (handmatig).
 
-**Started:** 2026-07-19T03:17:03+02:00  
+**Started:** 2026-07-20T03:17:03+02:00  
 **Projects:** havunadmin, havunclub, herdenkingsportaal, studieplanner, judotoernooi, infosyst, safehavun, havuncore, studieplanner-mobile, munus, server-prod  
 **Checks:** npm
 
