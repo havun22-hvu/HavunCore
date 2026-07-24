@@ -120,7 +120,6 @@ De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2
 
 | Project | Verwachte tech | Verwachte poort | Status |
 |---------|---------------|-----------------|--------|
-| **Munus** | Laravel 12 module binnen HavunCore monorepo | geen TCP (via php-fpm socket) zoals overige Laravel projecten | Fase 1 — docs gereed, nog geen code (`D:\GitHub\Munus\`) |
 | Havunity | (paginabuilder, apart product) | TBD | geparkeerd (`D:\GitHub\Havunity\`) — niet aanraken |
 | **Agorano** | Laravel 12 backend + Vite React PWA (`D:\GitHub\Agorano\`) | prod = php-fpm socket (TBD, nog niet gedeployd) | Fase 1 — scaffold staat, nog geen server. Domein nog te kiezen |
 

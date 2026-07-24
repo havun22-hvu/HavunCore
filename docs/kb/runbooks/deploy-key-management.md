@@ -119,7 +119,6 @@ Elk project krijgt precies de deploy-key(s) die het nodig heeft om zijn taken te
 | Studieplanner | (Expo build-only) | — |
 | IDSee | (Node.js app) | — |
 | HavunCore | (geen remote deploy, lokale dev) | — |
-| Munus | (tbd) | — |
 
 Afwijking van deze tabel → eerst hier bijwerken + motiveren, dan pas nieuwe key installeren.
 

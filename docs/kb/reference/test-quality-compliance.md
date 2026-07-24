@@ -49,7 +49,7 @@ te stellen in project-sessie · n.v.t. dimensie niet van toepassing.
 | **aeterna** | Rust + Tauri desktop | ❓ | ❓ | n.v.t.⁴ | n.v.t. | ❓ | n.v.t. |
 | **agorano** | React PWA | ❌ | ❓ | ❌ (Fase 1, scaffold staat) | n.v.t. | ❓ | ❌ |
 | **havunclub** | Laravel + Blade | ❓ | ❓ | ❌ **geparkeerd** | n.v.t. | ❓ | ❌ |
-| **munus / havunity** | geparkeerd / bestaat nog niet | — | — | — | — | — | — |
+| **havunity** | geparkeerd | — | — | — | — | — | — |
 
 ¹ webapp toont status realtime via Socket.io (health-alerts), maar dat is geen
 cross-device kerntransactie — de E2E mockt het terecht. ² React-Native native →

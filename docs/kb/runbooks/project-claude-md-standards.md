@@ -45,7 +45,7 @@ Bij introductie van deze rollout (27-04-2026) bestonden alle docs behalve `runbo
 
 ```bash
 for d in HavunAdmin Herdenkingsportaal JudoToernooi Infosyst SafeHavun \
-         HavunVet Studieplanner JudoScoreBoard Munus havuncore-webapp IDSee; do
+         HavunVet Studieplanner JudoScoreBoard havuncore-webapp IDSee; do
   if grep -q "Havun Standaarden" "/d/GitHub/$d/CLAUDE.md" 2>/dev/null; then
     echo "✓ $d"
   else
@@ -64,7 +64,7 @@ Resultaat moet zijn: 11x ✓ voor actieve projecten.
 STUB="/d/GitHub/HavunCore/stubs/claude-md-standards-block.md"
 
 for d in HavunAdmin Herdenkingsportaal JudoToernooi Infosyst SafeHavun \
-         HavunVet Studieplanner JudoScoreBoard Munus havuncore-webapp IDSee; do
+         HavunVet Studieplanner JudoScoreBoard havuncore-webapp IDSee; do
   cmd="/d/GitHub/$d/CLAUDE.md"
   [ -f "$cmd" ] || continue
 

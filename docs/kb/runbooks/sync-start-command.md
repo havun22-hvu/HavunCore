@@ -39,7 +39,6 @@ last_check: 2026-06-06
 | HavunClub         | `D:\GitHub\HavunClub\.claude\commands\start.md` |
 | VPDUpdate         | `D:\GitHub\VPDUpdate\.claude\commands\start.md` |
 | Aeterna           | `D:\GitHub\Aeterna\.claude\commands\start.md` |
-| Munus             | `D:\GitHub\Munus\.claude\commands\start.md` (⏸ geparkeerd) |
 | Havunity          | `D:\GitHub\Havunity\.claude\commands\start.md` |
 
 3. **Optioneel:** Als een project geen `.claude/commands/` heeft, maak de map aan en plak start.md.

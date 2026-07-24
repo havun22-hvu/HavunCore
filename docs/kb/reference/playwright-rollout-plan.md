@@ -34,7 +34,7 @@ last_reviewed: 2026-06-20
 | JudoScoreBoard | React Native (Expo) native app — Jest unit/component |
 | Studieplanner | React Native (Expo) native app — Jest unit/component |
 | Aeterna | Rust + Tauri desktop app — geen web-E2E |
-| Munus, Havunity | bestaan (nog) niet / geparkeerd |
+| Havunity | bestaan (nog) niet / geparkeerd |
 
 ## Uitrolvolgorde — kritieke flows + quick wins eerst
 

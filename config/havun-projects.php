@@ -55,12 +55,6 @@ return [
         'local_url' => 'http://localhost:8006',
         'endpoints' => [],
     ],
-    'munus' => [
-        'path'      => 'D:/GitHub/Munus',
-        'server_path' => null,
-        'local_url' => null,
-        'endpoints' => [],
-    ],
     'aeterna' => [
         'path'      => 'D:/GitHub/Aeterna',
         'server_path' => null,

@@ -42,7 +42,6 @@ next_review: 2026-06-09
 | Studieplanner | geen (Expo) | geen | ✅ |
 | IDSee | geen | geen | ✅ |
 | HavunCore | geen (lokaal) | geen | ✅ |
-| Munus | geen (tbd) | geen | ✅ |
 | VPDUpdate | geen | geen | ✅ |
 
 ## Openstaande acties (Claude)

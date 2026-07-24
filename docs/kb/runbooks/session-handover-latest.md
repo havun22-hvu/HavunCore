@@ -34,7 +34,6 @@ date: 2026-05-20
 
 ## Belangrijke context
 
-- **Munus** heeft geen GitHub remote — commits blijven lokaal. Geen `git push` uitvoeren.
 - **Havunity** heeft geen GitHub remote — zelfde situatie.
 - **JudoToernooi** heeft nog een oude `hotfix/autofix-20260412-034009` branch — lokaal, niet gemerged.
 - **Herdenkingsportaal** gebruikt `main` als branch (niet `master`).

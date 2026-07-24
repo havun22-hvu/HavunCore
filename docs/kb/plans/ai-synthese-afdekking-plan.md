@@ -52,6 +52,15 @@ Afhankelijkheid: punt 1 eerst (de docs waarnaar verwezen wordt moeten bestaan).
 Zelfde blok in `CLAUDE.md` + `.claude/commands/start.md` van elk project — de vorm die bij
 `start2` (19-07) werkte: één kort blok, verwijzing naar de KB voor het volledige verhaal.
 
+**Afwijking van het plan (gemeten 24-07, tijdens uitvoering):** de `start.md`-bestanden hebben
+géén gemeenschappelijke structuur. Slechts 1 van de 15 heeft het anker "Bij rode tests: STOP",
+2 hebben een per-agendapunt-cyclus. Blind een regel inplakken zou in 12 projecten neerkomen op
+gokken waar hij hoort — precies het forceren dat het risico-blok verbiedt.
+
+**Daarom:** `CLAUDE.md` is de drager (die leest elke sessie sowieso). `start.md` krijgt de regel
+alleen waar een duidelijk ankerpunt bestaat. Waar geen `CLAUDE.md` is (VeenLedenadministratie,
+JS-Blocker-Extension) gaat de regel naar `start.md`, of wordt het project gemeld als niet-gedaan.
+
 **15 projecten**, af te handelen in batches van ~5 (parallel per batch, elk project is
 onafhankelijk):
 

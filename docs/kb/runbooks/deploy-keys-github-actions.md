@@ -67,7 +67,6 @@ bij `migrate=yes`). Faalt luid bij lokale wijzigingen op de server (ff-only).
 | IDSee, Agorano | — | — | ⛔ **geparkeerd** (Henk, 2 juli): "nog lang niet aan de beurt". Server-setup pas als ze aan de beurt zijn. |
 
 Native apps (judoscoreboard, LastMatch, Studieplanner, Aeterna) + geparkeerd
-Munus: geen server-deploy.
 
 > **Read-deploykey vs CI-key.** Twee verschillende keys per repo:
 > `deploy_<slug>` (host-alias `github-<slug>` in `/root/.ssh/config`) = server pullt
