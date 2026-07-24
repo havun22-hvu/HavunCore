@@ -50,8 +50,12 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
   `PushController`/`WebPushService` + VAPID; webapp `sw-push.js` + knop). Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
   Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt (`runbooks/uptime-monitoring.md`).
-- **havuncore-webapp** — update-banner activeert wachtende SW niet zichtbaar (verdenk `clientsClaim`/
-  `controllerchange`). Vitest geblokkeerd door Avast HTTPS-interceptie (niet de registry) — via server
+- **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** Gemeten met een nieuwe
+  E2E-suite tegen de productie-build (`npm run test:e2e:pwa`): banner verschijnt en de klik
+  activeert + herlaadt, in beide workbox-vensters (<60s en >60s na registratie). Geen code
+  gewijzigd. `sw.js` op prod heeft correcte no-cache-headers. Doet het zich wéér voor: check
+  eerst of `getRegistration()` een `waiting` heeft. Meting: `plans/webapp-sw-update-fix.md`.
+  Los daarvan: Vitest geblokkeerd door Avast HTTPS-interceptie (niet de registry) — via server
   ophalen + hash. Zie [[env-ssl-interception]].
 - **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde 523-versie op
   `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
