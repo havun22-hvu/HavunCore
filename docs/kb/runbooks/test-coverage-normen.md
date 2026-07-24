@@ -2,45 +2,44 @@
 title: Runbook: Test Coverage Normen
 type: runbook
 scope: havuncore
-last_check: 2026-04-22
+last_check: 2026-07-24
 ---
 
 # Runbook: Test Coverage Normen
 
-> Verplichte Havun normen voor code coverage en hoe te meten/verbeteren.
+> Hoe je dekking meet en beoordeelt. **Er is sinds 24-07-2026 geen drempel meer** — zie hieronder.
 
-## Verplichte Norm
+## De norm (gewijzigd 24-07-2026)
 
-**Alle projecten: minimaal 80% line coverage** (target 90%+).
+**Er is geen coveragedrempel meer.** Niet 80%, niet 85%, geen `--min=`. In plaats daarvan: *zo
+hoog mogelijke dekking met uitsluitend zinvolle tests* — het percentage is de uitkomst, niet het
+doel. Besluit + onderbouwing: [`decisions/coverage-drempel-vervalt-2026-07-24.md`](../decisions/coverage-drempel-vervalt-2026-07-24.md).
 
-**Verscherpte norm voor projecten met publieke betalingen: 85%** (Herdenkingsportaal).
+Een test telt alleen als hij een **contract, invariant, bug-regressie of domeinregel** vastlegt —
+de vier categorieën uit [`zinvolle-tests.md`](../patterns/zinvolle-tests.md). Padding schrappen mag
+het percentage laten zakken; dat is winst.
 
-> **Belangrijk:** coverage is een proxy, geen doel. Alleen **zinvolle tests** tellen — contracts, invariants, bug-regressies en domein-regels. Coverage-padding (getters, triviale booleans, relationship-type checks) is verboden. Zie [`docs/kb/patterns/zinvolle-tests.md`](../patterns/zinvolle-tests.md) voor de volledige regels en voorbeelden.
+**Waar je wél op stuurt:**
 
-## Huidige Stand (16 april 2026, PCOV + Jest)
+| Signaal | Wat het betekent |
+|---|---|
+| Betaal-/auth-/tenant-code lager gedekt dan modellen | Er is op gemak gedekt, niet op risico — dit is het belangrijkste signaal |
+| Een testbestand met een percentage in de naam of het docblock | Padding by design (`Push90Test`, `Last825Test`, `MaxServiceCoverageTest`) |
+| `assertStatus(500)` als verwacht resultaat | Een kapot foutpad vastgelegd als norm — [`coverage-test-cementeert-bug.md`](../patterns/coverage-test-cementeert-bug.md) |
+| Coverage-cijfer zonder meetdatum in een `CLAUDE.md` | Een claim, geen feit |
 
-| Project | Coverage | Tests | Status |
-|---------|----------|-------|--------|
-| SafeHavun | 94,22% | 302 | ✅ Mission-critical |
-| JudoScoreBoard | 93,42% | (Jest 12-04) | ✅ Mission-critical |
-| Infosyst | 91,51% | 834 | ✅ Mission-critical |
-| HavunVet | 90,87% | 276 | ✅ Mission-critical |
-| JudoToernooi | 89,84% | 3.257 | ✅ Enterprise |
-| HavunAdmin | 89,75% | 3.180 | ✅ Enterprise |
-| HavunCore | 87,4% | 795 | ✅ Enterprise |
-| Studieplanner | 82,67% | 223 (Jest 12-04) | ✅ Enterprise |
-| Herdenkingsportaal | 85,94% | 6.729 | ✅ Doel **85%** (publieke betalingen) — gehaald (webhook 85,4%, invoice 88,6%, Mollie 81,7%) |
+## Stand per project
 
-**Totaal:** 9.600+ tests, 17.000+ assertions. 8 van 9 projecten boven 80%.
+Cijfers verouderen; ze staan daarom **niet meer** in dit runbook. Per project met meetdatum in
+`docs/testschuld.md` van dat project, en samengevat in de HavunCore-handover.
+
+Gemeten 24-07-2026: Studieplanner-api **91,9% / 322 tests** — waarvan een aanwijsbaar deel padding.
 
 ## Coverage Meten
 
 ```bash
 # Vereist: pcov of xdebug extensie
 php artisan test --coverage
-
-# Met minimale drempel (CI/CD):
-php artisan test --coverage --min=82.5
 
 # Coverage rapport als XML (voor CI):
 php artisan test --coverage-clover=coverage.xml
@@ -122,5 +121,5 @@ $memorial = Memorial::factory()
 ## Zie Ook
 
 - `docs/kb/patterns/zinvolle-tests.md` — wat wel/niet testen (kernregel: geen padding)
-- `docs/kb/decisions/enterprise-quality-standards.md` — waarom 80%
+- `docs/kb/decisions/coverage-drempel-vervalt-2026-07-24.md` — waarom de drempel verviel
 - `docs/kb/runbooks/github-testing-plan.md` — CI/CD testing plan

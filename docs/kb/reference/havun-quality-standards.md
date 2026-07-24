@@ -67,17 +67,16 @@ Dit is vanaf 2026-04-20 leidend boven de oude "coverage >80 %"-eis.
 
 **Projectgemiddelde ≈ 65-75 %** — bewust gekalibreerd, niet zwakte.
 
-### Coverage-% is secundair, maar blijft CI-gate
+### Coverage-% is een uitkomst, geen gate (gewijzigd 24-07-2026)
 
-Om **gaten zichtbaar te maken** (niet om ons eraan te meten):
+**De CI-drempels (≥60 % unit-only, ≥80 % full) zijn vervallen.** Ze spraken het gelaagde model
+hierboven tegen: een platte ondergrens beloont goedkope regels even zwaar als dure, en dat is
+precies wat de padding voortbracht. Zie
+[`decisions/coverage-drempel-vervalt-2026-07-24.md`](../decisions/coverage-drempel-vervalt-2026-07-24.md).
 
-| Suite-type | CI-drempel |
-|------------|------------|
-| Unit-only | **≥ 60 %** |
-| Unit + Feature (Laravel full) | **≥ 80 %** |
-
-Onder drempel = review verplicht, geen auto-merge. Boven drempel ≠ klaar —
-mutation-score op kritieke paden blijft het echte signaal.
+Wat blijft: **mutation-score op kritieke paden** is het echte signaal, en de verdeling over de
+drie lagen. Een laag projectgemiddelde met 100 % op auth en betalingen is beter dan een hoog
+gemiddelde met gaten daar.
 
 ### Havun status
 
@@ -359,7 +358,7 @@ Uitgebreid: `/health/detailed` (auth required).
 
 **Verplichte checks:**
 - ✅ Tests (`php artisan test`)
-- ✅ Coverage threshold (>80% of minimum per project)
+- ✅ Kritieke paden gedekt (geen coveragedrempel — zie test-quality-policy.md)
 - ✅ Security audit (`composer audit`)
 - ✅ Integrity check (`.integrity.json` als aanwezig)
 
