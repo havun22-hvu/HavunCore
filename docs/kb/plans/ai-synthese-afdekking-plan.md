@@ -2,11 +2,16 @@
 title: "Plan: AI-synthese-risico's structureel afdekken + uitrol naar alle projecten"
 type: plan
 scope: alle-projecten
-status: wacht op "ga maar"
+status: uitgevoerd 24-07-2026
 date: 2026-07-24
 ---
 
 # Plan — AI-synthese-risico's afdekken
+
+> **Uitgevoerd 24-07-2026.** 14 CLAUDE.md's + 4 `start.md`'s dragen de regel (geverifieerd met
+> grep per project). Munus verwijderd incl. alle registraties. HavunCore-suite: **1312 passed,
+> 3658 assertions, 301s**. `docs:detect` schoon; beide nieuwe docs vindbaar via `docs:search`.
+> Niet gedaan: `start.md` in 12 projecten zonder bruikbaar ankerpunt — zie de afwijking bij punt 3.
 
 **Doel:** de drie mechanismen die AI-gegenereerde code voorspelbaar kwetsbaar maken
 (behaagzucht, mainstream-bias, randgevallen) borgen in de werkwijze — niet als goed voornemen

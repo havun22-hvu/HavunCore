@@ -62,6 +62,17 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
 
 ## Recent afgerond (context die nog nut heeft)
 
+- **AI-synthese-risico's afgedekt (24-07)** — nieuwe bindende standaard
+  `standards/ai-synthese-risicos.md` + `patterns/test-rood-gezien.md`: **een bugfix-test die je
+  niet rood hebt gezien tegen de oude code, bewijst niets.** Uitgerold naar 14 CLAUDE.md's en 4
+  `start.md`'s. Aanleiding: de update-banner-meting, waar een groene test bijna een
+  niet-bestaande bug als opgelost had gerapporteerd. Plan: `plans/ai-synthese-afdekking-plan.md`.
+- **Opruiming server + GitHub (24-07)** — dode vhost `demo.havun.nl` (wees naar een niet-bestaand
+  pad), 10 ongebruikte certs (25→15), 7 oude configs, lege `/var/www/lastmatch`. Backups in
+  `/root/backups/cleanup-2026-07-24/`. **Munus volledig weg** (map + lege repo + alle
+  registraties); **HavunVet gearchiveerd**. Geparkeerd, géén uitrol meer: HavunClub, Demo,
+  Havunity, Infosyst, IDSee, Agorano.
+
 - **credentials.md lekte in de KB-index (19-07)** — `docs:index` indexeerde de kluis (secrets in
   `doc_embeddings`). Gepurged + `isSensitiveFile`-guard in `DocIndexer` (credentials.md/.env nooit
   meer indexeren). Methode om secrets veilig te ontvangen zonder chat-lek: `runbooks/secrets-veilig-ontvangen.md`.
