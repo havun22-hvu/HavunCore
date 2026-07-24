@@ -67,6 +67,12 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
   niet rood hebt gezien tegen de oude code, bewijst niets.** Uitgerold naar 14 CLAUDE.md's en 4
   `start.md`'s. Aanleiding: de update-banner-meting, waar een groene test bijna een
   niet-bestaande bug als opgelost had gerapporteerd. Plan: `plans/ai-synthese-afdekking-plan.md`.
+- **13 CLAUDE.md's droegen twee achterhaalde normen (24-07)** — "de KB indexeert alleen het begin
+  van een bestand" (onwaar sinds de chunking van 15-07) en "handover 15-30 regels per sessie"
+  (norm is 120, en het sprak de regel eronder tegen). Gecorrigeerd. Ook opgeruimd: Havun 129→106
+  regels en JudoScoreBoard hadden een instructie die *toestemming vragen* eiste terwijl de tabel
+  ernaast zegt dat Claude technische keuzes zelf maakt. **De 6 geparkeerde projecten dragen de
+  foute normen nog** — bewust niet aangeraakt.
 - **Opruiming server + GitHub (24-07)** — dode vhost `demo.havun.nl` (wees naar een niet-bestaand
   pad), 10 ongebruikte certs (25→15), 7 oude configs, lege `/var/www/lastmatch`. Backups in
   `/root/backups/cleanup-2026-07-24/`. **Munus volledig weg** (map + lege repo + alle
