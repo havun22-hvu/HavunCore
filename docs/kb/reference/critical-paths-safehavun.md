@@ -44,7 +44,14 @@ die elk eigen brute-force surfaces hebben.
 - [x] Wrong password → 401 + rate-limit.
 - [x] Register: uitgeschakeld (redirect naar login).
 - [x] PIN: brute-force weigeren (rate-limit throttle:auth).
-- [x] QR-token: expired token → 410; re-use na succesvol login → 403.
+- [ ] **QR-token: expired → 410, re-use → 403 — BESTAAT NIET** (geverifieerd 24-07-2026 in
+  `QrAuthController::status()` en `routes/web.php`). De code geeft **200** met een `status`-veld
+  (`'expired'`); er staat nergens een 410 of 403. Dit vinkje stond hier ten onrechte aan.
+- [ ] **`/auth/qr/generate` en `/auth/qr/{token}/status` hebben geen `throttle`** — terwijl de
+  PIN- en passkey-loginroutes ernaast wél `throttle:auth` dragen. Ongelimiteerd pollbaar.
+- [ ] **Session fixation: geen `session()->regenerate()` op enig loginpad.** `LoginController:57`
+  doet alleen `regenerateToken()` (CSRF-token ≠ sessie-ID); `PinAuthController` en
+  `WebAuthnLoginController` doen geen van beide.
 
 **Tests:**
 
