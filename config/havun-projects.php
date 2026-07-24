@@ -139,4 +139,10 @@ return [
         'local_url' => null,
         'endpoints' => [],
     ],
+    'havunmarketing' => [
+        'path'      => 'D:/GitHub/HavunMarketing',
+        'server_path' => null,
+        'local_url' => null,
+        'endpoints' => [],
+    ],
 ];
