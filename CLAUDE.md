@@ -77,3 +77,19 @@ hebben.**
 - **Klopt het? Zet de datum erbij** — dan hoeft de volgende het niet over te doen.
 
 Volledig: `HavunCore/docs/kb/standards/claims-verifieren.md`
+
+## Rood gezien, of het telt niet
+
+**Bugfix? Zie de test éérst falen tegen de oude code.** Groen ná een fix heeft twee verklaringen —
+de fix werkt, of de test raakt de bug niet. Die zien er identiek uit. `git stash` op de fix en
+opnieuw draaien is genoeg. **Let op builds/servers die hergebruikt worden: dan test je je oude
+code helemaal niet.**
+
+- **Niet rood gezien? Meld dat.** "Test toegevoegd, niet rood gezien" is bruikbaar; "bug gefixt,
+  test groen" zonder die stap is een claim zonder dekking.
+- **Reproduceer vóór je fixt.** Een handover of issue die zegt dat iets stuk is, is een claim —
+  geen meting. Lukt reproduceren niet, dán is dát de bevinding.
+- **Afwijkende architectuur** (multi-tenancy, betalingen, auth/crypto, datamigratie) → `/arch`
+  voor een tweede mening. Een model grijpt daar terug op het GitHub-gemiddelde.
+
+Volledig: `HavunCore/docs/kb/patterns/test-rood-gezien.md` · `standards/ai-synthese-risicos.md`

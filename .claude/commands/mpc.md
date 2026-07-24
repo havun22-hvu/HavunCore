@@ -63,6 +63,8 @@ NOOIT phrasing als vraag: geen "Ga maar?", geen "Zal ik beginnen?", geen "Akkoor
 ```
 1. Implementeer het agendapunt
 2. Geautomatiseerde tests draaien + V&K check
+   └── **Bugfix? Eerst de test rood zien tegen de oude code** — anders bewijst groen niets.
+       Niet gedaan → expliciet melden. `patterns/test-rood-gezien.md`
    └── php artisan test --no-coverage  (Laravel)
    └── npm test                        (Node/RN)
 3. /simplify uitvoeren op gewijzigde code

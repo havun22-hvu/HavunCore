@@ -39,6 +39,8 @@ last_check: 2026-05-18
 
 ### Per-agendapunt cyclus (na elk punt verplicht)
 1. Geautomatiseerde tests draaien + V&K check
+   └── **Bugfix? Eerst de test rood zien tegen de oude code** — anders bewijst groen niets.
+       Niet gedaan → expliciet melden. `patterns/test-rood-gezien.md`
 2. `/simplify` uitvoeren
 3. MD docs + planning + handover bijwerken
 4. Commit + push → deploy staging → Henk test → deploy production
