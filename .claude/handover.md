@@ -107,5 +107,12 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
   project = eigen sessie** (uitzondering: Henk geeft expliciet toestemming). Zie [[feedback-scope-waarschuwen]].
 - KB zoeken: `php artisan docs:search "<onderwerp>"` — vereist Ollama op :11434.
 - **Eerste prod-deploy per app = Henk klikt bewust** (Actions → Deploy to Production). Nooit auto-migrate op prod.
+- **Prod kán wél pushen** (as root) — de oude notitie "prod kan niet pushen" klopt niet meer;
+  geverifieerd 25-07 met een echte push naar een `rescue/`-branch. **Maar `www-data` kan het niet:**
+  `git` weigert daar met *dubious ownership* (`safe.directory`). Dat is waarom
+  `AutoCommitRegeneratedCommand` zijn eigen veiligheidsklep niet kon gebruiken en
+  havuncore/production 10 lokale commits opbouwde tegenover 66 in origin. Opgelost door de
+  prod-staat naar `rescue/havuncore-prod-autocommits-2026-07-25` te pushen en hard te resetten.
+  **Nog te doen:** `safe.directory` goedzetten voor `www-data` (raakt server-config → overleg).
 - havuncore-webapp deployt anders: lokaal build → rsync + pm2 (`havuncore-webapp/DEPLOY.md`).
 - Server-quirk: `composer install` als root maakt `storage/**` root-owned → 500s. Fix: `chown -R www-data:www-data storage bootstrap/cache`.
