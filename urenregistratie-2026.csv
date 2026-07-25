@@ -148,5 +148,3 @@ Datum;Uren;Project;Onderdeel
 2026-03-02;0,5;HavunCore;Add Stripe payment info to JudoToernooi KB
 2026-03-02;0,5;Herdenkingsportaal;Correct company details (KvK, BTW, IBAN, address)
 2026-03-02;1,0;Judotoernooi;Add invoice generation and email for upgrade payments, Fix apostrophe translation keys on homepage, Exclude React Socket errors from AutoFix notifications
-2026-07-24;4,0;HavunMarketing;Doelgroepprofielen 3 producten, concurrentieanalyse + SEO-plan Herdenkingsportaal, genealogisch spoor, Arweave-kostprijs berekend, zakelijk tarief uitvaartondernemers opgesteld
-2026-07-25;4,0;HavunMarketing;Advertentiebeleid herzien naar doorverwijspartners, partnerpaginas + herkomstvermelding uitgewerkt, landingspagina/microcopy/outreach geschreven, prijsmodel omgezet naar gelijke verdeling
