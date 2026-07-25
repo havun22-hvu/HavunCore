@@ -2,7 +2,7 @@
 title: "Plan: /start en /end — de deploy-achterstand moet niet meer te missen zijn"
 type: plan
 scope: havuncore
-status: in uitvoering
+status: uitgevoerd 25-07-2026
 date: 2026-07-25
 ---
 

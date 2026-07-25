@@ -63,6 +63,16 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
 
 ## Recent afgerond (context die nog nut heeft)
 
+- **`/start` en `/end`: deploy-achterstand is niet meer te missen (25-07)** — nieuw
+  `php artisan havun:deploy-status`: scheidt code van docs, licht security-commits eruit als
+  alarm, meldt migraties apart. Staat nu **ook in `/start`** (stap 1d) — dát is de plek die telt,
+  want `/start` draait altijd en `/end` niet. Meting die dit uitwees: de check in `/end` wérkte,
+  maar vond 13 achterlopende checkouts zonder dat iemand het las. Plan:
+  `plans/start-end-verbetering.md`.
+- **Negen coverage-audits (24/25-07)** — norm gewijzigd: géén drempel meer, wél zo hoog mogelijk
+  *zinvolle* dekking (`decisions/coverage-drempel-vervalt-2026-07-24.md`). Per project een
+  `docs/testschuld.md`. Rode draad: gedekt is wat makkelijk was, niet wat kapot mag gaan.
+
 - **AI-synthese-risico's afgedekt (24-07)** — nieuwe bindende standaard
   `standards/ai-synthese-risicos.md` + `patterns/test-rood-gezien.md`: **een bugfix-test die je
   niet rood hebt gezien tegen de oude code, bewijst niets.** Uitgerold naar 14 CLAUDE.md's en 4
