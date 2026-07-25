@@ -96,3 +96,25 @@ Volgorde, altijd:
 4. Pas dan weg wat echt weg kan.
 
 Wat de enige kopie is, wordt nooit verwijderd. Ook niet op "alles opruimen".
+
+## Een untrack-commit verwijdert het bestand alsnog (25-07-2026)
+
+**Staat er een `git rm --cached`-deletion staged op een checkout, laat die dan staan.** Die staged
+deletion is geen rommel — het is precies wat het bestand op de schijf houdt zodra de bijbehorende
+commit binnenkomt.
+
+Wat er misging bij VPDUpdate: de checkout had `D users.json` staged (live gebruikersdata,
+untracked op schijf) en de commit `security: untrack users.json` stond klaar in origin. Ik hief de
+staged deletion op om "schoon te kunnen pullen" — daarmee was het bestand weer tracked, en de pull
+voerde `delete mode 100644 users.json` gewoon uit. Live data weg.
+
+Hersteld uit de backup van vijf minuten eerder, app herstart, `vpd.havun.nl` weer 200. Zonder die
+backup was het onherstelbaar geweest: het bestand bestond nergens anders.
+
+**De regels die dit voorkomen:**
+
+1. **Backup vóór elke pull op een checkout met untracked live data** — niet alleen bij wissen.
+   Een `git pull` is óók een operatie die bestanden verwijdert.
+2. **Raak een staged deletion niet aan** als je niet weet waarom hij er staat.
+3. **Controleer ná de pull dat de live bestanden er nog zijn**, met naam en bytes. Een deploy die
+   slaagt zegt niets over wat hij onderweg heeft opgeruimd.
