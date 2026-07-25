@@ -138,21 +138,16 @@ done'
 `/end` **vraagt het actief**, elke sessie. Niet deployen zonder go, maar wél elke keer voorleggen.
 
 ```bash
-ssh -o ConnectTimeout=15 root@188.245.159.115 '
-for d in $(find /var/www -maxdepth 3 -name .git -type d 2>/dev/null | sed "s|/.git||"); do
-  cd "$d" 2>/dev/null || continue
-  br=$(git rev-parse --abbrev-ref HEAD 2>/dev/null); [ "$br" = "HEAD" ] && continue
-  git fetch -q origin 2>/dev/null
-  n=$(git rev-list --count "HEAD..origin/$br" 2>/dev/null)
-  [ -n "$n" ] && [ "$n" -gt 0 ] && echo "$d [$br] | $n commits achter"
-done'
+cd D:\GitHub\HavunCore && php artisan havun:deploy-status
 ```
 
-**Kijk wát er klaarstaat** — een deploy voor alleen docs is zinloos:
+Dat commando scheidt code van docs, licht security-commits eruit als alarm en meldt migraties
+apart. Het stond hier eerder als los shell-blok; dat blok wérkte, maar telde 181 commits docs even
+zwaar als één security-fix — en zo'n melding wordt genegeerd.
 
-```bash
-ssh root@188.245.159.115 "git -C /var/www/<project>/production log --oneline HEAD..origin/<branch>" | head -10
-```
+> **Deze check staat sinds 25-07-2026 óók in `/start` (stap 1d), en dat is de belangrijkste plek:
+> `/start` draait altijd, `/end` niet.** Dat is precies waarom de fix voor 34 composer-advisories
+> 13 commits lang op Herdenkingsportaal-productie bleef liggen.
 
 ### Hoe je het voorlegt
 

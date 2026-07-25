@@ -104,6 +104,27 @@ done'
 > 34 MB OTA-bundles, de gebouwde PWA en een alleen-op-de-server aangepaste landingspagina tussen de
 > "rommel". Wissen = outage. Regel: `docs/kb/standards/server-hygiene.md`.
 
+## Stap 1d: Wat staat er klaar om te deployen (VERPLICHT)
+
+```bash
+cd D:\GitHub\HavunCore && php artisan havun:deploy-status
+```
+
+**Deze stap staat in `/start` en niet alleen in `/end`, omdat `/start` altijd draait en `/end`
+lang niet altijd.** Precies daardoor bleef de fix voor 34 composer-advisories (4 high) 13 commits
+lang op Herdenkingsportaal-productie liggen — tot Henk het zelf zag (25-07-2026).
+
+Het commando scheidt code van docs en licht security-commits eruit:
+
+| Uitkomst | Wat je doet |
+|---|---|
+| 🔴 **SECURITY WACHT OP DEPLOY** | **Meteen melden, bovenaan je bevestiging.** Dit is geen vraag maar een alarm — een bekende kwetsbaarheid die live staat. Leg de deploy voor vóór je aan iets anders begint |
+| 🟡 **Code klaar** | Noemen in de bevestiging, met wat het oplost en of er migraties bij zitten |
+| ⚪ **Alleen docs** | Stil — die liften mee bij de volgende deploy |
+
+Migraties worden apart gemeld: die draai je niet terug met `git revert`, dus DB-backup vooraf.
+Deployen blijft Henks go (§Vraagdiscipline) — voorleggen is verplicht, uitvoeren niet.
+
 ## Stap 2: Lees project documentatie (VERPLICHT)
 
 ```
