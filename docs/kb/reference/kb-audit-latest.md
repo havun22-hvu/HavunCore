@@ -2,7 +2,7 @@
 title: KB audit — havuncore
 type: reference
 scope: havuncore
-last_check: 2026-05-03
+last_check: 2026-07-28
 ---
 
 # KB audit — havuncore
@@ -11,100 +11,190 @@ last_check: 2026-05-03
 
 ## Samenvatting
 
-- Files gescand: **193**
-- 🔴 Critical: **2**
-- 🟠 High: **12**
+- Files gescand: **272**
+- 🔴 Critical: **1**
+- 🟠 High: **28**
 - 🟡 Medium: **0**
 - 🔵 Low: **9**
 - ⚪ Info: **0**
 
 ## 🔴 Critical findings
 
-### `docs/kb/reference/authentication-methods.md` _(detector: link)_
+### `docs/kb/runbooks/doc-intelligence-setup.md` _(detector: link)_
 
-**Probleem:** Broken link: [HP SPEC.md sectie 3](../../../../Herdenkingsportaal/SPEC.md)
-
-**Voorstel:** Corrigeer of verwijder link
-
-### `docs/kb/reference/authentication-methods.md` _(detector: link)_
-
-**Probleem:** Broken link: [HP LOGIN-METHODS.md](../../../../Herdenkingsportaal/docs/2-FEATURES/LOGIN-METHODS.md)
+**Probleem:** Broken link: [x](./README.md)
 
 **Voorstel:** Corrigeer of verwijder link
 
 ## 🟠 High findings
 
-### `docs/kb/decisions/reverb-safeguards-2026-04-05.md` _(detector: zombie)_
+### `.claude/commands/end.md` _(detector: structure)_
 
-**Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
+**Probleem:** Ontbrekende frontmatter
 
-**Voorstel:** Update doc of herstel class/command
+**Voorstel:** Voeg `---` block toe met title/type/scope
 
-### `docs/kb/patterns/reverb-laravel.md` _(detector: zombie)_
+### `.claude/commands/start.md` _(detector: structure)_
 
-**Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
+**Probleem:** Ontbrekende frontmatter
 
-**Voorstel:** Update doc of herstel class/command
+**Voorstel:** Voeg `---` block toe met title/type/scope
 
-### `docs/kb/patterns/zinvolle-tests.md` _(detector: zombie)_
+### `.claude/commands/wu.md` _(detector: structure)_
 
-**Probleem:** Class-ref bestaat niet: `MagicLinkToken`
+**Probleem:** Ontbrekende frontmatter
 
-**Voorstel:** Update doc of herstel class/command
+**Voorstel:** Voeg `---` block toe met title/type/scope
 
-### `docs/kb/patterns/zinvolle-tests.md` _(detector: zombie)_
+### `docs/kb/INDEX.md` _(detector: structure)_
 
-**Probleem:** Class-ref bestaat niet: `TvKoppeling`
+**Probleem:** Ontbrekende frontmatter
 
-**Voorstel:** Update doc of herstel class/command
+**Voorstel:** Voeg `---` block toe met title/type/scope
 
-### `docs/kb/patterns/zinvolle-tests.md` _(detector: zombie)_
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
 
-**Probleem:** Class-ref bestaat niet: `SyncConflict`
-
-**Voorstel:** Update doc of herstel class/command
-
-### `docs/kb/patterns/zinvolle-tests.md` _(detector: zombie)_
-
-**Probleem:** Class-ref bestaat niet: `Vrijwilliger`
+**Probleem:** Class-ref bestaat niet: `Havun\Core\Services\MCPService`
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/patterns/zinvolle-tests.md` _(detector: zombie)_
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
 
-**Probleem:** Class-ref bestaat niet: `ClubUitnodiging`
-
-**Voorstel:** Update doc of herstel class/command
-
-### `docs/kb/projects/judotoernooi.md` _(detector: zombie)_
-
-**Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
+**Probleem:** Class-ref bestaat niet: `Havun\Core\Services\TaskOrchestrator`
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/projects/studieplanner.md` _(detector: zombie)_
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
 
-**Probleem:** Artisan command bestaat niet: `php artisan xrp:check`
-
-**Voorstel:** Update doc of herstel class/command
-
-### `docs/kb/reference/critical-paths-judotoernooi.md` _(detector: zombie)_
-
-**Probleem:** Class-ref bestaat niet: `Wedstrijd`
+**Probleem:** Class-ref bestaat niet: `Havun\Core\Services\APIContractRegistry`
 
 **Voorstel:** Update doc of herstel class/command
 
-### `docs/kb/runbooks/reverb-troubleshoot.md` _(detector: zombie)_
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
 
-**Probleem:** Artisan command bestaat niet: `php artisan reverb:health`
+**Probleem:** Class-ref bestaat niet: `Havun\Core\Models\MCPMessage`
 
 **Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Artisan command bestaat niet: `php artisan havun:orchestrate`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/007-mcp-removal-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Artisan command bestaat niet: `php artisan havun:status`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/decisions/judotoernooi-prod-deploy-repo-prod-2026-06-08.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/decisions/repo-hygiene-2026-05-09.md` _(detector: zombie)_
+
+**Probleem:** Artisan command bestaat niet: `php artisan qv:scan-residu`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/patterns/tauri-rust-reproducible-build.md` _(detector: zombie)_
+
+**Probleem:** Class-ref bestaat niet: `SystemTime`
+
+**Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/projects-index.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/reference/authentication-methods.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/reference/autofix.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/reference/deploy-keys-inventory.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/reference/playwright-rollout-plan.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/reference/poort-register.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/reference/repo-hygiene-policy.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/reference/test-quality-compliance.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/runbooks/deploy-key-management.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/runbooks/deploy-keys-github-actions.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/runbooks/project-claude-md-standards.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
 
 ### `docs/kb/runbooks/security-headers-check.md` _(detector: zombie)_
 
 **Probleem:** Artisan command bestaat niet: `php artisan gtag:refresh`
 
 **Voorstel:** Update doc of herstel class/command
+
+### `docs/kb/runbooks/session-handover-latest.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/runbooks/sync-start-command.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
+
+### `docs/kb/runbooks/test-coverage-normen.md` _(detector: structure)_
+
+**Probleem:** Ontbrekende frontmatter
+
+**Voorstel:** Voeg `---` block toe met title/type/scope
 
 ## 🔵 Low findings
 
@@ -152,7 +242,7 @@ last_check: 2026-05-03
 
 ### `docs/kb/reference/productie-deploy-eisen.md` _(detector: structure)_
 
-**Probleem:** File is 654 regels (> 500)
+**Probleem:** File is 844 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 
@@ -173,28 +263,22 @@ last_check: 2026-05-03
 
 ```bash
 git status --porcelain | grep -q . && { echo "Working tree not clean — abort"; exit 1; }
-# Artisan command bestaat niet: php artisan reverb:health
-rm "docs/kb/decisions/reverb-safeguards-2026-04-05.md"
-# Artisan command bestaat niet: php artisan reverb:health
-rm "docs/kb/patterns/reverb-laravel.md"
-# Class-ref bestaat niet: MagicLinkToken
-rm "docs/kb/patterns/zinvolle-tests.md"
-# Class-ref bestaat niet: TvKoppeling
-rm "docs/kb/patterns/zinvolle-tests.md"
-# Class-ref bestaat niet: SyncConflict
-rm "docs/kb/patterns/zinvolle-tests.md"
-# Class-ref bestaat niet: Vrijwilliger
-rm "docs/kb/patterns/zinvolle-tests.md"
-# Class-ref bestaat niet: ClubUitnodiging
-rm "docs/kb/patterns/zinvolle-tests.md"
-# Artisan command bestaat niet: php artisan reverb:health
-rm "docs/kb/projects/judotoernooi.md"
-# Artisan command bestaat niet: php artisan xrp:check
-rm "docs/kb/projects/studieplanner.md"
-# Class-ref bestaat niet: Wedstrijd
-rm "docs/kb/reference/critical-paths-judotoernooi.md"
-# Artisan command bestaat niet: php artisan reverb:health
-rm "docs/kb/runbooks/reverb-troubleshoot.md"
+# Class-ref bestaat niet: Havun\Core\Services\MCPService
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Class-ref bestaat niet: Havun\Core\Services\TaskOrchestrator
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Class-ref bestaat niet: Havun\Core\Services\APIContractRegistry
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Class-ref bestaat niet: Havun\Core\Models\MCPMessage
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Artisan command bestaat niet: php artisan havun:orchestrate
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Artisan command bestaat niet: php artisan havun:status
+rm "docs/kb/decisions/007-mcp-removal-2026-05-09.md"
+# Artisan command bestaat niet: php artisan qv:scan-residu
+rm "docs/kb/decisions/repo-hygiene-2026-05-09.md"
+# Class-ref bestaat niet: SystemTime
+rm "docs/kb/patterns/tauri-rust-reproducible-build.md"
 # Artisan command bestaat niet: php artisan gtag:refresh
 rm "docs/kb/runbooks/security-headers-check.md"
 ```
