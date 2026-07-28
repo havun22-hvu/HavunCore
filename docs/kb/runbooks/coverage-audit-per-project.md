@@ -64,4 +64,4 @@ HavunCore-handover.
 
 Overgeslagen wegens te weinig tests: Aeterna (1 testbestand), LastMatch (3), Havun en
 HavunMarketing (0). havuncore-webapp heeft er 7, maar Vitest is daar geblokkeerd door lokale
-HTTPS-interceptie — zie [[env-ssl-interception]].
+HTTPS-interceptie — zie [lokale HTTPS-interceptie](../reference/lokale-https-interceptie.md).
