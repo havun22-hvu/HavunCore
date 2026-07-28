@@ -48,6 +48,7 @@ docs/kb/
 │   ├── pdf-to-image-conversion.md
 │   ├── pusher-realtime.md
 │   ├── magic-link-auth.md
+│   ├── magic-link-auth-nodejs.md
 │   ├── qr-code-url-matching.md
 │   ├── regression-guard-tests.md  ← Regression/guard/smoke tests (VERPLICHT)
 │   ├── integrity-check.md         ← Shadow file .integrity.json
@@ -194,6 +195,7 @@ docs/audit/                   ← Kwartaal-audit (extern)
 - [csrf-token-refresh.md](patterns/csrf-token-refresh.md) - CSRF token refresh
 - [password-hashing.md](patterns/password-hashing.md) - Wachtwoord hashing
 - [magic-link-auth.md](patterns/magic-link-auth.md) - Magic link registratie + wachtwoord vergeten (Laravel)
+- [magic-link-auth-nodejs.md](patterns/magic-link-auth-nodejs.md) - Magic link zonder framework of database (raw Node.js, JSON-opslag)
 - [qr-code-url-matching.md](patterns/qr-code-url-matching.md) - QR code URL matching
 - [havun-mobile-login.md](patterns/havun-mobile-login.md) - **BINDEND:** uniforme login-beslislogica (magic link + bio primair; QR nooit op smartphone)
 - [havunclub-bouwstenen.md](patterns/havunclub-bouwstenen.md) - **Bibliotheek:** K&V-bouwstenen met beste referentie-implementatie (circuit breaker, audit log, exceptions, headers, limiters, health, testPassword)
