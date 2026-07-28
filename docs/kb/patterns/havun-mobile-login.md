@@ -63,10 +63,11 @@ async function platformBioBeschikbaar(timeoutMs = 2000) {
 //   bioKnop.hidden = !(mobiel && await platformBioBeschikbaar());   // regel 3/5
 ```
 
-## Checklist per app (invoeringsstatus 14 jul 2026)
+## Checklist per app (invoeringsstatus 14 jul 2026, VPDUpdate 29 jul)
 
-| App | Detectie | QR-op-mobiel | Bio-bug | Status (14 jul 2026) |
+| App | Detectie | QR-op-mobiel | Bio-bug | Status |
 |-----|----------|--------------|---------|----------------------|
+| VPDUpdate | ✅ recept (in `auth-detect.js`, unit-getest) | ✅ gefixt + CSS-vangnet | ✅ localStorage-poort weg | prod live 29-07, Henks test volgt |
 | HavunClub | ✅ recept | ✅ gefixt | ✅ WEBAUTHN-env gezet (server); oude passkeys opnieuw registreren | staging live, prod na Henks test |
 | havuncore-webapp | ✅ recept | ✅ gefixt | ✅ `available`-check gefixt | code klaar, deploy = Henks go |
 | JudoToernooi | ✅ recept | ✅ gefixt | ✅ timeout + magic-link-fallback | staging live, prod na Henks test |
@@ -74,3 +75,24 @@ async function platformBioBeschikbaar(timeoutMs = 2000) {
 | Studieplanner | n.v.t. (native) | n.v.t. | bio nooit gebouwd | apart traject |
 
 Plan: `docs/kb/plans/pwa-login-uniform-plan.md`.
+
+> **VPDUpdate was in juli overgeslagen** en stond niet in deze tabel — de klacht kwam pas op
+> 28-07 van Henk zelf ("op de smartphone is een qr code, dat heeft geen zin"). Wie een app aan
+> deze lijst toevoegt: controleer of álle Havun-apps met een web-login erin staan, niet alleen
+> degene die op dat moment in beeld waren.
+
+## Twee toevoegingen uit de VPDUpdate-ronde (29 jul 2026)
+
+**CSS-vangnet voor regel 2.** De JS verbergt de QR, maar draait die JS niet, dan staat er op een
+telefoon alsnog een onscanbare code. Een `@media (pointer: coarse) { display: none }` laat de
+regel gelden zonder scripting. Een desktop mét aanraakscherm rapporteert `fine` als primaire
+pointer en houdt zijn QR — precies de gewenste scheiding.
+
+**Start de QR-sessie ook niet op mobiel.** Verbergen is niet genoeg: `initQrLogin()` opende een
+sessie en een poll-interval van 2 seconden voor iets dat niemand kon zien.
+
+**Detectie is unit-testbaar** als je hem in een los bestand zet en de browser-globals injecteert
+(`isSmartphone(env = globalThis)`). Zinnige gevallen: iPad (meldt zich als Macintosh, heeft
+touch), desktop met aanraakscherm (moet QR houden), coarse zónder touch-signaal. Controleer met
+een mutatie of de tests bijten: haal de `coarse`-check weg en de touchscreen-desktop hoort om te
+vallen.
