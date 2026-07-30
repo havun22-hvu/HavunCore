@@ -11,6 +11,12 @@ last_check: 2026-04-22
 > **Doc Intelligence:** Index van alle projecten bijgewerkt op 2026-03-10 (`docs:index all`).
 > **Projectnamen:** Altijd met hoofdletter (JudoToernooi, Infosyst, HavunClub, etc.)
 
+> ⛔ **De `Type`-kolom hieronder is een beschrijving, geen norm.** Dat de meeste projecten
+> Laravel draaien, is geen reden dat het volgende dat ook doet. Een nieuw project begint met de
+> vijf intake-vragen — [`standards/stack-keuze.md`](standards/stack-keuze.md) — en `project:scaffold`
+> weigert te draaien zonder ingevulde `docs/intake.md`. Wat er gebeurt als die vraag uitblijft:
+> [`patterns/fundament-versus-omweg.md`](patterns/fundament-versus-omweg.md).
+
 | Project | Type | URL | Local | Server |
 |---------|------|-----|-------|--------|
 | **HavunCore** | Laravel 11 + Node.js | havuncore.havun.nl | D:\GitHub\HavunCore | /var/www/havuncore/production |

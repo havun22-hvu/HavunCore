@@ -59,3 +59,11 @@ Eindig ALTIJD met:
 - Als `havun:gemini` faalt: meld de fout en stop — geen fallback naar eigen implementatie
 - Eén taak per aanroep (atomair)
 - Claude begint NIET zelf te coderen na de blueprint — wacht op `/mpc` + "ga maar"
+- **Gaat de blauwdruk over een nieuw project of over het fundament?** Zet de vijf
+  intake-vragen uit `standards/stack-keuze.md` in de prompt mee, en lees de blauwdruk
+  kritisch op één punt: **kiest Gemini de stack, of erft hij hem?** Een model grijpt
+  hier terug op het GitHub-gemiddelde, en dat gemiddelde is een webframework.
+  Zie `standards/ai-synthese-risicos.md` + `patterns/fundament-versus-omweg.md`.
+- **Stelt de blauwdruk een omweg voor** (framework omzeilen, tweede runtime, eigen poort,
+  vangnet, sidecar)? Dan hoort die in `docs/omwegen.md` — en bij de tweede is het een
+  architectuurreview, geen implementatie. `patterns/omwegen-tellen.md`

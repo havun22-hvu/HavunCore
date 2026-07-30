@@ -27,15 +27,50 @@ class ProjectScaffoldCommandTest extends TestCase
      * Run the scaffold command against the temp path with --force.
      * Centralised so individual tests stay focused on assertions.
      *
+     * Writes a filled-in docs/intake.md first: the intake gates the command
+     * by design, and every test but the intake tests themselves is about
+     * what comes after that gate.
+     *
      * @param  array<string,mixed>  $extraArgs
      */
     private function scaffold(string $slug, array $extraArgs = []): int
     {
+        // The intake must conclude the same type the scaffold is asked for —
+        // that agreement is the point, so derive it from the args.
+        $this->writeIntake($extraArgs['--type'] ?? 'server-webapp');
+
+        return $this->scaffoldWithoutIntake($slug, $extraArgs);
+    }
+
+    /**
+     * @param  array<string,mixed>  $extraArgs
+     */
+    private function scaffoldWithoutIntake(string $slug, array $extraArgs = []): int
+    {
         return $this->artisan('project:scaffold', array_merge([
             'slug' => $slug,
             '--path' => $this->tmpProject,
+            '--type' => 'server-webapp',
             '--force' => true,
         ], $extraArgs))->run();
+    }
+
+    /**
+     * A completed intake: five answers carried through to a conclusion line.
+     */
+    private function writeIntake(string $type = 'server-webapp'): void
+    {
+        File::ensureDirectoryExists($this->tmpProject . '/docs');
+        File::put($this->tmpProject . '/docs/intake.md', <<<MD
+        # Intake
+        1. Draait op: server
+        2. Gebruikers tegelijk: meerdere
+        3. Data: MySQL op de productieserver
+        4. Zwaarste operatie: een overzichtspagina renderen
+        5. Vertraging voelbaar bij: paginalaadtijd, doel < 300 ms
+
+        **Type:** {$type}
+        MD);
     }
 
     public function test_scaffolds_required_artefacts_for_valid_slug(): void
@@ -215,15 +250,98 @@ class ProjectScaffoldCommandTest extends TestCase
         // --path omitted so the scaffold bails before touching the tmp dir.
         $exit = $this->artisan('project:scaffold', [
             'slug' => 'UPPERCASE', // invalid: uppercase
+            '--type' => 'server-webapp',
             '--force' => true,
         ])->run();
 
         $this->assertSame(1, $exit);
     }
 
-    public function test_rejects_non_laravel_stack_in_mvp(): void
+    public function test_rejects_missing_type_so_the_stack_is_never_inherited(): void
     {
-        $this->assertSame(1, $this->scaffold('nodetestproj', ['--stack' => 'node']));
+        $this->writeIntake();
+
+        $exit = $this->artisan('project:scaffold', [
+            'slug' => 'notypeproj',
+            '--path' => $this->tmpProject,
+            '--force' => true,
+        ])->run();
+
+        $this->assertSame(1, $exit, '--type must be mandatory: an implicit stack is the bug this guards');
+        $this->assertFileDoesNotExist($this->tmpProject . '/CLAUDE.md');
+    }
+
+    public function test_rejects_unknown_type(): void
+    {
+        $this->assertSame(1, $this->scaffold('badtypeproj', ['--type' => 'laravel']));
+    }
+
+    public function test_refuses_to_scaffold_without_an_intake_and_writes_the_template(): void
+    {
+        $exit = $this->scaffoldWithoutIntake('nointakeproj');
+
+        $this->assertSame(1, $exit);
+        $this->assertFileExists(
+            $this->tmpProject . '/docs/intake.md',
+            'The template must be written so the five questions can be answered'
+        );
+        $this->assertFileDoesNotExist(
+            $this->tmpProject . '/CLAUDE.md',
+            'Nothing may be scaffolded before the intake is answered'
+        );
+
+        $intake = File::get($this->tmpProject . '/docs/intake.md');
+        $this->assertStringContainsString('Waar draait het?', $intake);
+        $this->assertStringContainsString('Hoeveel gebruikers tegelijk?', $intake);
+        $this->assertStringContainsString('Waar staat de data', $intake);
+        $this->assertStringContainsString('zwaarste operatie', $intake);
+        $this->assertStringContainsString('Waar merkt de gebruiker vertraging?', $intake);
+    }
+
+    public function test_refuses_the_untouched_template_on_a_second_run(): void
+    {
+        // The template itself is the unanswered state — scaffolding on top of
+        // it would make the intake a ritual instead of a decision.
+        $this->scaffoldWithoutIntake('todoproj');
+
+        $this->assertSame(
+            1,
+            $this->scaffoldWithoutIntake('todoproj'),
+            'A template left untouched must keep failing'
+        );
+        $this->assertFileDoesNotExist($this->tmpProject . '/CLAUDE.md');
+    }
+
+    public function test_accepts_an_intake_whose_frontmatter_still_says_todo(): void
+    {
+        // The scaffold itself writes `last_check: TODO` into nearly every doc
+        // it generates. Judging the intake on the word TODO would reject a
+        // properly answered one — the conclusion line is the measure.
+        File::ensureDirectoryExists($this->tmpProject . '/docs');
+        File::put($this->tmpProject . '/docs/intake.md', <<<'MD'
+        ---
+        title: Intake
+        last_check: TODO
+        ---
+        1. Draait op: server — meerdere gebruikers, data in MySQL
+
+        **Type:** server-webapp
+        MD);
+
+        $this->assertSame(0, $this->scaffoldWithoutIntake('frontmatterproj'));
+        $this->assertFileExists($this->tmpProject . '/CLAUDE.md');
+    }
+
+    public function test_refuses_when_the_intake_concludes_a_different_type(): void
+    {
+        // Two uncoupled statements of the same decision is how a desktop app
+        // ends up scaffolded as a webapp.
+        $this->writeIntake('desktop');
+
+        $exit = $this->scaffoldWithoutIntake('mismatchproj', ['--type' => 'server-webapp']);
+
+        $this->assertSame(1, $exit);
+        $this->assertFileDoesNotExist($this->tmpProject . '/CLAUDE.md');
     }
 
     public function test_deploy_production_generates_nginx_server_configs(): void
@@ -252,6 +370,142 @@ class ProjectScaffoldCommandTest extends TestCase
         $this->scaffold('nodeployproj');
 
         $this->assertDirectoryDoesNotExist($this->tmpProject . '/deploy');
+    }
+
+    public function test_desktop_type_gets_no_web_infrastructure(): void
+    {
+        $this->assertSame(0, $this->scaffold('desktopproj', ['--type' => 'desktop']));
+
+        // The working method still lands — that part was never the problem.
+        $this->assertFileExists($this->tmpProject . '/CLAUDE.md');
+        $this->assertFileExists($this->tmpProject . '/docs/kb/INDEX.md');
+        $this->assertFileExists($this->tmpProject . '/.claude/commands/start.md');
+
+        // Everything that presumes an HTTP server must stay away: this is the
+        // Vusista failure — a desktop app inheriting a web stack it never chose.
+        $this->assertFileDoesNotExist($this->tmpProject . '/app/Http/Middleware/SecurityHeaders.php');
+        $this->assertFileDoesNotExist($this->tmpProject . '/tests/Feature/Middleware/SecurityHeadersTest.php');
+        $this->assertFileDoesNotExist($this->tmpProject . '/resources/js/app.js');
+        $this->assertFileDoesNotExist($this->tmpProject . '/resources/js/alpine-components.js');
+        $this->assertFileDoesNotExist($this->tmpProject . '/.env.example');
+        $this->assertFileDoesNotExist($this->tmpProject . '/.github/workflows/ci.yml');
+        $this->assertFileDoesNotExist($this->tmpProject . '/infection.json5');
+        $this->assertFileDoesNotExist($this->tmpProject . '/docs/kb/runbooks/deploy.md');
+        $this->assertDirectoryDoesNotExist($this->tmpProject . '/deploy');
+    }
+
+    public function test_desktop_claude_md_drops_the_five_testsite_targets(): void
+    {
+        $this->scaffold('desktopclaude', ['--type' => 'desktop']);
+
+        $claude = File::get($this->tmpProject . '/CLAUDE.md');
+
+        // A norm nobody can meet is a norm nobody reads: no public HTTPS
+        // endpoint means no A+ grade to chase. The five sites may still be
+        // named — but only to rule them out, never as a target.
+        $this->assertStringNotContainsString(
+            'Elke productie-deploy moet scoren',
+            $claude,
+            'A desktop app has no production deploy to grade'
+        );
+        $this->assertStringContainsString(
+            'zijn **niet**',
+            $claude,
+            'The testsites must be explicitly ruled out, not silently dropped'
+        );
+
+        // What replaces it must be concrete, not empty.
+        $this->assertStringContainsString('Dependency-audit faalt de build', $claude);
+        $this->assertStringContainsString('desktop', $claude, 'The type belongs in the header');
+        $this->assertStringContainsString(
+            'geen argument',
+            $claude,
+            'Havun-standaard must be explicitly disqualified as a reason'
+        );
+    }
+
+    /**
+     * Guards the trap the earlier structure had: anything appended below the
+     * type branch silently vanished for three of the four types (the kb-audit
+     * placeholder did exactly that). Asserting per type — rather than once —
+     * is what makes a future omission fail here instead of in a scaffolded
+     * project.
+     */
+    public function test_the_common_set_is_identical_for_every_type(): void
+    {
+        $common = [
+            'CLAUDE.md',
+            'CONTRACTS.md',
+            '.claude/context.md',
+            '.claude/rules.md',
+            '.claude/commands/start.md',
+            '.gitignore',
+            'docs/omwegen.md',
+            'docs/kb/INDEX.md',
+            'docs/kb/reference/test-quality-policy.md',
+            'docs/kb/reference/kb-audit-latest.md',
+            'docs/kb/decisions/0001-docs-first-development.md',
+            'docs/kb/runbooks/post-install.md',
+        ];
+
+        foreach (['server-webapp', 'desktop', 'mobile', 'library-cli'] as $type) {
+            File::deleteDirectory($this->tmpProject);
+
+            $this->assertSame(0, $this->scaffold('regproj', ['--type' => $type]), "type {$type}");
+
+            foreach ($common as $rel) {
+                $this->assertFileExists($this->tmpProject . '/' . $rel, "{$rel} missing for type {$type}");
+            }
+
+            $this->assertStringContainsString(
+                'tweede regel',
+                File::get($this->tmpProject . '/docs/omwegen.md'),
+                'The register must state when it turns into an architecture review'
+            );
+            $this->assertStringContainsString(
+                'docs/omwegen.md',
+                File::get($this->tmpProject . '/CLAUDE.md'),
+                "CLAUDE.md must point at the register for {$type}"
+            );
+        }
+    }
+
+    public function test_the_registry_hint_carries_the_type(): void
+    {
+        // Without this the choice dies at scaffold time: qv:scan, docs:audit
+        // and AutoFix would treat a desktop project as a webapp on day 30.
+        $this->writeIntake('desktop');
+
+        $this->artisan('project:scaffold', [
+            'slug' => 'hintproj',
+            '--path' => $this->tmpProject,
+            '--type' => 'desktop',
+            '--force' => true,
+        ])->expectsOutputToContain("'type' => 'desktop',")->run();
+    }
+
+    public function test_production_deploy_is_refused_for_non_server_types(): void
+    {
+        $exit = $this->scaffold('desktopdeploy', [
+            '--type' => 'desktop',
+            '--deploy' => 'production',
+        ]);
+
+        $this->assertSame(1, $exit, 'A desktop app must not get a staging/production pipeline');
+        $this->assertDirectoryDoesNotExist($this->tmpProject . '/deploy');
+    }
+
+    public function test_non_web_post_install_points_at_the_intake_instead_of_a_stack(): void
+    {
+        $this->scaffold('libproj', ['--type' => 'library-cli']);
+
+        $runbook = File::get($this->tmpProject . '/docs/kb/runbooks/post-install.md');
+
+        // It must NOT install a foundation of its own — that would repeat the
+        // mistake with a different framework.
+        $this->assertStringNotContainsString('composer create-project', $runbook);
+        $this->assertStringContainsString('docs/intake.md', $runbook);
+        $this->assertStringContainsString('omkeerpunt', $runbook, 'Decisions must name what would reverse them');
     }
 
     public function test_skips_existing_files_idempotent_run(): void

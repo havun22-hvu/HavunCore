@@ -8,14 +8,25 @@ use Illuminate\Support\Facades\File;
 /**
  * Bootstrap een nieuw Havun-project met werkwijze-artefacten.
  *
- * Plant:
+ * Plant altijd (elk projecttype):
  * - CLAUDE.md (6 Onschendbare Regels)
- * - .claude/commands/*.md (alle 11 Claude commands uit HavunCore)
+ * - .claude/commands/*.md (alle Claude commands uit HavunCore)
  * - .claude/context.md (template — credentials-velden leeg, handmatig invullen)
  * - .claude/rules.md (verwijst naar HavunCore canonical)
  * - CONTRACTS.md (template)
  * - docs/kb/ directory-structuur + INDEX.md
- * - infection.json5 (als --stack=laravel)
+ * - docs/omwegen.md (het omwegen-register — patterns/omwegen-tellen.md)
+ *
+ * Plant ALLEEN bij --type=server-webapp: Laravel-boilerplate, SecurityHeaders,
+ * Alpine/CSP, .env.example, CI met MySQL, deploy-runbook en (met
+ * --deploy=production) de nginx-templates.
+ *
+ * **De stack wordt niet opgelegd.** Vóór het scaffolden moet `docs/intake.md`
+ * bestaan en ingevuld zijn — de vijf vragen uit
+ * `docs/kb/standards/stack-keuze.md`. Ontbreekt hij, dan schrijft dit
+ * commando de template en stopt. Reden: bij Vusista is vier maanden lang om
+ * een verkeerd fundament heen gebouwd omdat die vraag nooit gesteld werd
+ * (`docs/kb/patterns/fundament-versus-omweg.md`).
  *
  * Registreert in HavunCore:
  * - config/quality-safety.php entry voor qv:scan / docs:audit inclusion
@@ -25,12 +36,28 @@ use Illuminate\Support\Facades\File;
  */
 class ProjectScaffoldCommand extends Command
 {
+    /**
+     * Projecttypes met het criterium waarop je kiest — bewust *zonder* de
+     * bijbehorende stack. Welk fundament bij welk type hoort, staat in
+     * docs/kb/standards/stack-keuze.md; dat hier herhalen levert een tweede
+     * plek op waar de aanbeveling onderhouden moet worden, en dan toont de
+     * CLI een advies dat de norm niet meer geeft.
+     *
+     * @var array<string,string>
+     */
+    private const TYPES = [
+        'server-webapp' => 'Server, meerdere gebruikers, data in een database',
+        'desktop' => 'Eén gebruiker, lokale bestanden, vertraging bij interactie',
+        'mobile' => 'Mobiele app, data via een API',
+        'library-cli' => 'Geen UI, draait op verzoek',
+    ];
+
     protected $signature = 'project:scaffold
                             {slug : Project slug (snake-case/kebab-case, bv. havunmusic)}
                             {--path= : Absolute project-pad (default: D:/GitHub/<Slug>)}
-                            {--stack=laravel : Project-stack (laravel|node|static). Alleen laravel in MVP.}
+                            {--type= : Projecttype (server-webapp|desktop|mobile|library-cli). Verplicht — volgt uit docs/intake.md.}
                             {--url= : Production URL voor V&K registratie (optioneel)}
-                            {--deploy= : Deploy-target ("production" kopieert server-config templates naar deploy/nginx/)}
+                            {--deploy= : Deploy-target ("production" kopieert server-config templates naar deploy/nginx/). Alleen bij server-webapp.}
                             {--force : Sla confirmatie over (CI-modus)}';
 
     protected $description = 'Bootstrap een nieuw project met Havun werkwijze, Claude commands, V&K registratie.';
@@ -44,9 +71,25 @@ class ProjectScaffoldCommand extends Command
             return self::FAILURE;
         }
 
-        $stack = (string) $this->option('stack');
-        if ($stack !== 'laravel') {
-            $this->warn("Stack '{$stack}' niet in MVP — alleen laravel. Abort.");
+        $type = (string) $this->option('type');
+        if (! array_key_exists($type, self::TYPES)) {
+            $this->error(
+                $type === ''
+                    ? '--type ontbreekt. Kies het projecttype op basis van docs/intake.md:'
+                    : "Onbekend type '{$type}'. Geldig:"
+            );
+            foreach (self::TYPES as $key => $omschrijving) {
+                $this->line(sprintf('    %-15s %s', $key, $omschrijving));
+            }
+            $this->line('');
+            $this->line('Norm: docs/kb/standards/stack-keuze.md');
+
+            return self::FAILURE;
+        }
+
+        if ($this->option('deploy') === 'production' && $type !== 'server-webapp') {
+            $this->error("--deploy=production hoort niet bij type '{$type}' — dat zou webinfra opleggen aan een project dat geen server heeft.");
+            $this->line('Bij Vusista stond daardoor een staging-omgeving die 13 dagen rood was zonder dat iemand het merkte.');
 
             return self::FAILURE;
         }
@@ -63,7 +106,11 @@ class ProjectScaffoldCommand extends Command
             File::ensureDirectoryExists($projectPath);
         }
 
-        $plan = $this->buildFilePlan($slug, $projectPath);
+        if (! $this->intakeIsComplete($slug, $projectPath, $type)) {
+            return self::FAILURE;
+        }
+
+        $plan = $this->buildFilePlan($slug, $type);
         $this->renderPlan($plan);
 
         if (! $this->option('force') && ! $this->confirm('Doorgaan met schrijven?', true)) {
@@ -73,25 +120,112 @@ class ProjectScaffoldCommand extends Command
         }
 
         $this->writeFiles($plan, $projectPath);
-        $this->printQualitySafetyHint($slug, $projectPath, (string) $this->option('url'));
-        $this->summary($slug, $projectPath);
+        $this->printQualitySafetyHint($slug, $projectPath, (string) $this->option('url'), $type);
+        $this->summary($slug, $projectPath, $type);
 
         return self::SUCCESS;
     }
 
     /**
+     * De intake gaat vóór de stack — en moet écht ingevuld zijn.
+     *
+     * Ontbreekt `docs/intake.md`, dan schrijven we de template en stoppen:
+     * het antwoord op de vijf vragen is inhoudelijk werk, geen scaffold-stap.
+     *
+     * De maatstaf is de **conclusieregel** (`**Type:** <type>`), niet de
+     * aanwezigheid van het woord TODO: dit commando schrijft zelf
+     * `last_check: TODO` in de frontmatter van vrijwel elk gegenereerd doc,
+     * dus daarop afgaan zou een keurig ingevulde intake afkeuren.
+     *
+     * De conclusie moet bovendien mét `--type` overeenkomen. Anders zijn er
+     * twee losgekoppelde verklaringen van hetzelfde besluit — en dan kan de
+     * intake "desktop" concluderen terwijl er een webapp gescaffold wordt,
+     * wat precies de fout is die dit commando moet vangen.
+     */
+    private function intakeIsComplete(string $slug, string $projectPath, string $type): bool
+    {
+        $intakePath = $projectPath . '/docs/intake.md';
+
+        if (! File::exists($intakePath)) {
+            File::ensureDirectoryExists(dirname($intakePath));
+            File::put($intakePath, $this->renderIntakeTemplate($slug));
+
+            $this->error('Geen docs/intake.md — de stackkeuze komt vóór het scaffolden.');
+            $this->line("Template geschreven: {$intakePath}");
+            $this->line('Beantwoord de vijf vragen, trek ze door naar een conclusie, draai dit commando opnieuw.');
+            $this->line('Norm: docs/kb/standards/stack-keuze.md');
+
+            return false;
+        }
+
+        $conclusie = $this->intakeConclusion(File::get($intakePath));
+
+        if ($conclusie === null) {
+            $this->error('docs/intake.md sluit niet af met een conclusie — de vijf vragen zijn niet doorgetrokken.');
+            $this->line('Verwacht een regel: **Type:** ' . implode(' · ', array_keys(self::TYPES)));
+            $this->line('Antwoorden verzamelen is niet genoeg; bij Vusista stonden ze er al.');
+
+            return false;
+        }
+
+        if ($conclusie !== $type) {
+            $this->error("docs/intake.md concludeert '{$conclusie}', maar je scaffoldt als '{$type}'.");
+            $this->line('Eén van de twee klopt niet. De intake is leidend — pas --type aan, of herzie de intake.');
+
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Leest de conclusieregel uit de intake: `**Type:** desktop`.
+     * Geeft null zolang de template-tekst er nog staat of het type onbekend is.
+     */
+    private function intakeConclusion(string $intake): ?string
+    {
+        if (! preg_match('/^\*\*Type:\*\*\s*([a-z-]+)/m', $intake, $m)) {
+            return null;
+        }
+
+        return array_key_exists($m[1], self::TYPES) ? $m[1] : null;
+    }
+
+    /**
+     * Het plan is `gemeenschappelijk + type-specifiek`, niet "gemeenschappelijk
+     * tot aan een return midden in de methode". Dat onderscheid is de reden
+     * dat dit zo staat: in de eerste opzet viel de kb-audit-placeholder weg
+     * voor drie van de vier types omdat hij ná de branch stond. Met een
+     * array_merge kan er niets meer "onder" de vertakking belanden.
+     *
      * @return array<string,string>  relatief-pad → content
      */
-    private function buildFilePlan(string $slug, string $projectPath): array
+    private function buildFilePlan(string $slug, string $type): array
     {
-        $today = date('Y-m-d');
         // ucwords ipv ucfirst — voor 'mijn-project' → 'Mijn Project' (title-case)
         // ipv 'Mijn project'.
         $title = ucwords(str_replace(['-', '_'], ' ', $slug));
 
+        return array_merge(
+            $this->commonPlan($slug, $title, $type),
+            $type === 'server-webapp'
+                ? $this->webPlan($slug, $title)
+                : $this->nonWebPlan($slug, $type),
+        );
+    }
+
+    /**
+     * Werkwijze-artefacten: deze horen bij élk Havun-project, ongeacht stack.
+     *
+     * @return array<string,string>
+     */
+    private function commonPlan(string $slug, string $title, string $type): array
+    {
+        $today = date('Y-m-d');
+
         $plan = [];
 
-        $plan['CLAUDE.md'] = $this->renderClaudeMd($slug, $title);
+        $plan['CLAUDE.md'] = $this->renderClaudeMd($slug, $title, $type);
         $plan['CONTRACTS.md'] = $this->renderContractsMd($title);
         $plan['.claude/context.md'] = $this->renderContextMd($slug, $title);
         $plan['.claude/rules.md'] = $this->renderRulesMd($slug);
@@ -112,12 +246,38 @@ class ProjectScaffoldCommand extends Command
         }
 
         // KB directory-structuur met INDEX + hiërarchische doc-skeletons.
-        $plan['docs/kb/INDEX.md'] = $this->renderKbIndex($slug, $title, $today);
-        $plan['docs/kb/reference/security-eisen.md'] = $this->renderSecurityEisenDoc($title);
+        $plan['docs/kb/INDEX.md'] = $this->renderKbIndex($slug, $title, $today, $type);
         $plan['docs/kb/reference/test-quality-policy.md'] = $this->renderTestQualityPolicyDoc($title);
-        $plan['docs/kb/runbooks/deploy.md'] = $this->renderDeployRunbook($slug, $title);
         $plan['docs/kb/decisions/0001-docs-first-development.md'] = $this->renderDecisionDocsFirst($title);
         $plan['docs/kb/patterns/.gitkeep'] = '';
+
+        // Het omwegen-register — in elk projecttype. Bij de tweede regel is
+        // het fundament aan de beurt, niet de omweg.
+        // Zie HavunCore docs/kb/patterns/omwegen-tellen.md.
+        $plan['docs/omwegen.md'] = $this->renderOmwegenRegister($slug, $title);
+
+        // KB-audit placeholder — CLAUDE.md en INDEX.md verwijzen naar
+        // kb-audit-latest.md. Zonder placeholder is dat een broken link
+        // tot de eerste `docs:audit` run.
+        $plan['docs/kb/reference/kb-audit-latest.md'] = $this->renderKbAuditPlaceholder($slug, $today);
+
+        return $plan;
+    }
+
+    /**
+     * Alles hier is webinfra: het hoort bij een server met meerdere gebruikers,
+     * en nergens anders. Een desktop-app die dit erft, krijgt een
+     * staging-omgeving, een CSP-middleware en een deploy-pipeline die niets
+     * bewaken — precies wat er bij Vusista misging.
+     *
+     * @return array<string,string>
+     */
+    private function webPlan(string $slug, string $title): array
+    {
+        $plan = [];
+
+        $plan['docs/kb/reference/security-eisen.md'] = $this->renderSecurityEisenDoc($title);
+        $plan['docs/kb/runbooks/deploy.md'] = $this->renderDeployRunbook($slug, $title);
 
         $plan['infection.json5'] = $this->renderInfectionConfig();
 
@@ -140,11 +300,6 @@ class ProjectScaffoldCommand extends Command
         // registreren, dependencies toe te voegen. Zonder deze doc is de
         // SecurityHeaders middleware een dode bestand.
         $plan['docs/kb/runbooks/post-install.md'] = $this->renderPostInstallRunbook($slug);
-
-        // KB-audit placeholder — CLAUDE.md en INDEX.md verwijzen naar
-        // kb-audit-latest.md. Zonder placeholder is dat een broken link
-        // tot de eerste `docs:audit` run.
-        $plan['docs/kb/reference/kb-audit-latest.md'] = $this->renderKbAuditPlaceholder($slug, $today);
 
         // Server-config templates (alleen als --deploy=production).
         // Plaatst de 4 nginx/SSL-hardening templates uit HavunCore in
@@ -170,6 +325,102 @@ class ProjectScaffoldCommand extends Command
         }
 
         return $plan;
+    }
+
+    /**
+     * Bewust mager: geen webserver, geen staging, geen deploy-pipeline — en
+     * ook geen Rust- of Expo-skelet in de plaats daarvan. Een fundament
+     * opleggen dat niemand gekozen heeft is dezelfde fout met een ander
+     * framework; wat er moet komen, staat in docs/intake.md.
+     *
+     * @return array<string,string>
+     */
+    private function nonWebPlan(string $slug, string $type): array
+    {
+        return [
+            '.gitignore' => $this->renderGitignoreBase(),
+            'docs/kb/runbooks/post-install.md' => $this->renderNonWebPostInstall($slug, $type),
+        ];
+    }
+
+    private function renderIntakeTemplate(string $slug): string
+    {
+        return $this->loadStub('intake', ['__SLUG__' => $slug]) ?? '';
+    }
+
+    private function renderOmwegenRegister(string $slug, string $title): string
+    {
+        return $this->loadStub('omwegen', ['__SLUG__' => $slug, '__TITLE__' => $title]) ?? '';
+    }
+
+    /**
+     * Post-install voor alles wat géén server-webapp is.
+     *
+     * Bewust kort en zonder stack-boilerplate: het fundament staat in
+     * docs/intake.md en is per project anders. Een half-af Rust- of
+     * Expo-skelet neerzetten zou dezelfde fout zijn als een Laravel-skelet —
+     * infra opleggen die niemand gekozen heeft.
+     */
+    private function renderNonWebPostInstall(string $slug, string $type): string
+    {
+        $geenWebinfra = $type === 'desktop'
+            ? <<<'MD'
+                Deze app draait op de machine van de gebruiker. **Geen HTTP-server als fundament**, ook niet
+                in een schil eromheen — dat is precies de constructie die bij Vusista vier maanden kostte
+                (HavunCore `docs/kb/patterns/fundament-versus-omweg.md`).
+                MD
+            : <<<'MD'
+                Dit projecttype krijgt bewust geen webserver, staging-omgeving of deploy-pipeline van de
+                scaffold. Wat het wél nodig heeft, volgt uit `docs/intake.md`.
+                MD;
+
+        return <<<MD
+---
+title: Post-install — eerste werkende staat
+type: runbook
+scope: {$slug}
+last_check: TODO
+---
+
+# Post-install runbook — type `{$type}`
+
+> **Context:** de scaffold heeft de werkwijze-artefacten geplaatst (CLAUDE.md,
+> Claude-commands, KB-structuur, omwegen-register). Het fundament zelf is
+> **niet** neergezet — dat volgt uit `docs/intake.md` en is per project anders.
+
+{$geenWebinfra}
+
+## 1. Fundament opzetten
+
+Volg de conclusie uit [`docs/intake.md`](../../intake.md). Leg de keuze vast als
+`docs/kb/decisions/0002-<fundament>.md`, mét de aanname waarop hij rust en het
+**omkeerpunt** — de meting die hem zou omkeren (HavunCore
+`docs/kb/standards/docs-first.md`).
+
+## 2. Testopzet
+
+Stack-onafhankelijk, dus ongewijzigd:
+[`reference/test-quality-policy.md`](../reference/test-quality-policy.md).
+
+## 3. CI
+
+Richt CI in op de gekozen stack. Twee dingen zijn niet onderhandelbaar,
+ongeacht taal: een **dependency-audit** die faalt op bekende CVE's, en een
+**testrun** die het faalt-signaal ergens laat aankomen. Een rode pipeline die
+niemand ziet is geen CI — Vusista's staging stond dertien dagen rood.
+
+## 4. Het omwegen-register bijhouden
+
+[`docs/omwegen.md`](../../omwegen.md) — elke keer dat je iets bouwt om de stack
+héén, komt er een regel bij. Bij de tweede: architectuurreview.
+
+## 5. Registreren in HavunCore
+
+De twee commando's staan in de scaffold-samenvatting (`project:scaffold` print
+ze na afloop), samen met de V&K-registratie-regel voor
+`config/quality-safety.php` — inclusief `'type' => '{$type}'`.
+
+MD;
     }
 
     private function renderDeployReadme(string $slug): string
@@ -223,17 +474,20 @@ eisen per testsite + hoe te verifiëren.
 MD;
     }
 
-    private function renderClaudeMd(string $slug, string $title): string
+    private function renderClaudeMd(string $slug, string $title, string $type): string
     {
         $standardsBlock = $this->loadStandardsBlock();
+        $typeOmschrijving = self::TYPES[$type];
+        $securityBlock = $this->renderClaudeSecurityBlock($type);
 
         return <<<MD
 # {$title} — Claude Instructions
 
 > **Role:** {$title} project binnen de Havun-portfolio
+> **Projecttype:** `{$type}` — {$typeOmschrijving}
+> **Fundament:** volgt uit `docs/intake.md`, niet uit gewoonte. "Havun-standaard" is geen argument.
 > **Canonical werkwijze:** `D:/GitHub/HavunCore/CLAUDE.md`
 > **V&K architectuur:** `D:/GitHub/HavunCore/docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`
-> **Productie-eisen:** `D:/GitHub/HavunCore/docs/kb/reference/productie-deploy-eisen.md`
 
 ## De 6 Onschendbare Regels
 
@@ -278,19 +532,20 @@ Dit project volgt **docs-first development**:
 - **SecurityHeadersTest** regression-set altijd aanwezig + groen
   (zie `app/Http/Middleware/SecurityHeaders.php` + test)
 
-### Security — A+ op alle externe testsites
-Elke productie-deploy moet scoren:
-- **SSL Labs** → A+ / 100 / 100 / 100 / 100 (ECDSA P-384, TLS 1.2+1.3)
-- **SecurityHeaders.com** → A+ (6 recommended headers, strikt CSP)
-- **Mozilla Observatory** → A+ (100): geen `unsafe-eval`, geen
-  `unsafe-inline` in script-src, nonce-based CSP, SRI op externe CDN's,
-  `__Host-`-prefixed session cookies
-- **Hardenize** → alle groene vinkjes (DNSSEC + CAA + SPF/DKIM/DMARC)
-- **Internet.nl** → alle checks groen
+{$securityBlock}
 
-Deploy-templates in `deploy/nginx/` (als `--deploy=production` geactiveerd
-werd bij scaffold) zorgen voor het fundament. Zie
-`docs/kb/reference/security-eisen.md` voor alle eisen per testsite.
+## Tel de omwegen — `docs/omwegen.md`
+
+Bouw je iets om de gekozen stack héén (het framework omzeilen om het snel
+genoeg te krijgen, een tweede runtime, een eigen poort, een vangnet voor wat
+de infra hoort te doen, een sidecar voor wat de taal niet kan), dan komt er
+een regel bij in `docs/omwegen.md`. **Bij de tweede regel is het een
+architectuurreview, geen commit.**
+
+`robuust boven simpel` geldt óók *op* de stack, niet alleen *binnen* de stack.
+Bij Vusista is die regel netjes toegepast op zes omwegen — elke pleister
+robuust, de optelsom fragiel. Zie HavunCore
+`docs/kb/patterns/omwegen-tellen.md`.
 
 ## Werkwijze per taak
 
@@ -314,18 +569,81 @@ MD;
     }
 
     /**
+     * De security-eisen verschillen per projecttype. De vijf externe
+     * testsites (SSL Labs, SecurityHeaders, Observatory, Hardenize,
+     * Internet.nl) meten een HTTPS-endpoint — die eis aan een desktop-app
+     * of CLI stellen levert een norm op die niemand kan halen en dus
+     * niemand leest.
+     */
+    private function renderClaudeSecurityBlock(string $type): string
+    {
+        if ($type === 'server-webapp') {
+            return <<<'MD'
+### Security — A+ op alle externe testsites
+Elke productie-deploy moet scoren:
+- **SSL Labs** → A+ / 100 / 100 / 100 / 100 (ECDSA P-384, TLS 1.2+1.3)
+- **SecurityHeaders.com** → A+ (6 recommended headers, strikt CSP)
+- **Mozilla Observatory** → A+ (100): geen `unsafe-eval`, geen
+  `unsafe-inline` in script-src, nonce-based CSP, SRI op externe CDN's,
+  `__Host-`-prefixed session cookies
+- **Hardenize** → alle groene vinkjes (DNSSEC + CAA + SPF/DKIM/DMARC)
+- **Internet.nl** → alle checks groen
+
+Deploy-templates in `deploy/nginx/` (als `--deploy=production` geactiveerd
+werd bij scaffold) zorgen voor het fundament. Zie
+`docs/kb/reference/security-eisen.md` voor alle eisen per testsite.
+MD;
+        }
+
+        return <<<'MD'
+### Security — wat hier wél telt
+
+Dit project heeft geen publiek HTTPS-endpoint, dus de vijf externe testsites
+(SSL Labs, SecurityHeaders, Observatory, Hardenize, Internet.nl) zijn **niet**
+van toepassing. Wat blijft staan:
+
+- **Dependency-audit faalt de build** bij bekende CVE's — in elke taal
+- **Geen secrets in code of git**, ook geen wegwerp-testsleutels: genereer ze
+  runtime (HavunCore `runbooks/geen-hardcoded-secrets-in-tests.md`)
+- **Invoer van buiten blijft invoer van buiten** — bestandspaden, bestandsinhoud
+  en metadata van derden valideren, ook zonder netwerk
+- **Wat de app naar buiten schrijft** (bestanden, metadata, updates) is de
+  gevaarlijkste operatie: die hoort een test te hebben die hem rood ziet
+MD;
+    }
+
+    /**
      * Single source of truth for the Havun standards block.
      * Lives in stubs/claude-md-standards-block.md so updates flow to
      * every new scaffold automatically without editing this command.
      */
     private function loadStandardsBlock(): string
     {
-        $stub = base_path('stubs/claude-md-standards-block.md');
+        return $this->loadStub('claude-md-standards-block')
+            ?? "## Havun Standaarden\n\n> **TODO:** stub `stubs/claude-md-standards-block.md` ontbreekt — handmatig invullen.\n";
+    }
+
+    /**
+     * Laadt een stub uit stubs/ en vult de placeholders.
+     *
+     * Bestaat zodat een norm op één plek staat: de intake-vragen en de
+     * omwegen-definitie horen bij hun KB-doc, niet overgetypt in dit commando.
+     * Scherpt de norm aan (een zesde vraag, een andere formulering), dan
+     * schrijft de scaffold hem mee — anders blijft hij stilzwijgend de oude
+     * versie neerzetten en detecteert niets dat.
+     *
+     * @param  array<string,string>  $vervangingen  placeholder → waarde
+     */
+    private function loadStub(string $naam, array $vervangingen = []): ?string
+    {
+        $stub = base_path("stubs/{$naam}.md");
         if (! File::exists($stub)) {
-            return "## Havun Standaarden\n\n> **TODO:** stub `stubs/claude-md-standards-block.md` ontbreekt — handmatig invullen.\n";
+            $this->warn("Stub 'stubs/{$naam}.md' ontbreekt — bestand wordt overgeslagen.");
+
+            return null;
         }
 
-        return rtrim(File::get($stub)) . "\n";
+        return rtrim(strtr(File::get($stub), $vervangingen)) . "\n";
     }
 
     private function renderContractsMd(string $title): string
@@ -421,8 +739,22 @@ specifieke afwijkingen (toevoegingen, geen overschrijvingen) hieronder.
 MD;
     }
 
-    private function renderKbIndex(string $slug, string $title, string $today): string
+    private function renderKbIndex(string $slug, string $title, string $today, string $type): string
     {
+        $startHier = $type === 'server-webapp'
+            ? <<<'MD'
+                1. [`reference/security-eisen.md`](reference/security-eisen.md) — A+ score-targets per testsite + regression-tests
+                2. [`reference/test-quality-policy.md`](reference/test-quality-policy.md) — coverage + MSI targets, anti-patterns
+                3. [`decisions/0001-docs-first-development.md`](decisions/0001-docs-first-development.md) — workflow waarom
+                4. [`runbooks/deploy.md`](runbooks/deploy.md) — eerste + reguliere deploy-procedure
+                MD
+            : <<<'MD'
+                1. [`../intake.md`](../intake.md) — de vijf vragen en het fundament dat eruit volgt
+                2. [`../omwegen.md`](../omwegen.md) — het omwegen-register; bij de tweede regel volgt een architectuurreview
+                3. [`reference/test-quality-policy.md`](reference/test-quality-policy.md) — coverage + MSI targets, anti-patterns
+                4. [`decisions/0001-docs-first-development.md`](decisions/0001-docs-first-development.md) — workflow waarom
+                MD;
+
         return <<<MD
 ---
 title: KB INDEX — {$slug}
@@ -434,15 +766,13 @@ last_check: {$today}
 # KB — {$title}
 
 > Project-lokale kennisbank. Canonical cross-project KB: `D:/GitHub/HavunCore/docs/kb/`.
+> **Projecttype:** `{$type}`.
 
 ## Start hier
 
 Elk nieuw werk start met lezen van deze docs (in volgorde):
 
-1. [`reference/security-eisen.md`](reference/security-eisen.md) — A+ score-targets per testsite + regression-tests
-2. [`reference/test-quality-policy.md`](reference/test-quality-policy.md) — coverage + MSI targets, anti-patterns
-3. [`decisions/0001-docs-first-development.md`](decisions/0001-docs-first-development.md) — workflow waarom
-4. [`runbooks/deploy.md`](runbooks/deploy.md) — eerste + reguliere deploy-procedure
+{$startHier}
 
 ## Structuur
 
@@ -940,48 +1270,70 @@ MAIL_FROM_NAME="\${APP_NAME}"
 ENV;
     }
 
-    private function renderGitignore(): string
+    /**
+     * De regels die voor élk project gelden — met de secret-uitsluitingen
+     * voorop. Die stonden hiervoor in twee handgeschreven .gitignores; een
+     * aanscherping (`*.pem`, extra backup-suffixen) zou dan in één ervan
+     * landen, en juist de projecten zonder webinfra zijn degene waar niemand
+     * nog kijkt.
+     */
+    private function renderGitignoreBase(): string
     {
         return <<<'GITIGNORE'
+# Secrets — NEVER commit. Includes .bak/.backup/.local to prevent accidentally
+# committing temporary copies made during secret rotation.
+.env
+.env.*
+!.env.example
+
+# Dependencies + build output — add stack-specific paths once the foundation
+# is chosen (see docs/intake.md).
 /node_modules
+/vendor
+/dist
+/build
+/target
+
+# Security-audit local caches (ggshield, etc).
+.cache_ggshield
+.cache/
+
+# Editors
+/.idea
+/.vscode
+/.zed
+/.nova
+
+# OS files
+.DS_Store
+Thumbs.db
+GITIGNORE;
+    }
+
+    private function renderGitignore(): string
+    {
+        return $this->renderGitignoreBase() . <<<'GITIGNORE'
+
+
+# --- Laravel ---
 /public/build
 /public/hot
 /public/storage
 /storage/*.key
 /storage/pail
-/vendor
 .phpunit.result.cache
 .phpstorm.meta.php
-.vscode/
 Homestead.json
 Homestead.yaml
 auth.json
 npm-debug.log
 yarn-error.log
-/.idea
-/.nova
-/.vscode
-/.zed
-
-# .env — NEVER commit. Includes .bak/.backup/.local to prevent accidentally
-# committing temporary copies made during secret rotation.
-.env
-.env.*
-!.env.example
 
 # Test + coverage artifacts — never commit generated output.
 /tests/coverage
 /coverage_output.txt
 .phpunit.cache
 /infection.log
-
-# Security-audit local caches (ggshield, etc).
-.cache_ggshield
-.cache/
-
-# OS files
-.DS_Store
-Thumbs.db
 GITIGNORE;
     }
 
@@ -1299,7 +1651,7 @@ MD;
      * config/quality-safety.php. Auto-edit is bewust NIET geïmplementeerd:
      * PHP-array edits zonder AST-parser zijn fragiel bij formatting-verschillen.
      */
-    private function printQualitySafetyHint(string $slug, string $projectPath, string $url): void
+    private function printQualitySafetyHint(string $slug, string $projectPath, string $url, string $type): void
     {
         $cfgPath = base_path('config/quality-safety.php');
         if (! File::exists($cfgPath)) {
@@ -1321,23 +1673,34 @@ MD;
         $this->line("    '{$slug}' => [");
         $this->line("        'enabled' => env('QV_{$envPrefix}_ENABLED', true),");
         $this->line("        'path' => env('{$envPrefix}_LOCAL_PATH', '{$projectPath}'),");
+        // Het type hoort in de registry, niet alleen in de prozatekst van de
+        // gescaffolde CLAUDE.md: zonder dit veld behandelen qv:scan, docs:audit
+        // en AutoFix een desktop-project op dag 30 weer als webapp.
+        $this->line("        'type' => '{$type}',");
         if ($url !== '') {
             $this->line("        'url' => '{$url}',");
         }
-        $this->line("    ],");
+        $this->line('    ],');
         $this->warn('');
     }
 
-    private function summary(string $slug, string $projectPath): void
+    private function summary(string $slug, string $projectPath, string $type): void
     {
         $this->newLine();
-        $this->info("[OK] Project '{$slug}' scaffolded in: {$projectPath}");
+        $this->info("[OK] Project '{$slug}' scaffolded als type '{$type}' in: {$projectPath}");
         $this->newLine();
         $this->line('Volgende stappen:');
-        $this->line("  1. Vul .claude/context.md in (credentials/server-info)");
-        $this->line("  2. Registreer in HavunCore config/quality-safety.php (zie hint hierboven)");
+        $this->line('  1. Vul .claude/context.md in (credentials/server-info)');
+        $this->line('  2. Registreer in HavunCore config/quality-safety.php (zie hint hierboven)');
         $this->line("  3. Run vanuit HavunCore: php artisan docs:audit --project={$slug}");
         $this->line("  4. Run vanuit HavunCore: php artisan qv:scan --project={$slug}");
+
+        if ($type !== 'server-webapp') {
+            $this->newLine();
+            $this->warn('  Geen webinfra geplaatst — geen .env.example, CI, deploy-runbook of nginx-templates.');
+            $this->line('  Het fundament volgt uit docs/intake.md. Zie docs/kb/runbooks/post-install.md.');
+        }
+
         $this->newLine();
     }
 

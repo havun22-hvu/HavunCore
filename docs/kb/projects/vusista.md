@@ -12,6 +12,15 @@ last_check: 2026-07-15
 **Platform:** Windows eerst (macOS/Linux fase 2)
 **Demo:** https://staging.vusista.havun.nl (browser-demo met dummydata; prod bevroren)
 
+> ⛔ **Het fundament is verkeerd gekozen — herbouw ligt klaar (30-07-2026).** Een lokale
+> fotomanager voor 76.797 bestanden en één gebruiker draait hier op Laravel + `php -S` in een
+> Electron-schil. Die keuze is nooit gemaakt: het project begon als Laravel-project omdat élk
+> Havun-project zo begon. Zes omwegen om het eigen fundament heen volgden; de zesde maakte de
+> app stil onbruikbaar. Post-mortem: [`../patterns/fundament-versus-omweg.md`](../patterns/fundament-versus-omweg.md).
+> Herbouwplan (Rust + Tauri v2) staat in `D:\GitHub\Vusista2\PLAN.md` en wacht op Henks "ga maar"
+> — dat is een **Vusista2-sessie**, geen HavunCore-werk. De stack hieronder beschrijft dus de
+> **huidige** app, niet de gewenste.
+
 ## Wat is het?
 
 Picasa-opvolger voor de gewone gebruiker: lokale foto's en video's **in-place**

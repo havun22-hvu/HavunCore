@@ -24,7 +24,7 @@ omwegen: bij twee is het fundament fout, niet de omweg.*
 | `project:scaffold` legt Laravel op | **Erger dan gemeld.** `--stack` weigert álles behalve laravel — `ProjectScaffoldCommand.php:47` aborteert met *"niet in MVP"*. De keuze is dichtgetimmerd, niet vergeten |
 | Besluit 001 koos de schil, niet het fundament | **Klopt.** `Vusista/docs/besluiten/001-desktop-app-geen-webapp.md` kiest NativePHP/Electron; het woord "fundament" of "webserver" komt er niet in voor |
 | De intake-antwoorden ontbraken | **Nee — ze stónden er al.** Besluit 001: *"Auth vervalt — lokale single-user app; er is geen andere gebruiker."* De informatie was er in juli; wat ontbrak was het doortrekken naar het fundament |
-| "Havun-standaard" als kaal argument | **Klopt.** Staat in 8 projectdocs in `docs/kb/projects/` zonder onderbouwing en zonder uitzondering |
+| "Havun-standaard" als kaal argument | **Deels — mijn eerste telling was fout.** Die kwam uit een OR-grep op `Havun-standaard\|Laravel 12`; vrijwel alle 8 treffers waren het tweede. In HavunCore's `projects/` staat de stack als **beschrijving** ("Type: Laravel 12 SaaS") en dat is correct. De kale bewering als *reden* staat in **Vusista's eigen** `docs/techniek/architectuur.md` (*"Framework: Laravel 12 — Havun-standaard"*). De maatregel verhuist daarom naar de KB-ingang, waar een nieuw project de norm leest |
 | Er bestaat een beslisregel voor stackkeuze | **Nee.** 33 `decisions/` + 6 `standards/` doorzocht — geen enkele gaat over welke stack bij welk werktype past |
 | Staging-server "had er nooit moeten staan" | **Te sterk.** `staging.vusista.havun.nl` is een bewuste browser-demo met dummydata (Vusista `CLAUDE.md`). Het gat is dat 13 dagen rode Actions niemand bereikten — monitoring, niet scaffold |
 

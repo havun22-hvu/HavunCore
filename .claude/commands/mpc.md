@@ -28,6 +28,21 @@ last_check: 2026-05-18
 
 ---
 
+## Fase 0: Intake — alleen bij een nieuw project of een herbouwbesluit
+
+**Sla over bij werk binnen een bestaand project.** Gaat het om een nieuw project, of om de
+vraag of het fundament nog deugt, dan komt de stackkeuze **vóór** fase 1:
+
+1. **Waar draait het?** · 2. **Hoeveel gebruikers tegelijk?** · 3. **Waar staat de data, en
+hoeveel?** · 4. **Wat is de zwaarste operatie, en hoe vaak?** · 5. **Waar merkt de gebruiker
+vertraging?**
+
+Antwoorden + **de conclusie die eruit volgt** in `docs/intake.md`. De antwoorden verzamelen is
+niet genoeg — bij Vusista stonden ze al in een besluit-doc, en het werd toch een webapp met een
+HTTP-server onder een lokale fotomanager. Zonder ingevulde intake weigert `project:scaffold`.
+
+**"Havun-standaard" is geen argument.** Norm: `docs/kb/standards/stack-keuze.md`.
+
 ## Fase 1: MD Docs — EXHAUSTIEF (ENIGE fase voor vragen)
 
 **Werk ALLEEN aan de MD docs.** Geen code schrijven.
@@ -37,6 +52,8 @@ last_check: 2026-05-18
 3. Vragen die MOGEN: ontbrekende business-logica, onduidelijke requirements, vergeten edge cases
 4. Vragen die NIET mogen later: "Zal ik X doen?", "Mag ik Y aanpassen?", technische keuzes
 5. Update/maak docs tot ze 100% compleet zijn
+6. **Architectuurbesluit erbij?** Noem de **aanname** waarop hij rust en het **omkeerpunt** —
+   de meting die hem zou omkeren. Geen datum. `standards/docs-first.md`
 
 **Klaar-criteria:** Een andere Claude kan de docs lezen en EXACT weten wat gebouwd moet worden — zonder één aanname of vraag.
 
@@ -85,4 +102,7 @@ NOOIT phrasing als vraag: geen "Ga maar?", geen "Zal ik beginnen?", geen "Akkoor
 - **NOOIT** coderen zonder goedgekeurd plan
 - **NOOIT** afwijken van plan zonder update
 - **NOOIT** wachten op technische beslissing van Henk — Claude beslist zelf
+- **NOOIT** een stack erven. Nieuw project → fase 0 eerst. `standards/stack-keuze.md`
 - **ALTIJD** per-agendapunt cyclus volgen: test → simplify → docs → commit
+- **Tweede omweg om het fundament heen?** → architectuurreview, geen commit.
+  Registreer 'm in `docs/omwegen.md`. `patterns/omwegen-tellen.md`
