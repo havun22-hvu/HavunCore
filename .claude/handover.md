@@ -13,6 +13,25 @@ last_updated: 2026-07-19
 **Branch:** master · **Status:** stabiel. KB zoekt gechunkt (`--project` ~0,1s). **Server:** disk 67%
 (12 GB vrij na opschoning 18-07), prod draait overal.
 
+## Open — Vusista-lessen: `scaffold` legt een stack op (30-07)
+
+Vusista 1 liep vast op een keuze die niemand bewust maakte: het werd een Laravel-project omdat
+`project:scaffold` dat oplevert, terwijl het een lokale desktop-app is. Daarna zijn er **zes
+omwegen om het eigen fundament heen** gebouwd — PHP zonder Laravel voor thumbnails, een
+Node-proces voor grote bestanden, compressie om een bufferlimiet heen, een vangnet voor de eigen
+JS-bundel, een C++-sidecar omdat PHP geen FFI heeft. De zesde veroorzaakte een bug waarbij de app
+er normaal uitzag en volledig dood was. Vusista wordt herbouwd in Rust (`D:\GitHub\Vusista2`).
+
+**Onderbouwing:** `docs/kb/reference/vusista-1-retrospectief.md`.
+
+| # | Taak | Waarom |
+|---|------|--------|
+| 1 | **`project:scaffold` krijgt een app-type** (`--type=web\|desktop\|api\|mobile`), en vraagt ernaar als het ontbreekt. Bij `desktop`: geen webserver, geen staging, geen deploy-pipeline, geen deploy-workflows | De impliciete stackkeuze is de kern van het probleem |
+| 2 | **Neem `D:\GitHub\Vusista2` als sjabloon voor type `desktop`** (CLAUDE.md, docs-structuur, `.claude/handover.md`) | Een gewerkt voorbeeld, geen bedacht formaat |
+| 3 | **Vijf intakevragen verplicht vóór het scaffolden**, antwoorden vastleggen in het project | Waar draait het, hoeveel gebruikers tegelijk, waar staat de data, wat is de zwaarste operatie, waar merkt de gebruiker vertraging. Voor Vusista sloten die antwoorden een webstack uit — ze zijn nooit gesteld |
+| 4 | **Zet `vusista` in `config/quality-safety.php`** | Staat er niet in; er heeft dus **nooit** een geplande V&K-scan op gedraaid — geen `composer audit`, geen secrets-scan. Gold vier maanden |
+| 5 | **Ruim `/var/www/vusista/{production,staging}` op** — overleg met Henk vóór verwijderen | Hoort er niet te zijn voor een desktop-app. Staging-deploy faalde sinds 17-07 (`Not possible to fast-forward`; 30-07 rechtgezet), demo serveert een 500, en PHP 8.2 op de server haalt `^8.3` niet |
+
 ## Open — wacht op Henk
 
 | Wat | Details |
