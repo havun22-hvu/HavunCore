@@ -43,6 +43,34 @@ De omvang bepaalt **hoeveel** MD, niet **óf**. Bij twijfel: schrijf het op.
 4. **Herbruikbare kennis** (een patroon, een valkuil, een beslissing) hoort in de KB
    (`patterns/`, `runbooks/`, `decisions/`), niet in een sessieverslag.
 
+## Een architectuurbesluit noemt zijn aanname en zijn omkeerpunt
+
+Een besluit-doc die alleen de **conclusie** vastlegt, is niet toetsbaar. Wat ontbreekt is:
+*onder welke aanname geldt dit, en wat zou het omkeren?* Zonder dat blijft een besluit staan
+terwijl de metingen het al tegenspreken — en wordt er een omweg omheen gebouwd in plaats van
+teruggekeerd (`patterns/fundament-versus-omweg.md`).
+
+Elk doc in `decisions/` (en elk `docs/besluiten/`-doc in een project) krijgt daarom:
+
+```markdown
+## Aanname
+Dit besluit rust op: <de aanname, expliciet — juist de vanzelfsprekende>
+
+## Omkeerpunt
+Dit besluit is toe aan herziening zodra: <een meting, geen datum>
+```
+
+**Geen vervaldatum.** Een datum verloopt zonder dat er iets veranderd is, en dan heb je een
+besluit dat "verlopen" is maar nog prima klopt. Het omkeerpunt is een **falsificatie-conditie**:
+een getal of gedrag dat je kunt meten. *"Zodra een scan boven de 100.000 bestanden langer dan
+een minuut duurt"* is een omkeerpunt; *"herzien in Q4"* is een agendapunt.
+
+Wordt die meting gehaald, dan is het besluit toe aan herziening — **niet aan nog een omweg.**
+
+Vusista's besluit 001 koos NativePHP omdat het een desktop-app is. De aanname eronder —
+*"Laravel is een geschikt fundament voor lokale bestandsverwerking op deze schaal"* — staat
+er niet, en is dus nooit getoetst. Dat is precies de aanname die het duurst was.
+
 ## Wat dit NIET is
 
 - Geen excuus voor een muur tekst vooraf. De doc-grootte-regel blijft gelden: een plan van 300
