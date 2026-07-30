@@ -107,9 +107,27 @@ blijven onveranderd.
 | 5 | Besluit-sjabloon met aanname + omkeerpunt | `standards/docs-first.md` | ✅ `85b4033` |
 | 6 | "Havun-standaard" als argument → waarschuwing in `projects-index.md` | docs | ✅ `f964bfe` |
 | 7 | **`vusista` ontbrak in `config/quality-safety.php`** — vier maanden nooit gescand | config | ✅ zie hieronder |
-| 8 | Uitrol naar de actieve CLAUDE.md's | docs | open |
+| 8 | Uitrol naar de actieve CLAUDE.md's | 15 docs | ✅ zie hieronder |
 | 9 | **Apart:** rode Actions moeten iemand bereiken (13 dagen onopgemerkt) | health-alerts | open |
 | 10 | **Overleg Henk:** `/var/www/vusista/{production,staging}` opruimen | serverconfig | open |
+
+### Punt 8 — uitrol (30-07)
+
+HavunCore + **14 actieve projecten**. Geparkeerd overgeslagen (HavunClub, Demo, Havunity,
+Infosyst, IDSee, Agorano, HavunVet) — die dragen de oude normen sowieso nog.
+
+- **Blok bewust kort gehouden (11 regels).** De eerste versie was 15 regels en duwde zes
+  projecten over de 120-regelnorm die dit plan zelf bevestigt. Het volledige verhaal staat in
+  de KB; de CLAUDE.md verwijst.
+- **Drie projecten stonden op een feature-branch.** JudoToernooi (`seo/sitemap-en-uitslagen`)
+  en JudoScoreBoard (`marketing/aso-listing`) zijn met een cherry-pick óók op de hoofdbranch
+  gezet. **Vusista niet:** zijn `main` loopt 335 commits achter op `staging`, dus de cherry-pick
+  botste. De norm staat op `staging` — de branch die daar leeft. Vusista-scope.
+- **`VeenLedenadministratie` heeft geen `CLAUDE.md`** — niets om aan toe te voegen. Eigen gat,
+  hoort in een Veen-sessie (fase 3 wacht op Cees).
+- **Vier CLAUDE.md's staan boven de 120 regels**: Vusista 138, Studieplanner-api 135,
+  JudoScoreBoard 130, havuncore-webapp 125. Alle vier zaten daar al aan of overheen vóór deze
+  uitrol; inkorten is projectwerk in een eigen sessie.
 
 ### Punt 7 — wat de eerste scan opleverde (30-07)
 

@@ -93,3 +93,20 @@ code helemaal niet.**
   voor een tweede mening. Een model grijpt daar terug op het GitHub-gemiddelde.
 
 Volledig: `HavunCore/docs/kb/patterns/test-rood-gezien.md` · `standards/ai-synthese-risicos.md`
+
+## Het fundament kies je, je erft het niet
+
+**Nieuw project of twijfel over het fundament? Eerst vijf vragen, dan pas een stack.** Waar draait
+het · hoeveel gebruikers tegelijk · waar staat de data en hoeveel · wat is de zwaarste operatie en
+hoe vaak · waar merkt de gebruiker vertraging. Antwoorden **plus de conclusie** in `docs/intake.md`;
+`project:scaffold` weigert zonder. **"Havun-standaard" is geen argument.**
+
+**Tel de omwegen.** Code die het framework omzeilt, een tweede runtime, een eigen poort, een
+vangnet voor wat de infra hoort te doen, een sidecar voor wat de taal niet kan → een regel in
+`docs/omwegen.md`. **Bij de tweede is het een architectuurreview, geen commit.** `robuust boven
+simpel` geldt óók *op* de stack: bij Vusista was elke pleister robuust en de optelsom fragiel.
+
+**Elk architectuurbesluit noemt zijn aanname en zijn omkeerpunt** — de meting die het zou omkeren,
+geen datum.
+
+Volledig: `docs/kb/standards/stack-keuze.md` · `patterns/omwegen-tellen.md` · `patterns/fundament-versus-omweg.md`

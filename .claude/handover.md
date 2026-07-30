@@ -13,7 +13,7 @@ last_updated: 2026-07-19
 **Branch:** master · **Status:** stabiel. KB zoekt gechunkt (`--project` ~0,1s). **Server:** disk 67%
 (12 GB vrij na opschoning 18-07), prod draait overal.
 
-## Vusista-lessen: de stackkeuze is nu een besluit (30-07) — 7 van 10 af
+## Vusista-lessen: de stackkeuze is nu een besluit (30-07) — 8 van 10 af
 
 Vusista 1 liep vast op een keuze die niemand maakte: het werd een Laravel-project omdat
 `project:scaffold` **elke andere stack hard weigerde**, terwijl het een lokale desktop-app is
@@ -21,20 +21,22 @@ Vusista 1 liep vast op een keuze die niemand maakte: het werd een Laravel-projec
 maakte de app stil onbruikbaar. Post-mortem: `patterns/fundament-versus-omweg.md`.
 Plan + status per punt: `plans/stackkeuze-fundament-plan.md`.
 
-**Af:** `standards/stack-keuze.md` (vijf intakevragen, beslisboom op werktype) ·
-`patterns/omwegen-tellen.md` (register; tweede omweg = architectuurreview) · besluit-sjabloon
-met **aanname + omkeerpunt** in `standards/docs-first.md` · `project:scaffold` op verplichte
-`--type` + geblokkeerd zonder ingevulde `docs/intake.md` die hetzelfde type concludeert, web-infra
-alleen bij `server-webapp` (27 tests) · `/mpc` fase 0 en `/arch` · waarschuwing in `projects-index.md`.
+**Af:** `standards/stack-keuze.md` · `patterns/omwegen-tellen.md` · besluit-sjabloon met **aanname
++ omkeerpunt** in `docs-first.md` · `project:scaffold` op verplichte `--type`, geblokkeerd zonder
+ingevulde `docs/intake.md` die hetzelfde type concludeert, web-infra alleen bij `server-webapp`
+(27 tests) · `/mpc` fase 0 + `/arch` · uitrol naar HavunCore + **14 actieve CLAUDE.md's**
+(geparkeerde overgeslagen; Vusista's norm staat op `staging`, want `main` loopt 335 commits achter).
 
 **`vusista` stond niet in `config/quality-safety.php`** — vier maanden nooit een `composer audit`
-of secrets-scan. Toegevoegd (zonder `url`: desktop). Eerste scan meteen daarna:
-**critical 1 · high 2 · medium 4** (25% form-validatie, `session.php` secure-default niet `true`,
-verwijderde tests, 4× guzzle). Vusista-werk → eigen sessie, en grotendeels ingehaald door de herbouw.
+of secrets-scan. Toegevoegd (zonder `url`: desktop). Eerste scan: **critical 1 · high 2 · medium 4**
+(25% form-validatie, `session.php` secure-default niet `true`, verwijderde tests, 4× guzzle).
+Vusista-werk → eigen sessie, grotendeels ingehaald door de herbouw.
 
-**Nog open:** (8) uitrol naar de actieve CLAUDE.md's · (9) rode Actions moeten iemand bereiken —
-Vusista's staging faalde 13 dagen ongemerkt, dat is een monitoring-gat · (10) **jouw go:**
-`/var/www/vusista/{production,staging}` opruimen (demo serveert een 500, PHP 8.2 haalt `^8.3` niet).
+**Nog open:** (9) rode Actions moeten iemand bereiken — Vusista's staging faalde 13 dagen ongemerkt:
+monitoring-gat, geen scaffold-gat · (10) **jouw go:** `/var/www/vusista/{production,staging}` opruimen
+(demo serveert een 500). Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de
+120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten
+er al aan vóór de uitrol.
 
 > Vusista2 richt zich handmatig in — terecht, want de scaffold levert bewust géén Rust-skelet.
 > De herbouw zelf (`Vusista2/PLAN.md`) is een Vusista2-sessie.
