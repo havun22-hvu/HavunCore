@@ -47,6 +47,18 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
 
 ## Open — te doen
 
+- **Stackkeuze wordt een besluit, geen erfenis — plan klaar, wacht op "ga maar" (30-07).**
+  Vusista's post-mortem: een lokale fotomanager (76.797 bestanden, één gebruiker) draait op
+  Laravel + `php -S` in een Electron-schil, omdat élk Havun-project zo begint. Zes omwegen om
+  het eigen fundament heen; de zesde maakte de app stil onbruikbaar. Geverifieerd en scherper
+  dan gemeld: `project:scaffold` **weigert** elke stack behalve laravel (`--stack`-guard,
+  `ProjectScaffoldCommand.php:47`), en er bestaat in de hele KB geen beslisregel voor
+  stackkeuze. Vijf maatregelen (intake vóór stack · scaffold op `--type` · omwegen-register ·
+  besluit + omkeerpunt · "Havun-standaard" vervalt als argument) in
+  `plans/stackkeuze-fundament-plan.md`; post-mortem in `patterns/fundament-versus-omweg.md`.
+  **Punt 8 staat los:** Vusista's staging gaf 13 dagen rode Actions zonder dat iemand het
+  merkte — monitoring-gat, niet scaffold. De herbouw zelf (`Vusista2/PLAN.md`, Rust + Tauri)
+  is een Vusista2-sessie.
 - **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Hele keten staat (Laravel
   `PushController`/`WebPushService` + VAPID; webapp `sw-push.js` + knop). Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
