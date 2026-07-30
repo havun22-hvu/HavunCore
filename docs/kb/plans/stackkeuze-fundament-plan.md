@@ -112,7 +112,7 @@ blijven onveranderd.
 | 10 | **Overleg Henk:** `/var/www/vusista/{production,staging}` opruimen | serverconfig | open |
 | 11 | **`vusista2` geregistreerd** in beide configs + KB-index (16 docs) | config | ✅ zie hieronder |
 | 12 | `qv:scan` kent geen Cargo — een Rust-project scant schoon zonder gemeten te zijn | **code** | open |
-| 13 | **Overleg Henk:** Vusista2 heeft géén GitHub-remote — code bestaat op één schijf | repo-opzet | open |
+| 13 | Vusista2 heeft géén GitHub-remote — code bestaat op één schijf | repo-opzet | ✅ 31-07 |
 
 ### Punt 11-13 — de fout herhaalde zich meteen (31-07)
 
@@ -129,9 +129,19 @@ Twee gaten die dit blootlegt, allebei groter dan de registratie zelf:
   niet-PHP/JS-project is "niet gemeten", geen "geen bevindingen"** — precies het soort valse
   geruststelling waar `standards/claims-verifieren.md` voor waarschuwt. Zolang dit open staat,
   hoort de scanner dat te zeggen in plaats van een nul te tonen.
-- **Punt 13 — geen remote.** `git remote -v` is leeg: Vusista2 bestaat alleen op Henks schijf.
-  Eén crash en de herbouw plus de proeven zijn weg. Aanmaken van een private repo is
-  outward-facing en niet aan deze sessie toegewezen → Henks go.
+- **Punt 13 — geen remote. Opgelost 31-07:** `github.com/havun22-hvu/Vusista2`, privé, 4 commits,
+  48 bestanden. De 2,7 GB op schijf is `target/` en gaat niet mee.
+  **Bijna een fout gemaakt bij het opzetten:** `dist/` leek build-output en is even genegeerd,
+  maar in deze proeven staat daar **handgeschreven UI** (228 en 318 regels HTML). Teruggedraaid
+  vóór de push; `.gitignore` zegt nu expliciet waaróm `dist/` er niet in staat. Alleen
+  `src-tauri/gen/schemas/` wordt genegeerd — die regenereert de build.
+
+**Waarom GitHub hier meer is dan backup** (voor de volgende desktop-app): een project zonder
+server heeft geen deploy-pipeline nodig, maar wél een **distributiekanaal**. GitHub Releases
+levert de installer aan gebruikers, en Actions kan `cargo test` + `cargo clippy` + `cargo audit`
+draaien — dat laatste dekt aan de projectkant het gat dat `qv:scan` centraal nog heeft (punt 12).
+**Repo en release ≠ deploy en staging.** Dat onderscheid is precies wat bij Vusista 1 ontbrak.
+Het inrichten daarvan is Vusista2-werk, geen HavunCore-werk.
 
 ### Punt 8 — uitrol (30-07)
 

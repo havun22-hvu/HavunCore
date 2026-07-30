@@ -33,13 +33,14 @@ of secrets-scan. Toegevoegd (zonder `url`: desktop). Eerste scan: **critical 1 �
 Vusista-werk → eigen sessie, grotendeels ingehaald door de herbouw.
 
 **De fout herhaalde zich meteen (31-07):** `vusista2` stond in géén van beide configs, terwijl het
-al drie commits en werkende Rust-proeven had. Nu geregistreerd + geïndexeerd (16 docs).
+al drie commits en werkende Rust-proeven had. Nu geregistreerd + geïndexeerd (16 docs), en de repo
+staat op GitHub: `havun22-hvu/Vusista2` (privé, 48 bestanden; `target/` blijft eruit). Was alleen
+lokaal — één crash en de proefmetingen waaróp het herbouwplan rust, waren weg.
 
 **Nog open:** (9) rode Actions moeten iemand bereiken — Vusista's staging faalde 13 dagen ongemerkt:
 monitoring-gat, geen scaffold-gat · (10) **jouw go:** `/var/www/vusista/{production,staging}` opruimen
 (demo serveert een 500) · (12) **`qv:scan` meet geen Rust** — Vusista2 scant `critical 0` omdat de
-checks `composer`/`npm` zijn; er is geen `cargo audit`. Een schone scan is daar "niet gemeten" ·
-(13) **jouw go: Vusista2 heeft geen GitHub-remote** — de herbouw + proeven bestaan op één schijf.
+checks `composer`/`npm` zijn; er is geen `cargo audit`. Een schone scan is daar "niet gemeten".
 Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de 120-regelnorm (Vusista 138,
 Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten er al aan vóór de uitrol.
 
