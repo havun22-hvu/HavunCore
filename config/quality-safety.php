@@ -71,6 +71,15 @@ return [
             'url' => 'https://havuncore.havun.nl',
         ],
 
+        // Vusista — desktop app, so no URL and no SSL check. It was missing
+        // from this list entirely, which means no scheduled composer audit and
+        // no secrets scan ever ran on it: four months unscanned, found 30-07-2026.
+        // A project that is not a webapp still has dependencies and secrets.
+        'vusista' => [
+            'enabled' => env('QV_VUSISTA_ENABLED', true),
+            'path' => env('VUSISTA_LOCAL_PATH', 'D:/GitHub/Vusista'),
+        ],
+
         // Studieplanner mobile (Expo) — no composer, no URL, no SSL.
         // Registered so `critical-paths:verify --project=studieplanner-mobile`
         // can resolve the repo root for file-existence checks.

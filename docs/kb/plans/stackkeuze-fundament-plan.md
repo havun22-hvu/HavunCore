@@ -100,14 +100,30 @@ blijven onveranderd.
 
 | # | Wat | Raakt | Status |
 |---|---|---|---|
-| 1 | `standards/stack-keuze.md` — de vijf vragen + beslisboom op werktype, bindend | nieuw doc | wacht |
-| 2 | `patterns/omwegen-tellen.md` — het register + het tweede-omweg-signaal | nieuw doc | wacht |
-| 3 | `project:scaffold`: `--stack`-guard eruit, `--type` erin; desktop krijgt geen webinfra | **code** + tests | wacht op "ga maar" |
-| 4 | `/mpc` fase 1 + `/arch`: intake verplicht vóór stackkeuze | 2 commands | wacht |
-| 5 | Besluit-sjabloon met aanname + omkeerpunt | `standards/docs-first.md` | wacht |
-| 6 | "Havun-standaard" opschonen in 8 projectdocs | docs | wacht |
-| 7 | Uitrol naar de 14 actieve CLAUDE.md's | docs | wacht |
-| 8 | **Apart:** rode Actions moeten iemand bereiken (13 dagen onopgemerkt) | health-alerts | eigen punt |
+| 1 | `standards/stack-keuze.md` — de vijf vragen + beslisboom op werktype, bindend | nieuw doc | ✅ `85b4033` |
+| 2 | `patterns/omwegen-tellen.md` — het register + het tweede-omweg-signaal | nieuw doc | ✅ `85b4033` |
+| 3 | `project:scaffold`: `--stack`-guard eruit, `--type` erin; desktop krijgt geen webinfra | **code** + tests | ✅ `f964bfe` — 27 tests |
+| 4 | `/mpc` fase 0 + `/arch`: intake verplicht vóór stackkeuze | 2 commands | ✅ `f964bfe` |
+| 5 | Besluit-sjabloon met aanname + omkeerpunt | `standards/docs-first.md` | ✅ `85b4033` |
+| 6 | "Havun-standaard" als argument → waarschuwing in `projects-index.md` | docs | ✅ `f964bfe` |
+| 7 | **`vusista` ontbrak in `config/quality-safety.php`** — vier maanden nooit gescand | config | ✅ zie hieronder |
+| 8 | Uitrol naar de actieve CLAUDE.md's | docs | open |
+| 9 | **Apart:** rode Actions moeten iemand bereiken (13 dagen onopgemerkt) | health-alerts | open |
+| 10 | **Overleg Henk:** `/var/www/vusista/{production,staging}` opruimen | serverconfig | open |
+
+### Punt 7 — wat de eerste scan opleverde (30-07)
+
+`vusista` stond in `havun-projects.php` maar **niet** in `quality-safety.php`, dus er draaide
+nooit een `composer audit`, secrets-scan of session-check. Toegevoegd zonder `url` (desktop-app,
+geen SSL/Observatory-check). De allereerste scan meteen daarna:
+
+**critical 1 · high 2 · medium 4** — 25% form-validatie-dekking (0 FormRequests), `session.php`
+secure-cookie-default niet `true`, recent verwijderde tests, en 4× guzzle-advisories.
+Dat zijn **Vusista-bevindingen** → een Vusista-sessie, en grotendeels ingehaald door de herbouw.
+De les voor HavunCore staat los: *een project dat geen webapp is, heeft nog steeds
+dependencies en secrets.* Registratie mag daar niet van afhangen.
 
 **Niet in dit plan:** de herbouw van Vusista zelf (`Vusista2/PLAN.md`, Rust + Tauri v2,
-wacht op eigen "ga maar") — dat is een Vusista2-sessie, geen HavunCore-scope.
+wacht op eigen "ga maar") — dat is een Vusista2-sessie, geen HavunCore-scope. Vusista2 richt
+zichzelf handmatig in; dat is terecht, want `project:scaffold vusista2 --type=desktop` levert nu
+wél een bruikbare basis, maar geen Rust-skelet (bewust — zie punt 3).

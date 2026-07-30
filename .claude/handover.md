@@ -13,24 +13,31 @@ last_updated: 2026-07-19
 **Branch:** master · **Status:** stabiel. KB zoekt gechunkt (`--project` ~0,1s). **Server:** disk 67%
 (12 GB vrij na opschoning 18-07), prod draait overal.
 
-## Open — Vusista-lessen: `scaffold` legt een stack op (30-07)
+## Vusista-lessen: de stackkeuze is nu een besluit (30-07) — 7 van 10 af
 
-Vusista 1 liep vast op een keuze die niemand bewust maakte: het werd een Laravel-project omdat
-`project:scaffold` dat oplevert, terwijl het een lokale desktop-app is. Daarna zijn er **zes
-omwegen om het eigen fundament heen** gebouwd — PHP zonder Laravel voor thumbnails, een
-Node-proces voor grote bestanden, compressie om een bufferlimiet heen, een vangnet voor de eigen
-JS-bundel, een C++-sidecar omdat PHP geen FFI heeft. De zesde veroorzaakte een bug waarbij de app
-er normaal uitzag en volledig dood was. Vusista wordt herbouwd in Rust (`D:\GitHub\Vusista2`).
+Vusista 1 liep vast op een keuze die niemand maakte: het werd een Laravel-project omdat
+`project:scaffold` **elke andere stack hard weigerde**, terwijl het een lokale desktop-app is
+(76.797 bestanden, één gebruiker). Daarna zes omwegen om het eigen fundament heen; de zesde
+maakte de app stil onbruikbaar. Post-mortem: `patterns/fundament-versus-omweg.md`.
+Plan + status per punt: `plans/stackkeuze-fundament-plan.md`.
 
-**Onderbouwing:** `docs/kb/reference/vusista-1-retrospectief.md`.
+**Af:** `standards/stack-keuze.md` (vijf intakevragen, beslisboom op werktype) ·
+`patterns/omwegen-tellen.md` (register; tweede omweg = architectuurreview) · besluit-sjabloon
+met **aanname + omkeerpunt** in `standards/docs-first.md` · `project:scaffold` op verplichte
+`--type` + geblokkeerd zonder ingevulde `docs/intake.md` die hetzelfde type concludeert, web-infra
+alleen bij `server-webapp` (27 tests) · `/mpc` fase 0 en `/arch` · waarschuwing in `projects-index.md`.
 
-| # | Taak | Waarom |
-|---|------|--------|
-| 1 | **`project:scaffold` krijgt een app-type** (`--type=web\|desktop\|api\|mobile`), en vraagt ernaar als het ontbreekt. Bij `desktop`: geen webserver, geen staging, geen deploy-pipeline, geen deploy-workflows | De impliciete stackkeuze is de kern van het probleem |
-| 2 | **Neem `D:\GitHub\Vusista2` als sjabloon voor type `desktop`** (CLAUDE.md, docs-structuur, `.claude/handover.md`) | Een gewerkt voorbeeld, geen bedacht formaat |
-| 3 | **Vijf intakevragen verplicht vóór het scaffolden**, antwoorden vastleggen in het project | Waar draait het, hoeveel gebruikers tegelijk, waar staat de data, wat is de zwaarste operatie, waar merkt de gebruiker vertraging. Voor Vusista sloten die antwoorden een webstack uit — ze zijn nooit gesteld |
-| 4 | **Zet `vusista` in `config/quality-safety.php`** | Staat er niet in; er heeft dus **nooit** een geplande V&K-scan op gedraaid — geen `composer audit`, geen secrets-scan. Gold vier maanden |
-| 5 | **Ruim `/var/www/vusista/{production,staging}` op** — overleg met Henk vóór verwijderen | Hoort er niet te zijn voor een desktop-app. Staging-deploy faalde sinds 17-07 (`Not possible to fast-forward`; 30-07 rechtgezet), demo serveert een 500, en PHP 8.2 op de server haalt `^8.3` niet |
+**`vusista` stond niet in `config/quality-safety.php`** — vier maanden nooit een `composer audit`
+of secrets-scan. Toegevoegd (zonder `url`: desktop). Eerste scan meteen daarna:
+**critical 1 · high 2 · medium 4** (25% form-validatie, `session.php` secure-default niet `true`,
+verwijderde tests, 4× guzzle). Vusista-werk → eigen sessie, en grotendeels ingehaald door de herbouw.
+
+**Nog open:** (8) uitrol naar de actieve CLAUDE.md's · (9) rode Actions moeten iemand bereiken —
+Vusista's staging faalde 13 dagen ongemerkt, dat is een monitoring-gat · (10) **jouw go:**
+`/var/www/vusista/{production,staging}` opruimen (demo serveert een 500, PHP 8.2 haalt `^8.3` niet).
+
+> Vusista2 richt zich handmatig in — terecht, want de scaffold levert bewust géén Rust-skelet.
+> De herbouw zelf (`Vusista2/PLAN.md`) is een Vusista2-sessie.
 
 ## Open — wacht op Henk
 
@@ -66,18 +73,6 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
 
 ## Open — te doen
 
-- **Stackkeuze wordt een besluit, geen erfenis — plan klaar, wacht op "ga maar" (30-07).**
-  Vusista's post-mortem: een lokale fotomanager (76.797 bestanden, één gebruiker) draait op
-  Laravel + `php -S` in een Electron-schil, omdat élk Havun-project zo begint. Zes omwegen om
-  het eigen fundament heen; de zesde maakte de app stil onbruikbaar. Geverifieerd en scherper
-  dan gemeld: `project:scaffold` **weigert** elke stack behalve laravel (`--stack`-guard,
-  `ProjectScaffoldCommand.php:47`), en er bestaat in de hele KB geen beslisregel voor
-  stackkeuze. Vijf maatregelen (intake vóór stack · scaffold op `--type` · omwegen-register ·
-  besluit + omkeerpunt · "Havun-standaard" vervalt als argument) in
-  `plans/stackkeuze-fundament-plan.md`; post-mortem in `patterns/fundament-versus-omweg.md`.
-  **Punt 8 staat los:** Vusista's staging gaf 13 dagen rode Actions zonder dat iemand het
-  merkte — monitoring-gat, niet scaffold. De herbouw zelf (`Vusista2/PLAN.md`, Rust + Tauri)
-  is een Vusista2-sessie.
 - **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Hele keten staat (Laravel
   `PushController`/`WebPushService` + VAPID; webapp `sw-push.js` + knop). Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
@@ -94,12 +89,9 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
 
 ## Recent afgerond (context die nog nut heeft)
 
-- **`/start` en `/end`: deploy-achterstand is niet meer te missen (25-07)** — nieuw
-  `php artisan havun:deploy-status`: scheidt code van docs, licht security-commits eruit als
-  alarm, meldt migraties apart. Staat nu **ook in `/start`** (stap 1d) — dát is de plek die telt,
-  want `/start` draait altijd en `/end` niet. Meting die dit uitwees: de check in `/end` wérkte,
-  maar vond 13 achterlopende checkouts zonder dat iemand het las. Plan:
-  `plans/start-end-verbetering.md`.
+- **`/start` en `/end`: deploy-achterstand is niet meer te missen (25-07)** —
+  `php artisan havun:deploy-status` scheidt code van docs, licht security-commits eruit als alarm,
+  meldt migraties apart. Staat **ook in `/start`** (stap 1d) — die draait altijd, `/end` niet.
 - **Negen coverage-audits (24/25-07)** — norm gewijzigd: géén drempel meer, wél zo hoog mogelijk
   *zinvolle* dekking (`decisions/coverage-drempel-vervalt-2026-07-24.md`). Per project een
   `docs/testschuld.md`. Rode draad: gedekt is wat makkelijk was, niet wat kapot mag gaan.
@@ -109,28 +101,14 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
   niet rood hebt gezien tegen de oude code, bewijst niets.** Uitgerold naar 14 CLAUDE.md's en 4
   `start.md`'s. Aanleiding: de update-banner-meting, waar een groene test bijna een
   niet-bestaande bug als opgelost had gerapporteerd. Plan: `plans/ai-synthese-afdekking-plan.md`.
-- **13 CLAUDE.md's droegen twee achterhaalde normen (24-07)** — "de KB indexeert alleen het begin
-  van een bestand" (onwaar sinds de chunking van 15-07) en "handover 15-30 regels per sessie"
-  (norm is 120, en het sprak de regel eronder tegen). Gecorrigeerd. Ook opgeruimd: Havun 129→106
-  regels en JudoScoreBoard hadden een instructie die *toestemming vragen* eiste terwijl de tabel
-  ernaast zegt dat Claude technische keuzes zelf maakt. **De 6 geparkeerde projecten dragen de
-  foute normen nog** — bewust niet aangeraakt.
-- **Opruiming server + GitHub (24-07)** — dode vhost `demo.havun.nl` (wees naar een niet-bestaand
-  pad), 10 ongebruikte certs (25→15), 7 oude configs, lege `/var/www/lastmatch`. Backups in
-  `/root/backups/cleanup-2026-07-24/`. **Munus volledig weg** (map + lege repo + alle
-  registraties); **HavunVet gearchiveerd**. Geparkeerd, géén uitrol meer: HavunClub, Demo,
-  Havunity, Infosyst, IDSee, Agorano.
-
-- **credentials.md lekte in de KB-index (19-07)** — `docs:index` indexeerde de kluis (secrets in
-  `doc_embeddings`). Gepurged + `isSensitiveFile`-guard in `DocIndexer` (credentials.md/.env nooit
-  meer indexeren). Methode om secrets veilig te ontvangen zonder chat-lek: `runbooks/secrets-veilig-ontvangen.md`.
-- **Server-opschoning 18-07** — HavunClub + Umami + Infosyst van de server (disk 73%→67%, Umami's
-  pm2 gaf de RAM-winst). Backups in `/root/backups/*-2026-07-18/`. Code/repos blijven waar nodig.
-- **start2-command (19-07)** — werkwijze-primer voor de VS Code-extensie, uitgerold naar 16 projecten.
-- **De auth-norm werd als status gelezen (16-07)** — `reference/authentication-methods.md`: "Per
-  Project"-tabel las als beschrijving. Nu gelabeld als norm. Regel in `standards/md-doc-grootte.md`.
-- **KB-chunking (15-07)** — `plans/kb-chunking-plan.md`. Aparte `doc_chunks`-tabel, zoeken 0,1s met
-  `--project`. Lessen: eerst consumers dán schema; meten niet redeneren; één weg de index in.
+- **13 CLAUDE.md's droegen twee achterhaalde normen (24-07)** — "KB indexeert alleen het begin van
+  een bestand" (onwaar sinds de chunking) en "handover 15-30 regels". Gecorrigeerd.
+  **De 6 geparkeerde projecten dragen de foute normen nog** — bewust niet aangeraakt.
+- **Opruiming server + GitHub (24-07)** — dode vhost, 10 ongebruikte certs (25→15), 7 oude
+  configs. Backups in `/root/backups/cleanup-2026-07-24/`. **Munus volledig weg**, **HavunVet
+  gearchiveerd**. Geparkeerd, géén uitrol meer: HavunClub, Demo, Havunity, Infosyst, IDSee, Agorano.
+- **credentials.md lekte in de KB-index (19-07)** — `isSensitiveFile`-guard in `DocIndexer`;
+  credentials.md/.env worden nooit meer geïndexeerd. `runbooks/secrets-veilig-ontvangen.md`.
 
 ## Vaste context voor dit project
 
