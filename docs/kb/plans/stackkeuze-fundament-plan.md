@@ -110,6 +110,28 @@ blijven onveranderd.
 | 8 | Uitrol naar de actieve CLAUDE.md's | 15 docs | ✅ zie hieronder |
 | 9 | **Apart:** rode Actions moeten iemand bereiken (13 dagen onopgemerkt) | health-alerts | open |
 | 10 | **Overleg Henk:** `/var/www/vusista/{production,staging}` opruimen | serverconfig | open |
+| 11 | **`vusista2` geregistreerd** in beide configs + KB-index (16 docs) | config | ✅ zie hieronder |
+| 12 | `qv:scan` kent geen Cargo — een Rust-project scant schoon zonder gemeten te zijn | **code** | open |
+| 13 | **Overleg Henk:** Vusista2 heeft géén GitHub-remote — code bestaat op één schijf | repo-opzet | open |
+
+### Punt 11-13 — de fout herhaalde zich meteen (31-07)
+
+Henk vroeg of `vusista2` wél geregistreerd stond. **Dat stond het niet** — in geen van beide
+configs, terwijl het project al drie commits en werkende Rust-proeven had (66.844 thumbnails in
+vijf minuten, 60 fps grid). Exact dezelfde faalmodus als Vusista 1, één dag na het vastleggen
+ervan. Nu geregistreerd zonder `server_path`/`local_url`/`url` (desktop, geen HTTP-server).
+
+Twee gaten die dit blootlegt, allebei groter dan de registratie zelf:
+
+- **Punt 12 — `qv:scan` meet Rust niet.** De eerste scan geeft `critical 0 · high 0 · medium 0`.
+  Dat leest als veilig, maar de checks zijn `composer` en `npm`: in een Cargo-project vinden die
+  per definitie niets. `cargo audit` bestaat niet in de scanner. **Een schone scan op een
+  niet-PHP/JS-project is "niet gemeten", geen "geen bevindingen"** — precies het soort valse
+  geruststelling waar `standards/claims-verifieren.md` voor waarschuwt. Zolang dit open staat,
+  hoort de scanner dat te zeggen in plaats van een nul te tonen.
+- **Punt 13 — geen remote.** `git remote -v` is leeg: Vusista2 bestaat alleen op Henks schijf.
+  Eén crash en de herbouw plus de proeven zijn weg. Aanmaken van een private repo is
+  outward-facing en niet aan deze sessie toegewezen → Henks go.
 
 ### Punt 8 — uitrol (30-07)
 

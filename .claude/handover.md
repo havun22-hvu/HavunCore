@@ -32,11 +32,16 @@ of secrets-scan. Toegevoegd (zonder `url`: desktop). Eerste scan: **critical 1 �
 (25% form-validatie, `session.php` secure-default niet `true`, verwijderde tests, 4× guzzle).
 Vusista-werk → eigen sessie, grotendeels ingehaald door de herbouw.
 
+**De fout herhaalde zich meteen (31-07):** `vusista2` stond in géén van beide configs, terwijl het
+al drie commits en werkende Rust-proeven had. Nu geregistreerd + geïndexeerd (16 docs).
+
 **Nog open:** (9) rode Actions moeten iemand bereiken — Vusista's staging faalde 13 dagen ongemerkt:
 monitoring-gat, geen scaffold-gat · (10) **jouw go:** `/var/www/vusista/{production,staging}` opruimen
-(demo serveert een 500). Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de
-120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten
-er al aan vóór de uitrol.
+(demo serveert een 500) · (12) **`qv:scan` meet geen Rust** — Vusista2 scant `critical 0` omdat de
+checks `composer`/`npm` zijn; er is geen `cargo audit`. Een schone scan is daar "niet gemeten" ·
+(13) **jouw go: Vusista2 heeft geen GitHub-remote** — de herbouw + proeven bestaan op één schijf.
+Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de 120-regelnorm (Vusista 138,
+Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten er al aan vóór de uitrol.
 
 > Vusista2 richt zich handmatig in — terecht, want de scaffold levert bewust géén Rust-skelet.
 > De herbouw zelf (`Vusista2/PLAN.md`) is een Vusista2-sessie.
@@ -79,13 +84,11 @@ Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
   `PushController`/`WebPushService` + VAPID; webapp `sw-push.js` + knop). Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
   Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt (`runbooks/uptime-monitoring.md`).
-- **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** Gemeten met een nieuwe
-  E2E-suite tegen de productie-build (`npm run test:e2e:pwa`): banner verschijnt en de klik
-  activeert + herlaadt, in beide workbox-vensters (<60s en >60s na registratie). Geen code
-  gewijzigd. `sw.js` op prod heeft correcte no-cache-headers. Doet het zich wéér voor: check
-  eerst of `getRegistration()` een `waiting` heeft. Meting: `plans/webapp-sw-update-fix.md`.
-  Los daarvan: Vitest geblokkeerd door Avast HTTPS-interceptie (niet de registry) — via server
-  ophalen + hash. Zie [[env-ssl-interception]].
+- **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** E2E tegen de productie-build
+  (`npm run test:e2e:pwa`): banner verschijnt, klik activeert + herlaadt, beide workbox-vensters.
+  Geen code gewijzigd. Wéér last? Check of `getRegistration()` een `waiting` heeft.
+  `plans/webapp-sw-update-fix.md`. Los daarvan: Vitest geblokkeerd door Avast HTTPS-interceptie
+  (niet de registry) — via server ophalen + hash. Zie [[env-ssl-interception]].
 - **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde 523-versie op
   `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
 

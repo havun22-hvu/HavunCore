@@ -85,6 +85,16 @@ return [
         'local_url' => 'http://localhost:8008',
         'endpoints' => [],
     ],
+    // Vusista 2 — de herbouw (Rust + Tauri). Desktop-app, dus geen server_path
+    // en geen local_url: er is geen HTTP-server. Geregistreerd vanaf de eerste
+    // commit, want een project dat de KB niet kent, wordt ook niet gescand —
+    // dat is precies wat Vusista 1 vier maanden onzichtbaar hield.
+    'vusista2' => [
+        'path'      => 'D:/GitHub/Vusista2',
+        'server_path' => null,
+        'local_url' => null,
+        'endpoints' => [],
+    ],
     'studieplanner-api' => [
         'path'      => 'D:/GitHub/Studieplanner-api',
         'server_path' => '/var/www/studieplanner/production',

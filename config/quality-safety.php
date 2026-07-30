@@ -80,6 +80,16 @@ return [
             'path' => env('VUSISTA_LOCAL_PATH', 'D:/GitHub/Vusista'),
         ],
 
+        // Vusista 2 — the Rust/Tauri rebuild. Registered on day one rather than
+        // after the fact: the scanner's composer/npm checks find nothing in a
+        // Cargo project, but the secrets, residue and test-erosion checks are
+        // language-agnostic and do apply. Cargo advisories need `cargo audit`,
+        // which this scanner does not run yet — see the note in the plan.
+        'vusista2' => [
+            'enabled' => env('QV_VUSISTA2_ENABLED', true),
+            'path' => env('VUSISTA2_LOCAL_PATH', 'D:/GitHub/Vusista2'),
+        ],
+
         // Studieplanner mobile (Expo) — no composer, no URL, no SSL.
         // Registered so `critical-paths:verify --project=studieplanner-mobile`
         // can resolve the repo root for file-existence checks.
