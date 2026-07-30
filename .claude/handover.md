@@ -39,13 +39,28 @@ lokaal — één crash en de proefmetingen waaróp het herbouwplan rust, waren w
 
 **Nog open:** (9) rode Actions moeten iemand bereiken — Vusista's staging faalde 13 dagen ongemerkt:
 monitoring-gat, geen scaffold-gat · (10) **jouw go:** `/var/www/vusista/{production,staging}` opruimen
-(demo serveert een 500) · (12) **`qv:scan` meet geen Rust** — Vusista2 scant `critical 0` omdat de
-checks `composer`/`npm` zijn; er is geen `cargo audit`. Een schone scan is daar "niet gemeten".
-Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de 120-regelnorm (Vusista 138,
+(demo serveert een 500). Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de 120-regelnorm (Vusista 138,
 Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten er al aan vóór de uitrol.
 
 > Vusista2 richt zich handmatig in — terecht, want de scaffold levert bewust géén Rust-skelet.
 > De herbouw zelf (`Vusista2/PLAN.md`) is een Vusista2-sessie.
+
+## V&K kiest zijn checks op de stack (31-07) — af, twee punten open
+
+**Henk:** *"HavunCore moet van elk project weten hoe het gebouwd is en het juiste pakket
+V&K/testen gebruiken."* `qv:scan` detecteert nu de ecosystemen uit de manifesten (detectie, geen
+`stack`-veld — dat zou een tweede waarheid worden), draait `cargo audit` op elke `Cargo.lock`
+onder de root, en **meldt een ecosysteem dat het niet kan auditen als `high`-bevinding** in plaats
+van als nul. Elke scan toont nu `havuncore: js, php` / `vusista2: rust`, met `(NIET gemeten)`
+achter wat ongedekt is. Plan: `plans/vk-per-stack-plan.md`.
+
+**Vusista2 ging van 0 naar 34 findings** (2 medium `unsound`, 32 low `unmaintained`). Die eerste
+nul was mijn eigen bug: `cargo audit` zet `unmaintained`/`unsound` in een apart `warnings`-veld
+naast `vulnerabilities`, en ik las alleen dat laatste. Handmatig nameten bracht het aan het licht.
+
+**Open:** (5) `type` uit de registry expliciet de web-only checks laten sturen — nu regelt de
+afwezigheid van `url` dat impliciet · (6) testnorm per stack in `reference/test-quality-policy.md`
+(PHPUnit · Vitest · `cargo test`). **Go, Python en .NET blijven ongemeten — maar nu zichtbaar.**
 
 ## Open — wacht op Henk
 

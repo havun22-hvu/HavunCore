@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Enums\Severity;
+use App\Services\QualitySafety\EcosystemDetector;
 use App\Services\QualitySafety\QualitySafetyScanner;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
@@ -11,7 +12,7 @@ use Illuminate\Support\Facades\Storage;
 class QualitySafetyScanCommand extends Command
 {
     protected $signature = 'qv:scan
-        {--only= : Run only one check (composer|npm|ssl|observatory|server|forms|ratelimit|secrets|session-cookies|test-erosion|debug-mode|residu)}
+        {--only= : Run only one check (composer|npm|cargo|deps-coverage|ssl|observatory|server|forms|ratelimit|secrets|session-cookies|test-erosion|debug-mode|residu)}
         {--project= : Scan only one project (slug)}
         {--json : Emit machine-readable JSON on stdout}';
 
@@ -22,7 +23,7 @@ class QualitySafetyScanCommand extends Command
         $only = $this->option('only');
         $projectFilter = $this->option('project');
 
-        $availableChecks = ['composer', 'npm', 'ssl', 'observatory', 'server', 'forms', 'ratelimit', 'secrets', 'session-cookies', 'test-erosion', 'debug-mode', 'residu'];
+        $availableChecks = ['composer', 'npm', 'cargo', 'deps-coverage', 'ssl', 'observatory', 'server', 'forms', 'ratelimit', 'secrets', 'session-cookies', 'test-erosion', 'debug-mode', 'residu'];
         $checks = $only ? [$only] : $availableChecks;
 
         foreach ($checks as $check) {
@@ -86,7 +87,22 @@ class QualitySafetyScanCommand extends Command
     private function renderHuman(array $run): void
     {
         $this->info('Quality & Safety scan — ' . $run['started_at']);
-        $this->line("Projects: " . count($run['projects']) . ' | Checks: ' . implode(', ', $run['checks']));
+        $this->line('Projects: ' . count($run['projects']) . ' | Checks: ' . implode(', ', $run['checks']));
+
+        // Tonen hoe elk project gebouwd is, en welk ecosysteem géén audit heeft.
+        // Zonder deze regel is "0 findings" op een Go-project niet te
+        // onderscheiden van "0 findings" op een gemeten Laravel-app.
+        foreach ($run['ecosystems'] ?? [] as $slug => $ecos) {
+            if ($ecos === []) {
+                continue;
+            }
+            $gelabeld = array_map(
+                fn (string $e): string => in_array($e, EcosystemDetector::AUDITABLE, true) ? $e : "{$e} (NIET gemeten)",
+                $ecos
+            );
+            $this->line("  {$slug}: " . implode(', ', $gelabeld));
+        }
+
         $this->newLine();
 
         foreach ($run['findings'] as $finding) {

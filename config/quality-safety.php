@@ -81,10 +81,9 @@ return [
         ],
 
         // Vusista 2 — the Rust/Tauri rebuild. Registered on day one rather than
-        // after the fact: the scanner's composer/npm checks find nothing in a
-        // Cargo project, but the secrets, residue and test-erosion checks are
-        // language-agnostic and do apply. Cargo advisories need `cargo audit`,
-        // which this scanner does not run yet — see the note in the plan.
+        // after the fact. The scanner detects Cargo.lock files anywhere below
+        // the root (this repo has five, none in the root) and runs cargo audit
+        // on each: 34 findings where composer/npm reported a clean zero.
         'vusista2' => [
             'enabled' => env('QV_VUSISTA2_ENABLED', true),
             'path' => env('VUSISTA2_LOCAL_PATH', 'D:/GitHub/Vusista2'),
@@ -219,6 +218,7 @@ return [
     'bin' => [
         'composer' => env('QV_COMPOSER_BIN', 'composer'),
         'npm' => env('QV_NPM_BIN', 'npm'),
+        'cargo' => env('QV_CARGO_BIN', 'cargo'),
         'ssh' => env('QV_SSH_BIN', 'ssh'),
         'git' => env('QV_GIT_BIN', 'git'),
     ],

@@ -20,8 +20,19 @@ class QualitySafetyScanner
         $startedAt = Carbon::now();
         $findings = [];
         $errors = [];
+        $ecosystems = [];
+
+        $detector = new EcosystemDetector;
 
         foreach ($projects as $slug => $project) {
+            // Vastleggen hoe dít project gebouwd is, zodat het rapport kan
+            // laten zien wát er gemeten is. Een nul zonder die context is niet
+            // te onderscheiden van een nul omdat niemand keek.
+            $pad = $project['path'] ?? null;
+            if ($pad && is_dir($pad)) {
+                $ecosystems[$slug] = array_keys($detector->detect($pad));
+            }
+
             foreach ($checks as $check) {
                 $result = $this->runCheck($check, $slug, $project);
 
@@ -46,6 +57,7 @@ class QualitySafetyScanner
             'started_at' => $startedAt->toIso8601String(),
             'finished_at' => Carbon::now()->toIso8601String(),
             'projects' => array_keys($projects),
+            'ecosystems' => $ecosystems,
             'checks' => $checks,
             'findings' => $findings,
             'errors' => $errors,
@@ -62,6 +74,8 @@ class QualitySafetyScanner
         return match ($check) {
             'composer' => $this->composerAudit($project),
             'npm' => $this->npmAudit($project),
+            'cargo' => $this->cargoAudit($project),
+            'deps-coverage' => $this->dependencyCoverage($project),
             'ssl' => $this->sslExpiry($project),
             'observatory' => $this->observatory($project),
             'server' => $this->serverHealth($project),
@@ -374,6 +388,154 @@ BASH;
                 'package' => $pkg,
                 'range' => $vuln['range'] ?? null,
                 'message' => sprintf('%s %s — %s', $pkg, $vuln['range'] ?? '', $title),
+            ];
+        }
+
+        return ['findings' => $findings];
+    }
+
+    /**
+     * `cargo audit` over elke Cargo.lock in het project.
+     *
+     * Waarom niet alleen de root: Vusista2 heeft géén Cargo.toml in de root en
+     * vier Cargo.lock-bestanden in submappen. Een check die alleen de root
+     * bekijkt, meldt daar nul — en die nul is dan de afwezigheid van een
+     * meting, niet de uitkomst ervan.
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function cargoAudit(array $project): array
+    {
+        $path = $project['path'] ?? null;
+        if (! $path) {
+            return ['findings' => []]; // server-only entries (no path) silently skip
+        }
+        if (! is_dir($path)) {
+            return ['findings' => [], 'error' => "Project path not found: {$path}"];
+        }
+
+        $lockfiles = (new EcosystemDetector)->detect($path)['rust'] ?? [];
+        if ($lockfiles === []) {
+            return ['findings' => []];
+        }
+
+        $bin = config('quality-safety.bin.cargo', 'cargo');
+        $findings = [];
+        $root = rtrim(str_replace('\\', '/', $path), '/');
+
+        foreach ($lockfiles as $relatief) {
+            $crateDir = dirname($root . '/' . $relatief);
+            $result = Process::path($crateDir)->timeout(180)
+                ->run([$bin, 'audit', '--json']);
+
+            $decoded = $this->decodeAuditJson($result);
+            if ($decoded === null) {
+                // Geen parseerbare JSON is hier geen "schoon": meestal ontbreekt
+                // cargo-audit. Dat moet zichtbaar zijn, niet wegvallen als nul.
+                return [
+                    'findings' => $findings,
+                    'error' => "cargo audit gaf geen bruikbare JSON in {$relatief} — is cargo-audit geïnstalleerd?",
+                ];
+            }
+
+            foreach ($decoded['vulnerabilities']['list'] ?? [] as $vuln) {
+                $findings[] = $this->cargoFinding(
+                    $vuln,
+                    $this->normalizeSeverity(
+                        $vuln['advisory']['cvss'] ?? ($vuln['advisory']['severity'] ?? 'high')
+                    ),
+                    $relatief
+                );
+            }
+
+            // `warnings` staat náást `vulnerabilities` en bevat wat RustSec niet
+            // als kwetsbaarheid telt maar wel meldt: crates zonder onderhoud (dus
+            // zonder toekomstige security-fixes) en `unsound` code. Alleen de
+            // vulnerabilities lezen gaf op de Tauri-crate 0 terwijl er 17 van
+            // deze in stonden — dezelfde stilte die dit hele plan opruimt.
+            foreach ($decoded['warnings'] ?? [] as $soort => $items) {
+                foreach ((array) $items as $item) {
+                    $findings[] = $this->cargoFinding($item, match ($soort) {
+                        'unsound' => 'medium',
+                        'unmaintained' => 'low',
+                        default => 'info',
+                    }, $relatief, $soort);
+                }
+            }
+        }
+
+        return ['findings' => $findings];
+    }
+
+    /**
+     * Eén cargo-audit-item (vulnerability of warning) naar een finding.
+     * Beide vormen dragen dezelfde `advisory`/`package`-structuur.
+     *
+     * @param  array<string,mixed>  $item
+     * @return array<string,mixed>
+     */
+    private function cargoFinding(array $item, string $severity, string $lockfile, ?string $soort = null): array
+    {
+        $advisory = $item['advisory'] ?? [];
+        $package = $item['package']['name'] ?? 'onbekend';
+        $titel = $advisory['title'] ?? ($advisory['id'] ?? 'Rust advisory');
+        $label = $soort !== null ? "{$soort}: " : '';
+
+        return [
+            'severity' => $severity,
+            'title' => $label . $titel,
+            'package' => $package,
+            'advisory_id' => $advisory['id'] ?? null,
+            'message' => sprintf(
+                '%s%s (%s) — %s [%s]',
+                $label,
+                $package,
+                $item['package']['version'] ?? '?',
+                $titel,
+                $lockfile
+            ),
+        ];
+    }
+
+    /**
+     * Meldt ecosystemen die we wél zien maar niet auditen.
+     *
+     * Dit is de check die de valse nul opruimt. Zonder hem betekent
+     * `critical 0 · high 0 · medium 0` op een Go- of Python-project "niemand
+     * heeft gekeken", terwijl het leest als "niets gevonden". Een ecosysteem
+     * dat we niet kunnen meten is een **bevinding**, geen stilte.
+     *
+     * @param  array<string,mixed>  $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function dependencyCoverage(array $project): array
+    {
+        $path = $project['path'] ?? null;
+        if (! $path || ! is_dir($path)) {
+            return ['findings' => []];
+        }
+
+        $detector = new EcosystemDetector;
+        $gedetecteerd = $detector->detect($path);
+
+        if ($gedetecteerd === []) {
+            return ['findings' => []];
+        }
+
+        $findings = [];
+        foreach ($detector->unauditable($gedetecteerd) as $ecosysteem) {
+            $manifesten = $gedetecteerd[$ecosysteem];
+            $findings[] = [
+                'severity' => 'high',
+                'title' => "Dependencies niet gemeten: {$ecosysteem}",
+                'ecosystem' => $ecosysteem,
+                'message' => sprintf(
+                    '%s gedetecteerd (%s) maar er draait geen audit voor — dit is NIET "geen bevindingen", dit is "niet gekeken". Ondersteund: %s.',
+                    $ecosysteem,
+                    implode(', ', array_slice($manifesten, 0, 3)),
+                    implode('/', EcosystemDetector::AUDITABLE)
+                ),
             ];
         }
 
