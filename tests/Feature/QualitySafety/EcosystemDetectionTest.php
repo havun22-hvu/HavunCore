@@ -177,6 +177,23 @@ class EcosystemDetectionTest extends TestCase
         $this->assertStringContainsString('geen url', $run['skipped'][0]['reason']);
     }
 
+    public function test_test_erosion_without_a_tests_dir_is_reported_as_unmeasured(): void
+    {
+        // A Rust project keeps its unit tests in #[cfg(test)] modules inside
+        // src/, so this check structurally cannot see them. Reporting zero
+        // there is the same false clean the whole plan is about.
+        $this->manifest('Cargo.lock');
+
+        $run = (new QualitySafetyScanner)->scan(
+            ['tmpproj' => ['path' => $this->tmp]],
+            ['test-erosion']
+        );
+
+        $this->assertSame([], $run['findings']);
+        $this->assertCount(1, $run['skipped']);
+        $this->assertStringContainsString('niet gemeten', $run['skipped'][0]['reason']);
+    }
+
     public function test_a_check_that_really_ran_is_not_marked_skipped(): void
     {
         // deps-coverage needs neither a URL nor a Laravel root: it always runs.

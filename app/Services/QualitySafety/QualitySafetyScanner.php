@@ -1267,7 +1267,12 @@ BASH;
         $root = rtrim($path, '/\\');
         $testsDir = $root . '/tests';
         if (! is_dir($testsDir)) {
-            return ['findings' => []];
+            // Géén stille nul. Deze check meet deletions in `tests/`; ontbreekt
+            // die map, dan is er niets gemeten — en bij Rust is dat structureel:
+            // unit-tests leven daar in `#[cfg(test)]`-modules binnen `src/`, dus
+            // een verwijderde testmodule valt hoe dan ook buiten beeld.
+            // Zie reference/testgereedschap-per-stack.md.
+            return ['findings' => [], 'skipped' => 'geen tests/-map — test-erosion is hier niet gemeten (Rust: tests staan in src/)'];
         }
 
         $findings = [];
