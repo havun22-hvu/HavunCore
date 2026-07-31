@@ -82,16 +82,25 @@ maar nu zichtbaar.** Vusista 1 staat bewust op `enabled => false`.
 | **LastMatch** | Avast HTTPS-scanning uit = enige APK-build-blocker |
 | **JudoScoreBoard** | Google-review AAB 116 (9 juni ingediend) — status alleen in Play Console |
 
-## Veen-ledenadministratie — herbouw GEPARKEERD (gecorrigeerd 31-07)
+## Veen-ledenadministratie — GEPARKEERD (Henk, 31-07)
 
-**Cees vond de offerte te duur; de herbouw gaat niet door** (besluit 003 in het project). Hier
-stond nog "fase 3 wacht op Cees' groen licht" — dat klopte al sinds ~29-07 niet meer. Wat er nu
-loopt zijn **kleine betaalde klussen op de oude app**, en Cees liet werk uitvoeren zónder
-goedgekeurde offerte: **niets oppakken zonder getekende opdracht** (business, dus Henk).
-- Orchestrator-deel blijft staan: repo, `veen.havun.nl` + staging, HavunCore-registratie,
-  credentials in de kluis.
-- **`CLAUDE.md` toegevoegd 31-07** — die ontbrekende volledig; het project had geen werkwijze.
-- Inhoudelijk werk = een Veen-sessie, niet vanuit HavunCore.
+**Voorlopig niets mee doen.** De herbouw lag al stil (Cees vond de offerte te duur, besluit 003);
+nu ligt het hele project stil, ook de kleine betaalde klussen. Hier stond nog "fase 3 wacht op
+Cees' groen licht" — dat klopte al sinds ~29-07 niet meer.
+
+**Maar parkeren ≠ monitoring uit — en het stónd niet eens aan.** Veen zat in `havun-projects.php`
+maar **niet** in `quality-safety.php`: nooit een `composer audit` of secrets-scan gedraaid, exact
+hetzelfde gat als bij Vusista. Nu toegevoegd, want `veen.havun.nl` is publiek bereikbaar (200) en
+de oude app draait live met **1.177 SEPA-machtigingen en 15.030 betalingen**. Een geparkeerd
+project waar niemand meer kijkt is juist waar een advisory het langst blijft zitten.
+**Verschil met Vusista 1** (dat wél op `enabled => false` staat): dat wordt weggegooid, dit leeft.
+
+**Eerste scan: 1 high** — `config/session.php` secure-cookie-default niet `true` op een publiek
+bereikbare app. **Niet gefixt: het project is geparkeerd.** Jouw call of dit een uitzondering is.
+
+**Ook: `veen.havun.nl` + staging staan op onze server** (124 MB + 156 MB, 205 commits achter).
+Bij een geparkeerd project is dat dezelfde vraag als bij Vusista — **jouw go** of dat weg mag,
+want het raakt de klantrelatie met Cees.
 
 ## Open — te doen
 

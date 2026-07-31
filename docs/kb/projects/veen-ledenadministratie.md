@@ -9,8 +9,15 @@ last_check: 2026-07-19
 
 **Type:** Laravel 12 SaaS — ledenadministratie voor judoscholen met SEPA-incasso
 **Eigenaar:** Cees Veen (product en klanten). Havun doet modernisering + hosting.
-**Status:** ⛔ **herbouw GEPARKEERD** — Cees vond de offerte te duur (besluit 003, ~29-07-2026).
-Wat loopt: kleine **betaalde** klussen op de oude app. Niets oppakken zonder getekende opdracht.
+**Status:** ⛔ **PROJECT GEPARKEERD** (Henk, 31-07-2026) — voorlopig niets mee doen.
+De herbouw was al geparkeerd (Cees vond de offerte te duur, besluit 003); nu ligt het hele
+project stil, óók de kleine betaalde klussen.
+
+> **Parkeren betekent hier níét "monitoring uit".** `veen.havun.nl` is publiek bereikbaar (200)
+> en de oude app die het vervangt draait live bij een klant: **1.177 SEPA-machtigingen en 15.030
+> betalingen**. Juist een project waar niemand meer naar kijkt, is waar een advisory het langst
+> onopgemerkt blijft. `qv:scan` staat daarom **aan** — dat is het verschil met Vusista 1, dat
+> weggegooid wordt en daarom wél uit staat.
 
 > **Niet via Mollie.** Het oude package zit in de code maar is nooit gebruikt. De incasso
 > loopt via zelf gegenereerde pain.008-batchbestanden naar de bank.
