@@ -27,6 +27,12 @@ Schedule::command('droogtest:reminder')->dailyAt('09:00');
 // Off-minuten (:07, :17) houden deze runs buiten het :00-boeket.
 Schedule::command('qv:scan --only=composer --json')->dailyAt('03:07');
 Schedule::command('qv:scan --only=npm --json')->dailyAt('03:17');
+// Cargo advisories (Rust) — zelfde ritme als composer/npm. Zonder deze regel
+// zou een Rust-project elke nacht ongemeten blijven terwijl het rapport nul toont.
+Schedule::command('qv:scan --only=cargo --json')->dailyAt('03:22');
+// Dekkingscontrole: meldt een ecosysteem waarvoor géén audit bestaat. Draait ná
+// de drie audits, zodat "niet gemeten" naast de echte uitslagen komt te staan.
+Schedule::command('qv:scan --only=deps-coverage --json')->dailyAt('03:24');
 Schedule::command('qv:scan --only=ssl --json')->weeklyOn(1, '04:07');
 Schedule::command('qv:scan --only=observatory --json')->weeklyOn(1, '04:37');
 // Server health (disk + failed systemd units) — daily, off-minute :47.
@@ -54,6 +60,12 @@ Schedule::command('docs:handover')->dailyAt('04:00');
 // Wekelijkse KB-audit (zondag 04:30 — na za test-erosion 05:37 op zaterdag,
 // voor ma-SSL 04:07). Rapport in docs/kb/reference/kb-audit-latest.md.
 Schedule::command('docs:audit')->weeklyOn(0, '04:30');
+
+// GitHub Actions op de hoofdbranch — twee keer per dag. Vusista's staging-deploy
+// faalde dertien dagen zonder dat iemand het zag: het signaal bestond, het kanaal
+// niet. Een rode build wordt hier een in-app health-alert, en na drie dagen rood
+// escaleert die naar `critical` (web-push).
+Schedule::command('actions:watch')->twiceDaily(7, 19);
 
 // Repo-hygiene residu — wekelijkse detectie. Lokale fallback wanneer de
 // scanner op de productie-host zelf draait (geen SSH self-loop).

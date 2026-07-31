@@ -108,7 +108,7 @@ blijven onveranderd.
 | 6 | "Havun-standaard" als argument → waarschuwing in `projects-index.md` | docs | ✅ `f964bfe` |
 | 7 | **`vusista` ontbrak in `config/quality-safety.php`** — vier maanden nooit gescand | config | ✅ zie hieronder |
 | 8 | Uitrol naar de actieve CLAUDE.md's | 15 docs | ✅ zie hieronder |
-| 9 | **Apart:** rode Actions moeten iemand bereiken (13 dagen onopgemerkt) | health-alerts | open |
+| 9 | Rode Actions moeten iemand bereiken (13 dagen onopgemerkt) | health-alerts | ✅ 31-07 |
 | 10 | `/var/www/vusista/{production,staging}` opruimen | serverconfig | ✅ 31-07 |
 | 11 | **`vusista2` geregistreerd** in beide configs + KB-index (16 docs) | config | ✅ zie hieronder |
 | 12 | `qv:scan` kent geen Cargo — een Rust-project scant schoon zonder gemeten te zijn | **code** | open |
@@ -135,6 +135,26 @@ Twee gaten die dit blootlegt, allebei groter dan de registratie zelf:
   maar in deze proeven staat daar **handgeschreven UI** (228 en 318 regels HTML). Teruggedraaid
   vóór de push; `.gitignore` zegt nu expliciet waaróm `dist/` er niet in staat. Alleen
   `src-tauri/gen/schemas/` wordt genegeerd — die regenereert de build.
+
+### Punt 9 — een rode Action die niemand bereikt (31-07)
+
+Vusista's staging-deploy faalde **dertien dagen**: elke push een rode Action, een publieke URL met
+een foutpagina, en niemand die het zag. Het signaal bestónd — er was alleen geen kanaal.
+
+**`actions:watch`** haalt per project de laatste workflow-run op de hoofdbranch op en zet een
+falende run om in een **in-app health-alert**, hetzelfde kanaal als de uptime-monitoring
+(`runbooks/uptime-monitoring.md`). Herstelt de build, dan lost de alert zichzelf op.
+
+Drie keuzes die het bruikbaar houden in plaats van luidruchtig:
+
+- **Alleen de hoofdbranch.** Een rode run op een feature-branch is werk in uitvoering, geen storing.
+- **Severity groeit met de duur.** Vers rood is `warning`; **langer dan drie dagen rood is
+  `critical`** — dan gaat de web-push af. Dertien dagen mag niet nog eens stil verlopen.
+- **Geen `gh` beschikbaar is een `error`, geen nul.** Zelfde regel als bij de ecosystemen: niet
+  kunnen meten meld je, je zwijgt het niet weg.
+
+**De repo bepaalt het project zelf** — uit `git remote get-url origin`, niet uit een lijst in de
+config. Consistent met de `EcosystemDetector`: detectie boven registratie.
 
 ### Punt 10 — serveromgeving opgeruimd (31-07)
 

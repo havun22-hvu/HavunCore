@@ -39,8 +39,15 @@ bestond alleen op één schijf. Vusista 1 had er al één. Beide zijn Vusista-we
 `thumb-runtime.php`). Alle andere sites 200. **Jij nog:** DNS-record `vusista.havun.nl` bij
 mijn.host opruimen + deploy-key `server-read` uit de Vusista-repo-settings.
 
-**Nog open:** (9) rode Actions moeten iemand bereiken — Vusista's staging faalde 13 dagen ongemerkt:
-monitoring-gat, geen scaffold-gat. Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven
+**Rode Actions bereiken nu iemand (31-07).** `actions:watch` (2×/dag, 07:00 en 19:00) zet een
+falende run op de **hoofdbranch** om in een in-app health-alert; na 3 dagen rood escaleert die naar
+`critical` → web-push. Alleen de hoofdbranch (rood op een feature-branch = werk in uitvoering), en
+geen `gh` = **`error`**, geen stille nul. 8 tests. De eerste dry-run vond meteen **4 rode builds die
+niemand wist**: 🔴 **HavunAdmin 3 maanden rood** · HavunClub 3 maanden (geparkeerd) ·
+VeenLedenadministratie 1 dag · Studieplanner-api sinds 30-07 (níét door de CLAUDE.md-uitrol — de run
+ervóór faalde al). **Uitzoeken = per project een eigen sessie.**
+
+Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven
 de 120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) —
 zaten er al aan vóór de uitrol.
 
