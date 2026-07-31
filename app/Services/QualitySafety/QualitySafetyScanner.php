@@ -21,6 +21,7 @@ class QualitySafetyScanner
         $findings = [];
         $errors = [];
         $ecosystems = [];
+        $skipped = [];
 
         $detector = new EcosystemDetector;
 
@@ -50,6 +51,18 @@ class QualitySafetyScanner
                         'message' => $result['error'],
                     ];
                 }
+
+                // Een overgeslagen check is géén schone check. Zonder dit
+                // onderscheid is "0 findings" op een project waar `artisan`
+                // niet gevonden werd (fout pad in de config) niet te
+                // onderscheiden van een doorgemeten project.
+                if (! empty($result['skipped'])) {
+                    $skipped[] = [
+                        'project' => $slug,
+                        'check' => $check,
+                        'reason' => $result['skipped'],
+                    ];
+                }
             }
         }
 
@@ -61,6 +74,7 @@ class QualitySafetyScanner
             'checks' => $checks,
             'findings' => $findings,
             'errors' => $errors,
+            'skipped' => $skipped,
             'totals' => $this->totals($findings, $errors),
         ];
     }
@@ -561,7 +575,7 @@ BASH;
         $url = $project['url'] ?? null;
 
         if (! $url) {
-            return ['findings' => []];
+            return ['findings' => [], 'skipped' => 'geen url geregistreerd — geen publiek endpoint om te meten'];
         }
 
         $host = parse_url($url, PHP_URL_HOST);
@@ -891,7 +905,7 @@ BASH;
     {
         $root = $this->laravelRootOrNull($project);
         if ($root === null) {
-            return ['findings' => []];
+            return ['findings' => [], 'skipped' => 'geen Laravel-root (artisan + routes/) op dit pad'];
         }
 
         $routesDir = $root . '/routes';
@@ -980,7 +994,7 @@ BASH;
     {
         $root = $this->laravelRootOrNull($project);
         if ($root === null) {
-            return ['findings' => []];
+            return ['findings' => [], 'skipped' => 'geen Laravel-root (artisan + routes/) op dit pad'];
         }
 
         $routesDir = $root . '/routes';
@@ -1143,7 +1157,7 @@ BASH;
     {
         $root = $this->laravelRootOrNull($project);
         if ($root === null) {
-            return ['findings' => []];
+            return ['findings' => [], 'skipped' => 'geen Laravel-root (artisan + routes/) op dit pad'];
         }
 
         $configPath = $root . '/config/session.php';
@@ -1200,7 +1214,7 @@ BASH;
     {
         $root = $this->laravelRootOrNull($project);
         if ($root === null) {
-            return ['findings' => []];
+            return ['findings' => [], 'skipped' => 'geen Laravel-root (artisan + routes/) op dit pad'];
         }
 
         $configPath = $root . '/config/app.php';

@@ -106,17 +106,22 @@ Drie gevallen waarin **delete** de juiste actie is:
 ## 7. Metrieken die we echt meten
 
 1. **Mutation-score op kritieke paden** — primair. Tooling: Infection (PHP),
-   Stryker (TS). Baseline: `docs/kb/reference/mutation-baseline-2026-04-17.md`.
+   Stryker (TS), `cargo-mutants` (Rust). Baseline: `mutation-baseline-2026-04-17.md`.
+   Volledige gereedschapstabel per stack: [`testgereedschap-per-stack.md`](testgereedschap-per-stack.md).
 2. **Assertion-density** — assertions per test. Target ≥ 2. Tests met 0-1
    worden geflagd in code-review.
 3. **Line-coverage** — secundair. Floor: 60 % Unit, 80 % Unit+Feature voor
    Laravel-projecten (blijft CI-gate om gaten te zien, niet om ons eraan
-   te meten).
+   te meten). **Deze floor geldt Laravel.** Andere stacks meten coverage met
+   hun eigen gereedschap en houden dezelfde *norm* aan — zinvolheid boven
+   percentage — zonder dit getal over te nemen alsof het universeel is.
 4. **Branch-coverage** — waar line- en branch-% uit elkaar lopen (>10 pp)
    zitten vaak untested edge-cases.
 5. **Test-erosion** — deletions in `tests/` van laatste 30 dagen, geflagd
    door `qv:scan --only=test-erosion`. Elke deletion moet uit te leggen zijn
-   volgens §6.
+   volgens §6. **Let op bij Rust:** unit-tests staan daar in `#[cfg(test)]`-modules
+   binnen `src/`, dus die check ziet ze niet — zie
+   [`testgereedschap-per-stack.md`](testgereedschap-per-stack.md).
 
 ## 8. Operationeel — bij elke PR / commit
 
@@ -217,6 +222,7 @@ gedekt is — een onzichtbaar gat telt als regressierisico.
 
 ## Zie ook
 
+- `testgereedschap-per-stack.md` — **welk gereedschap bij welke stack** (PHP · JS/TS · Rust · React Native). De norm hierboven is er één; het gereedschap verschilt.
 - `test-quality-compliance.md` — **naleving per project** over de héle policy (matrix + gaten + volgorde). Single source of truth voor "voldoet project X?".
 - `playwright-rollout-plan.md` — status + uitrolvolgorde van §10 over alle projecten.
 - `runbooks/playwright-e2e-webapp.md` — frontend E2E voor SPA/PWA (Playwright + API-mock).

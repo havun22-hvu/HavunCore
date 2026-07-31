@@ -110,15 +110,27 @@ class QualitySafetyScanCommand extends Command
             $this->line("{$icon} [{$finding['severity']}] {$finding['project']}/{$finding['check']}: {$finding['message']}");
         }
 
+        // Overgeslagen checks horen bij de uitslag: zonder deze regel leest
+        // "0 findings" op een project waar de helft niet draaide hetzelfde als
+        // op een project dat volledig is doorgemeten.
+        if (! empty($run['skipped'])) {
+            $this->newLine();
+            $this->line('Niet gedraaid (n.v.t.):');
+            foreach ($run['skipped'] as $skip) {
+                $this->line("  - {$skip['project']}/{$skip['check']}: {$skip['reason']}");
+            }
+        }
+
         $this->newLine();
         $this->line(sprintf(
-            'Totals — critical: %d | high: %d | medium: %d | low: %d | info: %d | errors: %d',
+            'Totals — critical: %d | high: %d | medium: %d | low: %d | info: %d | errors: %d | overgeslagen: %d',
             $run['totals']['critical'] ?? 0,
             $run['totals']['high'] ?? 0,
             $run['totals']['medium'] ?? 0,
             $run['totals']['low'] ?? 0,
             $run['totals']['informational'] ?? 0,
             $run['totals']['errors'] ?? 0,
+            count($run['skipped'] ?? []),
         ));
     }
 

@@ -147,6 +147,50 @@ class EcosystemDetectionTest extends TestCase
         $this->assertSame([], $this->findings('cargo'));
     }
 
+    public function test_a_skipped_check_is_recorded_with_its_reason(): void
+    {
+        // Not a Laravel root, so the Laravel-only checks cannot run. That is
+        // legitimate — but it must not be indistinguishable from a clean pass.
+        $this->manifest('Cargo.lock');
+
+        $run = (new QualitySafetyScanner)->scan(
+            ['tmpproj' => ['path' => $this->tmp]],
+            ['session-cookies']
+        );
+
+        $this->assertSame([], $run['findings']);
+        $this->assertCount(1, $run['skipped']);
+        $this->assertSame('session-cookies', $run['skipped'][0]['check']);
+        $this->assertStringContainsString('Laravel-root', $run['skipped'][0]['reason']);
+    }
+
+    public function test_a_check_without_a_url_reports_why_it_did_not_run(): void
+    {
+        $this->manifest('composer.json');
+
+        $run = (new QualitySafetyScanner)->scan(
+            ['tmpproj' => ['path' => $this->tmp]],
+            ['ssl']
+        );
+
+        $this->assertCount(1, $run['skipped']);
+        $this->assertStringContainsString('geen url', $run['skipped'][0]['reason']);
+    }
+
+    public function test_a_check_that_really_ran_is_not_marked_skipped(): void
+    {
+        // deps-coverage needs neither a URL nor a Laravel root: it always runs.
+        $this->manifest('go.mod');
+
+        $run = (new QualitySafetyScanner)->scan(
+            ['tmpproj' => ['path' => $this->tmp]],
+            ['deps-coverage']
+        );
+
+        $this->assertSame([], $run['skipped']);
+        $this->assertCount(1, $run['findings'], 'It ran and it found something');
+    }
+
     public function test_the_run_records_how_each_project_is_built(): void
     {
         // The report has to carry this: a zero without it cannot be told apart
