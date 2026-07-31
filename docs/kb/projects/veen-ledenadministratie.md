@@ -9,7 +9,8 @@ last_check: 2026-07-19
 
 **Type:** Laravel 12 SaaS — ledenadministratie voor judoscholen met SEPA-incasso
 **Eigenaar:** Cees Veen (product en klanten). Havun doet modernisering + hosting.
-**Status:** herbouw van Laravel 5.5 → 12, gestart 18-07-2026
+**Status:** ⛔ **herbouw GEPARKEERD** — Cees vond de offerte te duur (besluit 003, ~29-07-2026).
+Wat loopt: kleine **betaalde** klussen op de oude app. Niets oppakken zonder getekende opdracht.
 
 > **Niet via Mollie.** Het oude package zit in de code maar is nooit gebruikt. De incasso
 > loopt via zelf gegenereerde pain.008-batchbestanden naar de bank.

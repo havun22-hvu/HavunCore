@@ -42,23 +42,24 @@ staan, en `qv:scan` staat voor dat project op `enabled => false` **mét reden in
 de productdocs zijn juist de waarde die overblijft.
 
 **Jij nog:** DNS `vusista.havun.nl` bij mijn.host opruimen + deploy-key `server-read` uit de
-Vusista-repo-settings. Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de
-120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) —
-zaten er al aan vóór de uitrol.
+Vusista-repo-settings. Los gat: vier CLAUDE.md's boven de 120-regelnorm (Vusista 138,
+Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten er al aan vóór de uitrol.
+
+**`docs/omwegen.md` bestond nergens (31-07).** De uitrol zette wél de regel in 14 CLAUDE.md's maar
+niet het bestand waar die naar verwijst — een norm die naar een niet-bestaand pad wijst, is geen
+norm. Nu in **16 projecten** (incl. HavunCore zelf en Veen), uit dezelfde stub die `project:scaffold`
+gebruikt, dus norm en sjabloon blijven één.
 
 ## V&K kiest zijn checks op de stack (31-07) — af
 
-`qv:scan` detecteert de ecosystemen uit de manifesten (detectie, géén `stack`-veld — dat zou een
-tweede waarheid worden), draait `cargo audit` op elke `Cargo.lock` onder de root, en **meldt een
-ecosysteem dat het niet kan auditen als `high`-bevinding** in plaats van als nul. Een
-**overgeslagen check meldt nu zijn reden**; totalen dragen `overgeslagen: N`. Elke scan toont hoe
-een project gebouwd is (`havuncore: js, php`). Plus `reference/testgereedschap-per-stack.md` —
-de policy veronderstelde stilzwijgend PHP. Plan: `plans/vk-per-stack-plan.md`. 1345 tests groen.
+`qv:scan` detecteert de ecosystemen uit de manifesten (géén `stack`-veld: dat wordt een tweede
+waarheid), draait `cargo audit` op elke `Cargo.lock`, en **meldt een niet-auditbaar ecosysteem als
+`high`** in plaats van als nul. Een **overgeslagen check meldt zijn reden** (`overgeslagen: N`).
+Plus `reference/testgereedschap-per-stack.md`. Plan: `plans/vk-per-stack-plan.md`.
 
-**Vusista2 ging van 0 naar 34 findings.** Die eerste nul was mijn eigen bug: `cargo audit` zet
-`unmaintained`/`unsound` in een apart `warnings`-veld naast `vulnerabilities`, en ik las alleen
-dat laatste. Handmatig nameten bracht het aan het licht. **Go, Python en .NET blijven ongemeten —
-maar nu zichtbaar.**
+**Vusista2 ging van 0 naar 51 findings**; die eerste nul was mijn eigen bug — `cargo audit` zet
+`unmaintained`/`unsound` in een apart `warnings`-veld. **Go, Python en .NET blijven ongemeten,
+maar nu zichtbaar.** Vusista 1 staat bewust op `enabled => false`.
 
 ## Open — wacht op Henk
 
@@ -81,15 +82,16 @@ maar nu zichtbaar.**
 | **LastMatch** | Avast HTTPS-scanning uit = enige APK-build-blocker |
 | **JudoScoreBoard** | Google-review AAB 116 (9 juni ingediend) — status alleen in Play Console |
 
-## Open — Veen-ledenadministratie (orchestrator-deel afgerond)
+## Veen-ledenadministratie — herbouw GEPARKEERD (gecorrigeerd 31-07)
 
-Overname Cees' EOL-app als eigen project, route B (verse **Laravel 12**).
-- **Fase 1+2 klaar (18-07):** GitHub-repo (private) + server live — production `veen.havun.nl`
-  + staging `staging.veen.havun.nl` (HTTPS, auto-deploy E2E bewezen) + HavunCore-registratie.
-- **Fase 3 (de herbouw: feature-inventaris + SEPA-datamigratie 15k payments) = een Veen-sessie,
-  na Cees' groen licht — NIET vanuit HavunCore.** Eisen (o.a. SEPA-machtiging: geen internetvinkje,
-  eMandate/Twikey of PSP) staan in `VeenLedenadministratie/.claude/modernisering-scope.md`.
-- Credentials (admin-login + TransIP-CP) + `.env`-secrets staan in de centrale kluis.
+**Cees vond de offerte te duur; de herbouw gaat niet door** (besluit 003 in het project). Hier
+stond nog "fase 3 wacht op Cees' groen licht" — dat klopte al sinds ~29-07 niet meer. Wat er nu
+loopt zijn **kleine betaalde klussen op de oude app**, en Cees liet werk uitvoeren zónder
+goedgekeurde offerte: **niets oppakken zonder getekende opdracht** (business, dus Henk).
+- Orchestrator-deel blijft staan: repo, `veen.havun.nl` + staging, HavunCore-registratie,
+  credentials in de kluis.
+- **`CLAUDE.md` toegevoegd 31-07** — die ontbrekende volledig; het project had geen werkwijze.
+- Inhoudelijk werk = een Veen-sessie, niet vanuit HavunCore.
 
 ## Open — te doen
 

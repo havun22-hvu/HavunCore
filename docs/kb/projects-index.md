@@ -33,7 +33,7 @@ last_check: 2026-04-22
 | **HavunClub** | Laravel 11 SaaS | havunclub.havun.nl | D:\GitHub\HavunClub | /var/www/havunclub/production |
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (in development) |
 | **Aeterna** | Tauri 2.0 + Rust + React | github.com/havun22-hvu/Aeterna | D:\GitHub\Aeterna | (geen server — multi-mirror distributie) |
-| **VeenLedenadministratie** | Laravel 12 SaaS | veen.havun.nl | D:\GitHub\VeenLedenadministratie | (in herbouw — oude app op TransIP) |
+| **VeenLedenadministratie** | Laravel 12 SaaS | veen.havun.nl | D:\GitHub\VeenLedenadministratie | ⛔ herbouw geparkeerd — oude app draait op TransIP |
 | **Vusista** | Laravel 12 + NativePHP (desktop-app) | **blijft staan** — bron voor Vusista2; weg mag pas als die áf is | D:\GitHub\Vusista | — (server opgeruimd 31-07) |
 | **Vusista2** | Rust + Tauri v2 (desktop-app) | github.com/havun22-hvu/Vusista2 | D:\GitHub\Vusista2 | (geen server — release = installer) |
 
