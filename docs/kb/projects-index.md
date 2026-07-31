@@ -34,7 +34,7 @@ last_check: 2026-04-22
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (in development) |
 | **Aeterna** | Tauri 2.0 + Rust + React | github.com/havun22-hvu/Aeterna | D:\GitHub\Aeterna | (geen server — multi-mirror distributie) |
 | **VeenLedenadministratie** | Laravel 12 SaaS | veen.havun.nl | D:\GitHub\VeenLedenadministratie | (in herbouw — oude app op TransIP) |
-| **Vusista** | Laravel 12 + NativePHP (desktop-app) | ⚠️ **uitfaserend** — achtergrond voor Vusista2, verdwijnt daarna | D:\GitHub\Vusista | — (server opgeruimd 31-07) |
+| **Vusista** | Laravel 12 + NativePHP (desktop-app) | **blijft staan** — bron voor Vusista2; weg mag pas als die áf is | D:\GitHub\Vusista | — (server opgeruimd 31-07) |
 | **Vusista2** | Rust + Tauri v2 (desktop-app) | github.com/havun22-hvu/Vusista2 | D:\GitHub\Vusista2 | (geen server — release = installer) |
 
 ## Korte beschrijving
@@ -68,7 +68,7 @@ last_check: 2026-04-22
 - **IDSee** - (details volgen)
 - **VPDUpdate** - Sync tool voor VPD data
 - **Aeterna** - Soeverein desktop/mobile instrument voor ADA-transacties op Cardano. Tauri 2.0 + Rust, censuur-resistant by design. Brainstorm-fase mei 2026, geen code nog.
-- **Vusista** - ⚠️ **Uitfaserend.** Picasa-opvolger op Laravel+NativePHP; dat fundament paste niet bij het werk (`patterns/fundament-versus-omweg.md`). Nog **alleen achtergrondmateriaal voor Vusista2** en verdwijnt daarna. Niets meer repareren — V&K-scan staat bewust uit, KB-index blijft.
+- **Vusista** - Picasa-opvolger op Laravel+NativePHP; dat fundament paste niet bij het werk (`patterns/fundament-versus-omweg.md`). **Blijft staan als bron voor Vusista2 — verwijderen pas als die áf is.** Niets meer repareren: V&K-scan staat bewust uit, KB-index blijft draaien.
 - **Vusista2** - De herbouw in **Rust + Tauri v2**. Zelfde product, ander fundament: memory-mapped index, canvas-grid, gezichtsdetectie in-process (de C++-sidecar is weg). Proefmetingen: 66.844 thumbnails in vijf minuten, 60 fps grid. Release = installer via GitHub Releases, geen server.
 
 ## Voor project-specifieke info

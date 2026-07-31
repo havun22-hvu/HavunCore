@@ -35,8 +35,8 @@ backup geverifieerd: `/root/backups/vusista-cleanup-2026-07-31`) · registratieg
 (`vusista` stond 4 maanden niet in `quality-safety.php`; `vusista2` in geen van beide, plus repo
 aangemaakt).
 
-**Vusista 1 is uitfaserend** (Henk, 31-07): nog alleen achtergrondmateriaal voor Vusista2, daarna
-weg. Dus **niets meer repareren** — de openstaande `critical 1 · high 2 · medium 4` blijven bewust
+**Vusista 1 blijft staan** (Henk, 31-07): achtergrondmateriaal voor Vusista2 — **map, repo en
+KB-index weg mogen pas als Vusista2 áf is**, niet eerder. Wel **niets meer repareren** — de openstaande `critical 1 · high 2 · medium 4` blijven bewust
 staan, en `qv:scan` staat voor dat project op `enabled => false` **mét reden in de config**
 (uitgezet-met-reden lees je terug, een ontbrekende regel is stilte). **KB-index blijft wél draaien:**
 de productdocs zijn juist de waarde die overblijft.

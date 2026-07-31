@@ -8,8 +8,9 @@ last_check: 2026-07-15
 # Project: Vusista
 
 **Type:** Fotoalbum **desktop-app** (Laravel 12 + NativePHP/Electron)
-**Status:** ⚠️ **Uitfaserend — alleen nog achtergrondmateriaal voor [Vusista2](vusista2.md).**
-Verdwijnt daarna helemaal (Henk, 31-07-2026).
+**Status:** ⚠️ **Blijft staan — achtergrondmateriaal voor de herbouw.**
+**Verwijderen mag pas als Vusista2 áf is** (Henk, 31-07-2026). Niet eerder, en niet "vast
+alvast opruimen": de map, de GitHub-repo én de KB-index zijn de bron waar Vusista2 uit put.
 **Demo:** vervallen — de serveromgeving is 31-07-2026 opgeruimd (zie Omgevingen)
 
 > **Wat dit betekent voor wie hier komt werken:**
