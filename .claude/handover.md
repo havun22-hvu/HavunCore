@@ -33,11 +33,16 @@ configs terwijl het al werkende Rust-proeven had — dezelfde fout, één dag la
 geregistreerd; Vusista2 heeft ook een repo (`havun22-hvu/Vusista2`, privé, 6 commits) want die
 bestond alleen op één schijf. Vusista 1 had er al één. Beide zijn Vusista-werk → eigen sessie.
 
+**Vusista-serveromgeving opgeruimd (31-07):** beide checkouts (261 MB), 2 vhosts, het cert en
+**beide MySQL-databases**. Backup geverifieerd vóór verwijderen:
+`/root/backups/vusista-cleanup-2026-07-31` (65 MB tarball + db-dumps + configs + het gitignorede
+`thumb-runtime.php`). Alle andere sites 200. **Jij nog:** DNS-record `vusista.havun.nl` bij
+mijn.host opruimen + deploy-key `server-read` uit de Vusista-repo-settings.
+
 **Nog open:** (9) rode Actions moeten iemand bereiken — Vusista's staging faalde 13 dagen ongemerkt:
-monitoring-gat, geen scaffold-gat · (10) **jouw go:** `/var/www/vusista/{production,staging}` opruimen
-(demo serveert een 500). Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de
-120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten
-er al aan vóór de uitrol.
+monitoring-gat, geen scaffold-gat. Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven
+de 120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) —
+zaten er al aan vóór de uitrol.
 
 ## V&K kiest zijn checks op de stack (31-07) — af
 

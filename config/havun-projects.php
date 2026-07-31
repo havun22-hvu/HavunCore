@@ -79,10 +79,14 @@ return [
         'local_url' => 'http://localhost:8007',
         'endpoints' => [],
     ],
+    // Vusista 1 — desktop-app; de serveromgeving is 31-07-2026 opgeruimd
+    // (production + staging + vhosts + cert + beide databases). Een desktop-app
+    // hoorde daar nooit te draaien; de staging-deploy faalde dertien dagen
+    // ongemerkt. Backup: /root/backups/vusista-cleanup-2026-07-31.
     'vusista' => [
         'path'      => 'D:/GitHub/Vusista',
-        'server_path' => '/var/www/vusista/production',
-        'local_url' => 'http://localhost:8008',
+        'server_path' => null,
+        'local_url' => null,
         'endpoints' => [],
     ],
     // Vusista 2 — de herbouw (Rust + Tauri). Desktop-app, dus geen server_path

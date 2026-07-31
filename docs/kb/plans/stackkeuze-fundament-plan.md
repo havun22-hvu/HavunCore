@@ -109,7 +109,7 @@ blijven onveranderd.
 | 7 | **`vusista` ontbrak in `config/quality-safety.php`** — vier maanden nooit gescand | config | ✅ zie hieronder |
 | 8 | Uitrol naar de actieve CLAUDE.md's | 15 docs | ✅ zie hieronder |
 | 9 | **Apart:** rode Actions moeten iemand bereiken (13 dagen onopgemerkt) | health-alerts | open |
-| 10 | **Overleg Henk:** `/var/www/vusista/{production,staging}` opruimen | serverconfig | open |
+| 10 | `/var/www/vusista/{production,staging}` opruimen | serverconfig | ✅ 31-07 |
 | 11 | **`vusista2` geregistreerd** in beide configs + KB-index (16 docs) | config | ✅ zie hieronder |
 | 12 | `qv:scan` kent geen Cargo — een Rust-project scant schoon zonder gemeten te zijn | **code** | open |
 | 13 | Vusista2 heeft géén GitHub-remote — code bestaat op één schijf | repo-opzet | ✅ 31-07 |
@@ -135,6 +135,25 @@ Twee gaten die dit blootlegt, allebei groter dan de registratie zelf:
   maar in deze proeven staat daar **handgeschreven UI** (228 en 318 regels HTML). Teruggedraaid
   vóór de push; `.gitignore` zegt nu expliciet waaróm `dist/` er niet in staat. Alleen
   `src-tauri/gen/schemas/` wordt genegeerd — die regenereert de build.
+
+### Punt 10 — serveromgeving opgeruimd (31-07)
+
+Weg: beide checkouts (261 MB), twee nginx-vhosts, het Let's Encrypt-cert, en **twee MySQL-databases**
+(`vusista_production`, `vusista_staging`, elk 9 tabellen). Backup vooraf, integriteit geverifieerd
+vóór het verwijderen: `/root/backups/vusista-cleanup-2026-07-31` — 65 MB tarball (26.595 bestanden),
+beide db-dumps, de nginx-configs, en `thumb-runtime.php`.
+
+**Twee dingen die een blinde `rm -rf` gemist had**, en de reden dat de inventarisatie vóór de actie
+gaat (`standards/server-hygiene.md`): de databases stonden in MySQL, niet onder `/var/www`, en
+`storage/app/thumb-runtime.php` was **gitignored** — dat bestond alleen op de server.
+
+Na afloop geverifieerd: 0 nginx-verwijzingen, geen certs, geen mappen, en HavunCore /
+Herdenkingsportaal / JudoToernooi / SafeHavun geven alle vier 200. Registraties bijgewerkt in
+`havun-projects.php`, `poort-register.md`, `projects-index.md`, `deploy-keys-github-actions.md`
+en de projectdoc.
+
+**Nog te doen door Henk:** het DNS-record `vusista.havun.nl` bij mijn.host — dat wijst nu nergens
+meer heen. En de deploy-key `server-read` mag uit de Vusista-repo-settings.
 
 **Waarom GitHub hier meer is dan backup** (voor de volgende desktop-app): een project zonder
 server heeft geen deploy-pipeline nodig, maar wél een **distributiekanaal**. GitHub Releases

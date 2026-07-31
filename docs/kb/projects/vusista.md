@@ -10,7 +10,7 @@ last_check: 2026-07-15
 **Type:** Fotoalbum **desktop-app** (Laravel 12 + NativePHP/Electron)
 **Status:** Fase 1 (MVP) functioneel af — open: installer-test op schone PC
 **Platform:** Windows eerst (macOS/Linux fase 2)
-**Demo:** https://staging.vusista.havun.nl (browser-demo met dummydata; prod bevroren)
+**Demo:** vervallen — de serveromgeving is 31-07-2026 opgeruimd (zie Omgevingen)
 
 > ⛔ **Het fundament is verkeerd gekozen — herbouw ligt klaar (30-07-2026).** Een lokale
 > fotomanager voor 76.797 bestanden en één gebruiker draait hier op Laravel + `php -S` in een
@@ -43,8 +43,14 @@ wordt uitgeleverd; een release is een NativePHP-build, geen server-deploy.
 |----------|-----|-------|----------|
 | Local | `D:\GitHub\Vusista` | 8008 (browser) / venster via `native:serve` | SQLite (app-data) |
 | E2E | idem | 8018 | SQLite (`database/e2e.sqlite`) |
-| Staging | `/var/www/vusista/staging` | php-fpm socket | browser-demo, dummydata |
-| Production | `/var/www/vusista/production` | — | **bevroren** |
+| ~~Staging~~ | ~~`/var/www/vusista/staging`~~ | — | **opgeruimd 31-07-2026** |
+| ~~Production~~ | ~~`/var/www/vusista/production`~~ | — | **opgeruimd 31-07-2026** |
+
+**De serveromgeving bestaat niet meer.** Vhosts, Let's Encrypt-cert en beide MySQL-databases
+(`vusista_production`, `vusista_staging`) zijn 31-07 verwijderd: een desktop-app hoort daar niet
+te draaien, en de staging-deploy faalde dertien dagen ongemerkt. Backup (65 MB tarball + db-dumps
++ nginx-configs): `/root/backups/vusista-cleanup-2026-07-31` op 188.245.159.115.
+**Het DNS-record `vusista.havun.nl` staat er nog** — dat is Henks actie bij mijn.host.
 
 ## Stack
 

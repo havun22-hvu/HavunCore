@@ -34,7 +34,8 @@ last_check: 2026-04-22
 | **VPDUpdate** | Node.js | - | D:\GitHub\VPDUpdate | (in development) |
 | **Aeterna** | Tauri 2.0 + Rust + React | github.com/havun22-hvu/Aeterna | D:\GitHub\Aeterna | (geen server — multi-mirror distributie) |
 | **VeenLedenadministratie** | Laravel 12 SaaS | veen.havun.nl | D:\GitHub\VeenLedenadministratie | (in herbouw — oude app op TransIP) |
-| **Vusista** | Laravel 12 + NativePHP (desktop-app) | staging.vusista.havun.nl (demo) | D:\GitHub\Vusista | /var/www/vusista/ (bevroren — release = installer) |
+| **Vusista** | Laravel 12 + NativePHP (desktop-app) | — (server opgeruimd 31-07) | D:\GitHub\Vusista | — · herbouw = **Vusista2** (Rust/Tauri) |
+| **Vusista2** | Rust + Tauri v2 (desktop-app) | github.com/havun22-hvu/Vusista2 | D:\GitHub\Vusista2 | (geen server — release = installer) |
 
 ## Korte beschrijving
 
@@ -67,7 +68,8 @@ last_check: 2026-04-22
 - **IDSee** - (details volgen)
 - **VPDUpdate** - Sync tool voor VPD data
 - **Aeterna** - Soeverein desktop/mobile instrument voor ADA-transacties op Cardano. Tauri 2.0 + Rust, censuur-resistant by design. Brainstorm-fase mei 2026, geen code nog.
-- **Vusista** - Picasa-opvolger: fotoalbum-**desktop-app** (NativePHP), lokale foto's in-place indexeren, metadata naar XMP, pixels nooit aanraken. Enige project dat als installer wordt uitgeleverd i.p.v. server-deploy. MVP af juli 2026; fase 2 = bewerken + gezichten (ONNX).
+- **Vusista** - Picasa-opvolger: fotoalbum-**desktop-app**, lokale foto's in-place indexeren, metadata naar XMP, pixels nooit aanraken. MVP af juli 2026. **Wordt herbouwd** — het Laravel+NativePHP-fundament paste niet bij het werk (zie `patterns/fundament-versus-omweg.md`); serveromgeving 31-07 opgeruimd.
+- **Vusista2** - De herbouw in **Rust + Tauri v2**. Zelfde product, ander fundament: memory-mapped index, canvas-grid, gezichtsdetectie in-process (de C++-sidecar is weg). Proefmetingen: 66.844 thumbnails in vijf minuten, 60 fps grid. Release = installer via GitHub Releases, geen server.
 
 ## Voor project-specifieke info
 
