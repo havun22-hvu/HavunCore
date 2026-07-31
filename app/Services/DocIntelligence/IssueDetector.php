@@ -24,6 +24,12 @@ class IssueDetector
         '.claude/archive/',
         '_structure/',
         'CLAUDE.md',
+        // stubs/ zijn sjablonen die elders geïnstantieerd worden — een stub die
+        // lijkt op zijn eigen uitkomst ís het ontwerp, geen duplicaat. Zonder
+        // deze regel meldt elke detect-run stubs/omwegen.md tegen
+        // docs/omwegen.md, en dan wordt "1 open issue" achtergrondruis die je
+        // gaat wegklikken zonder te kijken.
+        'stubs/',
     ];
 
     /**

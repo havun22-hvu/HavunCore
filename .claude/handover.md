@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-07-19
+last_updated: 2026-07-31
 ---
 
 # HavunCore — Handover
@@ -19,47 +19,24 @@ De nieuwe `actions:watch` vond ze meteen: **HavunAdmin 3 maanden rood** · Havun
 (geparkeerd) · VeenLedenadministratie 1 dag · Studieplanner-api sinds 30-07 (**níét** door de
 CLAUDE.md-uitrol — de run ervóór faalde al). Uitzoeken hoort in de projectsessie zelf.
 
-## Vusista-lessen: de stackkeuze is een besluit geworden (30/31-07) — 10 van 10 af
+## Stackkeuze-lessen (30/31-07) — beide plannen af, drie punten open
 
-Vusista 1 werd een Laravel-project omdat `project:scaffold` **elke andere stack hard weigerde**,
-terwijl het een lokale desktop-app is (76.797 bestanden, één gebruiker). Zes omwegen om het eigen
-fundament heen volgden; de zesde maakte de app stil onbruikbaar. Post-mortem:
-`patterns/fundament-versus-omweg.md` · plan + status per punt: `plans/stackkeuze-fundament-plan.md`.
+Volledig in `plans/stackkeuze-fundament-plan.md` (10/10) en `plans/vk-per-stack-plan.md`.
+**Wat er nu geldt:** `project:scaffold` eist `--type` + een ingevulde `docs/intake.md` die hetzelfde
+type concludeert, web-infra alleen bij `server-webapp` · omwegen tellen in `docs/omwegen.md`
+(16 projecten) · elk architectuurbesluit noemt **aanname + omkeerpunt** · `qv:scan` detecteert de
+stack en **meldt wat het niet kan meten** in plaats van nul · `actions:watch` maakt rode builds
+zichtbaar. Post-mortem die dit uitlokte: `patterns/fundament-versus-omweg.md`.
 
-**Af:** `standards/stack-keuze.md` · `patterns/omwegen-tellen.md` · besluit-sjabloon met **aanname
-+ omkeerpunt** · `project:scaffold` op verplichte `--type` + ingevulde `docs/intake.md`, web-infra
-alleen bij `server-webapp` · `/mpc` fase 0 + `/arch` · uitrol naar HavunCore + 14 CLAUDE.md's ·
-`actions:watch` (2×/dag; rood op de hoofdbranch → health-alert, na 3 dagen `critical`) ·
-**Vusista-serveromgeving opgeruimd** (2 checkouts, 2 vhosts, cert, **beide MySQL-databases**;
-backup geverifieerd: `/root/backups/vusista-cleanup-2026-07-31`) · registratiegaten gedicht
-(`vusista` stond 4 maanden niet in `quality-safety.php`; `vusista2` in geen van beide, plus repo
-aangemaakt).
-
-**Vusista 1 blijft staan** (Henk, 31-07): achtergrondmateriaal voor Vusista2 — **map, repo en
-KB-index weg mogen pas als Vusista2 áf is**, niet eerder. Wel **niets meer repareren** — de openstaande `critical 1 · high 2 · medium 4` blijven bewust
-staan, en `qv:scan` staat voor dat project op `enabled => false` **mét reden in de config**
-(uitgezet-met-reden lees je terug, een ontbrekende regel is stilte). **KB-index blijft wél draaien:**
-de productdocs zijn juist de waarde die overblijft.
-
-**Jij nog:** DNS `vusista.havun.nl` bij mijn.host opruimen + deploy-key `server-read` uit de
-Vusista-repo-settings. Los gat: vier CLAUDE.md's boven de 120-regelnorm (Vusista 138,
-Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten er al aan vóór de uitrol.
-
-**`docs/omwegen.md` bestond nergens (31-07).** De uitrol zette wél de regel in 14 CLAUDE.md's maar
-niet het bestand waar die naar verwijst — een norm die naar een niet-bestaand pad wijst, is geen
-norm. Nu in **16 projecten** (incl. HavunCore zelf en Veen), uit dezelfde stub die `project:scaffold`
-gebruikt, dus norm en sjabloon blijven één.
-
-## V&K kiest zijn checks op de stack (31-07) — af
-
-`qv:scan` detecteert de ecosystemen uit de manifesten (géén `stack`-veld: dat wordt een tweede
-waarheid), draait `cargo audit` op elke `Cargo.lock`, en **meldt een niet-auditbaar ecosysteem als
-`high`** in plaats van als nul. Een **overgeslagen check meldt zijn reden** (`overgeslagen: N`).
-Plus `reference/testgereedschap-per-stack.md`. Plan: `plans/vk-per-stack-plan.md`.
-
-**Vusista2 ging van 0 naar 51 findings**; die eerste nul was mijn eigen bug — `cargo audit` zet
-`unmaintained`/`unsound` in een apart `warnings`-veld. **Go, Python en .NET blijven ongemeten,
-maar nu zichtbaar.** Vusista 1 staat bewust op `enabled => false`.
+**Nog open:**
+- **Vusista 1 blijft staan tot Vusista2 áf is** — map, repo én KB-index. `qv:scan` staat daar op
+  `enabled => false`; **niets meer repareren**, de openstaande bevindingen blijven bewust staan.
+- **Jij:** DNS `vusista.havun.nl` bij mijn.host + deploy-key `server-read` uit de Vusista-repo.
+- Vier CLAUDE.md's boven de 120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130,
+  havuncore-webapp 125) — zaten er al aan vóór de uitrol.
+- **De twee registries lopen structureel uit de pas:** 3× in twee dagen stond een project wel in
+  `havun-projects.php` en niet in `quality-safety.php` (`vusista`, `vusista2`, Veen). Een check die
+  dat verschil meldt is ~een half uur werk — nog niet gebouwd.
 
 ## Open — wacht op Henk
 
@@ -118,24 +95,11 @@ het project is geparkeerd.** Jouw call of dit een uitzondering waard is.
 - **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde 523-versie op
   `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
 
-## Recent afgerond (context die nog nut heeft)
-
-- **`/start` en `/end`: deploy-achterstand is niet meer te missen (25-07)** —
-  `php artisan havun:deploy-status` scheidt code van docs, licht security-commits eruit als alarm,
-  meldt migraties apart. Staat **ook in `/start`** (stap 1d) — die draait altijd, `/end` niet.
-- **Negen coverage-audits (24/25-07)** — géén drempel meer, wél zo hoog mogelijk *zinvolle* dekking
-  (`decisions/coverage-drempel-vervalt-2026-07-24.md`). Per project een `docs/testschuld.md`.
-- **AI-synthese-risico's afgedekt (24-07)** — `standards/ai-synthese-risicos.md` +
-  `patterns/test-rood-gezien.md`: **een bugfix-test die je niet rood hebt gezien tegen de oude code,
-  bewijst niets.** Uitgerold naar 14 CLAUDE.md's.
-- **13 CLAUDE.md's droegen twee achterhaalde normen (24-07)** — "KB indexeert alleen het begin van
-  een bestand" (onwaar sinds de chunking) en "handover 15-30 regels". Gecorrigeerd.
-  **De 6 geparkeerde projecten dragen de foute normen nog** — bewust niet aangeraakt.
-- **Opruiming server + GitHub (24-07)** — **Munus weg**, **HavunVet gearchiveerd**. Geparkeerd,
-  géén uitrol meer: HavunClub, Demo, Havunity, Infosyst, IDSee, Agorano.
-- **credentials.md lekte in de KB-index (19-07)** — `isSensitiveFile`-guard in `DocIndexer`.
-
 ## Vaste context voor dit project
+
+- **Geparkeerd, géén uitrol meer:** HavunClub, Demo, Havunity, Infosyst, IDSee, Agorano,
+  **Veen** (31-07). Die zes dragen nog twee achterhaalde normen in hun CLAUDE.md — bewust
+  niet aangeraakt. Munus is weg, HavunVet gearchiveerd.
 
 - **Rol:** centrale kennisbank + orchestrator. Scope-regel: **alleen HavunCore aanwerken; ander
   project = eigen sessie** (uitzondering: Henk geeft expliciet toestemming). Zie [[feedback-scope-waarschuwen]].
