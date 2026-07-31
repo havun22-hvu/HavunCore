@@ -8,9 +8,18 @@ last_check: 2026-07-15
 # Project: Vusista
 
 **Type:** Fotoalbum **desktop-app** (Laravel 12 + NativePHP/Electron)
-**Status:** Fase 1 (MVP) functioneel af — open: installer-test op schone PC
-**Platform:** Windows eerst (macOS/Linux fase 2)
+**Status:** ⚠️ **Uitfaserend — alleen nog achtergrondmateriaal voor [Vusista2](vusista2.md).**
+Verdwijnt daarna helemaal (Henk, 31-07-2026).
 **Demo:** vervallen — de serveromgeving is 31-07-2026 opgeruimd (zie Omgevingen)
+
+> **Wat dit betekent voor wie hier komt werken:**
+> - **Niets in Vusista 1 meer repareren.** De laatste V&K-scan gaf `critical 1 · high 2 · medium 4`
+>   (25% form-validatie, `session.php` secure-default, verwijderde tests, guzzle-advisories).
+>   Die blijven **bewust open** — fixen in een app die verdwijnt is weggegooid werk.
+> - **`qv:scan` staat daarom uit** voor dit project (`enabled => false` in `quality-safety.php`,
+>   mét reden). De **KB-index blijft wél draaien**: de docs zijn juist de waarde die overblijft.
+> - **Wat je hier zoekt, zoek je als bronmateriaal:** de productbesluiten, `niet-doen.md` en de
+>   valkuilen gaan ongewijzigd mee naar de herbouw. De *techniek* niet.
 
 > ⛔ **Het fundament is verkeerd gekozen — herbouw ligt klaar (30-07-2026).** Een lokale
 > fotomanager voor 76.797 bestanden en één gebruiker draait hier op Laravel + `php -S` in een

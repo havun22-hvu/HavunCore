@@ -71,12 +71,21 @@ return [
             'url' => 'https://havuncore.havun.nl',
         ],
 
-        // Vusista — desktop app, so no URL and no SSL check. It was missing
-        // from this list entirely, which means no scheduled composer audit and
-        // no secrets scan ever ran on it: four months unscanned, found 30-07-2026.
-        // A project that is not a webapp still has dependencies and secrets.
+        // Vusista 1 — SCANNEN UITGEZET 31-07-2026, bewust en met reden.
+        //
+        // Het project is nog alleen achtergrondmateriaal voor de herbouw
+        // (Vusista2) en verdwijnt daarna. Elke nacht advisories verzamelen die
+        // niemand gaat oplossen levert ruis op in het rapport, en ruis maakt
+        // een echte bevinding minder zichtbaar. Dit staat hier `false` in
+        // plaats van dat de regel verdwijnt: uitgezet-met-reden is een keuze
+        // die je terugleest, een ontbrekende regel is stilte — dat was nu juist
+        // het probleem (vier maanden ongescand, gevonden op 30-07).
+        //
+        // De laatste scan gaf critical 1 · high 2 · medium 4; die blijven
+        // bewust onopgelost. De KB-index blijft wél draaien: de docs zijn de
+        // achtergrond waar Vusista2 op steunt.
         'vusista' => [
-            'enabled' => env('QV_VUSISTA_ENABLED', true),
+            'enabled' => env('QV_VUSISTA_ENABLED', false),
             'path' => env('VUSISTA_LOCAL_PATH', 'D:/GitHub/Vusista'),
         ],
 

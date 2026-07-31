@@ -35,6 +35,12 @@ backup geverifieerd: `/root/backups/vusista-cleanup-2026-07-31`) · registratieg
 (`vusista` stond 4 maanden niet in `quality-safety.php`; `vusista2` in geen van beide, plus repo
 aangemaakt).
 
+**Vusista 1 is uitfaserend** (Henk, 31-07): nog alleen achtergrondmateriaal voor Vusista2, daarna
+weg. Dus **niets meer repareren** — de openstaande `critical 1 · high 2 · medium 4` blijven bewust
+staan, en `qv:scan` staat voor dat project op `enabled => false` **mét reden in de config**
+(uitgezet-met-reden lees je terug, een ontbrekende regel is stilte). **KB-index blijft wél draaien:**
+de productdocs zijn juist de waarde die overblijft.
+
 **Jij nog:** DNS `vusista.havun.nl` bij mijn.host opruimen + deploy-key `server-read` uit de
 Vusista-repo-settings. Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de
 120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) —
