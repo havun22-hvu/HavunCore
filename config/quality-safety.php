@@ -98,21 +98,22 @@ return [
             'path' => env('VUSISTA2_LOCAL_PATH', 'D:/GitHub/Vusista2'),
         ],
 
-        // Veen — PARKED as of 31-07-2026, and scanned BECAUSE of it.
+        // Veen — PARKED 31-07-2026; onze serveromgeving is die dag opgeruimd
+        // (vhost, cert, beide databases, beide checkouts). Vandaar geen
+        // remote_path en geen url meer: er is hier niets publieks te meten.
         //
-        // Parking means nobody picks up work here, which is exactly why the
-        // scanning must stay on: veen.havun.nl is publicly reachable (200) and
-        // the old app it replaces holds live customer data -- 1.177 SEPA
-        // mandates and 15.030 payments. A parked project nobody looks at is
-        // where an advisory sits unnoticed longest.
+        // Scanning blijft wél aan op de lokale checkout. Die staat er nog
+        // omdat Cees nog vragen kan hebben, en een geparkeerd project waar
+        // niemand naar kijkt is precies waar een advisory blijft zitten.
         //
-        // Contrast with vusista, which is disabled: that one is being deleted,
-        // so findings there would never be acted on. This one is alive.
+        // Contrast met vusista (`enabled => false`): dat wordt weggegooid, dus
+        // bevindingen zou niemand oppakken. Dit kan zo weer opgepakt worden.
+        //
+        // ⛔ De OUDE app van Cees draait op 37.34.60.216 (TransIP) en is NIET
+        // van ons — die staat hier bewust niet in en blijft ongemoeid.
         'veen-ledenadministratie' => [
             'enabled' => env('QV_VEEN_ENABLED', true),
             'path' => env('VEEN_LOCAL_PATH', 'D:/GitHub/VeenLedenadministratie'),
-            'remote_path' => '/var/www/veenledenadministratie/production',
-            'url' => 'https://veen.havun.nl',
         ],
 
         // Studieplanner mobile (Expo) — no composer, no URL, no SSL.

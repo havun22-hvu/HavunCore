@@ -141,9 +141,12 @@ return [
         'local_url' => null,
         'endpoints' => [],
     ],
+    // Geparkeerd 31-07-2026; onze serveromgeving die dag opgeruimd, dus geen
+    // server_path meer. De lokale checkout blijft staan (Cees kan nog vragen
+    // hebben). De OUDE app op 37.34.60.216 is van Cees, niet van ons.
     'veen-ledenadministratie' => [
         'path'      => 'D:/GitHub/VeenLedenadministratie',
-        'server_path' => '/var/www/veenledenadministratie',
+        'server_path' => null,
         'local_url' => null,
         'endpoints' => [],
     ],

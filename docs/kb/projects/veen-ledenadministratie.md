@@ -13,11 +13,19 @@ last_check: 2026-07-19
 De herbouw was al geparkeerd (Cees vond de offerte te duur, besluit 003); nu ligt het hele
 project stil, óók de kleine betaalde klussen.
 
-> **Parkeren betekent hier níét "monitoring uit".** `veen.havun.nl` is publiek bereikbaar (200)
-> en de oude app die het vervangt draait live bij een klant: **1.177 SEPA-machtigingen en 15.030
-> betalingen**. Juist een project waar niemand meer naar kijkt, is waar een advisory het langst
-> onopgemerkt blijft. `qv:scan` staat daarom **aan** — dat is het verschil met Vusista 1, dat
-> weggegooid wordt en daarom wél uit staat.
+> **Onze serveromgeving is 31-07 opgeruimd** — `veen.havun.nl`, de staging, het cert en beide
+> databases (production 9 tabellen; staging 26 tabellen / ~18.941 rijen). Backup:
+> `/root/backups/veen-cleanup-2026-07-31` (72 MB tarball + beide dumps + nginx-config), root-only
+> want er zitten `.env`-bestanden in. **De lokale checkout blijft staan** — Cees kan nog vragen
+> hebben.
+>
+> ⛔ **De oude app van Cees draait op `37.34.60.216` (TransIP) en is NIET van ons.** Die is niet
+> aangeraakt en blijft ongemoeid — daar staat de live administratie met 1.177 SEPA-machtigingen
+> en 15.030 betalingen.
+>
+> `qv:scan` blijft **aan** op de lokale checkout: een geparkeerd project waar niemand naar kijkt,
+> is waar een advisory het langst blijft zitten. Dat is het verschil met Vusista 1, dat weggegooid
+> wordt en daarom op `enabled => false` staat.
 
 > **Niet via Mollie.** Het oude package zit in de code maar is nooit gebruikt. De incasso
 > loopt via zelf gegenereerde pain.008-batchbestanden naar de bank.
@@ -28,7 +36,7 @@ project stil, óók de kleine betaalde klussen.
 |-----|------|
 | Nieuwe app | `D:\GitHub\VeenLedenadministratie` · havun22-hvu/VeenLedenadministratie |
 | Oude app (referentie) | `_legacy/` in dezelfde repo, buiten git |
-| Server (nieuw) | `veen.havun.nl` (Hetzner) |
+| ~~Server (nieuw)~~ | **opgeruimd 31-07-2026** (was `veen.havun.nl` op Hetzner) |
 | Server (oud, draait nog) | `37.34.60.216` (TransIP), niet meer aanraken |
 
 ## Omvang (peildatum 18-07-2026)

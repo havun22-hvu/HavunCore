@@ -88,19 +88,22 @@ maar nu zichtbaar.** Vusista 1 staat bewust op `enabled => false`.
 nu ligt het hele project stil, ook de kleine betaalde klussen. Hier stond nog "fase 3 wacht op
 Cees' groen licht" — dat klopte al sinds ~29-07 niet meer.
 
-**Maar parkeren ≠ monitoring uit — en het stónd niet eens aan.** Veen zat in `havun-projects.php`
-maar **niet** in `quality-safety.php`: nooit een `composer audit` of secrets-scan gedraaid, exact
-hetzelfde gat als bij Vusista. Nu toegevoegd, want `veen.havun.nl` is publiek bereikbaar (200) en
-de oude app draait live met **1.177 SEPA-machtigingen en 15.030 betalingen**. Een geparkeerd
-project waar niemand meer kijkt is juist waar een advisory het langst blijft zitten.
-**Verschil met Vusista 1** (dat wél op `enabled => false` staat): dat wordt weggegooid, dit leeft.
+**Onze serveromgeving opgeruimd (31-07).** `veen.havun.nl` + staging, cert, beide checkouts en
+**beide databases** (staging had 26 tabellen / ~18.941 rijen — die dataset zit niet in git). Backup
+root-only vanwege de `.env`'s: `/root/backups/veen-cleanup-2026-07-31` (72 MB + beide dumps +
+nginx-config), integriteit geverifieerd vóór verwijderen. Alle andere sites 200.
+**⛔ De oude app van Cees op `37.34.60.216` (TransIP) is NIET van ons en is niet aangeraakt** —
+daar staat de live administratie. **Lokale checkout blijft staan**: Cees kan nog vragen hebben.
 
-**Eerste scan: 1 high** — `config/session.php` secure-cookie-default niet `true` op een publiek
-bereikbare app. **Niet gefixt: het project is geparkeerd.** Jouw call of dit een uitzondering is.
+**Parkeren ≠ monitoring uit — en het stónd niet eens aan.** Veen zat in `havun-projects.php` maar
+**niet** in `quality-safety.php`: nooit een `composer audit` of secrets-scan. Dat is de **derde**
+keer in twee dagen (na `vusista` en `vusista2`) dat een project in de ene registry staat en niet in
+de andere. Nu toegevoegd; scannen blijft aan op de lokale checkout, want een geparkeerd project
+waar niemand kijkt is juist waar een advisory blijft zitten. **Verschil met Vusista 1**
+(`enabled => false`): dat wordt weggegooid, dit kan zo weer opgepakt worden.
 
-**Ook: `veen.havun.nl` + staging staan op onze server** (124 MB + 156 MB, 205 commits achter).
-Bij een geparkeerd project is dat dezelfde vraag als bij Vusista — **jouw go** of dat weg mag,
-want het raakt de klantrelatie met Cees.
+**Eerste scan: 1 high** — `config/session.php` secure-cookie-default niet `true`. **Niet gefixt:
+het project is geparkeerd.** Jouw call of dit een uitzondering waard is.
 
 ## Open — te doen
 

@@ -113,7 +113,6 @@ De volgende projecten draaien onder nginx via `fastcgi_pass unix:/run/php/php8.2
 | SafeHavun | `safehavun.havun.nl` | `/var/www/safehavun/...` |
 | Demo | `demo.havun.nl` | `/var/www/demo/...` |
 | JudoScoreBoard | `judoscoreboard.havun.nl` | `/var/www/judoscoreboard/...` |
-| VeenLedenadministratie | `veen.havun.nl` + `staging.veen.havun.nl` | `/var/www/veenledenadministratie/{production,staging}` |
 
 ### Toekomstige / geparkeerde projecten (nog geen poort)
 
