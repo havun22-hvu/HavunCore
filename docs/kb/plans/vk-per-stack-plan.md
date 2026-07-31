@@ -65,8 +65,42 @@ overgeslagen.
 | 2 | `EcosystemDetector`: manifesten → ecosystemen, met dieptelimiet en skip-dirs | ✅ |
 | 3 | `deps-coverage`-check: ecosysteem zonder audit → **`high` "niet gemeten"** | ✅ |
 | 4 | Elke scan toont per project hoe het gebouwd is, met `(NIET gemeten)` erachter | ✅ |
-| 5 | `type` uit de registry stuurt de web-only checks (ssl, observatory, session-cookies) | open — `url`-afwezigheid doet dit nu al impliciet |
-| 6 | Testnorm per stack in `reference/test-quality-policy.md` (PHPUnit · Vitest · `cargo test`) | open |
+| 5 | Overgeslagen checks melden hun reden i.p.v. door te gaan voor schoon | ✅ |
+| 6 | Testgereedschap per stack — eigen doc, policy verwijst ernaar | ✅ |
+
+### Punt 5 — het was niet het `type`, het was de stilte
+
+Oorspronkelijk stond hier *"het `type` uit de registry moet de web-only checks sturen"*. **Dat
+was de verkeerde diagnose.** De checks kiezen zichzelf al op detectie: `sslExpiry` op de
+aanwezigheid van `url`, en `formsCoverage`/`rateLimit`/`session-cookies`/`debug-mode` op
+`laravelRootOrNull()` (`artisan` + `routes/`). Dat is precies zo robuust als de
+`EcosystemDetector` en had geen `type`-veld nodig.
+
+Het echte gat zat een laag dieper: die skips waren **stil**. `['findings' => []]` van een check
+die niet kón draaien, is niet te onderscheiden van dezelfde return van een check die draaide en
+niets vond. Een project met een fout pad in de config — geen `artisan` te vinden — meldde nul
+over álle Laravel-checks en las als volledig doorgemeten.
+
+Nu geeft elke overgeslagen check een reden terug, verzamelt de scan die, en dragen de totalen
+een `overgeslagen`-teller:
+
+```
+  vusista2: rust
+Niet gedraaid (n.v.t.):
+  - vusista2/session-cookies: geen Laravel-root (artisan + routes/) op dit pad
+Totals — critical: 0 | ... | errors: 0 | overgeslagen: 1
+```
+
+### Punt 6 — `reference/testgereedschap-per-stack.md`
+
+De policy was 229 regels (al over de 200-norm) en veronderstelde stilzwijgend PHP/Laravel.
+Splitsen in plaats van uitbreiden: een eigen doc met de gereedschapstabel per ecosysteem, en
+drie verwijzingen terug vanuit de policy. **De norm verandert niet — alleen het gereedschap.**
+
+Drie dingen die Rust echt anders maken, staan er expliciet in: unit-tests leven in
+`#[cfg(test)]`-modules binnen `src/` (dus de `test-erosion`-check ziet ze **niet**),
+`cargo clippy -- -D warnings` is daar de goedkoopste kritieke-padbewaking, en Playwright kan
+niet bij een desktop-app — daar is de handmatige gate vóór release geen gat maar een gate.
 
 ## Wat de meting opleverde (31-07)
 

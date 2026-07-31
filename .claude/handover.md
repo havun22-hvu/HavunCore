@@ -25,42 +25,33 @@ Plan + status per punt: `plans/stackkeuze-fundament-plan.md`.
 + omkeerpunt** in `docs-first.md` · `project:scaffold` op verplichte `--type`, geblokkeerd zonder
 ingevulde `docs/intake.md` die hetzelfde type concludeert, web-infra alleen bij `server-webapp`
 (27 tests) · `/mpc` fase 0 + `/arch` · uitrol naar HavunCore + **14 actieve CLAUDE.md's**
-(geparkeerde overgeslagen; Vusista's norm staat op `staging`, want `main` loopt 335 commits achter).
+(Vusista's norm staat op `staging`, want `main` loopt 335 commits achter).
 
-**`vusista` stond niet in `config/quality-safety.php`** — vier maanden nooit een `composer audit`
-of secrets-scan. Toegevoegd (zonder `url`: desktop). Eerste scan: **critical 1 · high 2 · medium 4**
-(25% form-validatie, `session.php` secure-default niet `true`, verwijderde tests, 4× guzzle).
-Vusista-werk → eigen sessie, grotendeels ingehaald door de herbouw.
-
-**De fout herhaalde zich meteen (31-07):** `vusista2` stond in géén van beide configs, terwijl het
-al drie commits en werkende Rust-proeven had. Nu geregistreerd + geïndexeerd (16 docs), en de repo
-staat op GitHub: `havun22-hvu/Vusista2` (privé, 48 bestanden; `target/` blijft eruit). Was alleen
-lokaal — één crash en de proefmetingen waaróp het herbouwplan rust, waren weg.
+**Registratie-gaten gedicht.** `vusista` stond niet in `quality-safety.php` — vier maanden nooit
+gescand; eerste scan: **critical 1 · high 2 · medium 4**. En `vusista2` stond in géén van beide
+configs terwijl het al werkende Rust-proeven had — dezelfde fout, één dag later. Beide nu
+geregistreerd; Vusista2 heeft ook een repo (`havun22-hvu/Vusista2`, privé, 6 commits) want die
+bestond alleen op één schijf. Vusista 1 had er al één. Beide zijn Vusista-werk → eigen sessie.
 
 **Nog open:** (9) rode Actions moeten iemand bereiken — Vusista's staging faalde 13 dagen ongemerkt:
 monitoring-gat, geen scaffold-gat · (10) **jouw go:** `/var/www/vusista/{production,staging}` opruimen
-(demo serveert een 500). Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de 120-regelnorm (Vusista 138,
-Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten er al aan vóór de uitrol.
+(demo serveert een 500). Losse gaten: **Veen heeft geen CLAUDE.md**; vier CLAUDE.md's boven de
+120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130, havuncore-webapp 125) — zaten
+er al aan vóór de uitrol.
 
-> Vusista2 richt zich handmatig in — terecht, want de scaffold levert bewust géén Rust-skelet.
-> De herbouw zelf (`Vusista2/PLAN.md`) is een Vusista2-sessie.
+## V&K kiest zijn checks op de stack (31-07) — af
 
-## V&K kiest zijn checks op de stack (31-07) — af, twee punten open
+`qv:scan` detecteert de ecosystemen uit de manifesten (detectie, géén `stack`-veld — dat zou een
+tweede waarheid worden), draait `cargo audit` op elke `Cargo.lock` onder de root, en **meldt een
+ecosysteem dat het niet kan auditen als `high`-bevinding** in plaats van als nul. Een
+**overgeslagen check meldt nu zijn reden**; totalen dragen `overgeslagen: N`. Elke scan toont hoe
+een project gebouwd is (`havuncore: js, php`). Plus `reference/testgereedschap-per-stack.md` —
+de policy veronderstelde stilzwijgend PHP. Plan: `plans/vk-per-stack-plan.md`. 1345 tests groen.
 
-**Henk:** *"HavunCore moet van elk project weten hoe het gebouwd is en het juiste pakket
-V&K/testen gebruiken."* `qv:scan` detecteert nu de ecosystemen uit de manifesten (detectie, geen
-`stack`-veld — dat zou een tweede waarheid worden), draait `cargo audit` op elke `Cargo.lock`
-onder de root, en **meldt een ecosysteem dat het niet kan auditen als `high`-bevinding** in plaats
-van als nul. Elke scan toont nu `havuncore: js, php` / `vusista2: rust`, met `(NIET gemeten)`
-achter wat ongedekt is. Plan: `plans/vk-per-stack-plan.md`.
-
-**Vusista2 ging van 0 naar 34 findings** (2 medium `unsound`, 32 low `unmaintained`). Die eerste
-nul was mijn eigen bug: `cargo audit` zet `unmaintained`/`unsound` in een apart `warnings`-veld
-naast `vulnerabilities`, en ik las alleen dat laatste. Handmatig nameten bracht het aan het licht.
-
-**Open:** (5) `type` uit de registry expliciet de web-only checks laten sturen — nu regelt de
-afwezigheid van `url` dat impliciet · (6) testnorm per stack in `reference/test-quality-policy.md`
-(PHPUnit · Vitest · `cargo test`). **Go, Python en .NET blijven ongemeten — maar nu zichtbaar.**
+**Vusista2 ging van 0 naar 34 findings.** Die eerste nul was mijn eigen bug: `cargo audit` zet
+`unmaintained`/`unsound` in een apart `warnings`-veld naast `vulnerabilities`, en ik las alleen
+dat laatste. Handmatig nameten bracht het aan het licht. **Go, Python en .NET blijven ongemeten —
+maar nu zichtbaar.**
 
 ## Open — wacht op Henk
 
