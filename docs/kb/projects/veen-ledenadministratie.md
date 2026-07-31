@@ -30,6 +30,30 @@ project stil, óók de kleine betaalde klussen.
 > **Niet via Mollie.** Het oude package zit in de code maar is nooit gebruikt. De incasso
 > loopt via zelf gegenereerde pain.008-batchbestanden naar de bank.
 
+## ⚠️ Sessiecookie zonder `Secure`-vlag — ook in de LIVE oude app (31-07-2026)
+
+`qv:scan` gaf 1 high op de nieuwe app. Bij het natrekken bleek de **oude, draaiende** app
+hetzelfde te hebben, en harder:
+
+| | `config/session.php` | `SESSION_SECURE_COOKIE` in `.env.example` |
+|---|---|---|
+| Nieuwe app (geparkeerd, draait nergens) | `env('SESSION_SECURE_COOKIE')` → **null** | ontbreekt |
+| **Oude app (live bij Cees)** | `env('SESSION_SECURE_COOKIE', **false**)` | **ontbreekt** |
+
+Geen `forceScheme`/HTTPS-middleware gevonden in de legacy-app.
+
+**Wat het betekent:** zonder `Secure` stuurt de browser de sessiecookie óók over onversleuteld
+HTTP. Wie op hetzelfde netwerk meekijkt (open wifi) onderschept hem en neemt de sessie over —
+bij deze app betekent dat NAW-gegevens, IBAN's en machtigingen van 1.177 leden.
+
+**NIET geverifieerd:** of de productie-`.env` op `37.34.60.216` de variabele alsnog op `true`
+zet. Dat is Cees' server; die is niet aangeraakt en dat blijft zo. Zonder die `.env` te zien of
+de `Set-Cookie`-header van de live site op te vragen, is dit een **risico-indicatie, geen
+vastgestelde kwetsbaarheid**. Eén `curl -sI` op het live domein zou het beantwoorden — Henks call.
+
+**Niet gefixt:** project is geparkeerd, en de oude app is Cees' eigendom. Zie
+`standards/claims-verifieren.md`: de claim staat hier mét de twijfel erbij.
+
 ## Repositories
 
 | Wat | Waar |
