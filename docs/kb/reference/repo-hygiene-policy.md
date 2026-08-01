@@ -110,18 +110,33 @@ De PWA mobile-project monitoring (zie `decisions/mobile-project-monitoring-2026-
 
 ### Rotation-procedure
 
-```bash
-# 1. Genereer nieuwe PAT op github.com (jouw account, fine-grained, expiratie + 90d)
-# 2. Update secret + (optioneel) project token via setup-command
-ssh hetzner
-GITHUB_PAT_RO='github_pat_NEW' php artisan vault:setup-mobile-monitoring --from-env
-# Met --rotate-token forceer je ook een nieuw Vault Bearer-token (bij compromise)
+**Draai `/root/vervang-github-pat.sh` op de server.** Dat script leest de token met `read -s`:
+onzichtbaar, en dus niet in je shell-historie, niet in de procestabel en niet in een transcript.
+Het controleert de token eerst tegen beide repo's, zet hem pas daarna in de Vault, herstart de
+backend en verifieert dat er geen PAT-fouten in het log staan.
 
-# 3. Restart PWA zodat de nieuwe PAT in-memory geladen wordt
-sudo -u www-data pm2 restart havuncore-backend
-```
+**Wat de nieuwe fine-grained PAT nodig heeft** (github.com → Settings → Developer settings):
 
-De `vault:setup-mobile-monitoring` command is idempotent — re-running met een nieuwe PAT update het bestaande secret zonder zijdelings effect.
+| | |
+|---|---|
+| Repository access | `havun22-hvu/judoscoreboard` (**privé** — zonder deze faalt de monitoring) en `havun22-hvu/Studieplanner` (publiek) |
+| Repository permissions | Metadata **Read**, Contents **Read**, Pull requests **Read** |
+| Expiratie | 90 dagen; noteer de vervaldatum in de tabel hieronder |
+
+> ⚠️ **Niet doen:** `GITHUB_PAT_RO='github_pat_...' php artisan vault:setup-mobile-monitoring`.
+> Dat is de oude regel die hier stond, en hij schrijft de token in `~/.bash_history` én in `ps`.
+> Wie hem daar wegleest heeft leestoegang tot een privé-repo. Het script hierboven doet hetzelfde
+> zonder dat lek; onder de motorkap roept het datzelfde artisan-commando aan.
+
+De `vault:setup-mobile-monitoring` command is idempotent — re-running met een nieuwe PAT update
+het bestaande secret zonder zijdelings effect. Met `--rotate-token` forceer je ook een nieuw Vault
+Bearer-token (bij compromise van de webapp-kant).
+
+### Vervaldata
+
+| Token | Verloopt | Actie |
+|---|---|---|
+| `havuncore-webapp-mobile-monitoring` | **~08-08-2026** (GitHub-melding 01-08: nog 7 dagen) | Vervangen met het script hierboven |
 
 ## Wijzigingshistorie
 
