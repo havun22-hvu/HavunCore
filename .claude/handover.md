@@ -11,7 +11,11 @@ last_updated: 2026-08-01
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
 **Branch:** master · **Status:** stabiel, 1389 tests groen, KB-audit 0 high. **Server:** disk 68%,
-prod draait overal, 0 dirty checkouts. Niets wacht op deploy.
+prod draait overal, 0 dirty checkouts.
+
+**Klaar om te deployen (jouw klik):** HavunCore zelf 10 commits / 11 codebestanden — de twee
+V&K-checks, de docs-audit-fixes en de Vusista-opruiming van 01-08. Geen migraties. En HavunAdmin
+6 commits / 4 codebestanden uit een andere sessie (oefenomgeving-markering, sticky kolomkoppen).
 
 ## 🔴 Twee dingen die morgen als eerste moeten
 
@@ -74,6 +78,10 @@ box op 2% van 1 TB.
   havuncore-webapp 125.
 - **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde versie staat op
   `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
+- **`origin/rescue/havuncore-prod-autocommits-2026-07-25`** staat er nog met 10 commits die nergens
+  anders bestaan — allemaal `chore(auto): refresh handover, qv-scan-latest` van 15 t/m 25 juli.
+  Inhoudelijk achterhaald door nieuwere snapshots, maar niet gemergd: beoordelen en dan weg, niet
+  blind droppen.
 
 ## Veen-ledenadministratie — GEPARKEERD (Henk, 31-07)
 
