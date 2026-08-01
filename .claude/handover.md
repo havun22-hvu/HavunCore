@@ -28,6 +28,15 @@ type concludeert, web-infra alleen bij `server-webapp` · omwegen tellen in `doc
 stack en **meldt wat het niet kan meten** in plaats van nul · `actions:watch` maakt rode builds
 zichtbaar. Post-mortem die dit uitlokte: `patterns/fundament-versus-omweg.md`.
 
+**Vusista2 is 01-08 Havun-waardig gemaakt** (vanuit deze sessie, orchestrator-rol): 15 commands +
+`rules.md` uitgerold en **omgeschreven naar een desktop-app** (cargo i.p.v. Laravel/npm, alle
+server- en deploystappen eruit — die zouden juist de fout uitlokken waar Vusista 1 aan kapotging),
+`docs/intake.md` achteraf ingevuld mét conclusie en omkeerpunt, en de `scope:`-frontmatter van
+10 docs stond nog op `vusista` (kwamen onder het verkeerde project de KB in).
+**Er was geen CI** — nu `.github/workflows/ci.yml`: 62 tests groen, clippy exit 0 met 17
+waarschuwingen, `cargo fmt` niet schoon. `-D warnings` + fmt-check staan bewust op
+`continue-on-error`; **die schuld opruimen en beide hard zetten hoort in een Vusista2-sessie.**
+
 **Nog open:**
 - **Vusista 1 blijft staan tot Vusista2 áf is** — map, repo én KB-index. `qv:scan` staat daar op
   `enabled => false`; **niets meer repareren**, de openstaande bevindingen blijven bewust staan.
