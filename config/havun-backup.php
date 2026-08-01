@@ -226,6 +226,62 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Verificatie — wat er élke nacht moet liggen
+    |--------------------------------------------------------------------------
+    |
+    | Dit is de *verwachting*; de uitvoerder is /usr/local/bin/havun-backup.sh
+    | (cron 03:00). `qv:scan --only=backup-coverage` toetst de een aan de ander:
+    | bestaat elk verwacht bestand in de nieuwste datummap, is het vers genoeg
+    | en niet leeg.
+    |
+    | Waarom aan de uitkomst meten en niet aan een lijst: tot 01-08-2026 werd
+    | `projects` hierboven door niets gelezen, en dus "dekte" het vier projecten
+    | terwijl het script er acht deed — inclusief twee databases van apps die
+    | 18-07 van de server af waren. Een register dat niemand uitvoert, meldt
+    | niets als het fout staat.
+    |
+    | Een live project (server_path in havun-projects.php) dat hier ontbreekt,
+    | is zélf een bevinding: dan heeft niemand opgeschreven wat er bewaard moet
+    | blijven. Uitzonderen kan, met een reden — nooit stilzwijgend.
+    |
+    */
+
+    'verificatie' => [
+        'root' => env('BACKUP_VERIFY_ROOT', '/var/backups/havun'),
+
+        // Projectslug (uit havun-projects.php) => bestandsnamen onder <root>/<datum>/,
+        // productie én staging. Drie projecten hebben een draaiende
+        // staging-omgeving (geverifieerd 01-08-2026: /var/www/*/staging plus de
+        // nginx-vhosts); die dumps horen er dus te zijn.
+        'verwacht' => [
+            'havunadmin' => ['havunadmin_production.sql.gz', 'havunadmin_staging.sql.gz'],
+            'herdenkingsportaal' => [
+                'herdenkingsportaal_prod.sql.gz',
+                'herdenkingsportaal_storage.tar.gz',
+                'herdenkingsportaal_staging.sql.gz',
+            ],
+            'havuncore' => ['havuncore.sql.gz'],
+            'judotoernooi' => ['judo_toernooi.sql.gz', 'staging_judo_toernooi.sql.gz'],
+            'safehavun' => ['safehavun.sql.gz'],
+            'studieplanner-api' => ['studieplanner.sql.gz'],
+
+            // ⚠️ Staat hier bewust, en ontbreekt bewust in de backup: `users.json`
+            // is de enige plek waar de VPD-gebruikers bestaan en het script maakt
+            // er geen kopie van. De laatste is met de hand gemaakt bij de deploy
+            // van 28-07 (/var/backups/havun-vpd-users/). Deze regel houdt dat gat
+            // zichtbaar tot het opgelost is — weghalen is het gat verbergen.
+            'vpdupdate' => ['vpdupdate_users.json.gz'],
+        ],
+
+        // Uitgezonderd, met reden. Een lege reden telt niet.
+        'uitgezonderd' => [
+            'havun' => 'statische site, alle inhoud staat in git',
+            'havuncore-webapp' => 'build-output; de bron staat in git en wordt bij deploy opnieuw gebouwd',
+        ],
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
     | Monitoring Configuration
     |--------------------------------------------------------------------------
     */

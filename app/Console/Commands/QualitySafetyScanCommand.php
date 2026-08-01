@@ -12,18 +12,18 @@ use Illuminate\Support\Facades\Storage;
 class QualitySafetyScanCommand extends Command
 {
     protected $signature = 'qv:scan
-        {--only= : Run only one check (composer|npm|cargo|deps-coverage|ssl|observatory|server|forms|ratelimit|secrets|session-cookies|test-erosion|debug-mode|residu|registries)}
+        {--only= : Run only one check (composer|npm|cargo|deps-coverage|ssl|observatory|server|forms|ratelimit|secrets|session-cookies|test-erosion|debug-mode|residu|registries|backup-coverage)}
         {--project= : Scan only one project (slug)}
         {--json : Emit machine-readable JSON on stdout}';
 
-    protected $description = 'Cross-project Quality & Safety scan (composer audit, npm audit, SSL expiry, Mozilla Observatory, server health, form-validation coverage, rate-limit coverage, hardcoded-secrets detection, session-cookie flags, test-erosion, debug-mode, repo-hygiene residu, registry-drift)';
+    protected $description = 'Cross-project Quality & Safety scan (composer audit, npm audit, SSL expiry, Mozilla Observatory, server health, form-validation coverage, rate-limit coverage, hardcoded-secrets detection, session-cookie flags, test-erosion, debug-mode, repo-hygiene residu, registry-drift, backupdekking)';
 
     public function handle(QualitySafetyScanner $scanner): int
     {
         $only = $this->option('only');
         $projectFilter = $this->option('project');
 
-        $availableChecks = ['composer', 'npm', 'cargo', 'deps-coverage', 'ssl', 'observatory', 'server', 'forms', 'ratelimit', 'secrets', 'session-cookies', 'test-erosion', 'debug-mode', 'residu', 'registries'];
+        $availableChecks = ['composer', 'npm', 'cargo', 'deps-coverage', 'ssl', 'observatory', 'server', 'forms', 'ratelimit', 'secrets', 'session-cookies', 'test-erosion', 'debug-mode', 'residu', 'registries', 'backup-coverage'];
         $checks = $only ? [$only] : $availableChecks;
 
         foreach ($checks as $check) {

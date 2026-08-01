@@ -54,6 +54,10 @@ Schedule::command('qv:scan --only=debug-mode --json')->dailyAt('03:57');
 // Draait vóór qv:log (03:27) zodat een ontbrekend project in hetzelfde rapport
 // staat als de scans die het gemist heeft. Config-vergelijking, dus goedkoop.
 Schedule::command('qv:scan --only=registries --json')->dailyAt('03:02');
+// Backupdekking: ligt er vanochtend een verse, niet-lege backup van alles wat
+// dat nodig heeft? Draait om 05:30 -- ná de backup-cron van 03:00, want vóór
+// die tijd meet je de nacht ervoor.
+Schedule::command('qv:scan --only=backup-coverage --json')->dailyAt('05:30');
 // Render latest scan as Markdown report (overwrites docs/kb/reference/qv-scan-latest.md)
 Schedule::command('qv:log')->dailyAt('03:27');
 // Verify critical-paths docs still point at existing tests (link-check only; no --run).

@@ -77,6 +77,25 @@ eruit.
 in een shellscript op de server staat — dan is een config-vergelijking niet genoeg en moet de
 check de server bevragen.
 
+## Vervolg: backupdekking meten aan de uitkomst (01-08)
+
+De backup-arm kwam terug, maar anders. Niet "staat het project in een lijst" — dat was juist de
+fout — maar **bestaat er vanochtend een verse backup van wat dit project nodig heeft.**
+
+Gemeten op de server (01-08, 03:00-run): acht databases, allemaal vers. Waaronder
+`judo_toernooi` en `safehavun`, die het dode register níét kende. En óók `infosyst` (368 bytes) en
+`havunclub_production` (378 bytes) — twee databases van apps die 18-07 van de server af gingen.
+Het script dumpt ze nog steeds; leeg, elke nacht.
+
+`config/havun-backup.php` wordt daarmee de **verwachting** (wat hoort er geback-upt te zijn, en
+hoe vers) en het serverscript blijft de uitvoerder. De check toetst de een aan de ander. Dat is
+niet ideaal — twee plekken — maar het alternatief (backups door Laravel laten draaien) raakt cron
+en systemd, en dat is niet iets om ongevraagd om te bouwen.
+
+**Aanname:** een backup die vanochtend bestaat en niet leeg is, is een bruikbare backup.
+**Omkeerpunt:** blijkt een dump wel vers maar niet herstelbaar, dan is bestaan+omvang niet genoeg
+en moet de check een restore-proef doen.
+
 ## Status
 
 - [x] Plan
@@ -84,4 +103,22 @@ check de server bevragen.
 - [x] Globale check in de scanner (`GLOBAL_CHECKS` — draait één keer, buiten de projectloop)
 - [x] Scheduler (dagelijks 03:02, vóór `qv:log`) + `--only=registries`
 - [x] Gevonden drift opgelost — 3 high en 1 sleutelkruising weg
-- [ ] Backupdekking meten tegen het shellscript in plaats van tegen dode config
+- [x] Backupdekking meten aan de uitkomst — `qv:scan --only=backup-coverage`, dagelijks 05:30
+      (ná de backup-cron van 03:00), 12 tests
+
+## Wat de backupcheck vond op zijn eerste run (01-08)
+
+| | |
+|---|---|
+| 🟠 high | **`vpdupdate` heeft geen backup van `users.json`** — de enige plek waar die gebruikers bestaan. Laatste kopie is met de hand gemaakt bij de deploy van 28-07 (`/var/backups/havun-vpd-users/`) |
+| 🟡 medium | `infosyst.sql.gz` (368 B) en `havunclub_production.sql.gz` (378 B) — elke nacht een lege dump van apps die 18-07 van de server af gingen |
+| 🟡 medium | `havunvet_staging.sql.gz` — HavunVet is 24-07 gearchiveerd, de database staat er nog |
+| ⚪ info | `havun.nl` en `havuncore-webapp` bewust uitgezonderd, met reden |
+
+Wat er **wél** goed bleek: `judo_toernooi` en `safehavun` worden gewoon geback-upt, verse dumps van
+03:00. Het dode register kende ze niet — dat was de valse melding, niet het gat.
+
+Drie staging-omgevingen draaien echt (`havunadmin`, `herdenkingsportaal`, `judotoernooi`,
+geverifieerd via `/var/www/*/staging` + de nginx-vhosts), dus hun dumps horen in de verwachting.
+Zonder die controle had de check ze als restant gemeld — een verwachting die te smal staat,
+produceert net zo goed onzin als een register dat niemand leest.

@@ -18,7 +18,7 @@ class QualitySafetyScanner
      * zou hij precies dat geval nooit zien — hij draait dan alleen voor
      * projecten die al geregistreerd zijn.
      */
-    public const GLOBAL_CHECKS = ['registries'];
+    public const GLOBAL_CHECKS = ['registries', 'backup-coverage'];
 
     /**
      * @param  array<string,array<string,mixed>>  $projects
@@ -143,8 +143,111 @@ class QualitySafetyScanner
     {
         return match ($check) {
             'registries' => $this->registryDrift(),
+            'backup-coverage' => $this->backupCoverage(),
             default => ['findings' => [], 'error' => "Unknown global check: {$check}"],
         };
+    }
+
+    /**
+     * Vraagt de nieuwste backupmap op en toetst hem aan de verwachting.
+     *
+     * Leest alleen — `find` en `stat`, nooit een wijziging. Zie
+     * BackupCoverageDetector voor de regels en het incident erachter.
+     *
+     * @return array{findings:array<int,array<string,mixed>>, error?:string, skipped?:string}
+     */
+    private function backupCoverage(): array
+    {
+        $verwacht = (array) config('havun-backup.verificatie.verwacht', []);
+
+        if ($verwacht === []) {
+            return ['findings' => [], 'skipped' => 'geen verwachting geconfigureerd (havun-backup.verificatie)'];
+        }
+
+        $root = (string) config('havun-backup.verificatie.root', '/var/backups/havun');
+        $host = (string) config('quality-safety.residu.host', '188.245.159.115');
+        $user = (string) config('quality-safety.residu.user', 'root');
+        // Andere remote-checks gebruiken 10-30s; een find over de backupmap mag
+        // wat langer duren dan een disk-check.
+        $timeout = 45;
+
+        // Nieuwste datummap, dan per bestand naam, omvang en mtime als epoch.
+        // Het rekenwerk gebeurt in PHP: hoe minder shell, hoe minder er stuk
+        // kan aan quoting — de eerste versie sneuvelde daar al op.
+        $cmd = sprintf(
+            'd=$(ls -1d %s/[0-9]*-[0-9]*-[0-9]* 2>/dev/null | sort | tail -1); '
+            . '[ -z "$d" ] && echo GEENMAP && exit 0; '
+            . 'echo "NU|$(date +%%s)"; '
+            . 'find "$d" -type f -printf "F|%%f|%%s|%%T@\n" 2>/dev/null',
+            escapeshellarg($root),
+        );
+
+        $result = $this->runRemote($host, $user, $cmd, $timeout);
+
+        if (! $result['ok']) {
+            return ['findings' => [], 'error' => 'Backupmap niet op te vragen: ' . ($result['error'] ?? 'onbekend')];
+        }
+
+        $output = trim($result['output']);
+
+        if ($output === '' || str_contains($output, 'GEENMAP')) {
+            return ['findings' => [[
+                'severity' => 'critical',
+                'title' => 'Backupdekking: geen enkele backupmap',
+                'config' => 'havun-backup.php',
+                'slug' => '_backup',
+                'message' => "Onder {$root} staat geen datummap — er is helemaal niets geback-upt.",
+            ]]];
+        }
+
+        return [
+            'findings' => (new BackupCoverageDetector)->detect(
+                (array) config('havun-projects', []),
+                $verwacht,
+                (array) config('havun-backup.verificatie.uitgezonderd', []),
+                $this->parseBackupBestanden($output),
+                (array) config('havun-backup.monitoring', []),
+            ),
+        ];
+    }
+
+    /**
+     * De servertijd komt mee als `NU|<epoch>`: leeftijd rekenen tegen de klok
+     * van deze machine zou een verschil in tijdzone of drift als "verouderde
+     * backup" laten lezen.
+     *
+     * @return array<string,array{leeftijd_uren:float,bytes:int}>
+     */
+    private function parseBackupBestanden(string $output): array
+    {
+        $regels = explode("\n", $output);
+        $nu = 0;
+
+        foreach ($regels as $regel) {
+            if (str_starts_with(trim($regel), 'NU|')) {
+                $nu = (int) substr(trim($regel), 3);
+                break;
+            }
+        }
+
+        $bestanden = [];
+
+        foreach ($regels as $regel) {
+            $delen = explode('|', trim($regel));
+
+            if (($delen[0] ?? '') !== 'F' || count($delen) < 4) {
+                continue;
+            }
+
+            $mtime = (int) $delen[3];
+
+            $bestanden[$delen[1]] = [
+                'bytes' => (int) $delen[2],
+                'leeftijd_uren' => $nu > 0 ? round(max(0, $nu - $mtime) / 3600, 2) : 0.0,
+            ];
+        }
+
+        return $bestanden;
     }
 
     /**

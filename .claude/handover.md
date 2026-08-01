@@ -52,15 +52,24 @@ en in het andere de API (de scan mat dus het verkeerde project), en de dode serv
 `infosyst`/`havunclub` (18-07 van de server af) zijn eruit. Plan:
 `plans/registry-drift-check-plan.md`.
 
-**Backup bleek een valse arm.** `config/havun-backup.php` wordt door **niets** gelezen — de echte
-backups draaien uit `/usr/local/bin/havun-backup.sh` (cron 03:00) + `havun-hotbackup.sh`. Die arm
-is eruit; wat open blijft:
-- **`vpdupdate` zit in géén enkele backup** — `users.json` bestaat alleen op de server. Ernstigste
-  van de vier.
-- `havun-backup.php` is een register zonder uitvoerder (4 projecten, nul effect) → weggooien of
-  laten uitvoeren.
-- Het shellscript backupt nog `infosyst` + `havunclub_production` (allebei van de server af).
-- `havun.nl` + `havuncore-webapp` nergens in — mogelijk terecht, staat nergens vastgelegd.
+## Backupdekking wordt nu gemeten (01-08) — `qv:scan --only=backup-coverage`, dagelijks 05:30
+
+`config/havun-backup.php` werd door **niets** gelezen; de echte backups draaien uit
+`/usr/local/bin/havun-backup.sh` (cron 03:00). De config is nu de **verwachting** en de check
+toetst de werkelijkheid: ligt er vanochtend een verse, niet-lege backup van alles wat dat nodig
+heeft. Vier stille faalvormen worden gevangen — ontbreekt, te oud, vers-maar-leeg, of een backup
+van iets dat niet meer bestaat.
+
+**Wat er uit kwam, en wat jij ermee moet:**
+
+| | |
+|---|---|
+| 🟠 **`vpdupdate` heeft geen backup van `users.json`** | De enige plek waar die gebruikers bestaan. Laatste kopie is handmatig, 28-07 (`/root`-backup). Oplossen raakt de backup-cron → **jouw go** |
+| 🟡 `infosyst` + `havunclub_production` | Elke nacht een lege dump (368 en 378 bytes) van apps die 18-07 van de server af gingen. Uit het script halen → serverconfig, **jouw go** |
+| 🟡 `havunvet_staging` | HavunVet is 24-07 gearchiveerd, de database staat er nog |
+
+**Vals alarm van vanochtend, hierbij ingetrokken:** JudoToernooi en SafeHavun wórden gewoon
+geback-upt (verse dumps van 03:00). Dat het dode register ze niet kende, zei niets over de backup.
 
 ## Open — wacht op Henk
 
