@@ -85,6 +85,43 @@ class BackupCoverageTest extends TestCase
         $this->assertStringContainsString('stil mislukt', $medium[0]);
     }
 
+    public function test_eigen_ondergrens_per_bestand(): void
+    {
+        // users.json is 1,6 KB en comprimeert naar ~600 bytes. Onder de
+        // SQL-drempel van 1 KB zou dat elke nacht als "lege dump" gelden — een
+        // melding die altijd afgaat, en dus niet meer gelezen wordt.
+        $gevonden = ['vpdupdate_users.json.gz' => $this->bestand(bytes: 614)];
+
+        $metEigenGrens = $this->detect(
+            ['vpdupdate' => ['server_path' => '/var/www/vpdupdate']],
+            ['vpdupdate' => ['vpdupdate_users.json.gz' => 300]],
+            [],
+            $gevonden,
+        );
+
+        $metStandaardGrens = $this->detect(
+            ['vpdupdate' => ['server_path' => '/var/www/vpdupdate']],
+            ['vpdupdate' => ['vpdupdate_users.json.gz']],
+            [],
+            $gevonden,
+        );
+
+        $this->assertSame([], $metEigenGrens);
+        $this->assertCount(1, $this->berichtenMet($metStandaardGrens, 'medium'));
+    }
+
+    public function test_eigen_ondergrens_vangt_alsnog_een_leeg_bestand(): void
+    {
+        $findings = $this->detect(
+            ['vpdupdate' => ['server_path' => '/var/www/vpdupdate']],
+            ['vpdupdate' => ['vpdupdate_users.json.gz' => 300]],
+            [],
+            ['vpdupdate_users.json.gz' => $this->bestand(bytes: 20)],
+        );
+
+        $this->assertCount(1, $this->berichtenMet($findings, 'medium'));
+    }
+
     public function test_verse_gevulde_backup_meldt_niets(): void
     {
         $findings = $this->detect(

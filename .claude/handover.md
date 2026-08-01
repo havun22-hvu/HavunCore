@@ -60,16 +60,22 @@ toetst de werkelijkheid: ligt er vanochtend een verse, niet-lege backup van alle
 heeft. Vier stille faalvormen worden gevangen — ontbreekt, te oud, vers-maar-leeg, of een backup
 van iets dat niet meer bestaat.
 
-**Wat er uit kwam, en wat jij ermee moet:**
+**Alles wat het vond is opgelost — dekking staat op 0 high, 0 medium** (geverifieerd na een echte
+scriptrun, upload naar Hetzner geslaagd):
 
-| | |
+| Was | Nu |
 |---|---|
-| 🟠 **`vpdupdate` heeft geen backup van `users.json`** | De enige plek waar die gebruikers bestaan. Laatste kopie is handmatig, 28-07 (`/root`-backup). Oplossen raakt de backup-cron → **jouw go** |
-| 🟡 `infosyst` + `havunclub_production` | Elke nacht een lege dump (368 en 378 bytes) van apps die 18-07 van de server af gingen. Uit het script halen → serverconfig, **jouw go** |
-| 🟡 `havunvet_staging` | HavunVet is 24-07 gearchiveerd, de database staat er nog |
+| `vpdupdate/users.json` nergens geback-upt — de enige plek waar die gebruikers bestaan | Loopt mee in de nachtelijke run als `vpdupdate_users.json.gz` (eigen ondergrens van 300 bytes; 1 KB zou hem elke nacht als "lege dump" melden) |
+| `infosyst` + `havunclub_production` elke nacht leeg gedumpt (368/378 B), apps al 18-07 weg | Uit het script; de dumps van vannacht staan in `/root/backups/dode-dumps-2026-08-01` — verplaatst, niet gewist |
+| `havunvet_staging` idem (project 24-07 gearchiveerd) | Idem |
+| **HavunAdmin backupte `storage/invoices` — dat pad bestaat niet en heeft nooit bestaan** | Wijst nu naar `storage/app` (3,7 MB): `public/facturen` + `bunq`. **7 jaar bewaarplicht, en het stond nergens in** |
+| Een niet-bestaand storage-pad werd **stil** overgeslagen | Logt nu `FOUT ... PAD ONTBREEKT` |
+| `if mysqldump \| gzip` las de exit-status van `gzip`, dus een mislukte dump meldde ✓ | `set -o pipefail` — dít is waardoor de twee lege dumps twee weken lang op groen stonden |
 
-**Vals alarm van vanochtend, hierbij ingetrokken:** JudoToernooi en SafeHavun wórden gewoon
-geback-upt (verse dumps van 03:00). Dat het dode register ze niet kende, zei niets over de backup.
+Scriptbackup vóór de wijzigingen: `/root/backups/havun-backup.sh.bak-2026-08-01`.
+
+**Vals alarm van vanochtend, ingetrokken:** JudoToernooi en SafeHavun wórden gewoon geback-upt.
+Dat het dode register ze niet kende, zei niets over de backup.
 
 ## Open — wacht op Henk
 

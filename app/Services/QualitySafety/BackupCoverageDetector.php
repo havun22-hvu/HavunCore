@@ -58,7 +58,7 @@ class BackupCoverageDetector
         $findings = [];
 
         foreach ($verwacht as $slug => $bestanden) {
-            foreach ($bestanden as $bestand) {
+            foreach ($this->metDrempel($bestanden, $minBytes) as $bestand => $ondergrens) {
                 if (! isset($gevonden[$bestand])) {
                     $findings[] = $this->finding(
                         'high',
@@ -88,7 +88,7 @@ class BackupCoverageDetector
 
                 // Vers én leeg is het gevaarlijkste geval: het ziet er in elke
                 // mapweergave uit als een geslaagde backup.
-                if ($meting['bytes'] < $minBytes) {
+                if ($meting['bytes'] < $ondergrens) {
                     $findings[] = $this->finding(
                         'medium',
                         $slug,
@@ -96,7 +96,7 @@ class BackupCoverageDetector
                             '%s is vers maar %d bytes (grens %d) — de dump is stil mislukt, of de database is leeg.',
                             $bestand,
                             $meting['bytes'],
-                            $minBytes,
+                            $ondergrens,
                         ),
                     );
                 }
@@ -104,6 +104,32 @@ class BackupCoverageDetector
         }
 
         return $findings;
+    }
+
+    /**
+     * Een artefact mag legitiem klein zijn: `users.json` comprimeert naar ~600
+     * bytes en zou onder de SQL-drempel elke nacht als lege dump gelden. Daarom
+     * mag een verwachting per bestand een eigen ondergrens meegeven — als
+     * sleutel=>waarde in plaats van alleen een naam.
+     *
+     * @param  array<int|string,string|int> $bestanden
+     * @return array<string,int>
+     */
+    private function metDrempel(array $bestanden, int $standaard): array
+    {
+        $resultaat = [];
+
+        foreach ($bestanden as $sleutel => $waarde) {
+            if (is_int($sleutel)) {
+                $resultaat[(string) $waarde] = $standaard;
+
+                continue;
+            }
+
+            $resultaat[$sleutel] = (int) $waarde;
+        }
+
+        return $resultaat;
     }
 
     /**
@@ -189,7 +215,15 @@ class BackupCoverageDetector
      */
     private function overtolligeBackups(array $verwacht, array $gevonden): array
     {
-        $alleVerwacht = array_merge(...array_values($verwacht + [[]]));
+        // Een verwachting is een lijst namen óf naam=>ondergrens; beide vormen
+        // leveren hier alleen de namen op.
+        $alleVerwacht = [];
+
+        foreach ($verwacht as $bestanden) {
+            foreach ($bestanden as $sleutel => $waarde) {
+                $alleVerwacht[] = is_int($sleutel) ? (string) $waarde : $sleutel;
+            }
+        }
         $findings = [];
 
         foreach (array_keys($gevonden) as $bestand) {

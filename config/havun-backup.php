@@ -253,8 +253,17 @@ return [
         // productie én staging. Drie projecten hebben een draaiende
         // staging-omgeving (geverifieerd 01-08-2026: /var/www/*/staging plus de
         // nginx-vhosts); die dumps horen er dus te zijn.
+        //
+        // Een bestandsnaam als waarde gebruikt de standaard-ondergrens
+        // (monitoring.min_backup_size_bytes). Hoort een artefact legitiem klein
+        // te zijn — users.json is 1,6 KB en comprimeert naar ~600 bytes — dan
+        // zet je de naam als sleutel met zijn eigen ondergrens als waarde.
         'verwacht' => [
-            'havunadmin' => ['havunadmin_production.sql.gz', 'havunadmin_staging.sql.gz'],
+            'havunadmin' => [
+                'havunadmin_production.sql.gz',
+                'havunadmin_staging.sql.gz',
+                'havunadmin_storage.tar.gz',
+            ],
             'herdenkingsportaal' => [
                 'herdenkingsportaal_prod.sql.gz',
                 'herdenkingsportaal_storage.tar.gz',
@@ -265,12 +274,13 @@ return [
             'safehavun' => ['safehavun.sql.gz'],
             'studieplanner-api' => ['studieplanner.sql.gz'],
 
-            // ⚠️ Staat hier bewust, en ontbreekt bewust in de backup: `users.json`
-            // is de enige plek waar de VPD-gebruikers bestaan en het script maakt
-            // er geen kopie van. De laatste is met de hand gemaakt bij de deploy
-            // van 28-07 (/var/backups/havun-vpd-users/). Deze regel houdt dat gat
-            // zichtbaar tot het opgelost is — weghalen is het gat verbergen.
-            'vpdupdate' => ['vpdupdate_users.json.gz'],
+            // `users.json` is de enige plek waar de VPD-gebruikers bestaan.
+            // Tot 01-08-2026 werd er niets van bewaard behalve een handmatige
+            // kopie bij de deploy van 28-07; sindsdien loopt hij mee in de
+            // nachtelijke run. Eigen ondergrens: het bestand is 1,6 KB en
+            // comprimeert naar ~600 bytes, dus de SQL-drempel van 1 KB zou hem
+            // elke nacht als "lege dump" melden.
+            'vpdupdate' => ['vpdupdate_users.json.gz' => 300],
         ],
 
         // Uitgezonderd, met reden. Een lege reden telt niet.
