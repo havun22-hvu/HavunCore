@@ -25,9 +25,13 @@ return [
         'local_url' => null,
         'endpoints' => [],
     ],
+    // De Expo-app. Draait niet op de server: /var/www/studieplanner/production
+    // is de API, en die staat hieronder als 'studieplanner-api'. Stond hier tot
+    // 01-08-2026 óók op dat pad, waardoor twee sleutels dezelfde checkout
+    // claimden en de scan van "studieplanner" in werkelijkheid de API mat.
     'studieplanner' => [
         'path'      => 'D:/GitHub/Studieplanner',
-        'server_path' => '/var/www/studieplanner/production',
+        'server_path' => null,
         'local_url' => 'http://localhost:8003',
         'endpoints' => [],
     ],
@@ -49,9 +53,12 @@ return [
         'local_url' => 'http://localhost:8005',
         'endpoints' => [],
     ],
+    // Van de server af op 18-07-2026; /var/www/infosyst/production bestaat niet
+    // meer (geverifieerd 01-08). De lokale checkout blijft, dus scannen blijft
+    // zinnig — maar er valt op de server niets meer te meten of te backuppen.
     'infosyst' => [
         'path'      => 'D:/GitHub/Infosyst',
-        'server_path' => '/var/www/infosyst/production',
+        'server_path' => null,
         'local_url' => 'http://localhost:8006',
         'endpoints' => [],
     ],
@@ -61,9 +68,10 @@ return [
         'local_url' => null,
         'endpoints' => [],
     ],
+    // Idem: 18-07-2026 van de server af (geverifieerd 01-08).
     'havunclub' => [
         'path'      => 'D:/GitHub/HavunClub',
-        'server_path' => '/var/www/havunclub/production',
+        'server_path' => null,
         'local_url' => null,
         'endpoints' => [],
     ],

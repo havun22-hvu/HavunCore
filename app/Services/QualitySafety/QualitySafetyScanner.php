@@ -11,6 +11,16 @@ use Illuminate\Support\Facades\Process;
 class QualitySafetyScanner
 {
     /**
+     * Checks die één keer draaien in plaats van per project.
+     *
+     * `registries` vergelijkt de projectregisters onderling; zijn onderwerp is
+     * juist het project dat *niet* in de lijst staat. Binnen de per-project-loop
+     * zou hij precies dat geval nooit zien — hij draait dan alleen voor
+     * projecten die al geregistreerd zijn.
+     */
+    public const GLOBAL_CHECKS = ['registries'];
+
+    /**
      * @param  array<string,array<string,mixed>>  $projects
      * @param  array<int,string>                  $checks
      * @return array<string,mixed>
@@ -35,6 +45,10 @@ class QualitySafetyScanner
             }
 
             foreach ($checks as $check) {
+                if (in_array($check, self::GLOBAL_CHECKS, true)) {
+                    continue; // draait één keer, na de loop
+                }
+
                 $result = $this->runCheck($check, $slug, $project);
 
                 foreach ($result['findings'] as $finding) {
@@ -63,6 +77,24 @@ class QualitySafetyScanner
                         'reason' => $result['skipped'],
                     ];
                 }
+            }
+        }
+
+        foreach (array_intersect($checks, self::GLOBAL_CHECKS) as $check) {
+            $result = $this->runGlobalCheck($check);
+
+            foreach ($result['findings'] as $finding) {
+                // Het project waar de bevinding over gaat, zodat het rapport
+                // hem bij de juiste regel toont — ook als dat project nergens
+                // in `$projects` voorkomt, wat bij drift het hele punt is.
+                $findings[] = $finding + [
+                    'project' => $finding['slug'] ?? '_registries',
+                    'check' => $check,
+                ];
+            }
+
+            if (! empty($result['error'])) {
+                $errors[] = ['project' => '_registries', 'check' => $check, 'message' => $result['error']];
             }
         }
 
@@ -102,6 +134,33 @@ class QualitySafetyScanner
             'residu' => $this->residueCheck($slug, $project),
             default => ['findings' => [], 'error' => "Unknown check: {$check}"],
         };
+    }
+
+    /**
+     * @return array{findings:array<int,array<string,mixed>>, error?:string}
+     */
+    private function runGlobalCheck(string $check): array
+    {
+        return match ($check) {
+            'registries' => $this->registryDrift(),
+            default => ['findings' => [], 'error' => "Unknown global check: {$check}"],
+        };
+    }
+
+    /**
+     * Vergelijkt havun-projects.php met quality-safety.php. Zie
+     * RegistryDriftDetector voor de regels en het incident erachter.
+     *
+     * @return array{findings:array<int,array<string,mixed>>}
+     */
+    private function registryDrift(): array
+    {
+        return [
+            'findings' => (new RegistryDriftDetector)->detect(
+                (array) config('havun-projects', []),
+                (array) config('quality-safety.projects', []),
+            ),
+        ];
     }
 
     /**

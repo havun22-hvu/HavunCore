@@ -34,9 +34,24 @@ zichtbaar. Post-mortem die dit uitlokte: `patterns/fundament-versus-omweg.md`.
 - **Jij:** DNS `vusista.havun.nl` bij mijn.host + deploy-key `server-read` uit de Vusista-repo.
 - Vier CLAUDE.md's boven de 120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130,
   havuncore-webapp 125) — zaten er al aan vóór de uitrol.
-- **De twee registries lopen structureel uit de pas:** 3× in twee dagen stond een project wel in
-  `havun-projects.php` en niet in `quality-safety.php` (`vusista`, `vusista2`, Veen). Een check die
-  dat verschil meldt is ~een half uur werk — nog niet gebouwd.
+## Registry-drift check — gebouwd 01-08, vond meteen drie ongescande apps
+
+`qv:scan --only=registries` vergelijkt `havun-projects.php` met `quality-safety.php` (dagelijks
+03:02). **Eerste run: `havun`, `vpdupdate` en `havuncore-webapp` draaiden live en waren nooit
+gescand** — alle drie toegevoegd. Ook opgelost: `studieplanner` was in het ene register de Expo-app
+en in het andere de API (de scan mat dus het verkeerde project), en de dode server-paden van
+`infosyst`/`havunclub` (18-07 van de server af) zijn eruit. Plan:
+`plans/registry-drift-check-plan.md`.
+
+**Backup bleek een valse arm.** `config/havun-backup.php` wordt door **niets** gelezen — de echte
+backups draaien uit `/usr/local/bin/havun-backup.sh` (cron 03:00) + `havun-hotbackup.sh`. Die arm
+is eruit; wat open blijft:
+- **`vpdupdate` zit in géén enkele backup** — `users.json` bestaat alleen op de server. Ernstigste
+  van de vier.
+- `havun-backup.php` is een register zonder uitvoerder (4 projecten, nul effect) → weggooien of
+  laten uitvoeren.
+- Het shellscript backupt nog `infosyst` + `havunclub_production` (allebei van de server af).
+- `havun.nl` + `havuncore-webapp` nergens in — mogelijk terecht, staat nergens vastgelegd.
 
 ## Open — wacht op Henk
 

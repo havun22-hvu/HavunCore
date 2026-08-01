@@ -50,6 +50,10 @@ Schedule::command('qv:scan --only=session-cookies --json')->weeklyOn(5, '05:27')
 Schedule::command('qv:scan --only=test-erosion --json')->weeklyOn(6, '05:37');
 // APP_DEBUG default check — daily (cheap config-read).
 Schedule::command('qv:scan --only=debug-mode --json')->dailyAt('03:57');
+// Registry-drift: staat elk draaiend project ook in de scan- en backuplijst?
+// Draait vóór qv:log (03:27) zodat een ontbrekend project in hetzelfde rapport
+// staat als de scans die het gemist heeft. Config-vergelijking, dus goedkoop.
+Schedule::command('qv:scan --only=registries --json')->dailyAt('03:02');
 // Render latest scan as Markdown report (overwrites docs/kb/reference/qv-scan-latest.md)
 Schedule::command('qv:log')->dailyAt('03:27');
 // Verify critical-paths docs still point at existing tests (link-check only; no --run).

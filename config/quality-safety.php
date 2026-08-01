@@ -22,11 +22,10 @@ return [
             'url' => 'https://havunadmin.havun.nl',
         ],
 
+        // Idem: 18-07-2026 van de server af (geverifieerd 01-08).
         'havunclub' => [
             'enabled' => env('QV_HAVUNCLUB_ENABLED', true),
             'path' => env('HAVUNCLUB_LOCAL_PATH', 'D:/GitHub/HavunClub'),
-            'remote_path' => '/var/www/havunclub/production',
-            'url' => 'https://havunclub.havun.nl',
         ],
 
         'herdenkingsportaal' => [
@@ -36,9 +35,12 @@ return [
             'url' => 'https://herdenkingsportaal.nl',
         ],
 
-        'studieplanner' => [
-            'enabled' => env('QV_STUDIEPLANNER_ENABLED', true),
-            'path' => env('STUDIEPLANNER_LOCAL_PATH', 'D:/GitHub/Studieplanner-api'),
+        // Heette hier tot 01-08-2026 'studieplanner', terwijl die sleutel in
+        // havun-projects.php de Expo-app is. De scan draaide dus netjes en mat
+        // een ander project dan de naam suggereerde.
+        'studieplanner-api' => [
+            'enabled' => env('QV_STUDIEPLANNER_API_ENABLED', true),
+            'path' => env('STUDIEPLANNER_API_LOCAL_PATH', 'D:/GitHub/Studieplanner-api'),
             'remote_path' => '/var/www/studieplanner/production',
             'url' => 'https://api.studieplanner.havun.nl',
         ],
@@ -50,11 +52,12 @@ return [
             'url' => 'https://judotournament.org',
         ],
 
+        // Server-omgeving verdween 18-07-2026 (geverifieerd 01-08: pad weg).
+        // Zonder remote_path/url draaien residu, ssl en observatory hier niet
+        // meer op een dood adres; de lokale checkout blijft wél gescand.
         'infosyst' => [
             'enabled' => env('QV_INFOSYST_ENABLED', true),
             'path' => env('INFOSYST_LOCAL_PATH', 'D:/GitHub/Infosyst'),
-            'remote_path' => '/var/www/infosyst/production',
-            'url' => 'https://infosyst.havun.nl',
         ],
 
         'safehavun' => [
@@ -114,6 +117,33 @@ return [
         'veen-ledenadministratie' => [
             'enabled' => env('QV_VEEN_ENABLED', true),
             'path' => env('VEEN_LOCAL_PATH', 'D:/GitHub/VeenLedenadministratie'),
+        ],
+
+        // Drie live projecten die tot 01-08-2026 nooit gescand waren — gevonden
+        // door `qv:scan --only=registries` op de dag dat die check bestond.
+        // Ze draaien alle drie op de server maar stonden alleen in
+        // havun-projects.php, en een ontbrekende regel meldt niets.
+        'havun' => [
+            'enabled' => env('QV_HAVUN_ENABLED', true),
+            'path' => env('HAVUN_LOCAL_PATH', 'D:/GitHub/Havun'),
+            'remote_path' => '/var/www/havun.nl',
+            'url' => 'https://havun.nl',
+        ],
+
+        // Raw Node/WebAuthn, geen composer. De secrets-check is hier het punt:
+        // `users.json` zit nog in de git-historie (handover 25-07).
+        'vpdupdate' => [
+            'enabled' => env('QV_VPDUPDATE_ENABLED', true),
+            'path' => env('VPDUPDATE_LOCAL_PATH', 'D:/GitHub/VPDUpdate'),
+            'remote_path' => '/var/www/vpdupdate',
+        ],
+
+        // De status-PWA. Deployt via rsync + pm2, niet via git-pull, maar de
+        // npm-advisories en secrets tellen even hard.
+        'havuncore-webapp' => [
+            'enabled' => env('QV_HAVUNCORE_WEBAPP_ENABLED', true),
+            'path' => env('HAVUNCORE_WEBAPP_LOCAL_PATH', 'D:/GitHub/HavunCore/webapp'),
+            'remote_path' => '/var/www/havuncore/webapp',
         ],
 
         // Studieplanner mobile (Expo) — no composer, no URL, no SSL.
