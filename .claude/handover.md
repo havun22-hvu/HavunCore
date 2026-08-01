@@ -35,12 +35,19 @@ ingevuld mét conclusie en omkeerpunt, en 10 docs stonden nog op `scope: vusista
 CI** — nu harde gates (`cargo test`, `clippy -- -D warnings`, `fmt --check`, `audit`); de 17
 waarschuwingen waarmee dat begon zijn dezelfde dag opgeruimd. 77 tests groen, run 2m56s.
 
+**Vusista 1 is 01-08 volledig opgeruimd** (Henk: "we hebben het niet meer nodig"). Lokale map weg
+(2,8 GB), GitHub-repo **gearchiveerd** — omkeerbaar, verwijderen niet — beide registries en 192
+KB-embeddings eruit. Backup vooraf, met hersteltest: `/root/backups/vusista1-cleanup-2026-08-01`
+(repo-bundle + de drie sqlite's, `storage/app` en `.env` — **die zaten in geen enkele git**;
+`database.sqlite` alleen was 22 MB). Grafsteen met alle vindplaatsen: `projects/vusista.md`.
+
 **Nog open:**
-- **Vusista 1 blijft staan tot Vusista2 áf is** — map, repo én KB-index. `qv:scan` staat daar op
-  `enabled => false`; **niets meer repareren**, de openstaande bevindingen blijven bewust staan.
 - **Jij:** DNS `vusista.havun.nl` bij mijn.host + deploy-key `server-read` uit de Vusista-repo.
-- Vier CLAUDE.md's boven de 120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130,
+- **De lege map `D:\GitHub\Vusista` staat er nog** — inhoud is weg, maar VS Code houdt hem vast.
+  Verdwijnt zodra je dat venster sluit; `rmdir` doet de rest.
+- Drie CLAUDE.md's boven de 120-regelnorm (Studieplanner-api 135, JudoScoreBoard 130,
   havuncore-webapp 125) — zaten er al aan vóór de uitrol.
+
 ## Twee nieuwe V&K-checks (01-08) — allebei vonden ze meteen iets echts
 
 Volledig: `plans/registry-drift-check-plan.md`. Kern: **afwezigheid is stil.** Een project dat niet

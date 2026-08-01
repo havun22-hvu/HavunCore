@@ -87,17 +87,14 @@ return [
         'local_url' => 'http://localhost:8007',
         'endpoints' => [],
     ],
-    // Vusista 1 — desktop-app; de serveromgeving is 31-07-2026 opgeruimd
-    // (production + staging + vhosts + cert + beide databases). Een desktop-app
-    // hoorde daar nooit te draaien; de staging-deploy faalde dertien dagen
-    // ongemerkt. Backup: /root/backups/vusista-cleanup-2026-07-31.
-    'vusista' => [
-        'path'      => 'D:/GitHub/Vusista',
-        'server_path' => null,
-        'local_url' => null,
-        'endpoints' => [],
-    ],
-    // Vusista 2 — de herbouw (Rust + Tauri). Desktop-app, dus geen server_path
+    // Vusista 1 is 01-08-2026 volledig opgeruimd op Henks verzoek: de
+    // serveromgeving ging er 31-07 al af, en nu ook de lokale map en de repo.
+    // Backups: /root/backups/vusista-cleanup-2026-07-31 (server) en
+    // /root/backups/vusista1-cleanup-2026-08-01 (repo-bundle + de drie sqlite's,
+    // storage/app en .env — die zaten in geen enkele git). Niet opnieuw
+    // aanmaken; Vusista2 is de herbouw en staat hieronder.
+    //
+    // Vusista 2 — de herbouw (Rust + Iced). Desktop-app, dus geen server_path
     // en geen local_url: er is geen HTTP-server. Geregistreerd vanaf de eerste
     // commit, want een project dat de KB niet kent, wordt ook niet gescand —
     // dat is precies wat Vusista 1 vier maanden onzichtbaar hield.

@@ -1,89 +1,48 @@
 ---
-title: "Project: Vusista"
+title: "Project: Vusista 1 (opgeruimd)"
 type: reference
 scope: havuncore
-last_check: 2026-07-15
+last_check: 2026-08-01
 ---
 
-# Project: Vusista
+# Vusista 1 — bestaat niet meer
 
-**Type:** Fotoalbum **desktop-app** (Laravel 12 + NativePHP/Electron)
-**Status:** ⚠️ **Blijft staan — achtergrondmateriaal voor de herbouw.**
-**Verwijderen mag pas als Vusista2 áf is** (Henk, 31-07-2026). Niet eerder, en niet "vast
-alvast opruimen": de map, de GitHub-repo én de KB-index zijn de bron waar Vusista2 uit put.
-**Demo:** vervallen — de serveromgeving is 31-07-2026 opgeruimd (zie Omgevingen)
+**Opgeruimd op 01-08-2026, op Henks verzoek: "we hebben het niet meer nodig."** De opvolger is
+[Vusista 2](vusista2.md) (`D:\GitHub\Vusista2`), die functioneel compleet is.
 
-> **Wat dit betekent voor wie hier komt werken:**
-> - **Niets in Vusista 1 meer repareren.** De laatste V&K-scan gaf `critical 1 · high 2 · medium 4`
->   (25% form-validatie, `session.php` secure-default, verwijderde tests, guzzle-advisories).
->   Die blijven **bewust open** — fixen in een app die verdwijnt is weggegooid werk.
-> - **`qv:scan` staat daarom uit** voor dit project (`enabled => false` in `quality-safety.php`,
->   mét reden). De **KB-index blijft wél draaien**: de docs zijn juist de waarde die overblijft.
-> - **Wat je hier zoekt, zoek je als bronmateriaal:** de productbesluiten, `niet-doen.md` en de
->   valkuilen gaan ongewijzigd mee naar de herbouw. De *techniek* niet.
+Dit doc blijft staan zodat wie hier zoekt vindt dát het weg is en waar het gebleven is — niet om
+het project te beschrijven. **Niet opnieuw aanmaken.**
 
-> ⛔ **Het fundament is verkeerd gekozen — herbouw ligt klaar (30-07-2026).** Een lokale
-> fotomanager voor 76.797 bestanden en één gebruiker draait hier op Laravel + `php -S` in een
-> Electron-schil. Die keuze is nooit gemaakt: het project begon als Laravel-project omdat élk
-> Havun-project zo begon. Zes omwegen om het eigen fundament heen volgden; de zesde maakte de
-> app stil onbruikbaar. Post-mortem: [`../patterns/fundament-versus-omweg.md`](../patterns/fundament-versus-omweg.md).
-> Herbouwplan (Rust + Tauri v2) staat in `D:\GitHub\Vusista2\PLAN.md` en wacht op Henks "ga maar"
-> — dat is een **Vusista2-sessie**, geen HavunCore-werk. De stack hieronder beschrijft dus de
-> **huidige** app, niet de gewenste.
+## Waar het gebleven is
 
-## Wat is het?
+| Wat | Waar |
+|---|---|
+| Repo, alle branches (`main`, `staging`) | `/root/backups/vusista1-cleanup-2026-08-01/vusista1-repo.bundle` — hersteltest gedaan: 370 bestanden, beide branches |
+| De drie sqlite-databases, `storage/app`, `.env` | `…/vusista1-lokaal.tar.gz` (11 MB). **Die zaten in géén enkele git** — `database.sqlite` was 22 MB aan werk dat alleen op deze machine bestond |
+| Serveromgeving (vhosts, cert, beide MySQL-databases) | `/root/backups/vusista-cleanup-2026-07-31` — die ging er 31-07 al af |
 
-Picasa-opvolger voor de gewone gebruiker: lokale foto's en video's **in-place**
-indexeren, ordenen en verrijken (tags, bijschriften, locatie, datum, albums,
-favorieten). Alles op de eigen PC — geen cloud, geen upload, geen externe AI.
+Beide bundels zijn `chmod 600` (er zit een `.env` in) en hun sha256 is aan beide kanten
+gecontroleerd. `vendor/`, `node_modules/`, `dist/` en `resources/binaries/` zijn **niet** bewaard:
+herbouwbaar, en samen 2,7 van de 2,8 GB.
 
-**Geen webapp.** Dit is het enige Havun-project dat als installeerbare desktop-app
-wordt uitgeleverd; een release is een NativePHP-build, geen server-deploy.
+## Wat er van geleerd is, en waar dat staat
 
-## Gulden regels
+De les is niet weggegooid met het project — die is de reden dat het fundament nu een keuze is:
 
-1. **Pixels worden nooit aangeraakt.** Metadata (XMP/IPTC) mag naar de bestanden,
-   beelddata nooit. Elke schrijfactie verifieert dat (ImageDataHash) en rolt terug.
-2. **Foto's blijven waar ze staan.** In-place indexeren, nooit kopiëren/verplaatsen.
-3. **Alles lokaal.** Foto's + EXIF/GPS zijn persoonsgegevens (AVG).
+- **Post-mortem:** [`../patterns/fundament-versus-omweg.md`](../patterns/fundament-versus-omweg.md)
+  — Laravel omdat élk Havun-project zo begon, nooit gekozen; zes omwegen erachteraan, en de zesde
+  maakte de app stil onbruikbaar.
+- **De norm die daaruit volgde:** [`../standards/stack-keuze.md`](../standards/stack-keuze.md) en
+  [`../patterns/omwegen-tellen.md`](../patterns/omwegen-tellen.md) — vijf vragen plus een
+  conclusie in `docs/intake.md` vóór er een stack ligt; bij de tweede omweg een
+  architectuurreview.
+- **Waarom het vier maanden ongezien bleef:** het stond in `havun-projects.php` en niet in
+  `quality-safety.php`. Dat gat is nu een check —
+  [`../plans/registry-drift-check-plan.md`](../plans/registry-drift-check-plan.md).
+- **Productbesluiten** (in-place, pixels ongemoeid, privacy, de niet-doen-lijst) zijn ongewijzigd
+  meegegaan naar Vusista 2 en staan daar in `docs/besluiten/` en `docs/product/`.
 
-## Omgevingen
+## Nog openstaand voor Henk
 
-| Omgeving | Pad | Poort | Database |
-|----------|-----|-------|----------|
-| Local | `D:\GitHub\Vusista` | 8008 (browser) / venster via `native:serve` | SQLite (app-data) |
-| E2E | idem | 8018 | SQLite (`database/e2e.sqlite`) |
-| ~~Staging~~ | ~~`/var/www/vusista/staging`~~ | — | **opgeruimd 31-07-2026** |
-| ~~Production~~ | ~~`/var/www/vusista/production`~~ | — | **opgeruimd 31-07-2026** |
-
-**De serveromgeving bestaat niet meer.** Vhosts, Let's Encrypt-cert en beide MySQL-databases
-(`vusista_production`, `vusista_staging`) zijn 31-07 verwijderd: een desktop-app hoort daar niet
-te draaien, en de staging-deploy faalde dertien dagen ongemerkt. Backup (65 MB tarball + db-dumps
-+ nginx-configs): `/root/backups/vusista-cleanup-2026-07-31` op 188.245.159.115.
-**Het DNS-record `vusista.havun.nl` staat er nog** — dat is Henks actie bij mijn.host.
-
-## Stack
-
-Laravel 12, Blade + Livewire v4 + Alpine, SQLite, NativePHP (Electron), exiftool +
-ffmpeg (meegeleverde binaries), Leaflet/OpenStreetMap + Nominatim.
-Geen imagick/libheif (ffmpeg dekt HEIC). Geen auth, geen PWA.
-
-## Let op (projectspecifiek)
-
-- **PHP 8.4 vereist** (NativePHP 1.x wil ^8.3). Laragon-default is 8.2 → PATH prefixen:
-  `export PATH="/c/laragon/bin/php/php-8.4.23-Win32-vs17-x64:$PATH"`
-- **`resources/binaries/` is gitignored** (exiftool/ffmpeg) — zonder die binaries
-  skippen de integratietests stilzwijgend.
-- **`php -S` is single-threaded op Windows** → zie
-  [../patterns/php-built-in-server-beperkingen.md](../patterns/php-built-in-server-beperkingen.md).
-  Raakt zowel de app (NativePHP gebruikt `php -S`) als de E2E-suite.
-- **Test nooit de build uit `dist/`** tijdens ontwikkelen: die bevat de code van het
-  moment van bouwen. Gebruik `native:serve`.
-
-## Documentatie
-
-Project-specifieke docs staan **in het project**: `D:\GitHub\Vusista\docs\`
-(product, techniek, besluiten/ADR's, runbooks, valkuilen). Begin bij
-`docs/README.md`. Sessiewerk staat in `.claude/`.
-
-Zoeken: `php artisan docs:search "<onderwerp>" --project=vusista`
+- **DNS-record `vusista.havun.nl`** staat nog bij mijn.host en wijst nergens meer heen.
+- **Deploy-key `server-read`** kan uit de (gearchiveerde) GitHub-repo.

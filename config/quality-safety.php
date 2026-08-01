@@ -74,25 +74,14 @@ return [
             'url' => 'https://havuncore.havun.nl',
         ],
 
-        // Vusista 1 — SCANNEN UITGEZET 31-07-2026, bewust en met reden.
+        // Vusista 1 stond hier tot 01-08-2026 met `enabled => false`: uitgezet
+        // met een reden, omdat een ontbrekende regel stilte is en dat het
+        // project vier maanden ongescand hield. Nu is het project zelf weg
+        // (map, repo, serveromgeving) en heeft ook de uitzondering geen doel
+        // meer. De laatste scan gaf critical 1 · high 2 · medium 4; die zijn
+        // bewust nooit opgelost en verdwijnen met het project mee.
         //
-        // Het project is nog alleen achtergrondmateriaal voor de herbouw
-        // (Vusista2) en verdwijnt daarna. Elke nacht advisories verzamelen die
-        // niemand gaat oplossen levert ruis op in het rapport, en ruis maakt
-        // een echte bevinding minder zichtbaar. Dit staat hier `false` in
-        // plaats van dat de regel verdwijnt: uitgezet-met-reden is een keuze
-        // die je terugleest, een ontbrekende regel is stilte — dat was nu juist
-        // het probleem (vier maanden ongescand, gevonden op 30-07).
-        //
-        // De laatste scan gaf critical 1 · high 2 · medium 4; die blijven
-        // bewust onopgelost. De KB-index blijft wél draaien: de docs zijn de
-        // achtergrond waar Vusista2 op steunt.
-        'vusista' => [
-            'enabled' => env('QV_VUSISTA_ENABLED', false),
-            'path' => env('VUSISTA_LOCAL_PATH', 'D:/GitHub/Vusista'),
-        ],
-
-        // Vusista 2 — the Rust/Tauri rebuild. Registered on day one rather than
+        // Vusista 2 — the Rust/Iced rebuild. Registered on day one rather than
         // after the fact. The scanner detects Cargo.lock files anywhere below
         // the root (this repo has five, none in the root) and runs cargo audit
         // on each: 34 findings where composer/npm reported a clean zero.
