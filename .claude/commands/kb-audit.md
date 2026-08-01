@@ -45,11 +45,13 @@ Lees alle MD-files in `docs/` en `.claude/`. Voor elk paar:
 
 #### Referentie-integriteit — de gedragsregels
 
-Check `.claude/rules.md` (als aanwezig) tegen HavunCore's canonical set: de
-**genummerde regels in `D:/GitHub/HavunCore/.claude/rules.md`**, niet in
-`CLAUDE.md`. (Tot 01-08-2026 stond hier "CLAUDE.md regels 13-18" — daar staan
-projectfeiten: poorten, AI-proxy, Vault, AutoFix, PM2, webapp. Een audit die
-op een vast regelnummer mikt, verjaart bij de eerste alinea die erboven komt.)
+Check `.claude/rules.md` en `CLAUDE.md` van dit project tegen de canonieke set in
+**`D:/GitHub/HavunCore/docs/kb/runbooks/claude-werkwijze.md` §0**.
+
+> Tot 01-08-2026 stond hier "CLAUDE.md regels 13-18" — daar staan projectfeiten (poorten,
+> AI-proxy, Vault, AutoFix, PM2, webapp). Een audit die op een vast regelnummer mikt, verjaart bij
+> de eerste alinea die erboven komt. De set stond op dat moment in **zeven** docs met een eigen
+> kopie, waarvan er vier nog vijf regels noemden.
 
 Deze moeten cross-project overeind blijven:
 
@@ -129,5 +131,5 @@ Bij HIGH/CRITICAL: ook append naar `docs/kb/reference/kb-audit-log.md`
 ## Bronnen
 
 - `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md` — V&K architectuur (HavunCore)
-- `CLAUDE.md` — 6 Onschendbare Regels (canonical)
+- `docs/kb/runbooks/claude-werkwijze.md` §0 — de 6 Onschendbare Regels (canoniek)
 - `docs/kb/reference/havun-quality-standards.md` — enterprise normen

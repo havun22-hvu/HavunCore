@@ -12,17 +12,29 @@ last_check: 2026-04-22
 
 ---
 
-## 0. De 5 Onschendbare Regels
+## 0. De 6 Onschendbare Regels — **dit is de canonieke set**
 
-> **Bron:** Externe audit Q1 2026 (VP-06) — protocolmoeheid mitigeren
+> **Verwijs hiernaar, kopieer ze niet.** Tot 01-08-2026 stonden ze in zeven docs met een eigen
+> kopie, en vier daarvan noemden er nog vijf: de zesde is op 25-04 toegevoegd en nooit overal
+> doorgevoerd. Een set die je op zeven plekken onderhoudt, is een set die uit elkaar loopt.
 
 ```
-1. NOOIT code schrijven zonder docs te lezen
+1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
 2. NOOIT features/UI-elementen verwijderen zonder instructie
 3. NOOIT credentials/keys/env aanraken
 4. ALTIJD tests draaien voor én na wijzigingen
 5. ALTIJD toestemming vragen bij grote wijzigingen
+6. NOOIT een falende test "fixen" door de assertion te wijzigen
 ```
+
+**Herkomst:** regel 1 t/m 5 komen uit de externe audit van Q1 2026 (VP-06 — protocolmoeheid
+mitigeren). **Regel 6 is er op 25-04-2026 bij gekomen na een echt incident** (VP-17): in februari
+had AI vier JudoToernooi-tests verwijderd in plaats van gerepareerd. Teruggezet in PR #2, 119
+tests. Sindsdien detecteert `qv:scan --only=test-erosion` dat patroon.
+
+**Waar de regels verder in doorwerken:** regel 1 in de KB-plicht en `standards/docs-first.md`,
+regel 3 in "Verboden zonder overleg" (`.claude/rules.md`), regel 4 en 6 in "Rood gezien, of het
+telt niet" (`patterns/test-rood-gezien.md`), regel 2 en 5 in de vraagdiscipline.
 
 **Sessielimiet:** Houd sessies onder 2-3 uur. Bij langere sessies neemt de kwaliteit af door protocolmoeheid. Start liever een nieuwe sessie met `/start`.
 

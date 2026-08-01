@@ -21,7 +21,7 @@ Perfect om aan klanten te laten zien.
 ```mermaid
 flowchart TB
     subgraph Context[Context bij elke stap]
-        Rules[[Werk Rules<br/>5 Onschendbare Regels<br/>CLAUDE.md per project<br/>Sessielimit 2-3 uur]]
+        Rules[[Werk Rules<br/>Onschendbare Regels<br/>CLAUDE.md per project<br/>Sessielimit 2-3 uur]]
         CoreLib[(HavunCore Bibliotheek<br/>patterns runbooks<br/>decisions reference<br/>projects templates)]
         Ollama[[Ollama lokaal<br/>nomic-embed-text<br/>768-dim vectors<br/>TF-IDF fallback]]
     end
@@ -344,7 +344,7 @@ flowchart TD
 
     Standards --> Issues[Stap 3: Check doc issues]
     Issues --> IssuesCmd[docs:issues project]
-    IssuesCmd --> Rules[Stap 4: 5 Onschendbare Regels]
+    IssuesCmd --> Rules[Stap 4: Onschendbare Regels]
 
     Rules --> Ready([Klaar om te werken])
 
@@ -354,13 +354,11 @@ flowchart TD
     style Standards fill:#fce7f3
 ```
 
-**De 5 Onschendbare Regels:**
+**De Onschendbare Regels** staan voluit in
+[`../runbooks/claude-werkwijze.md`](../runbooks/claude-werkwijze.md) §0 — dat is de canonieke set.
 
-1. NOOIT code zonder KB + kwaliteitsnormen te raadplegen
-2. NOOIT features/UI-elementen verwijderen zonder instructie
-3. NOOIT credentials/keys/env aanraken
-4. ALTIJD tests draaien voor én na wijzigingen (coverage >80%)
-5. ALTIJD toestemming vragen bij grote wijzigingen
+Hier stond tot 01-08-2026 een eigen kopie van vijf, terwijl er sinds 25-04 zes zijn. Vandaar een
+verwijzing en niet opnieuw een lijst: dit doc heeft ze niet nodig om zijn punt te maken.
 
 ---
 

@@ -182,7 +182,7 @@ Observatory clean".
 
 Voor externe audit zijn de volgende artefacten beschikbaar:
 
-- `CLAUDE.md` — 6 Onschendbare Regels (gedragsregels Claude)
+- `runbooks/claude-werkwijze.md` §0 — 6 Onschendbare Regels (gedragsregels Claude; stonden ten tijde van dit verslag in `CLAUDE.md`)
 - `docs/kb/reference/havun-quality-standards.md` — enterprise normen
 - `docs/kb/reference/test-quality-policy.md` — 3-laags test-model
 - `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md` — V&K architectuur

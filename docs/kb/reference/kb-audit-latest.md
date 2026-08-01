@@ -2,7 +2,7 @@
 title: KB audit — havuncore
 type: reference
 scope: havuncore
-last_check: 2026-08-01
+last_check: 2026-08-02
 ---
 
 # KB audit — havuncore
@@ -28,7 +28,7 @@ last_check: 2026-08-01
 
 ### `docs/audit/werkwijze-beoordeling-derden.md` _(detector: structure)_
 
-**Probleem:** File is 905 regels (> 500)
+**Probleem:** File is 914 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 
@@ -52,7 +52,7 @@ last_check: 2026-08-01
 
 ### `docs/kb/reference/havun-workflow-flowchart.md` _(detector: structure)_
 
-**Probleem:** File is 1194 regels (> 500)
+**Probleem:** File is 1192 regels (> 500)
 
 **Voorstel:** Overweeg splitsing
 

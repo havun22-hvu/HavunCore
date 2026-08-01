@@ -23,6 +23,11 @@ class DocsAuditor
      */
     private const SELF_EXCLUDED_BASENAMES = [
         'kb-audit-latest.md',
+        // Het logboek hoort hier net zo goed: het beschrijft wat de auditor
+        // eerder vond, dus het citeert per definitie de refs die toen gemeld
+        // werden. Op 01-08-2026 meldde de checker `Foo` en `SystemTime` uit de
+        // uitleg over zijn eigen valse positieven.
+        'kb-audit-log.md',
         'qv-scan-latest.md',
         'handover.md',
     ];

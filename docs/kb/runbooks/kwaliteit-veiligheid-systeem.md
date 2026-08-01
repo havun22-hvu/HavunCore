@@ -21,7 +21,7 @@ last_check: 2026-04-22
 │  NORMEN (wat is goed?)                                       │
 │  → havun-quality-standards.md (coverage, FormRequest, CSP)   │
 │  → test-quality-policy.md (3-laags model: critical/biz/glue) │
-│  → CLAUDE.md (6 Onschendbare Regels)                         │
+│  → claude-werkwijze.md §0 (6 Onschendbare Regels)            │
 └─────────────────────────────────────────────────────────────┘
                            │
         ┌──────────────────┴──────────────────┐
@@ -60,7 +60,7 @@ last_check: 2026-04-22
 |------|-------------------|-----|
 | **Normen** | `reference/havun-quality-standards.md` | Enterprise-baseline (coverage > 80 %, FormRequest, CSP, etc.) |
 | **Test-policy** | `reference/test-quality-policy.md` | 3-laags model: critical 100 % / business 70-85 % / glue 20-40 % |
-| **Policies** | `CLAUDE.md` — 6 Onschendbare Regels | Gedragsregels voor Claude |
+| **Policies** | `runbooks/claude-werkwijze.md` §0 — 6 Onschendbare Regels | Gedragsregels voor Claude (canoniek; stonden tot 01-08-2026 in `CLAUDE.md`, die sindsdien herschreven is) |
 | **Detectie** | `qv:scan` (artisan) + Laravel scheduler | 11 checks dagelijks/wekelijks (zie tabel hieronder) |
 | **Bootstrap** | `project:scaffold <slug> [--deploy=production]` (artisan, on-demand) | Nieuw project inrichten met werkwijze-MD + 11 Claude commands + V&K-hint + optioneel nginx/SSL-hardening templates — zie sectie *Nieuw project bootstrappen* |
 | **Deploy-eisen** | `docs/kb/reference/productie-deploy-eisen.md` + templates in `docs/kb/templates/server-configs/` | Canonieke eisen voor A+ / 100 op SSL Labs + SecurityHeaders + Mozilla Observatory + Hardenize + Internet.nl. Elke nieuwe productie-deploy werkt deze checklist af. |

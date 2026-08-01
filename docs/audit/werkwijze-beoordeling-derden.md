@@ -135,6 +135,15 @@ Geintroduceerd na externe audit (VP-06) als kern van alle protocollen:
 
 Deze regels staan bovenaan de `CLAUDE.md` van **alle 9 projecten** (per 16-04-2026) en worden herhaald bij sessiestart en halverwege langere sessies via het `/update` command.
 
+> **Stand van zaken sinds dit document (noot 01-08-2026).** Dit is een momentopname van 22-04-2026
+> en blijft daarom vijf regels noemen. Er zijn er inmiddels **zes**: op 25-04 kwam VP-17 erbij
+> ("NOOIT een falende test *fixen* door de assertion te wijzigen"), na een geval waarin AI vier
+> JudoToernooi-tests had verwijderd in plaats van gerepareerd.
+>
+> Ook de vindplaats klopt niet meer: de set staat niet langer in elke `CLAUDE.md` — die zijn
+> sindsdien herschreven. Canoniek is nu
+> [`../kb/runbooks/claude-werkwijze.md`](../kb/runbooks/claude-werkwijze.md) §0.
+
 ### 2.4 Sessielimiet
 
 Sessies worden beperkt tot 2-3 uur. Bij langere sessies neemt de kans op protocolmoeheid toe — de AI kan regels overslaan of documenthierarchie door elkaar halen. Bij langere taken wordt een nieuwe sessie gestart.

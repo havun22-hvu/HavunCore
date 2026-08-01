@@ -119,12 +119,15 @@ Voorkomt terugkerende fouten:
 4. CLAUDE.md regels (project-breed)
 5. Memory (cross-session context)
 
-### 5 Onschendbare Regels
-1. NOOIT code schrijven zonder docs te lezen
+### 6 Onschendbare Regels
+1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
 2. NOOIT features/UI-elementen verwijderen zonder instructie
 3. NOOIT credentials/keys/env aanraken
 4. ALTIJD tests draaien voor en na wijzigingen
 5. ALTIJD toestemming vragen bij grote wijzigingen
+6. NOOIT een falende test "fixen" door de assertion te wijzigen
+
+Canoniek: `docs/kb/runbooks/claude-werkwijze.md` §0.
 
 ---
 

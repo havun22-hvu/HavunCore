@@ -9,17 +9,22 @@ last_check: 2026-04-22
 
 > **Gebruik:** Tijdens langere sessies of na significante wijzigingen
 
-## Stap 0: Herinnering — 5 Onschendbare Regels
+## Stap 0: Herinnering — de 6 Onschendbare Regels
 
 Controleer voordat je verdergaat of je deze regels naleeft:
 
 ```
-1. NOOIT code schrijven zonder docs te lezen
+1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
 2. NOOIT features/UI-elementen verwijderen zonder instructie
 3. NOOIT credentials/keys/env aanraken
 4. ALTIJD tests draaien voor én na wijzigingen
 5. ALTIJD toestemming vragen bij grote wijzigingen
+6. NOOIT een falende test "fixen" door de assertion te wijzigen
 ```
+
+Canoniek — inclusief herkomst en waar ze verder in doorwerken:
+`HavunCore/docs/kb/runbooks/claude-werkwijze.md` §0. Regel 6 stond hier tot 01-08-2026 niet in;
+die is op 25-04 toegevoegd na een echt geval van door AI verwijderde tests.
 
 **Sessielimiet:** Houd sessies onder 2-3 uur. Bij langere sessies neemt de kans op protocolmoeheid toe — overweeg een nieuwe sessie te starten.
 

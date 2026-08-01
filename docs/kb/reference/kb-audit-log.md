@@ -47,3 +47,34 @@ die tijdens een sessie gelezen worden, niet voor deze. De andere twee: een bewus
 **Gebrek in de `/kb-audit`-skill zelf, gecorrigeerd:** hij verwees naar "6 Onschendbare Regels in
 `CLAUDE.md` regels 13-18" (daar staan projectfeiten) en naar `.claude/context.md` als canonical
 voor paden (bestaat hier niet — bewust verwijderd 20-05-2026, `5d98a77`).
+
+### Vervolg: de Onschendbare Regels hadden geen bron meer
+
+Uit dat laatste punt kwam een grotere scheefstand. De set stond in **zeven** docs met een eigen
+kopie, en die liepen uiteen:
+
+- **Vier zeiden vijf regels, drie zeiden zes.** De zesde (VP-17 — nooit een falende test "fixen"
+  door de assertion te wijzigen) is toegevoegd op **25-04-2026**, nadat AI in februari vier
+  JudoToernooi-tests had verwijderd in plaats van gerepareerd (teruggezet in PR #2, 119 tests).
+  Alle vier de achterblijvers stonden op `last_check: 2026-04-22` — drie dagen vóór die
+  toevoeging, en sindsdien niet meer aangeraakt.
+- **De vindplaats klopte nergens meer.** Meerdere docs verwezen naar "`CLAUDE.md`", maar die zijn
+  sindsdien herschreven; van de zes projecten die zijn nagekeken had alleen JudoScoreBoard de set
+  nog, met vijf regels en een eigen formulering van regel 4 en 5.
+
+**Nu:** `runbooks/claude-werkwijze.md` §0 is de canonieke set — zes regels, mét herkomst en met
+waar ze verder in doorwerken. Alle levende docs verwijzen ernaar in plaats van te kopiëren:
+`havun-workflow-flowchart.md` en `kwaliteit-veiligheid-systeem.md` hebben hun kopie ingeruild voor
+een verwijzing, `update.md`, `kb-audit.md`, `cv-havuncore.md` en de webapp-varianten zijn
+bijgewerkt, en JudoScoreBoard heeft de zesde regel gekregen in `CLAUDE.md`, `start.md` en
+`update.md`.
+
+**Twee docs houden bewust vijf regels:** `audit/werkwijze-beoordeling-derden.md` en het
+K&V-verslag van 22-04 zijn momentopnames. Een auditdocument corrigeren naar wat er later gold, is
+geen opruiming maar geschiedvervalsing — ze hebben een noot gekregen die naar de canonieke set
+wijst.
+
+**Nog een zelfvangst:** dit logboek citeert `Foo::bar()` en `SystemTime::now()` als voorbeeld van
+de valse positieven, waarop de zombiechecker ze als ontbrekende classes meldde.
+`kb-audit-log.md` staat nu naast `kb-audit-latest.md` in de zelf-uitsluitingen — een rapport over
+bevindingen citeert per definitie de refs uit die bevindingen.
