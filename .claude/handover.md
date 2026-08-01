@@ -10,156 +10,97 @@ last_updated: 2026-08-01
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel. KB zoekt gechunkt (`--project` ~0,1s). **Server:** disk 67%
-(12 GB vrij na opschoning 18-07), prod draait overal.
+**Branch:** master · **Status:** stabiel, 1389 tests groen, KB-audit 0 high. **Server:** disk 68%,
+prod draait overal, 0 dirty checkouts. Niets wacht op deploy.
 
-## 🔴 Vier rode builds die niemand wist (31-07) — per project een eigen sessie
+## 🔴 Twee dingen die morgen als eerste moeten
 
-De nieuwe `actions:watch` vond ze meteen: **HavunAdmin 3 maanden rood** · HavunClub 3 maanden
-(geparkeerd) · VeenLedenadministratie 1 dag · Studieplanner-api sinds 30-07 (**níét** door de
-CLAUDE.md-uitrol — de run ervóór faalde al). Uitzoeken hoort in de projectsessie zelf.
+| Wat | Waarom nu |
+|---|---|
+| **`/root/roteer-havunadmin-db.sh` draaien** | Het MySQL-wachtwoord van `havunadmin` staat in een sessie-transcript (mijn fout: een grep op `^CENTRAL` over de staging-`.env` pakte ook `CENTRAL_DB_PASSWORD`). Geverifieerd: die waarde geeft **ALL PRIVILEGES op `havunadmin_production`**. Het script genereert 48 tekens op de server, test de verbinding vóór het een `.env` aanraakt, werkt prod+staging bij en doet een rooktest. Back-up vooraf naar `/root/backups/havunadmin-env-<datum>` |
+| **GitHub-PAT verloopt ~08-08** | `havuncore-webapp-mobile-monitoring`, werkt nu nog. Maak een fine-grained token met toegang tot **judoscoreboard (privé)** + Studieplanner, permissions Metadata/Contents/Pull requests **Read**, en draai dan `/root/vervang-github-pat.sh` (leest hem verborgen in). Procedure: `reference/repo-hygiene-policy.md` |
 
-## Stackkeuze-lessen (30/31-07) — beide plannen af, drie punten open
+## Backups: twee gaten gevonden en gedicht (01-08)
 
-Volledig in `plans/stackkeuze-fundament-plan.md` (10/10) en `plans/vk-per-stack-plan.md`.
-**Wat er nu geldt:** `project:scaffold` eist `--type` + een ingevulde `docs/intake.md` die hetzelfde
-type concludeert, web-infra alleen bij `server-webapp` · omwegen tellen in `docs/omwegen.md`
-(16 projecten) · elk architectuurbesluit noemt **aanname + omkeerpunt** · `qv:scan` detecteert de
-stack en **meldt wat het niet kan meten** in plaats van nul · `actions:watch` maakt rode builds
-zichtbaar. Post-mortem die dit uitlokte: `patterns/fundament-versus-omweg.md`.
+Volledig: `plans/registry-drift-check-plan.md` + `reference/databases-op-de-server.md`.
 
-**Vusista2 is 01-08 Havun-waardig gemaakt** (orchestrator-rol): 15 commands + `rules.md` uitgerold
-en **omgeschreven naar een desktop-app** (cargo i.p.v. Laravel/npm, server- en deploystappen eruit
-— die zouden juist de fout uitlokken waar Vusista 1 aan kapotging), `docs/intake.md` achteraf
-ingevuld mét conclusie en omkeerpunt, en 10 docs stonden nog op `scope: vusista`. **Er was geen
-CI** — nu harde gates (`cargo test`, `clippy -- -D warnings`, `fmt --check`, `audit`); de 17
-waarschuwingen waarmee dat begon zijn dezelfde dag opgeruimd. 77 tests groen, run 2m56s.
+- **Herdenkingsportaal had 4,5 maand geen bruikbare databasebackup.** Van 15-03 t/m 27-07 dumpte
+  het script `herdenkingsportaal_production` (dood restant, 47 rijen) terwijl de app op
+  `herdenkingsportaal_prod` draait (50.520 rijen). Elke nacht een vers bestand van 5,1 KB, upload
+  geslaagd — alles wat naar de *backup* keek zag een gezonde backup. Sinds 28-07 goed, en de
+  bestandenbackup (172 MB) was de hele tijd wél in orde.
+- **HavunAdmins facturen zaten in géén backup.** Het script archiveerde `storage/invoices`, een pad
+  dat nooit bestond, en sloeg dat stil over. Nu `storage/app` (3,8 MB: facturen, bunq-exports,
+  verantwoording-2024). 7 jaar bewaarplicht.
 
-**Vusista 1 is 01-08 volledig opgeruimd** (Henk: "we hebben het niet meer nodig"): map, repo
-(gearchiveerd, niet verwijderd), beide registries, 192 KB-embeddings. Backup mét hersteltest —
-inclusief drie sqlite's die in géén git zaten. Alle vindplaatsen: `projects/vusista.md`.
+**Nu bewaakt door twee checks** (`qv:scan --only=registries` 03:02 en `--only=backup-coverage`
+05:30, beide 0 high/0 medium). De tweede vraagt het aan de app: elke `DB_DATABASE` uit de `.env`'s
+moet als `<naam>.sql.gz` in de verwachting staan. **Beide restores getest** — HP 52/52 tabellen,
+HavunAdmin 39/39 met alle veertien boekhoudtabellen gelijk. Frequentie klopt: 31/31 dagen in juli,
+box op 2% van 1 TB.
 
-**Nog open:**
-- **Jij:** DNS `vusista.havun.nl` bij mijn.host + deploy-key `server-read` uit de Vusista-repo.
-- **De lege map `D:\GitHub\Vusista` staat er nog** — inhoud is weg, maar VS Code houdt hem vast.
-  Verdwijnt zodra je dat venster sluit; `rmdir` doet de rest.
-- Drie CLAUDE.md's boven de 120-regelnorm (Studieplanner-api 135, JudoScoreBoard 130,
-  havuncore-webapp 125) — zaten er al aan vóór de uitrol.
-
-## Twee nieuwe V&K-checks (01-08) — allebei vonden ze meteen iets echts
-
-Volledig incl. wat ze opleverden: `plans/registry-drift-check-plan.md`. Kern: **afwezigheid is
-stil.** Een project dat niet in een lijst staat en een backup die nooit gemaakt is, melden zichzelf
-niet. Beide staan nu op **0 high, 0 medium**.
-
-- **`--only=registries`** (03:02) vergelijkt `havun-projects.php` met `quality-safety.php`. Vond
-  drie live apps die **nooit gescand** waren, en een sleutel die in het ene register een ander
-  project aanwees dan in het andere.
-- **`--only=backup-coverage`** (05:30) toetst of er vanochtend een **verse, niet-lege** backup ligt
-  van alles wat dat nodig heeft. Leverde vier fixes op in `/usr/local/bin/havun-backup.sh` (backup:
-  `/root/backups/havun-backup.sh.bak-2026-08-01`), waarvan de scherpste: **HavunAdmin backupte
-  `storage/invoices`, een pad dat nooit bestond** — facturen met 7 jaar bewaarplicht zaten in géén
-  backup. En `set -o pipefail`, want `if mysqldump | gzip` las de status van `gzip` en meldde een
-  mislukte dump als ✓.
-
-## 🔴 Herdenkingsportaal had 4,5 maand geen bruikbare databasebackup (01-08)
-
-Van **15 maart t/m 27 juli** dumpte het script `herdenkingsportaal_production` (dood restant, 47
-rijen) terwijl de app op `herdenkingsportaal_prod` draait (50.520 rijen). Elke nacht een vers
-bestand van 5,1 KB, nette mapstructuur, upload geslaagd — alles wat naar de *backup* keek zag een
-gezonde backup. **Sinds 28 juli goed**; de bestandenbackup (172 MB monumenten/foto's) was de hele
-tijd wél in orde. De check vraagt het nu aan de app: elke `DB_DATABASE` uit de `.env`'s moet als
-`<naam>.sql.gz` in de verwachting staan, anders high. Rood gezien.
-
-**Backupfrequentie klopt wél:** 31 van 31 dagen in juli, geen gaten, box op 2% van 1 TB.
-**JudoToernooi is de hele periode in orde** (53/53 tabellen op vier steekproefdata), idem
-HavunAdmin, SafeHavun, HavunCore, Studieplanner.
-
-**HP klaar voor de promotie:** backup **aantoonbaar herstelbaar** (teruggezet in een tijdelijke
-database: 52/52 tabellen, elke tabel gelijk op `page_views`/`sessions` na — die lopen door),
-0 composer-advisories, cert tot 21-09, in de uptime-monitoring, 200 in 0,23s, alleen 2
-docs-commits achter.
-
-**HavunAdmin idem doorgemeten (01-08):** database 39/39 tabellen teruggezet, **alle veertien
-boekhoudtabellen exact gelijk**. Maar de **bestanden** zaten tot vandaag in géén backup — het
-script archiveerde `storage/invoices`, een pad dat nooit bestond, en sloeg dat stil over. De
-facturen staan in `storage/app/public/facturen`; sinds vandaag loopt `havunadmin_storage.tar.gz`
-mee (3,8 MB, 89 bestanden incl. bunq-exports en de verantwoording-2024). Op de Storage Box staat
-die alleen bij 01-08 — daarvóór nergens.
-
-**Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump
-staat in `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database, dus jouw go.
-Volledig register incl. wat bewust blijft staan: `reference/databases-op-de-server.md`.
-
-## 🔴 Wachtwoord `havunadmin` gelekt in een transcript — rotatie staat klaar (01-08)
-
-**Mijn fout.** Een grep op `^CENTRAL` in `/var/www/havunadmin/staging/.env` pakte ook
-`CENTRAL_DB_PASSWORD`, dus die waarde staat in het sessie-transcript. Server-side geverifieerd:
-**dat wachtwoord geeft ALL PRIVILEGES op `havunadmin_production`** — de echte administratie.
-
-**Klaar om te draaien:** `/root/roteer-havunadmin-db.sh` (root, 188.245.159.115). Genereert 48
-tekens op de server, wijzigt de MySQL-user, test de verbinding vóór hij de `.env`'s aanraakt,
-werkt prod + staging bij, ververst de caches en doet een rooktest. Back-up van beide `.env`'s
-vooraf naar `/root/backups/havunadmin-env-<datum>`. **Jouw go** — het raakt een live `.env`.
-
-Les voor de volgende keer: nooit een `.env` op een prefix grepen. Alleen de exacte sleutel
-(`grep -m1 '^DB_DATABASE='`), nooit iets dat op `_PASSWORD` kan eindigen.
+**Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump in
+`/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database.
 
 ## Open — wacht op Henk
 
 | Wat | Details |
 |-----|---------|
-| **GitHub-PAT verloopt ~08-08** | `havuncore-webapp-mobile-monitoring` — de PWA gebruikt hem voor de status van JudoScoreBoard en Studieplanner (laatste commit, open PR's, stilstand). Werkt nu nog foutloos. **Draai `/root/vervang-github-pat.sh`** na het aanmaken van de nieuwe token: leest hem verborgen in, test beide repo's, zet hem in de Vault, herstart de backend, verifieert. Nieuwe token: fine-grained, toegang tot **judoscoreboard (privé)** + Studieplanner, permissions Metadata/Contents/Pull requests **Read**. Procedure: `reference/repo-hygiene-policy.md` |
-| **Gelekt login-wachtwoord (`…ZxO#`) — rotatie loopt (19-07)** | Google meldde leak; waarde was over 10 havun.nl-sites hergebruikt. **Gedaan:** wachtwoord-login van `henkvu@` dood op HavunCore/SafeHavun/Studieplanner (random hash, magic-link blijft; rij-backups `/root/backups/pwreset-2026-07-19`). **Jij nog doen:** (1) `scripts/rotate-leaked-login.sh` draaien in Git Bash → nieuw uniek wachtwoord voor HavunAdmin (prod+staging) + JudoToernooi `.env`; (2) `infosyst`+`staging.havunclub` uit Google verwijderen (apps zijn 18-07 van server af — niks te roteren). **Apart (eigen sessie):** VPD/vpdupdate (`users.json`, Node/WebAuthn); HavunAdmin magic-link bouwen zodat wachtwoord ook dáár weg kan; password-kolommen nullable + wachtwoord-UI eruit op de 3 magic-link-apps |
-| **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `docs/kb/plans/blijvend-ingelogd-plan.md` |
-| **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat **nergens actief meer** (JudoToernooi-prod = nieuwe sleutel, geverifieerd; HavunAdmin + `laravel-old` dode sleutels leeggemaakt). **Laat de oude in Stripe verlopen.** Optioneel: webhook-secret roteren + oude Stripe-regel in `credentials.md` opschonen. AWS SES-key = Cees' account, niet de onze |
-| **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault. Zie [[feedback-no-hardcoded-test-secrets]] |
-| **Server OS-update: volgende kwartaalcheck oktober 2026** | Gedaan 19-07: kernel 5.15.0-186, alle packages bij. `ondrej/nginx`-PPA verwijderd (IPv6 403). Runbook: `runbooks/server-os-updates.md` |
-| **Security: dependencies** | **HavunCore zelf is schoon** (01-08: 6 guzzle-advisories dicht, 7.12.1→7.15.2 / psr7 2.12.1→2.13.0, 1381 tests groen, live). Nog open: HavunAdmin 19 composer-advisories (2 high); JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) — elk in eigen sessie, `composer update`/`npm` → overleg |
-| **VPDUpdate: gedeployd 25-07, `users.json` blijft een risico** | 59 commits ingelopen, `users.json` is nu **untracked** en staat alleen nog op de server (+ backup in `/root/backups/vpdupdate-predeploy-2026-07-25`). **Let op:** de pull verwijderde het bestand eerst — een staged `git rm --cached`-deletion opheffen maakt het weer tracked. Hersteld uit backup, app draait (200). Regel toegevoegd aan `standards/server-hygiene.md`. **Nog open:** de secrets zitten nog in de git-historie — purgen is een eigen sessie (vgl. HavunClub, waar Henk bewust niet purgede) |
+| **Gelekt login-wachtwoord (`…ZxO#`) — rotatie loopt (19-07)** | Google meldde leak; waarde was over 10 havun.nl-sites hergebruikt. **Gedaan:** wachtwoord-login van `henkvu@` dood op HavunCore/SafeHavun/Studieplanner (rij-backups `/root/backups/pwreset-2026-07-19`). **Jij nog doen:** (1) `scripts/rotate-leaked-login.sh` draaien in Git Bash → nieuw wachtwoord voor HavunAdmin (prod+staging) + JudoToernooi `.env`; (2) `infosyst`+`staging.havunclub` uit Google verwijderen. **Apart (eigen sessie):** VPD/vpdupdate; HavunAdmin magic-link bouwen; password-kolommen nullable op de 3 magic-link-apps |
+| **Vier rode builds (31-07)** | HavunAdmin 3 maanden rood · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie 1 dag · Studieplanner-api sinds 30-07. Gevonden door `actions:watch`. Uitzoeken hoort in de projectsessie zelf |
+| **Security: dependencies** | HavunCore zelf is schoon (01-08: 6 guzzle-advisories dicht, live). Open: HavunAdmin 19 composer-advisories (2 high); JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) — eigen sessie, `composer update`/`npm` → overleg |
+| **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
+| **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault |
+| **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat nergens actief meer. **Laat 'm in Stripe verlopen.** Optioneel: webhook-secret roteren + `credentials.md` opschonen |
+| **VPDUpdate: `users.json` blijft een risico** | Staat alleen op de server (+ backup), **loopt sinds 01-08 mee in de nachtelijke backup**. Nog open: de secrets zitten nog in de git-historie — purgen is een eigen sessie |
+| **Vusista 1** | DNS `vusista.havun.nl` bij mijn.host + deploy-key `server-read` uit de (gearchiveerde) repo. De lege map `D:\GitHub\Vusista` verdwijnt zodra je dat VS Code-venster sluit |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
-| **Aeterna** | Prod keystore + update-adres. Week2-plan dood (crates bestaan al) — archiveren. `feat/v1.1-tor-socks5-3b` (PR #16 closed, niet merged) |
+| **Server OS-update** | Volgende kwartaalcheck oktober 2026. Runbook: `runbooks/server-os-updates.md` |
+| **Aeterna** | Prod keystore + update-adres. Week2-plan dood — archiveren. `feat/v1.1-tor-socks5-3b` (PR #16 closed, niet merged) |
 | **Studieplanner** | `chore/expo-sdk-55-upgrade`: 230/230 groen maar nooit device-getest, 3 mnd oud — mergen of verwerpen |
-| **Studieplanner-api: coverage is deels padding (gemeten 24-07)** | **91,9% / 322 tests** (niet de 94,1% die in `CLAUDE.md` stond). Scheef verdeeld: `PremiumController` 67,7% (XRP-betalingen), `AuthController` 80,7%, `UserDevice` 0% — terwijl 11 modellen 100% zijn. `Push90Test` (36 tests) bestaat volgens zijn eigen docblock om het cijfer te liften; `ModelRelationsTest` (377 regels) test `belongsTo`. **Ernstigst:** `MagisterApiTest`/`SOMtodayApiTest` leggen met `assertStatus(500)` vast dat een onbereikbare externe API een 500 van ónze API geeft — hoort 502/503. Fix = eigen sessie, volgorde in `Studieplanner-api/docs/testschuld.md` |
-| **Studieplanner-api** | `rescue/prod-stashes-2026-07-15`: user settings + observability afmaken of branch weg |
+| **Studieplanner-api: coverage is deels padding (24-07)** | 91,9% / 322 tests. `PremiumController` 67,7%, `UserDevice` 0%. **Ernstigst:** `MagisterApiTest`/`SOMtodayApiTest` leggen met `assertStatus(500)` vast dat een onbereikbare externe API een 500 van ónze API geeft — hoort 502/503. Eigen sessie, volgorde in `Studieplanner-api/docs/testschuld.md`. Los daarvan: `rescue/prod-stashes-2026-07-15` afmaken of weg |
 | **LastMatch** | Avast HTTPS-scanning uit = enige APK-build-blocker |
 | **JudoScoreBoard** | Google-review AAB 116 (9 juni ingediend) — status alleen in Play Console |
+
+## Open — te doen
+
+- **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Hele keten staat. Rest = één
+  browser-test. `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009`
+  (lege stub). Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt.
+- **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** Wéér last? Check
+  `getRegistration()` op een `waiting`. `plans/webapp-sw-update-fix.md`. Vitest daar geblokkeerd
+  door Avast HTTPS-interceptie, niet de registry. Zie [[env-ssl-interception]].
+- **Drie CLAUDE.md's boven de 120-regelnorm** — Studieplanner-api 135, JudoScoreBoard 136,
+  havuncore-webapp 125.
+- **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde versie staat op
+  `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
 
 ## Veen-ledenadministratie — GEPARKEERD (Henk, 31-07)
 
 **Voorlopig niets mee doen**, ook de kleine betaalde klussen niet. Onze serveromgeving is 31-07
 opgeruimd (backup `/root/backups/veen-cleanup-2026-07-31`); de lokale checkout blijft en wordt
 gescand. **⛔ De oude app van Cees op `37.34.60.216` (TransIP) is niet van ons en is niet
-aangeraakt** — daar draait de live administratie. Volledig verhaal, inclusief de openstaande high
-(`session.php` zonder secure-cookie-default, bewust niet gefixt): `projects/veen-ledenadministratie.md`.
-
-## Open — te doen
-
-- **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Hele keten staat (Laravel
-  `PushController`/`WebPushService` + VAPID; webapp `sw-push.js` + knop). Rest = één browser-test.
-  `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
-  Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt (`runbooks/uptime-monitoring.md`).
-- **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** E2E tegen de productie-build:
-  banner werkt in beide workbox-vensters. Wéér last? Check `getRegistration()` op een `waiting`.
-  `plans/webapp-sw-update-fix.md`. Los daarvan: Vitest geblokkeerd door Avast HTTPS-interceptie
-  (niet de registry). Zie [[env-ssl-interception]].
-- **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde 523-versie op
-  `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
+aangeraakt** — daar draait de live administratie. Volledig, inclusief de openstaande high
+(`session.php` zonder secure-cookie-default, bewust niet gefixt):
+`projects/veen-ledenadministratie.md`.
 
 ## Vaste context voor dit project
 
-- **Geparkeerd, géén uitrol meer:** HavunClub, Demo, Havunity, Infosyst, IDSee, Agorano,
-  **Veen** (31-07), **HavunVet** (01-08: "niet interessant voorlopig"). Die dragen nog twee
-  achterhaalde normen in hun CLAUDE.md — bewust niet aangeraakt. Munus is weg; HavunVet en
-  Vusista 1 zijn gearchiveerd. Hun databases blijven staan met reden:
-  `reference/databases-op-de-server.md`.
-
 - **Rol:** centrale kennisbank + orchestrator. Scope-regel: **alleen HavunCore aanwerken; ander
-  project = eigen sessie** (uitzondering: Henk geeft expliciet toestemming). Zie [[feedback-scope-waarschuwen]].
+  project = eigen sessie** (uitzondering: Henk geeft expliciet toestemming). Zie
+  [[feedback-scope-waarschuwen]].
+- **Geparkeerd, géén uitrol meer:** HavunClub, Demo, Havunity, Infosyst, IDSee, Agorano, Veen
+  (31-07), HavunVet (01-08). Munus is weg; HavunVet en Vusista 1 zijn gearchiveerd. Hun databases
+  blijven staan met reden: `reference/databases-op-de-server.md`.
+- **De 6 Onschendbare Regels** staan canoniek in `runbooks/claude-werkwijze.md` §0 — verwijs
+  ernaar, kopieer ze niet. Ze stonden in zeven docs los, waarvan vier er nog vijf noemden.
 - KB zoeken: `php artisan docs:search "<onderwerp>"` — vereist Ollama op :11434.
-- **Eerste prod-deploy per app = Henk klikt bewust** (Actions → Deploy to Production). Nooit auto-migrate op prod.
-- **Prod kán pushen als root, `www-data` niet** — die krijgt *dubious ownership* (`safe.directory`),
-  waardoor `AutoCommitRegeneratedCommand` zijn veiligheidsklep niet kon gebruiken en prod 10 lokale
-  commits opbouwde. **Nog te doen:** `safe.directory` goedzetten voor `www-data` (server-config → overleg).
+- **Eerste prod-deploy per app = Henk klikt bewust.** Nooit auto-migrate op prod.
+- **Prod kán pushen als root, `www-data` niet** — die krijgt *dubious ownership*
+  (`safe.directory`), waardoor `AutoCommitRegeneratedCommand` zijn veiligheidsklep niet kon
+  gebruiken. **Nog te doen:** `safe.directory` goedzetten voor `www-data` (server-config → overleg).
 - havuncore-webapp deployt anders: lokaal build → rsync + pm2 (`havuncore-webapp/DEPLOY.md`).
-- Server-quirk: `composer install` als root maakt `storage/**` root-owned → 500s. Fix: `chown -R www-data:www-data storage bootstrap/cache`.
+- Server-quirks: `composer install` als root maakt `storage/**` en `vendor/` root-owned → 500s
+  (`chown -R www-data:www-data`). Een Vite-build is pas gedeployd als de **asset-hash** op de site
+  verandert — zie `runbooks/vite-build-bij-deploy.md`, inclusief de check of er überhaupt iets te
+  bouwen valt.
