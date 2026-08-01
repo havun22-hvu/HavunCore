@@ -28,14 +28,12 @@ type concludeert, web-infra alleen bij `server-webapp` · omwegen tellen in `doc
 stack en **meldt wat het niet kan meten** in plaats van nul · `actions:watch` maakt rode builds
 zichtbaar. Post-mortem die dit uitlokte: `patterns/fundament-versus-omweg.md`.
 
-**Vusista2 is 01-08 Havun-waardig gemaakt** (vanuit deze sessie, orchestrator-rol): 15 commands +
-`rules.md` uitgerold en **omgeschreven naar een desktop-app** (cargo i.p.v. Laravel/npm, alle
-server- en deploystappen eruit — die zouden juist de fout uitlokken waar Vusista 1 aan kapotging),
-`docs/intake.md` achteraf ingevuld mét conclusie en omkeerpunt, en de `scope:`-frontmatter van
-10 docs stond nog op `vusista` (kwamen onder het verkeerde project de KB in).
-**Er was geen CI** — nu `.github/workflows/ci.yml`: 62 tests groen, clippy exit 0 met 17
-waarschuwingen, `cargo fmt` niet schoon. `-D warnings` + fmt-check staan bewust op
-`continue-on-error`; **die schuld opruimen en beide hard zetten hoort in een Vusista2-sessie.**
+**Vusista2 is 01-08 Havun-waardig gemaakt** (orchestrator-rol): 15 commands + `rules.md` uitgerold
+en **omgeschreven naar een desktop-app** (cargo i.p.v. Laravel/npm, server- en deploystappen eruit
+— die zouden juist de fout uitlokken waar Vusista 1 aan kapotging), `docs/intake.md` achteraf
+ingevuld mét conclusie en omkeerpunt, en 10 docs stonden nog op `scope: vusista`. **Er was geen
+CI** — nu harde gates (`cargo test`, `clippy -- -D warnings`, `fmt --check`, `audit`); de 17
+waarschuwingen waarmee dat begon zijn dezelfde dag opgeruimd. 77 tests groen, run 2m56s.
 
 **Nog open:**
 - **Vusista 1 blijft staan tot Vusista2 áf is** — map, repo én KB-index. `qv:scan` staat daar op
@@ -43,39 +41,27 @@ waarschuwingen, `cargo fmt` niet schoon. `-D warnings` + fmt-check staan bewust 
 - **Jij:** DNS `vusista.havun.nl` bij mijn.host + deploy-key `server-read` uit de Vusista-repo.
 - Vier CLAUDE.md's boven de 120-regelnorm (Vusista 138, Studieplanner-api 135, JudoScoreBoard 130,
   havuncore-webapp 125) — zaten er al aan vóór de uitrol.
-## Registry-drift check — gebouwd 01-08, vond meteen drie ongescande apps
+## Twee nieuwe V&K-checks (01-08) — allebei vonden ze meteen iets echts
 
-`qv:scan --only=registries` vergelijkt `havun-projects.php` met `quality-safety.php` (dagelijks
-03:02). **Eerste run: `havun`, `vpdupdate` en `havuncore-webapp` draaiden live en waren nooit
-gescand** — alle drie toegevoegd. Ook opgelost: `studieplanner` was in het ene register de Expo-app
-en in het andere de API (de scan mat dus het verkeerde project), en de dode server-paden van
-`infosyst`/`havunclub` (18-07 van de server af) zijn eruit. Plan:
-`plans/registry-drift-check-plan.md`.
+Volledig: `plans/registry-drift-check-plan.md`. Kern: **afwezigheid is stil.** Een project dat niet
+in een lijst staat en een backup die nooit gemaakt is, melden zichzelf niet.
 
-## Backupdekking wordt nu gemeten (01-08) — `qv:scan --only=backup-coverage`, dagelijks 05:30
+- **`qv:scan --only=registries`** (dagelijks 03:02) vergelijkt `havun-projects.php` met
+  `quality-safety.php`. Vond `havun`, `vpdupdate` en `havuncore-webapp`: live op de server, **nooit
+  gescand**. Ook opgelost: `studieplanner` was in het ene register de Expo-app en in het andere de
+  API, dus de scan mat het verkeerde project.
+- **`qv:scan --only=backup-coverage`** (dagelijks 05:30) toetst of er vanochtend een **verse,
+  niet-lege** backup ligt van alles wat dat nodig heeft. `config/havun-backup.php` werd door niets
+  gelezen; het is nu de verwachting, het serverscript blijft de uitvoerder. Alles wat het vond is
+  opgelost — **dekking staat op 0 high, 0 medium**, geverifieerd met een echte scriptrun.
 
-`config/havun-backup.php` werd door **niets** gelezen; de echte backups draaien uit
-`/usr/local/bin/havun-backup.sh` (cron 03:00). De config is nu de **verwachting** en de check
-toetst de werkelijkheid: ligt er vanochtend een verse, niet-lege backup van alles wat dat nodig
-heeft. Vier stille faalvormen worden gevangen — ontbreekt, te oud, vers-maar-leeg, of een backup
-van iets dat niet meer bestaat.
-
-**Alles wat het vond is opgelost — dekking staat op 0 high, 0 medium** (geverifieerd na een echte
-scriptrun, upload naar Hetzner geslaagd):
-
-| Was | Nu |
-|---|---|
-| `vpdupdate/users.json` nergens geback-upt — de enige plek waar die gebruikers bestaan | Loopt mee in de nachtelijke run als `vpdupdate_users.json.gz` (eigen ondergrens van 300 bytes; 1 KB zou hem elke nacht als "lege dump" melden) |
-| `infosyst` + `havunclub_production` elke nacht leeg gedumpt (368/378 B), apps al 18-07 weg | Uit het script; de dumps van vannacht staan in `/root/backups/dode-dumps-2026-08-01` — verplaatst, niet gewist |
-| `havunvet_staging` idem (project 24-07 gearchiveerd) | Idem |
-| **HavunAdmin backupte `storage/invoices` — dat pad bestaat niet en heeft nooit bestaan** | Wijst nu naar `storage/app` (3,7 MB): `public/facturen` + `bunq`. **7 jaar bewaarplicht, en het stond nergens in** |
-| Een niet-bestaand storage-pad werd **stil** overgeslagen | Logt nu `FOUT ... PAD ONTBREEKT` |
-| `if mysqldump \| gzip` las de exit-status van `gzip`, dus een mislukte dump meldde ✓ | `set -o pipefail` — dít is waardoor de twee lege dumps twee weken lang op groen stonden |
-
-Scriptbackup vóór de wijzigingen: `/root/backups/havun-backup.sh.bak-2026-08-01`.
-
-**Vals alarm van vanochtend, ingetrokken:** JudoToernooi en SafeHavun wórden gewoon geback-upt.
-Dat het dode register ze niet kende, zei niets over de backup.
+Vier fixes in `/usr/local/bin/havun-backup.sh` (backup:
+`/root/backups/havun-backup.sh.bak-2026-08-01`): `vpdupdate/users.json` loopt nu mee · drie dode
+databases eruit (dumps naar `/root/backups/dode-dumps-2026-08-01`, verplaatst niet gewist) ·
+**HavunAdmin backupte `storage/invoices`, een pad dat nooit bestond** — de facturen met 7 jaar
+bewaarplicht zaten in géén backup, nu `storage/app`, en een ontbrekend pad logt voortaan een fout
+in plaats van niets · `set -o pipefail`, want `if mysqldump | gzip` las de status van `gzip` en
+meldde een mislukte dump als ✓.
 
 ## Open — wacht op Henk
 
@@ -83,12 +69,12 @@ Dat het dode register ze niet kende, zei niets over de backup.
 |-----|---------|
 | **Gelekt login-wachtwoord (`…ZxO#`) — rotatie loopt (19-07)** | Google meldde leak; waarde was over 10 havun.nl-sites hergebruikt. **Gedaan:** wachtwoord-login van `henkvu@` dood op HavunCore/SafeHavun/Studieplanner (random hash, magic-link blijft; rij-backups `/root/backups/pwreset-2026-07-19`). **Jij nog doen:** (1) `scripts/rotate-leaked-login.sh` draaien in Git Bash → nieuw uniek wachtwoord voor HavunAdmin (prod+staging) + JudoToernooi `.env`; (2) `infosyst`+`staging.havunclub` uit Google verwijderen (apps zijn 18-07 van server af — niks te roteren). **Apart (eigen sessie):** VPD/vpdupdate (`users.json`, Node/WebAuthn); HavunAdmin magic-link bouwen zodat wachtwoord ook dáár weg kan; password-kolommen nullable + wachtwoord-UI eruit op de 3 magic-link-apps |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `docs/kb/plans/blijvend-ingelogd-plan.md` |
-| **Prod-deploys staan klaar (3 checkouts achter)** | Herdenkingsportaal (3 code-commits — **passkey-login af maar niet live**), JudoToernooi (6), HavunCore zelf (KB-werk). Deploy = altijd jouw klik |
+| ~~Prod-deploys staan klaar~~ **gedaan 01-08** | HavunCore (28 commits, incl. de guzzle-fix — geverifieerd 7.15.2 live), HavunAdmin (6, creditnota-fix + **Vite-build**: nieuwe asset-hashes worden geserveerd), havuncore-webapp (10, alleen docs+E2E, geen rebuild nodig). Geen migraties. Alle sites 200/302, 0 dirty checkouts na afloop |
 | **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat **nergens actief meer** (JudoToernooi-prod = nieuwe sleutel, geverifieerd; HavunAdmin + `laravel-old` dode sleutels leeggemaakt). **Laat de oude in Stripe verlopen.** Optioneel: webhook-secret roteren + oude Stripe-regel in `credentials.md` opschonen. AWS SES-key = Cees' account, niet de onze |
-| **Vite-build achter op 3 checkouts — 2× prod** | HP-prod/staging, Studieplanner-prod (Vusista-staging vervallen: server opgeruimd 31-07). Signaal, geen diagnose — verifieer per project (`runbooks/vite-build-bij-deploy.md`), elk in eigen sessie |
+| ~~Vite-build achter op 3 checkouts~~ **loos alarm, 01-08 gemeten** | HP-prod/staging en Studieplanner-prod hebben sinds hun build **geen enkele** frontend-wijziging gekregen (`resources/js\|css\|views`, vite.config, package.json — alle drie leeg). De build was ouder dan de laatste commit, niet achter. Wél echt en gefixt: Studieplanners `public/build` was **root-owned**, waardoor de volgende build op `EACCES` zou stuklopen |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault. Zie [[feedback-no-hardcoded-test-secrets]] |
 | **Server OS-update: volgende kwartaalcheck oktober 2026** | Gedaan 19-07: kernel 5.15.0-186, alle packages bij. `ondrej/nginx`-PPA verwijderd (IPv6 403). Runbook: `runbooks/server-os-updates.md` |
-| **Security: dependencies** | HavunAdmin 19 composer-advisories (2 high); JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high). `composer update`/`npm` → overleg |
+| **Security: dependencies** | **HavunCore zelf is schoon** (01-08: 6 guzzle-advisories dicht, 7.12.1→7.15.2 / psr7 2.12.1→2.13.0, 1381 tests groen, live). Nog open: HavunAdmin 19 composer-advisories (2 high); JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) — elk in eigen sessie, `composer update`/`npm` → overleg |
 | **VPDUpdate: gedeployd 25-07, `users.json` blijft een risico** | 59 commits ingelopen, `users.json` is nu **untracked** en staat alleen nog op de server (+ backup in `/root/backups/vpdupdate-predeploy-2026-07-25`). **Let op:** de pull verwijderde het bestand eerst — een staged `git rm --cached`-deletion opheffen maakt het weer tracked. Hersteld uit backup, app draait (200). Regel toegevoegd aan `standards/server-hygiene.md`. **Nog open:** de secrets zitten nog in de git-historie — purgen is een eigen sessie (vgl. HavunClub, waar Henk bewust niet purgede) |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
 | **Aeterna** | Prod keystore + update-adres. Week2-plan dood (crates bestaan al) — archiveren. `feat/v1.1-tor-socks5-3b` (PR #16 closed, niet merged) |
@@ -107,16 +93,14 @@ Cees' groen licht" — dat klopte al sinds ~29-07 niet meer.
 **Onze serveromgeving opgeruimd (31-07).** `veen.havun.nl` + staging, cert, beide checkouts en
 **beide databases** (staging had 26 tabellen / ~18.941 rijen — die dataset zit niet in git). Backup
 root-only vanwege de `.env`'s: `/root/backups/veen-cleanup-2026-07-31` (72 MB + beide dumps +
-nginx-config), integriteit geverifieerd vóór verwijderen. Alle andere sites 200.
+nginx-config), integriteit geverifieerd vóór verwijderen.
 **⛔ De oude app van Cees op `37.34.60.216` (TransIP) is NIET van ons en is niet aangeraakt** —
 daar staat de live administratie. **Lokale checkout blijft staan**: Cees kan nog vragen hebben.
 
-**Parkeren ≠ monitoring uit — en het stónd niet eens aan.** Veen zat in `havun-projects.php` maar
-**niet** in `quality-safety.php`: nooit een `composer audit` of secrets-scan. Dat is de **derde**
-keer in twee dagen (na `vusista` en `vusista2`) dat een project in de ene registry staat en niet in
-de andere. Nu toegevoegd; scannen blijft aan op de lokale checkout, want een geparkeerd project
-waar niemand kijkt is juist waar een advisory blijft zitten. **Verschil met Vusista 1**
-(`enabled => false`): dat wordt weggegooid, dit kan zo weer opgepakt worden.
+**Parkeren ≠ monitoring uit.** Veen zat in `havun-projects.php` maar niet in `quality-safety.php`:
+nooit een `composer audit` of secrets-scan. Nu toegevoegd, scannen blijft aan op de lokale
+checkout — een geparkeerd project waar niemand kijkt is juist waar een advisory blijft zitten. Dit
+was de derde keer in twee dagen; de check die dat nu vangt staat hierboven.
 
 **Eerste scan: 1 high** — `config/session.php` secure-cookie-default niet `true`. **Niet gefixt:
 het project is geparkeerd.** Jouw call of dit een uitzondering waard is.

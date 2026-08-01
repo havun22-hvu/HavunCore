@@ -99,6 +99,28 @@ bevatten, dus een oude build kán nog kloppen):
 Verifieer per project met de asset-hash-check hierboven vóór je concludeert dat er iets stuk is.
 Let op: HP bouwt in zijn GitHub Actions, dus daar kan de mtime misleiden.
 
+### En dat "signaal, géén diagnose" is geen slag om de arm — gemeten 01-08-2026
+
+Alle drie de openstaande gevallen (HP-prod, HP-staging, Studieplanner-prod) bleken **terecht oud**:
+sinds hun build was er geen enkele frontend-wijziging binnengekomen. De build was ouder dan de
+laatste commit, en dat is iets anders dan achterlopen.
+
+De check die dat in één regel beslist — commits ná de build die frontend raken:
+
+```bash
+P=/var/www/<project>/production
+B=$(stat -c %Y "$P/public/build/manifest.json")
+git -C "$P" log --since="@$B" --name-only --format='' \
+  | grep -E '^resources/(js|css|views)/|vite.config|package.json|tailwind' | sort -u
+```
+
+Leeg = niets te bouwen. **Bouw niet "voor de zekerheid"**: een overbodige build op prod verandert
+alle asset-hashes, breekt de cache van elke bezoeker, en kan als root gedraaid de map root-owned
+achterlaten — precies de tweede val hierboven.
+
+Wél gevonden en gefixt op 01-08: `studieplanner/production/public/build` was **root-owned**. Daar
+was de volgende build op `EACCES` gestrand. De rest van `/var/www` was schoon.
+
 ## Zie ook
 
 - `standards/server-hygiene.md` — nooit blind `git clean -fd` op prod, ownership-regels
