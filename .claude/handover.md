@@ -80,9 +80,30 @@ database: 52/52 tabellen, elke tabel gelijk op `page_views`/`sessions` na — di
 0 composer-advisories, cert tot 21-09, in de uptime-monitoring, 200 in 0,23s, alleen 2
 docs-commits achter.
 
+**HavunAdmin idem doorgemeten (01-08):** database 39/39 tabellen teruggezet, **alle veertien
+boekhoudtabellen exact gelijk**. Maar de **bestanden** zaten tot vandaag in géén backup — het
+script archiveerde `storage/invoices`, een pad dat nooit bestond, en sloeg dat stil over. De
+facturen staan in `storage/app/public/facturen`; sinds vandaag loopt `havunadmin_storage.tar.gz`
+mee (3,8 MB, 89 bestanden incl. bunq-exports en de verantwoording-2024). Op de Storage Box staat
+die alleen bij 01-08 — daarvóór nergens.
+
 **Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump
 staat in `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database, dus jouw go.
 Volledig register incl. wat bewust blijft staan: `reference/databases-op-de-server.md`.
+
+## 🔴 Wachtwoord `havunadmin` gelekt in een transcript — rotatie staat klaar (01-08)
+
+**Mijn fout.** Een grep op `^CENTRAL` in `/var/www/havunadmin/staging/.env` pakte ook
+`CENTRAL_DB_PASSWORD`, dus die waarde staat in het sessie-transcript. Server-side geverifieerd:
+**dat wachtwoord geeft ALL PRIVILEGES op `havunadmin_production`** — de echte administratie.
+
+**Klaar om te draaien:** `/root/roteer-havunadmin-db.sh` (root, 188.245.159.115). Genereert 48
+tekens op de server, wijzigt de MySQL-user, test de verbinding vóór hij de `.env`'s aanraakt,
+werkt prod + staging bij, ververst de caches en doet een rooktest. Back-up van beide `.env`'s
+vooraf naar `/root/backups/havunadmin-env-<datum>`. **Jouw go** — het raakt een live `.env`.
+
+Les voor de volgende keer: nooit een `.env` op een prefix grepen. Alleen de exacte sleutel
+(`grep -m1 '^DB_DATABASE='`), nooit iets dat op `_PASSWORD` kan eindigen.
 
 ## Open — wacht op Henk
 

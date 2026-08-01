@@ -42,6 +42,24 @@ gooien.**
 | `testsite_wp` | 179 | WordPress zónder app op de server — geen `.env` verwijst ernaar. Henk: "mag voorlopig uit zicht" |
 | `havunadmin_central_staging` | 4 | Hoort bij een lévende app (`havunadmin/staging/.env`), maar is leeg. Geen backup nodig zolang dat zo blijft |
 
+## Restore-tests (01-08-2026)
+
+Een dump die bestaat is niet hetzelfde als een dump die terugzet. Beide zijn teruggeladen in een
+tijdelijke database en tabel voor tabel vergeleken met live; de testdatabases zijn daarna weer
+verwijderd.
+
+| Database | Uitkomst |
+|---|---|
+| `herdenkingsportaal_prod` | 52/52 tabellen, elke tabel gelijk op `page_views` en `sessions` na — die lopen door tussen dump en meting |
+| `havunadmin_production` | 39/39 tabellen. **Alle veertien boekhoudtabellen exact gelijk** (`invoices`, `local_invoices` 74, `journal_entries` 24, `ledger_accounts` 61, `transactions` 61, `time_entries` 203, …). Alleen `api_syncs`, `audit_logs`, `qr_sessions` en `sessions` wijken af — allemaal lopend verkeer |
+
+**HavunAdmin's bestanden zaten tot 01-08 in géén backup.** Het script archiveerde
+`storage/invoices`, een pad dat nooit bestaan heeft, en sloeg dat *stil* over. De facturen staan in
+`storage/app/public/facturen`. Sinds vandaag loopt `havunadmin_storage.tar.gz` mee (3,8 MB, 89
+bestanden: uitgaande facturen, bunq-exports en `administratie-verantwoording-2024.md`) — op de
+Storage Box staat hij alleen bij 01-08, daarvoor nergens. De **database** was al die tijd wél goed
+(groeide netjes van 198 KB in juli naar 246 KB nu).
+
 ## Als je een database toevoegt of hernoemt
 
 1. Zet `DB_DATABASE` in de `.env` van de app — dat is wat telt.
