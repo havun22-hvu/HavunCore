@@ -24,8 +24,8 @@ project stil, óók de kleine betaalde klussen.
 > en 15.030 betalingen.
 >
 > `qv:scan` blijft **aan** op de lokale checkout: een geparkeerd project waar niemand naar kijkt,
-> is waar een advisory het langst blijft zitten. Dat is het verschil met Vusista 1, dat weggegooid
-> wordt en daarom op `enabled => false` staat.
+> is waar een advisory het langst blijft zitten. Geparkeerd is niet hetzelfde als weg — Vusista 1
+> is 01-08 wél opgeruimd en staat daarom in geen enkel register meer ([grafsteen](vusista.md)).
 
 > **Niet via Mollie.** Het oude package zit in de code maar is nooit gebruikt. De incasso
 > loopt via zelf gegenereerde pain.008-batchbestanden naar de bank.
