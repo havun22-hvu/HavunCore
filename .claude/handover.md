@@ -62,6 +62,27 @@ niet. Beide staan nu op **0 high, 0 medium**.
   backup. En `set -o pipefail`, want `if mysqldump | gzip` las de status van `gzip` en meldde een
   mislukte dump als ✓.
 
+## 🔴 Herdenkingsportaal had 4,5 maand geen bruikbare databasebackup (01-08)
+
+Van **15 maart t/m 27 juli** dumpte het script `herdenkingsportaal_production` — dood restant,
+22 tabellen, 47 rijen — terwijl de app op `herdenkingsportaal_prod` draait (52 tabellen, 50.520
+rijen). Elke nacht een vers bestand van 5,1 KB op de Storage Box, nette mapstructuur, upload
+geslaagd. **Sinds 28 juli staat de goede dump erin** (1,4 MB); de bestandenbackup (172 MB
+monumenten/foto's) was de hele tijd wél goed.
+
+**JudoToernooi is de hele periode in orde** — gecontroleerd op 1, 10, 20 en 31 juli: 53/53
+tabellen. Idem HavunAdmin, SafeHavun, HavunCore, Studieplanner. Backupfrequentie klopt: 31 van 31
+dagen in juli, geen gaten, box op 2% van 1 TB.
+
+**De check vraagt het nu aan de app**: elke `DB_DATABASE` uit de `.env`'s moet als `<naam>.sql.gz`
+in de verwachting staan, anders high. Geen enkele controle op naam, versheid of omvang zag dit —
+die keken allemaal naar de backup, en die was gezond. Rood gezien. Volledig:
+`plans/registry-drift-check-plan.md`.
+
+**Jouw beslissing:** de dode database `herdenkingsportaal_production` bestaat nog en is precies de
+valstrik die dit veroorzaakte. Dump veiliggesteld in `/root/backups/hp-dode-db-2026-08-01`;
+verwijderen is een prod-database, dus jouw go.
+
 ## Open — wacht op Henk
 
 | Wat | Details |

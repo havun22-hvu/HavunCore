@@ -96,6 +96,41 @@ en systemd, en dat is niet iets om ongevraagd om te bouwen.
 **Omkeerpunt:** blijkt een dump wel vers maar niet herstelbaar, dan is bestaan+omvang niet genoeg
 en moet de check een restore-proef doen.
 
+## De backup die er vier maanden was, en niets bewaarde (gevonden 01-08)
+
+Henk vroeg of er élke nacht een backup naar de Hetzner Storage Box gaat, "zeker nodig voor
+JudoToernooi en Herdenkingsportaal". Het antwoord op de vraag zoals gesteld is ja — 31 van de 31
+dagen in juli, geen enkel gat. Maar de controle daarachter leverde iets anders op.
+
+**Van 15 maart tot 27 juli 2026 werd elke nacht `herdenkingsportaal_production` gedumpt: een dood
+restant van 22 tabellen en 47 rijen. De app draait op `herdenkingsportaal_prod` — 52 tabellen,
+50.520 rijen.** Er stonden ruim vier maanden lang keurige bestanden van 5,1 KB op de Storage Box,
+elke nacht om 03:00, met een plausibele naam in een nette mapstructuur. Sinds 28 juli staat de
+goede dump erin (1,4 MB).
+
+De bestandenbackup (`herdenkingsportaal_storage.tar.gz`, 172 MB) was al die tijd wél goed. De
+monumenten en foto's waren dus veilig; de teksten, gebruikers en relaties niet.
+
+**JudoToernooi is de hele periode in orde**, gecontroleerd op 1, 10, 20 en 31 juli en vandaag:
+53 van 53 tabellen in de dump. Idem voor HavunAdmin, SafeHavun, HavunCore en Studieplanner —
+alle zes tellen exact gelijk aan hun live database.
+
+### Waarom geen enkele bestaande controle dit zag
+
+Naam plausibel, bestand vers, omvang constant, upload geslaagd, map compleet. Elke check die naar
+de *backup* kijkt, ziet een gezonde backup. Alleen de `.env` van de app weet welke database de
+echte is.
+
+Daarom vraagt de check het sinds 01-08 aan de app: elke `DB_DATABASE` uit
+`/var/www/*/production/.env` (en JudoToernooi's `repo-prod/laravel/.env`) moet terugkomen als
+`<naam>.sql.gz` in de verwachting. Zo niet → **high**. Alleen die ene regel wordt gelezen;
+wachtwoorden blijven staan. Rood gezien door `herdenkingsportaal_prod` tijdelijk uit de
+verwachting te halen.
+
+**De valstrik zelf staat er nog:** `herdenkingsportaal_production` bestaat nog als database. Dump
+veiliggesteld in `/root/backups/hp-dode-db-2026-08-01`; verwijderen is een prod-database en dus
+Henks beslissing.
+
 ## Status
 
 - [x] Plan

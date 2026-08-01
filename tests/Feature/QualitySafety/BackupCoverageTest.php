@@ -19,9 +19,16 @@ class BackupCoverageTest extends TestCase
 {
     private const DREMPELS = ['max_backup_age_hours' => 25, 'min_backup_size_bytes' => 1024];
 
-    private function detect(array $canoniek, array $verwacht, array $uitgezonderd, array $gevonden): array
+    private function detect(array $canoniek, array $verwacht, array $uitgezonderd, array $gevonden, array $appDatabases = []): array
     {
-        return (new BackupCoverageDetector)->detect($canoniek, $verwacht, $uitgezonderd, $gevonden, self::DREMPELS);
+        return (new BackupCoverageDetector)->detect(
+            $canoniek,
+            $verwacht,
+            $uitgezonderd,
+            $gevonden,
+            self::DREMPELS,
+            $appDatabases,
+        );
     }
 
     private function berichtenMet(array $findings, string $severity): array
@@ -234,6 +241,55 @@ class BackupCoverageTest extends TestCase
                 'havuncore.sql.gz' => $this->bestand(),
                 'checksums.sha256' => $this->bestand(bytes: 908),
             ],
+        );
+
+        $this->assertSame([], $findings);
+    }
+
+    public function test_database_van_de_app_zonder_backup_is_high(): void
+    {
+        // Het geval van 15-03 t/m 27-07-2026: het script dumpte
+        // `herdenkingsportaal_production` (dood restant, 47 rijen) terwijl de
+        // app op `herdenkingsportaal_prod` draait (50.520 rijen). Vier maanden
+        // lang elke nacht een vers, plausibel bestand van de verkeerde
+        // database. Naam, versheid en omvang zagen er alle drie goed uit.
+        $findings = $this->detect(
+            [],
+            ['herdenkingsportaal' => ['herdenkingsportaal_production.sql.gz']],
+            [],
+            ['herdenkingsportaal_production.sql.gz' => $this->bestand(bytes: 5_100)],
+            appDatabases: ['herdenkingsportaal_prod' => '/var/www/herdenkingsportaal/production/.env'],
+        );
+
+        $high = $this->berichtenMet($findings, 'high');
+
+        $this->assertCount(1, $high);
+        $this->assertStringContainsString("'herdenkingsportaal_prod'", $high[0]);
+    }
+
+    public function test_gedekte_app_database_meldt_niets(): void
+    {
+        $findings = $this->detect(
+            [],
+            ['judotoernooi' => ['judo_toernooi.sql.gz']],
+            [],
+            ['judo_toernooi.sql.gz' => $this->bestand()],
+            appDatabases: ['judo_toernooi' => '/var/www/judotoernooi/repo-prod/laravel/.env'],
+        );
+
+        $this->assertSame([], $findings);
+    }
+
+    public function test_zonder_env_gegevens_geen_valse_meldingen(): void
+    {
+        // Lukt het niet de .env's te lezen, dan is dat geen bewijs dat er iets
+        // mis is — dan is er alleen niets gemeten.
+        $findings = $this->detect(
+            [],
+            ['havuncore' => ['havuncore.sql.gz']],
+            [],
+            ['havuncore.sql.gz' => $this->bestand()],
+            appDatabases: [],
         );
 
         $this->assertSame([], $findings);

@@ -171,14 +171,29 @@ class QualitySafetyScanner
         // wat langer duren dan een disk-check.
         $timeout = 45;
 
-        // Nieuwste datummap, dan per bestand naam, omvang en mtime als epoch.
-        // Het rekenwerk gebeurt in PHP: hoe minder shell, hoe minder er stuk
-        // kan aan quoting — de eerste versie sneuvelde daar al op.
+        // Drie dingen in één sessie: de servertijd, de inhoud van de nieuwste
+        // backupmap, en welke database elke app zégt te gebruiken.
+        //
+        // Dat laatste is er sinds 01-08-2026 bij, en het is de belangrijkste
+        // regel van de hele check. Van 15 maart tot 27 juli dumpte het
+        // backupscript `herdenkingsportaal_production` (dood restant, 47 rijen)
+        // terwijl de app op `herdenkingsportaal_prod` draait (50.520 rijen).
+        // Elke nacht een keurig bestand, vier maanden lang, van de verkeerde
+        // database. Alleen de app weet welke database de echte is — dus vraag
+        // het de app, en niet de lijst.
+        //
+        // Alleen de DB_DATABASE-regel wordt gelezen; wachtwoorden blijven waar
+        // ze staan. Het rekenwerk gebeurt in PHP: hoe minder shell, hoe minder
+        // er stuk kan aan quoting.
         $cmd = sprintf(
             'd=$(ls -1d %s/[0-9]*-[0-9]*-[0-9]* 2>/dev/null | sort | tail -1); '
             . '[ -z "$d" ] && echo GEENMAP && exit 0; '
             . 'echo "NU|$(date +%%s)"; '
-            . 'find "$d" -type f -printf "F|%%f|%%s|%%T@\n" 2>/dev/null',
+            . 'find "$d" -type f -printf "F|%%f|%%s|%%T@\n" 2>/dev/null; '
+            . 'for e in /var/www/*/production/.env /var/www/*/repo-prod/laravel/.env; do '
+            . '[ -f "$e" ] || continue; '
+            . 'n=$(grep -m1 "^DB_DATABASE=" "$e" 2>/dev/null | cut -d= -f2 | tr -d "\\"\\047 \\r"); '
+            . '[ -n "$n" ] && echo "DB|$n|$e"; done',
             escapeshellarg($root),
         );
 
@@ -207,8 +222,29 @@ class QualitySafetyScanner
                 (array) config('havun-backup.verificatie.uitgezonderd', []),
                 $this->parseBackupBestanden($output),
                 (array) config('havun-backup.monitoring', []),
+                $this->parseAppDatabases($output),
             ),
         ];
+    }
+
+    /**
+     * Welke database elke app volgens zijn eigen `.env` gebruikt.
+     *
+     * @return array<string,string>  databasenaam => pad van de .env
+     */
+    private function parseAppDatabases(string $output): array
+    {
+        $databases = [];
+
+        foreach (explode("\n", $output) as $regel) {
+            $delen = explode('|', trim($regel));
+
+            if (($delen[0] ?? '') === 'DB' && ! empty($delen[1])) {
+                $databases[$delen[1]] = $delen[2] ?? '';
+            }
+        }
+
+        return $databases;
     }
 
     /**

@@ -31,19 +31,73 @@ class BackupCoverageDetector
      * @param  array<string,string>               $uitgezonderd config('havun-backup.verificatie.uitgezonderd')
      * @param  array<string,array{leeftijd_uren:float,bytes:int}> $gevonden  bestandsnaam => meting
      * @param  array<string,mixed>                $drempels   config('havun-backup.monitoring')
+     * @param  array<string,string>               $appDatabases  databasenaam => .env-pad
      * @return array<int,array<string,mixed>>
      */
-    public function detect(array $canoniek, array $verwacht, array $uitgezonderd, array $gevonden, array $drempels): array
-    {
+    public function detect(
+        array $canoniek,
+        array $verwacht,
+        array $uitgezonderd,
+        array $gevonden,
+        array $drempels,
+        array $appDatabases = [],
+    ): array {
         $maxUren = (float) ($drempels['max_backup_age_hours'] ?? 25);
         $minBytes = (int) ($drempels['min_backup_size_bytes'] ?? 1024);
 
-        $findings = array_merge(
+        return array_merge(
             $this->perProject($verwacht, $gevonden, $maxUren, $minBytes),
             $this->zonderVerwachting($canoniek, $verwacht, $uitgezonderd),
             $this->uitzonderingen($canoniek, $uitgezonderd),
             $this->overtolligeBackups($verwacht, $gevonden),
+            $this->appDatabasesGedekt($appDatabases, $verwacht),
         );
+    }
+
+    /**
+     * Wordt de database die de app zélf zegt te gebruiken ook geback-upt?
+     *
+     * Dit is de regel die het geval van 15 maart t/m 27 juli 2026 vangt: het
+     * backupscript dumpte `herdenkingsportaal_production` — een dood restant
+     * van 47 rijen — terwijl de app op `herdenkingsportaal_prod` draait, met
+     * 50.520 rijen. Vier maanden lang stond er elke nacht een keurig bestand
+     * van de verkeerde database.
+     *
+     * Geen enkele controle op naam, versheid of omvang ziet dat: het bestand
+     * bestond, was vers, en had een plausibele naam. Alleen de `.env` van de
+     * app weet welke database de echte is.
+     *
+     * @param  array<string,string>              $appDatabases
+     * @param  array<string,array<int|string,string|int>> $verwacht
+     * @return array<int,array<string,mixed>>
+     */
+    private function appDatabasesGedekt(array $appDatabases, array $verwacht): array
+    {
+        if ($appDatabases === []) {
+            return [];
+        }
+
+        $bestanden = [];
+
+        foreach ($verwacht as $lijst) {
+            foreach ($lijst as $sleutel => $waarde) {
+                $bestanden[] = is_int($sleutel) ? (string) $waarde : $sleutel;
+            }
+        }
+
+        $findings = [];
+
+        foreach ($appDatabases as $database => $envPad) {
+            if (in_array("{$database}.sql.gz", $bestanden, true)) {
+                continue;
+            }
+
+            $findings[] = $this->finding(
+                'high',
+                $database,
+                "De app op {$envPad} draait op database '{$database}', maar daarvan wordt geen backup verwacht. Er kan wél een dump van een gelijkende naam bestaan — dat is precies hoe Herdenkingsportaal vier maanden de verkeerde database bewaarde.",
+            );
+        }
 
         return $findings;
     }
