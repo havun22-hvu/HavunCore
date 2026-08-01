@@ -64,24 +64,25 @@ niet. Beide staan nu op **0 high, 0 medium**.
 
 ## 🔴 Herdenkingsportaal had 4,5 maand geen bruikbare databasebackup (01-08)
 
-Van **15 maart t/m 27 juli** dumpte het script `herdenkingsportaal_production` — dood restant,
-22 tabellen, 47 rijen — terwijl de app op `herdenkingsportaal_prod` draait (52 tabellen, 50.520
-rijen). Elke nacht een vers bestand van 5,1 KB op de Storage Box, nette mapstructuur, upload
-geslaagd. **Sinds 28 juli staat de goede dump erin** (1,4 MB); de bestandenbackup (172 MB
-monumenten/foto's) was de hele tijd wél goed.
+Van **15 maart t/m 27 juli** dumpte het script `herdenkingsportaal_production` (dood restant, 47
+rijen) terwijl de app op `herdenkingsportaal_prod` draait (50.520 rijen). Elke nacht een vers
+bestand van 5,1 KB, nette mapstructuur, upload geslaagd — alles wat naar de *backup* keek zag een
+gezonde backup. **Sinds 28 juli goed**; de bestandenbackup (172 MB monumenten/foto's) was de hele
+tijd wél in orde. De check vraagt het nu aan de app: elke `DB_DATABASE` uit de `.env`'s moet als
+`<naam>.sql.gz` in de verwachting staan, anders high. Rood gezien.
 
-**JudoToernooi is de hele periode in orde** — gecontroleerd op 1, 10, 20 en 31 juli: 53/53
-tabellen. Idem HavunAdmin, SafeHavun, HavunCore, Studieplanner. Backupfrequentie klopt: 31 van 31
-dagen in juli, geen gaten, box op 2% van 1 TB.
+**Backupfrequentie klopt wél:** 31 van 31 dagen in juli, geen gaten, box op 2% van 1 TB.
+**JudoToernooi is de hele periode in orde** (53/53 tabellen op vier steekproefdata), idem
+HavunAdmin, SafeHavun, HavunCore, Studieplanner.
 
-**De check vraagt het nu aan de app**: elke `DB_DATABASE` uit de `.env`'s moet als `<naam>.sql.gz`
-in de verwachting staan, anders high. Geen enkele controle op naam, versheid of omvang zag dit —
-die keken allemaal naar de backup, en die was gezond. Rood gezien. Volledig:
-`plans/registry-drift-check-plan.md`.
+**HP klaar voor de promotie:** backup **aantoonbaar herstelbaar** (teruggezet in een tijdelijke
+database: 52/52 tabellen, elke tabel gelijk op `page_views`/`sessions` na — die lopen door),
+0 composer-advisories, cert tot 21-09, in de uptime-monitoring, 200 in 0,23s, alleen 2
+docs-commits achter.
 
-**Jouw beslissing:** de dode database `herdenkingsportaal_production` bestaat nog en is precies de
-valstrik die dit veroorzaakte. Dump veiliggesteld in `/root/backups/hp-dode-db-2026-08-01`;
-verwijderen is een prod-database, dus jouw go.
+**Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump
+staat in `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database, dus jouw go.
+Volledig register incl. wat bewust blijft staan: `reference/databases-op-de-server.md`.
 
 ## Open — wacht op Henk
 
@@ -126,8 +127,10 @@ aangeraakt** — daar draait de live administratie. Volledig verhaal, inclusief 
 ## Vaste context voor dit project
 
 - **Geparkeerd, géén uitrol meer:** HavunClub, Demo, Havunity, Infosyst, IDSee, Agorano,
-  **Veen** (31-07). Die zes dragen nog twee achterhaalde normen in hun CLAUDE.md — bewust
-  niet aangeraakt. Munus is weg; HavunVet en Vusista 1 zijn gearchiveerd.
+  **Veen** (31-07), **HavunVet** (01-08: "niet interessant voorlopig"). Die dragen nog twee
+  achterhaalde normen in hun CLAUDE.md — bewust niet aangeraakt. Munus is weg; HavunVet en
+  Vusista 1 zijn gearchiveerd. Hun databases blijven staan met reden:
+  `reference/databases-op-de-server.md`.
 
 - **Rol:** centrale kennisbank + orchestrator. Scope-regel: **alleen HavunCore aanwerken; ander
   project = eigen sessie** (uitzondering: Henk geeft expliciet toestemming). Zie [[feedback-scope-waarschuwen]].
