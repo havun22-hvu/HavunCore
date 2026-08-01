@@ -28,7 +28,7 @@ class LinkChecker
         $findings = [];
         $baseDir = dirname($absolutePath);
 
-        preg_match_all('/\[([^\]]+)\]\(([^)]+)\)/', $content, $matches, PREG_SET_ORDER);
+        preg_match_all('/\[([^\]]+)\]\(([^)]+)\)/', $this->zonderCode($content), $matches, PREG_SET_ORDER);
 
         foreach ($matches as $m) {
             $label = $m[1];
@@ -63,6 +63,25 @@ class LinkChecker
         }
 
         return $findings;
+    }
+
+    /**
+     * Haalt code-blokken en inline code weg vóór het zoeken naar links.
+     *
+     * Een link tussen backticks is een **voorbeeld**, geen verwijzing. Zonder
+     * deze stap meldde de checker op 01-08-2026 een critical op
+     * `doc-intelligence-setup.md` — in de regel die uitlegt hóé de checker
+     * false-positives voorkomt, met `[x](./README.md#sectie)` als voorbeeld.
+     * De tool vond zijn eigen documentatie.
+     *
+     * Regels worden vervangen door lege tekst en niet verwijderd, zodat de
+     * rest van het document op zijn plek blijft staan.
+     */
+    private function zonderCode(string $content): string
+    {
+        $zonderFences = preg_replace('/^```.*?^```/ms', '', $content) ?? $content;
+
+        return preg_replace('/`[^`\n]*`/', '', $zonderFences) ?? $zonderFences;
     }
 
     private function resolve(string $baseDir, string $target): string

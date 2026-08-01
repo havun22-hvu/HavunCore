@@ -35,6 +35,10 @@ class DocsAuditor
      */
     private const EXCLUDED_PATH_SEGMENTS = [
         DIRECTORY_SEPARATOR . 'archive' . DIRECTORY_SEPARATOR,
+        // Nederlandse variant — `docs/audit/archief/` bestaat al sinds maart
+        // 2026 en werd al die tijd meegescand, omdat alleen de Engelse naam
+        // hier stond. De docs in dit project zijn Nederlands; de mapnaam dus ook.
+        DIRECTORY_SEPARATOR . 'archief' . DIRECTORY_SEPARATOR,
         DIRECTORY_SEPARATOR . 'worktrees' . DIRECTORY_SEPARATOR,
     ];
 

@@ -43,11 +43,15 @@ Lees alle MD-files in `docs/` en `.claude/`. Voor elk paar:
 - Belangrijk: overlap ≠ duplicatie. Business-vs-technisch perspectief op
   hetzelfde onderwerp is **OK**. Alleen écht-dupliceren van content melden.
 
-#### Referentie-integriteit — 6 Onschendbare Regels
+#### Referentie-integriteit — de gedragsregels
 
-Check `.claude/rules.md` (als aanwezig) tegen HavunCore's canonical set in
-`D:/GitHub/HavunCore/CLAUDE.md` (regels 13-18). Deze 6 regels moeten
-consistent zijn cross-project:
+Check `.claude/rules.md` (als aanwezig) tegen HavunCore's canonical set: de
+**genummerde regels in `D:/GitHub/HavunCore/.claude/rules.md`**, niet in
+`CLAUDE.md`. (Tot 01-08-2026 stond hier "CLAUDE.md regels 13-18" — daar staan
+projectfeiten: poorten, AI-proxy, Vault, AutoFix, PM2, webapp. Een audit die
+op een vast regelnummer mikt, verjaart bij de eerste alinea die erboven komt.)
+
+Deze moeten cross-project overeind blijven:
 
 1. NOOIT code schrijven zonder KB + kwaliteitsnormen te raadplegen
 2. NOOIT features/UI-elementen verwijderen zonder instructie
@@ -62,7 +66,9 @@ Extra project-specifieke regels mogen, zolang de 6 kern overeind blijven.
 #### Cross-doc inconsistenties
 - **Versienummers**: `composer.json`/`package.json` is canonical
 - **Poorten**: `docs/kb/reference/poort-register.md` is canonical
-- **Paden/URLs**: `.claude/context.md` is canonical
+- **Paden/URLs**: `.claude/context.md` waar die bestaat; **HavunCore heeft er geen** (bewust
+  verwijderd 20-05-2026, `5d98a77`) — daar is `CLAUDE.md` canonical, met
+  `reference/poort-register.md` voor poorten en `reference/databases-op-de-server.md` voor databases
 - **MSI-gates**: `docs/kb/reference/critical-paths-*.md` is canonical
 
 Bij verschil doc-vs-canonical: **HIGH**, voorstel om doc te updaten.

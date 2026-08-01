@@ -63,9 +63,18 @@ class StructureChecker
         return $findings;
     }
 
+    /**
+     * CRLF telt óók als regeleinde.
+     *
+     * Zonder `\r?` meldde deze check op 01-08-2026 twintig bestanden als
+     * "ontbrekende frontmatter" die alle twintig een keurig `---`-blok hadden —
+     * ze waren alleen op Windows opgeslagen. Dat is 20 van de 29 high-findings
+     * in dat rapport, en zo veel ruis maakt de negen echte bevindingen
+     * onvindbaar.
+     */
     private function hasFrontmatter(string $content): bool
     {
-        return (bool) preg_match('/^---\n.*?\n---/s', $content);
+        return (bool) preg_match('/^---\r?\n.*?\r?\n---/s', $content);
     }
 
     private function hasH1(string $content): bool

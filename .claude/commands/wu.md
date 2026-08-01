@@ -1,3 +1,10 @@
+---
+title: /wu — Werkzaamheden Urenregistratie
+type: claude
+scope: global
+last_check: 2026-08-01
+---
+
 # /wu — Werkzaamheden Urenregistratie
 
 Genereer een beknopte omschrijving van de dagwerkzaamheden voor de urenadministratie.

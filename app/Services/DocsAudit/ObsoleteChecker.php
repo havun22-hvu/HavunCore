@@ -63,7 +63,12 @@ class ObsoleteChecker
      */
     private function parseFrontmatter(string $content): array
     {
-        if (! preg_match('/^---\n(.*?)\n---/s', $content, $m)) {
+        // `\r?` is geen detail: zonder dat vond deze parser op een
+        // Windows-opgeslagen bestand géén frontmatter, gaf hij [null, null]
+        // terug, en sloeg de hele obsolete-check dat document stilzwijgend
+        // over. Geen melding — en dus niet te onderscheiden van een document
+        // dat gewoon bij is. Gemeten 01-08-2026.
+        if (! preg_match('/^---\r?\n(.*?)\r?\n---/s', $content, $m)) {
             return [null, null];
         }
         $block = $m[1];

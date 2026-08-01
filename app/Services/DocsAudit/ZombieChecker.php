@@ -104,12 +104,54 @@ class ZombieChecker
         }
 
         foreach ($this->extractArtisanCommands($content) as $signature) {
-            if (! $this->artisanCommandExists($signature)) {
-                $findings[] = $this->finding($absolutePath, "Artisan command bestaat niet: `php artisan {$signature}`");
+            if ($this->artisanCommandExists($signature)) {
+                continue;
             }
+
+            // Een commando van een ánder Havun-project bestaat hier terecht
+            // niet. `security-headers-check.md` schrijft letterlijk
+            // "`php artisan gtag:refresh` (zie Herdenkingsportaal)" — dat is
+            // correcte documentatie, en toch stond het als high in het rapport
+            // van 01-08-2026.
+            if ($this->hoortBijAnderProject($content, $signature)) {
+                continue;
+            }
+
+            $findings[] = $this->finding($absolutePath, "Artisan command bestaat niet: `php artisan {$signature}`");
         }
 
         return $findings;
+    }
+
+    /**
+     * Staat er op dezelfde regel een ander Havun-project genoemd?
+     *
+     * Zo ja, dan documenteert die regel het commando van dát project. De
+     * projectnamen komen uit `havun-projects.php`, zodat dit meegroeit met de
+     * portfolio in plaats van een lijst te worden die verjaart.
+     */
+    private function hoortBijAnderProject(string $content, string $signature): bool
+    {
+        $projecten = array_keys((array) config('havun-projects', []));
+        $anderen = array_diff($projecten, ['havuncore']);
+
+        if ($anderen === []) {
+            return false;
+        }
+
+        foreach (explode("\n", $content) as $regel) {
+            if (! str_contains($regel, "artisan {$signature}")) {
+                continue;
+            }
+
+            foreach ($anderen as $project) {
+                if (stripos($regel, (string) $project) !== false) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -126,12 +168,39 @@ class ZombieChecker
         }
 
         // Bareword class-name met ::method — facades, static calls.
-        preg_match_all('/`([A-Z][A-Za-z0-9_]*)::[A-Za-z_][A-Za-z0-9_]*(?:\(\))?`/', $content, $m);
-        foreach ($m[1] as $ref) {
-            $refs[] = $ref;
+        //
+        // Alleen in een PHP-context: Rust schrijft `SystemTime::now()` op
+        // exact dezelfde manier, en dat is geen ontbrekende Laravel-facade.
+        // Op 01-08-2026 was dat de laatste openstaande high in het rapport,
+        // op een runbook over reproduceerbare Tauri-builds. De
+        // fully-qualified vorm hierboven blijft wél gecheckt: `App\Services\Foo`
+        // is ondubbelzinnig PHP.
+        if (! $this->isNietPhpStack($content)) {
+            preg_match_all('/`([A-Z][A-Za-z0-9_]*)::[A-Za-z_][A-Za-z0-9_]*(?:\(\))?`/', $content, $m);
+            foreach ($m[1] as $ref) {
+                $refs[] = $ref;
+            }
         }
 
         return array_values(array_unique($refs));
+    }
+
+    /**
+     * Gaat dit document over een stack zonder PHP-classes?
+     *
+     * Grof met opzet: bij twijfel checkt hij gewoon. Hij hoeft alleen de
+     * duidelijke gevallen te herkennen — een runbook over cargo of een crate
+     * documenteert geen facades.
+     */
+    private function isNietPhpStack(string $content): bool
+    {
+        foreach (['cargo ', 'Cargo.toml', 'crate', 'rustc', '.rs`', 'go.mod', 'go build'] as $signaal) {
+            if (stripos($content, $signaal) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -406,10 +475,27 @@ class ZombieChecker
     private function isPlanningDoc(string $absolutePath, string $content): bool
     {
         $normalized = str_replace(['/', '\\'], '/', $absolutePath);
-        if (str_contains($normalized, '/audit/') || str_contains($normalized, '/plans/')) {
-            return true;
+
+        // `/decisions/` staat hier sinds 01-08-2026 bij. Een ADR beschrijft een
+        // besluit op een moment, niet de code van nu — en juist een ADR *over
+        // verwijdering* noemt per definitie klassen die niet meer bestaan. Van
+        // de negen zombie-findings in het rapport van die dag kwamen er zeven
+        // uit twee ADR's: `007-mcp-removal` (zes klassen die het zelf heeft
+        // laten verwijderen) en `repo-hygiene-2026-05-09` (een commandonaam uit
+        // een voorstel waarvan uiteindelijk het alternatief gekozen is).
+        //
+        // Alle negen waren vals. Een detector die alleen ruis geeft, wordt
+        // genegeerd — en dan mist hij ook de echte zombie.
+        foreach (['/audit/', '/plans/', '/decisions/'] as $map) {
+            if (str_contains($normalized, $map)) {
+                return true;
+            }
         }
-        if (preg_match('/^---\n.*?\n---/s', $content, $m)) {
+        // `\r?`: op een Windows-opgeslagen doc vond deze match niets, waardoor
+        // een doc met `status: PLANNED` alsnog als zombie werd gemeld — het
+        // beschrijft immers klassen die nog niet bestaan. Precies andersom
+        // bedoeld.
+        if (preg_match('/^---\r?\n.*?\r?\n---/s', $content, $m)) {
             if (preg_match('/^status:\s*(PLANNED|TODO|DRAFT|PROPOSED)\s*$/im', $m[0])) {
                 return true;
             }

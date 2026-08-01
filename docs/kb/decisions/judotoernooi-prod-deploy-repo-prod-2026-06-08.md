@@ -1,3 +1,10 @@
+---
+title: "JudoToernooi productie-deploy loopt via repo-prod (symlink)"
+type: reference
+scope: havuncore
+last_check: 2026-06-08
+---
+
 # Bevinding: JudoToernooi productie-deploy loopt via `repo-prod` (symlink), KB-docs onvolledig
 
 > **Datum:** 2026-06-08
