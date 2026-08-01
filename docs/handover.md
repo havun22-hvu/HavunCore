@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Thu, Jul 30, 2026 4:00 AM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Sat, Aug 1, 2026 4:00 AM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,32 +9,29 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-07-30 | `43fe4c2` | chore(docs): sync the auto-generated snapshots from production |
+| 2026-07-30 | `5df7bbd` | docs(kb): add pattern for holding an evidence position on inherited software |
+| 2026-07-29 | `407a75f` | docs(kb): add VPDUpdate to the mobile-login checklist, plus two findings |
+| 2026-07-28 | `78cefc9` | chore(kb): refresh the audit snapshot (272 files, 1 critical) |
+| 2026-07-28 | `ffcfe2a` | docs(kb): the SSL failure is Avast on the laptop, not the host |
+| 2026-07-28 | `bd5a35f` | docs(kb): add magic link pattern for raw Node.js projects |
+| 2026-07-27 | `3f23849` | docs(kb): add the zero-is-not-nothing falsy pattern |
+| 2026-07-25 | `6a8aed4` | Revert "chore(uren): add HavunMarketing hours for 24-25 July" |
+| 2026-07-25 | `1f9a5f0` | chore(uren): add HavunMarketing hours for 24-25 July |
+| 2026-07-25 | `cd9b398` | docs(kb): a pull deletes the file too -- leave a staged untrack alone |
+| 2026-07-25 | `0d905a6` | docs(handover): havuncore production is deployed and no longer diverged |
 | 2026-07-25 | `49eb91b` | docs: close out the start/end improvement |
 | 2026-07-25 | `686bf00` | feat(deploy): surface what is waiting to deploy, and rank it by urgency |
-| 2026-07-25 | `aa02fef` | test(kb): guard the indexer against ever indexing credentials.md again |
-| 2026-07-24 | `82416d7` | docs: coverage-quality audit for HavunCore (88.6%, measured 24-07) |
-| 2026-07-24 | `d22d3f1` | docs(kb): the SafeHavun QR checkbox claimed coverage that does not exist |
-| 2026-07-24 | `a530e18` | docs(kb): the standing coverage-audit brief for projects |
-| 2026-07-24 | `725c314` | docs(kb): drop the coverage thresholds that contradicted the layered policy |
-| 2026-07-24 | `2a924cc` | docs(handover): Studieplanner-api coverage measured, padding found |
-| 2026-07-24 | `830708d` | docs(handover): record the CLAUDE.md cleanup across projects |
-| 2026-07-24 | `cea6cd1` | docs: close out the AI-synthesis rollout plan |
-| 2026-07-24 | `a22d9b3` | chore: remove Munus from every registry and doc |
-| 2026-07-24 | `b1ada0f` | docs(claude): a bugfix test must be seen red against the old code |
-| 2026-07-24 | `3af9968` | docs(kb): standard for AI-synthesis risks + the rule that proves a test |
-| 2026-07-24 | `2bfb7a9` | chore(config): register havunmarketing project for doc intelligence |
-| 2026-07-24 | `17bce38` | docs: record the webapp update-banner measurement -- flow works, no fix needed |
-| 2026-07-24 | `0f227d6` | docs(kb): add runbook for Let's Encrypt YE1/YR1 intermediate SSL errors |
 
 ## V&K status (laatste qv:scan)
 
 **Totals:** critical 0 | high 0 | medium 0 | low 0
 
-_Snapshot timestamp: 2026-07-30T03:57:03+02:00_
+_Snapshot timestamp: 2026-08-01T03:57:03+02:00_
 
 ## KB audit (laatste wekelijkse run)
 
-**Totals:** critical 3 | high 27 | medium 0 | low 9
+**Totals:** critical 1 | high 28 | medium 0 | low 9
 
 _Zie `docs/kb/reference/kb-audit-latest.md` voor detail._
 
