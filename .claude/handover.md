@@ -17,12 +17,17 @@ prod draait overal, 0 dirty checkouts.
 V&K-checks, de docs-audit-fixes en de Vusista-opruiming van 01-08. Geen migraties. En HavunAdmin
 6 commits / 4 codebestanden uit een andere sessie (oefenomgeving-markering, sticky kolomkoppen).
 
-## 🔴 Twee dingen die morgen als eerste moeten
+## 🔴 Eén ding dat als eerste moet
 
 | Wat | Waarom nu |
 |---|---|
-| **`/root/roteer-havunadmin-db.sh` draaien** | Het MySQL-wachtwoord van `havunadmin` staat in een sessie-transcript (mijn fout: een grep op `^CENTRAL` over de staging-`.env` pakte ook `CENTRAL_DB_PASSWORD`). Geverifieerd: die waarde geeft **ALL PRIVILEGES op `havunadmin_production`**. Het script genereert 48 tekens op de server, test de verbinding vóór het een `.env` aanraakt, werkt prod+staging bij en doet een rooktest. Back-up vooraf naar `/root/backups/havunadmin-env-<datum>` |
 | **GitHub-PAT verloopt ~08-08** | `havuncore-webapp-mobile-monitoring`, werkt nu nog. Maak een fine-grained token met toegang tot **judoscoreboard (privé)** + Studieplanner, permissions Metadata/Contents/Pull requests **Read**, en draai dan `/root/vervang-github-pat.sh` (leest hem verborgen in). Procedure: `reference/repo-hygiene-policy.md` |
+
+**Gedaan 02-08: `havunadmin` MySQL-wachtwoord geroteerd.** Het gelekte wachtwoord (uit een
+transcript, ALL PRIVILEGES op prod) is dood. Nieuw: 48 tekens, alleen in de twee `.env`'s.
+Geverifieerd via de app zelf — `PDO OK`, 39/39 tabellen, beide sites 302. Backups:
+`/root/backups/havunadmin-pre-rotatie-20260802-104133` (DB-dumps + env) en
+`havunadmin-env-20260802-104145` (env). Geen worker draait op HavunAdmin, dus niets te herstarten.
 
 ## Backups: twee gaten gevonden en gedicht (01-08)
 
