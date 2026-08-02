@@ -13,30 +13,18 @@ last_updated: 2026-08-01
 **Branch:** master · **Status:** stabiel, 1389 tests groen, KB-audit 0 high. **Server:** disk 68%,
 prod draait overal, 0 dirty checkouts.
 
-**Klaar om te deployen (jouw klik):** HavunCore zelf 10 commits / 11 codebestanden — de twee
-V&K-checks, de docs-audit-fixes en de Vusista-opruiming van 01-08. Geen migraties. En HavunAdmin
-6 commits / 4 codebestanden uit een andere sessie (oefenomgeving-markering, sticky kolomkoppen).
+**Klaar om te deployen (jouw klik):** HavunCore zelf 14 commits / 12 codebestanden — de twee
+V&K-checks, de docs-audit-fixes, de Vusista-opruiming van 01-08 en het rotatiescript. Geen
+migraties. En HavunAdmin 8 commits / 4 codebestanden uit een andere sessie (oefenomgeving-markering,
+sticky kolomkoppen).
 
-## Gedaan 02-08 — de drie openstaande secrets zijn dicht
-
-**GitHub-PAT vervangen.** `havuncore-webapp-mobile-monitoring` verliep ~08-08; nieuwe token zit in
-de Vault (`github_pat_ro`, bijgewerkt 02-08 21:47), backend herstart. Geverifieerd tegen GitHub:
-beide repo's `HTTP 200`, verloopt **01-08-2027 22:00 UTC**. Cadens ging van 90 dagen naar 1 jaar —
-onderbouwing + omkeerpunt in `reference/repo-hygiene-policy.md`.
-
-**Twee MySQL-wachtwoorden geroteerd.**
-
-- **`havunadmin`** — het gelekte wachtwoord (uit een transcript, ALL PRIVILEGES op prod) is dood.
-  Geverifieerd via de app zelf: `PDO OK`, 39/39 tabellen, beide sites 302. Backups
-  `/root/backups/havunadmin-pre-rotatie-20260802-104133` + `havunadmin-env-20260802-104145`.
-- **`havuncore`** — stond als `HavunCore2025` plain in `credentials.md`, dus raadbaar op de
-  productiedatabase. `PDO OK`, 24/24 tabellen, site + `/api/health` 200. Backup
-  `/root/backups/rotatie-havuncore-20260802-161717`.
-
-Beide nieuw: 48 tekens, alleen in de `.env`. `credentials.md` wijst nu naar de vindplaats zonder
-waarde. Geen queue-worker draait op deze twee apps (`laravel-worker` is Herdenkingsportaal), dus
-niets te herstarten. Herbruikbaar: `scripts/roteer-db-wachtwoord.sh` (ook op `/root/`), methode C
-in `runbooks/secrets-veilig-ontvangen.md`.
+**02-08: de drie openstaande secrets zijn dicht** — GitHub-PAT vervangen (Vault, verloopt
+01-08-2027, beide repo's `HTTP 200`; cadens 90 dagen → 1 jaar met omkeerpunt in
+`reference/repo-hygiene-policy.md`), en de MySQL-wachtwoorden van **`havunadmin`** (gelekt via een
+transcript) en **`havuncore`** (stond plain als `HavunCore2025` in `credentials.md`) geroteerd naar
+48 tekens. Alle drie geverifieerd via de app zelf, niet via een HTTP-status: `PDO OK`, 39/39 en
+24/24 tabellen. Back-ups in `/root/backups/`. Herbruikbaar: `scripts/roteer-db-wachtwoord.sh`,
+methode C in `runbooks/secrets-veilig-ontvangen.md`.
 
 ## Backups: twee gaten gevonden en gedicht (01-08)
 
