@@ -39,8 +39,11 @@ Volledig: `plans/registry-drift-check-plan.md` + `reference/databases-op-de-serv
   dat nooit bestond, en sloeg dat stil over. Nu `storage/app` (3,8 MB: facturen, bunq-exports,
   verantwoording-2024). 7 jaar bewaarplicht.
 
-**Nu bewaakt door twee checks** (`qv:scan --only=registries` 03:02 en `--only=backup-coverage`
-05:30, beide 0 high/0 medium). De tweede vraagt het aan de app: elke `DB_DATABASE` uit de `.env`'s
+**Bewaakt door twee checks** (`qv:scan --only=registries` 03:02 en `--only=backup-coverage` 05:30)
+— maar ⛔ **de tweede meet niets op de server** (gevonden 02-08): hij gaat via SSH naar `root@` en
+`www-data` heeft die key niet, dus de cron rapporteert `errors=1` en niemand leest dat veld.
+Lokaal werkt hij wel. Fix voorgesteld (backupmanifest i.p.v. SSH-naar-zichzelf), raakt
+server-config → jouw go. Volledig in `plans/registry-drift-check-plan.md`. De tweede vraagt het aan de app: elke `DB_DATABASE` uit de `.env`'s
 moet als `<naam>.sql.gz` in de verwachting staan. **Beide restores getest** — HP 52/52 tabellen,
 HavunAdmin 39/39 met alle veertien boekhoudtabellen gelijk. Frequentie klopt: 31/31 dagen in juli,
 box op 2% van 1 TB.
@@ -53,7 +56,7 @@ box op 2% van 1 TB.
 | Wat | Details |
 |-----|---------|
 | **Gelekt login-wachtwoord (`…ZxO#`) — rotatie loopt (19-07)** | Google meldde leak; waarde was over 10 havun.nl-sites hergebruikt. **Gedaan:** wachtwoord-login van `henkvu@` dood op HavunCore/SafeHavun/Studieplanner (rij-backups `/root/backups/pwreset-2026-07-19`). **Jij nog doen:** (1) `scripts/rotate-leaked-login.sh` draaien in Git Bash → nieuw wachtwoord voor HavunAdmin (prod+staging) + JudoToernooi `.env`; (2) `infosyst`+`staging.havunclub` uit Google verwijderen. **Apart (eigen sessie):** VPD/vpdupdate; HavunAdmin magic-link bouwen; password-kolommen nullable op de 3 magic-link-apps |
-| **Vier rode builds (31-07)** | HavunAdmin 3 maanden rood · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie 1 dag · Studieplanner-api sinds 30-07. Gevonden door `actions:watch`. Uitzoeken hoort in de projectsessie zelf |
+| **Vier rode builds (31-07)** | HavunAdmin 3 maanden rood · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie 1 dag · Studieplanner-api sinds 30-07. Gevonden door `actions:watch` **lokaal** — op de server is `gh` niet geïnstalleerd, dus die cron (07:00/19:00) heeft nooit iets gecontroleerd. Uitzoeken hoort in de projectsessie zelf |
 | **Security: dependencies** | HavunCore zelf is schoon (01-08: 6 guzzle-advisories dicht, live). Open: HavunAdmin 19 composer-advisories (2 high); JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) — eigen sessie, `composer update`/`npm` → overleg |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault |

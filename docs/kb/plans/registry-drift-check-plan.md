@@ -140,6 +140,40 @@ Henks beslissing.
 - [x] Gevonden drift opgelost — 3 high en 1 sleutelkruising weg
 - [x] Backupdekking meten aan de uitkomst — `qv:scan --only=backup-coverage`, dagelijks 05:30
       (ná de backup-cron van 03:00), 12 tests
+- [ ] **De 05:30-cron meet niets** (gevonden 02-08) — zie hieronder
+
+## ⛔ De nachtelijke backupcheck is blind (02-08-2026)
+
+De check werkt **alleen lokaal**. Op de server, waar de cron hem draait, meet hij niets:
+
+```
+lokaal (Henks machine, root-SSH-key):   errors=0  high=0  medium=0
+server (cron, als www-data):            errors=1  ← "Backupmap niet op te vragen:
+                                                     root@188.245.159.115: Permission denied (publickey)"
+```
+
+**Oorzaak:** `QualitySafetyScanner::runRemote()` gaat via SSH naar `root@<server>` — geschreven
+vanuit "Claude draait dit lokaal". Draait de scan op de server zelf, dan is dat een SSH-verbinding
+naar zichzelf, en `www-data` heeft geen root-key. Terecht ook: die key geven ís de
+privilege-escalatie die je nooit wilt (webserver-user wordt root).
+
+**Waarom dit erger is dan een gewone bug:** dit is exact de faalmodus die de check moest afvangen.
+Elke nacht draait er iets dat eruitziet als bewaking, `high=0` rapporteert, en niet gekeken heeft.
+Vier maanden lang keek iedereen naar een gezonde backup van de verkeerde database; nu keek er drie
+dagen lang niemand naar de bewaking zelf. De check meldt zijn eigen falen wel netjes als
+`errors: 1` — maar niets leest dat veld, en `qv:log` toont alleen high/medium.
+
+**Voorgestelde fix (raakt server-config → Henks go):** het backupscript (draait als root) schrijft
+na afloop een manifest naar `/var/lib/havun/backup-manifest.json`, world-readable, met per bestand
+naam/grootte/tijd plus de `DB_DATABASE` per app. De check leest dat bestand **lokaal** als hij op
+de server draait, en valt alleen buiten de server terug op SSH. Geen root-rechten voor `www-data`,
+geen SSH naar zichzelf, en het manifest is zelf te controleren op ouderdom (staler dan 26 uur =
+finding). Alternatieven die afvallen: de cron als root draaien (maakt `storage/**` root-owned →
+de bekende 500's), of `www-data` een root-key geven (privilege-escalatie).
+
+**Tweede regel die hieruit volgt:** een check die `errors > 0` teruggeeft, mag nooit als groen
+langskomen. `qv:log`/de scheduler moeten daarop alarmeren, anders herhaalt dit zich bij de volgende
+check die stil omvalt.
 
 ## Wat de backupcheck vond op zijn eerste run (01-08)
 
