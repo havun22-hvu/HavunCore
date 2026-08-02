@@ -19,7 +19,7 @@ class BackupCoverageTest extends TestCase
 {
     private const DREMPELS = ['max_backup_age_hours' => 25, 'min_backup_size_bytes' => 1024];
 
-    private function detect(array $canoniek, array $verwacht, array $uitgezonderd, array $gevonden, array $appDatabases = []): array
+    private function detect(array $canoniek, array $verwacht, array $uitgezonderd, array $gevonden, array $appDatabases = [], ?array $meting = null): array
     {
         return (new BackupCoverageDetector)->detect(
             $canoniek,
@@ -28,6 +28,7 @@ class BackupCoverageTest extends TestCase
             $gevonden,
             self::DREMPELS,
             $appDatabases,
+            $meting ?? ['bron' => 'ssh', 'leeftijd_uren' => 0.0],
         );
     }
 
@@ -290,6 +291,64 @@ class BackupCoverageTest extends TestCase
             [],
             ['havuncore.sql.gz' => $this->bestand()],
             appDatabases: [],
+        );
+
+        $this->assertSame([], $findings);
+    }
+
+    /**
+     * De check ging van 01-08 tot 02-08-2026 elke nacht over de meetketen zelf
+     * onderuit: hij vroeg de backupmap via SSH op bij `root@`, maar op de
+     * server draait hij als `www-data` en die heeft die sleutel niet. Resultaat:
+     * `errors=1`, `high=0` -- en niets las dat eerste veld. Precies de
+     * faalmodus die deze check moest afvangen, nu in de check zelf.
+     *
+     * Daarom oordeelt de detector voortaan ook over de *meting*: hoe oud is
+     * hij, en is er überhaupt gemeten.
+     */
+    public function test_meting_die_niet_gelukt_is_is_critical(): void
+    {
+        $findings = $this->detect(
+            [],
+            ['havuncore' => ['havuncore.sql.gz']],
+            [],
+            ['havuncore.sql.gz' => $this->bestand()],
+            meting: ['bron' => 'geen', 'leeftijd_uren' => null],
+        );
+
+        $critical = $this->berichtenMet($findings, 'critical');
+
+        $this->assertCount(1, $critical);
+        $this->assertStringContainsString('niet gemeten', $critical[0]);
+    }
+
+    public function test_verouderde_meting_is_high(): void
+    {
+        // Het manifest wordt na elke backuprun herschreven. Is het ouder dan
+        // een etmaal, dan staat de meetketen stil en zegt de uitkomst niets
+        // meer over vannacht -- ook al zien de bestanden erin er prima uit.
+        $findings = $this->detect(
+            [],
+            ['havuncore' => ['havuncore.sql.gz']],
+            [],
+            ['havuncore.sql.gz' => $this->bestand()],
+            meting: ['bron' => 'manifest', 'leeftijd_uren' => 40.0],
+        );
+
+        $high = $this->berichtenMet($findings, 'high');
+
+        $this->assertCount(1, $high);
+        $this->assertStringContainsString('40', $high[0]);
+    }
+
+    public function test_verse_meting_levert_geen_extra_finding(): void
+    {
+        $findings = $this->detect(
+            [],
+            ['havuncore' => ['havuncore.sql.gz']],
+            [],
+            ['havuncore.sql.gz' => $this->bestand()],
+            meting: ['bron' => 'manifest', 'leeftijd_uren' => 2.0],
         );
 
         $this->assertSame([], $findings);
