@@ -23,11 +23,19 @@ V&K-checks, de docs-audit-fixes en de Vusista-opruiming van 01-08. Geen migratie
 |---|---|
 | **GitHub-PAT verloopt ~08-08** | `havuncore-webapp-mobile-monitoring`, werkt nu nog. Maak een fine-grained token met toegang tot **judoscoreboard (privé)** + Studieplanner, permissions Metadata/Contents/Pull requests **Read**, en draai dan `/root/vervang-github-pat.sh` (leest hem verborgen in). Procedure: `reference/repo-hygiene-policy.md` |
 
-**Gedaan 02-08: `havunadmin` MySQL-wachtwoord geroteerd.** Het gelekte wachtwoord (uit een
-transcript, ALL PRIVILEGES op prod) is dood. Nieuw: 48 tekens, alleen in de twee `.env`'s.
-Geverifieerd via de app zelf — `PDO OK`, 39/39 tabellen, beide sites 302. Backups:
-`/root/backups/havunadmin-pre-rotatie-20260802-104133` (DB-dumps + env) en
-`havunadmin-env-20260802-104145` (env). Geen worker draait op HavunAdmin, dus niets te herstarten.
+**Gedaan 02-08: twee MySQL-wachtwoorden geroteerd.**
+
+- **`havunadmin`** — het gelekte wachtwoord (uit een transcript, ALL PRIVILEGES op prod) is dood.
+  Geverifieerd via de app zelf: `PDO OK`, 39/39 tabellen, beide sites 302. Backups
+  `/root/backups/havunadmin-pre-rotatie-20260802-104133` + `havunadmin-env-20260802-104145`.
+- **`havuncore`** — stond als `HavunCore2025` plain in `credentials.md`, dus raadbaar op de
+  productiedatabase. `PDO OK`, 24/24 tabellen, site + `/api/health` 200. Backup
+  `/root/backups/rotatie-havuncore-20260802-161717`.
+
+Beide nieuw: 48 tekens, alleen in de `.env`. `credentials.md` wijst nu naar de vindplaats zonder
+waarde. Geen queue-worker draait op deze twee apps (`laravel-worker` is Herdenkingsportaal), dus
+niets te herstarten. Herbruikbaar: `scripts/roteer-db-wachtwoord.sh` (ook op `/root/`), methode C
+in `runbooks/secrets-veilig-ontvangen.md`.
 
 ## Backups: twee gaten gevonden en gedicht (01-08)
 

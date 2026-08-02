@@ -46,6 +46,29 @@ curl -s -o /dev/null -w '%{http_code}' https://api.stripe.com/v1/balance -u "$SK
 Voorbeeld: de admin-wachtwoord-reset las de nieuwe waarde via `fgets(STDIN)` en zette 'm
 via `bcrypt()` in de DB — nooit in beeld (`runbooks/…` / commit 18-07).
 
+## Methode C — een DB-wachtwoord roteren (waarde bestaat alleen op de server)
+
+`scripts/roteer-db-wachtwoord.sh <mysql-user> <test-database> <.env> [<.env> …]`, als root
+op de server. Genereert 48 tekens uit `/dev/urandom`, **test de verbinding vóór het een
+`.env` aanraakt**, schrijft de waarde alleen naar de opgegeven `.env`'s en print hem nooit.
+Back-up (DB-dump + alle `.env`'s, gzip geverifieerd) gaat vooraf naar `/root/backups/`.
+
+Vóór je hem draait: zoek **alle** plekken waar de user staat — anders breekt er stil iets.
+```bash
+find /var/www -maxdepth 4 -name .env -exec grep -l '^DB_USERNAME=<user>$' {} +
+grep -rl '<user>' /usr/local/bin /etc/cron.d /root/*.sh        # backup-/healthscripts
+```
+Let op symlinks: `/var/www/havunadmin/HavunCore` en `.../herdenkingsportaal/HavunCore`
+wijzen naar `/var/www/havuncore/production` — één `.env`, geen drie. `find` volgt ze niet,
+een `*/*/.env`-glob wel, dus die twee zoekmethodes geven bewust een ander antwoord.
+
+Ná afloop: verifieer **via de app**, niet via de site. Een `302`/`200` kan uit cache of een
+loginredirect komen zonder dat er ooit een query liep:
+```bash
+sudo -u www-data php artisan tinker --execute="echo DB::connection()->getPdo() ? 'OK' : 'FAIL';"
+```
+En herstart queue-workers die de oude waarde in het geheugen hebben (`systemctl`, `pm2`).
+
 ## Verifiëren zonder lekken
 
 Bevestig dat het werkt met **alleen niet-gevoelige signalen**:
