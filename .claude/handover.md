@@ -17,13 +17,14 @@ prod draait overal, 0 dirty checkouts.
 V&K-checks, de docs-audit-fixes en de Vusista-opruiming van 01-08. Geen migraties. En HavunAdmin
 6 commits / 4 codebestanden uit een andere sessie (oefenomgeving-markering, sticky kolomkoppen).
 
-## 🔴 Eén ding dat als eerste moet
+## Gedaan 02-08 — de drie openstaande secrets zijn dicht
 
-| Wat | Waarom nu |
-|---|---|
-| **GitHub-PAT verloopt ~08-08** | `havuncore-webapp-mobile-monitoring`, werkt nu nog. Maak een fine-grained token met toegang tot **judoscoreboard (privé)** + Studieplanner, permissions Metadata/Contents/Pull requests **Read**, en draai dan `/root/vervang-github-pat.sh` (leest hem verborgen in). Procedure: `reference/repo-hygiene-policy.md` |
+**GitHub-PAT vervangen.** `havuncore-webapp-mobile-monitoring` verliep ~08-08; nieuwe token zit in
+de Vault (`github_pat_ro`, bijgewerkt 02-08 21:47), backend herstart. Geverifieerd tegen GitHub:
+beide repo's `HTTP 200`, verloopt **01-08-2027 22:00 UTC**. Cadens ging van 90 dagen naar 1 jaar —
+onderbouwing + omkeerpunt in `reference/repo-hygiene-policy.md`.
 
-**Gedaan 02-08: twee MySQL-wachtwoorden geroteerd.**
+**Twee MySQL-wachtwoorden geroteerd.**
 
 - **`havunadmin`** — het gelekte wachtwoord (uit een transcript, ALL PRIVILEGES op prod) is dood.
   Geverifieerd via de app zelf: `PDO OK`, 39/39 tabellen, beide sites 302. Backups

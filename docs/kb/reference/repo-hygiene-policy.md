@@ -105,7 +105,11 @@ De PWA mobile-project monitoring (zie `decisions/mobile-project-monitoring-2026-
 
 ### Rotation cadens
 
-- **PAT (in Vault als `github_pat_ro`)**: 90 dagen geldig — fine-grained, read-only, beperkt tot de mobile-repos.
+- **PAT (in Vault als `github_pat_ro`)**: **1 jaar** geldig — fine-grained, read-only, beperkt tot
+  de mobile-repos. Stond hier tot 02-08-2026 op 90 dagen; dat is strenger, maar vier handmatige
+  rotaties per jaar is precies hoe deze token bijna stil verliep. Read-only op twee repo's, en de
+  waarde ligt versleuteld in de Vault. **Omkeerpunt:** krijgt de token ooit schrijfrechten of een
+  derde repo, dan terug naar 90 dagen.
 - **Vault project token (`hvn_…` in PWA `.env.production` als `VAULT_PROJECT_TOKEN`)**: roteren bij verdenking compromise of bij personeel-wisselingen.
 
 ### Rotation-procedure
@@ -121,7 +125,7 @@ backend en verifieert dat er geen PAT-fouten in het log staan.
 |---|---|
 | Repository access | `havun22-hvu/judoscoreboard` (**privé** — zonder deze faalt de monitoring) en `havun22-hvu/Studieplanner` (publiek) |
 | Repository permissions | Metadata **Read**, Contents **Read**, Pull requests **Read** |
-| Expiratie | 90 dagen; noteer de vervaldatum in de tabel hieronder |
+| Expiratie | 1 jaar; noteer de vervaldatum in de tabel hieronder |
 
 > ⚠️ **Niet doen:** `GITHUB_PAT_RO='github_pat_...' php artisan vault:setup-mobile-monitoring`.
 > Dat is de oude regel die hier stond, en hij schrijft de token in `~/.bash_history` én in `ps`.
@@ -136,7 +140,11 @@ Bearer-token (bij compromise van de webapp-kant).
 
 | Token | Verloopt | Actie |
 |---|---|---|
-| `havuncore-webapp-mobile-monitoring` | **~08-08-2026** (GitHub-melding 01-08: nog 7 dagen) | Vervangen met het script hierboven |
+| `havuncore-webapp-mobile-monitoring` | **01-08-2027 22:00 UTC** (geroteerd 02-08-2026) | Vervangen met het script hierboven zodra GitHub waarschuwt |
+
+De vervaldatum hoef je niet uit de GitHub-UI over te tikken — GitHub geeft hem terug in een header
+bij elke geauthenticeerde call: `github-authentication-token-expiration`. Zo verifieer je ná een
+rotatie meteen dat je de expiratie hebt gezet die je bedoelde.
 
 ## Wijzigingshistorie
 
@@ -144,3 +152,4 @@ Bearer-token (bij compromise van de webapp-kant).
 |-------|-----------|
 | 2026-05-09 | Initieel — uit `decisions/repo-hygiene-2026-05-09.md` Laag 4 |
 | 2026-05-09 | Mobile-monitoring Vault PAT-sectie toegevoegd |
+| 2026-08-02 | PAT geroteerd (verloopt 01-08-2027); cadens 90 dagen → 1 jaar, met omkeerpunt |
