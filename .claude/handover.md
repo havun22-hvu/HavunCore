@@ -55,8 +55,12 @@ cron als root draait.
 geen wachtwoorden); de check leest dat. **Niets gemeten = critical** (en dan alléén die finding),
 **manifest ouder dan 26 uur = high**. Op de server: `errors=1` → `errors=0`.
 
-**Nog open, zelfde patroon:** `actions:watch` heeft op de server nooit gewerkt — `gh` staat er niet
-op, dus de crons van 07:00/19:00 controleren niets.
+**`actions:watch` werkt nu ook op de server (04-08).** Hij had er drie kwalen tegelijk: `gh` staat
+er niet op (nu rechtstreeks naar de GitHub-API met `github_pat_ro` uit de Vault), hij las Henks
+Windows-pad voor de git-remote, en de regex herkende de per-repo SSH-aliassen niet
+(`git@github-judotoernooi:`) — die beveiligingsmaatregel maakte de bewaking blind. Nul repo's of een
+onbereikbare repo is nu een luide fout **plus** een health-alert, want cron-stdout gaat naar
+`/dev/null`. Uitkomst op de server: 4 gecontroleerd, **studieplanner-api rood sinds 20 uur**.
 
 **Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump in
 `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database.
@@ -66,7 +70,8 @@ op, dus de crons van 07:00/19:00 controleren niets.
 | Wat | Details |
 |-----|---------|
 | **Gelekt login-wachtwoord (`…ZxO#`) — rotatie loopt (19-07)** | Google meldde leak; waarde was over 10 havun.nl-sites hergebruikt. **Gedaan:** wachtwoord-login van `henkvu@` dood op HavunCore/SafeHavun/Studieplanner (rij-backups `/root/backups/pwreset-2026-07-19`). **Jij nog doen:** (1) `scripts/rotate-leaked-login.sh` draaien in Git Bash → nieuw wachtwoord voor HavunAdmin (prod+staging) + JudoToernooi `.env`; (2) `infosyst`+`staging.havunclub` uit Google verwijderen. **Apart (eigen sessie):** VPD/vpdupdate; HavunAdmin magic-link bouwen; password-kolommen nullable op de 3 magic-link-apps |
-| **Vier rode builds (31-07)** | HavunAdmin 3 maanden rood · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie 1 dag · Studieplanner-api sinds 30-07. Gevonden door `actions:watch` **lokaal** — op de server is `gh` niet geïnstalleerd, dus die cron (07:00/19:00) heeft nooit iets gecontroleerd. Uitzoeken hoort in de projectsessie zelf |
+| **GitHub-PAT ziet 4 van de 8 repo's niet** | `github_pat_ro` (Vault) geeft 404 op HavunAdmin, Herdenkingsportaal, VPDUpdate en havuncore-webapp — hij is gemaakt voor de mobiele monitoring. **Jij:** in GitHub de fine-grained PAT uitbreiden naar alle `havun22-hvu`-repo's (alleen `metadata:read` + `actions:read` nodig), daarna `php artisan vault:setup-mobile-monitoring --from-env`. Tot die tijd meldt `actions:watch` het elke ronde |
+| **Vier rode builds** | HavunAdmin 3 maanden · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie · Studieplanner-api (04-08 nog steeds rood). Uitzoeken hoort in de projectsessie zelf |
 | **Security: dependencies — 2 critical + 22 high, nooit eerder gerapporteerd** | Zichtbaar door de scanfixes van 03-08. **npm:** Studieplanner-mobile 2 critical (`shell-quote`, `tar`) + 6 high · havun.nl 3 high (next, postcss, sharp) · VPDUpdate 1 high (`xlsx`, geen fix — vervangen door exceljs). **composer:** Studieplanner-api 6 high + 24 medium · JudoToernooi 3 high + 10 medium · SafeHavun 3 high + 17 medium (laravel/framework, symfony, web-token/jwt). HavunAdmin, Herdenkingsportaal en HavunCore zijn schoon. **Elk in de eigen projectsessie** — `composer update`/`npm audit fix` op productie-apps → overleg. Los daarvan: JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault |

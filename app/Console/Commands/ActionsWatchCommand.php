@@ -111,6 +111,22 @@ class ActionsWatchCommand extends Command
         if ($onbereikbaar !== []) {
             $this->error('Niet op te vragen bij GitHub (geen toegang of hernoemd): ' . implode(', ', $onbereikbaar));
 
+            // De cron stuurt stdout naar /dev/null, dus een regel op het scherm
+            // is geen melding. Blinde bewaking moet dezelfde weg naar een mens
+            // nemen als een rode build — anders is dit weer een signaal dat
+            // bestaat en niemand bereikt.
+            if (! $this->option('dry-run')) {
+                $this->call('health:alert', [
+                    'key' => 'actions-bewaking',
+                    '--scope' => 'global',
+                    '--status' => 'down',
+                    '--severity' => 'warning',
+                    '--title' => 'Actions-bewaking kan niet bij alle repo\'s',
+                    '--body' => 'Niet op te vragen bij GitHub: ' . implode(', ', $onbereikbaar)
+                        . '. De PAT `github_pat_ro` in de Vault heeft daar geen toegang toe.',
+                ]);
+            }
+
             return self::FAILURE;
         }
 

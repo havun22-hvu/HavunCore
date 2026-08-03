@@ -329,6 +329,12 @@ class ActionsWatchCommandTest extends TestCase
         $this->artisan('actions:watch')
             ->expectsOutputToContain('Niet op te vragen')
             ->assertExitCode(1);
+
+        // De cron stuurt stdout naar /dev/null, dus een regel op het scherm is
+        // geen melding. Dit moet dezelfde weg nemen als een rode build.
+        $alert = HealthAlert::where('key', 'actions-bewaking')->first();
+        $this->assertNotNull($alert, 'een onbereikbare repo hoort een alert op te leveren');
+        $this->assertSame('open', $alert->status);
     }
 
     public function test_a_repo_without_any_runs_produces_no_alert(): void
