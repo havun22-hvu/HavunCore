@@ -10,9 +10,9 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel, 1403 tests groen, KB-audit 0 high. **Server:** disk 68%,
-prod draait overal, 0 dirty checkouts. **Alles van 03-08 staat live** (geen migraties). HavunAdmin
-heeft 16 commits / 7 codebestanden klaar uit een andere sessie.
+**Branch:** master · **Status:** stabiel, 1411 tests groen, KB-audit 0 high. **Server:** disk 68%,
+prod draait overal, 0 dirty checkouts, 0 stashes. **Alles staat live** — HavunCore én HavunAdmin
+(04-08 gedeployd, geen migraties, rollbackpunt `8cf75a3`).
 
 **Afgerond 01/02-08:** drie secrets geroteerd (GitHub-PAT + MySQL van `havunadmin` en `havuncore`,
 alle drie via de app geverifieerd, backups in `/root/backups/`), en twee backupgaten gedicht
@@ -20,47 +20,25 @@ alle drie via de app geverifieerd, backups in `/root/backups/`), en twee backupg
 Beide restores getest. Volledig: `runbooks/secrets-veilig-ontvangen.md`,
 `plans/registry-drift-check-plan.md`, `reference/databases-op-de-server.md`.
 
-## De V&K-scan meet op de server weer (03-08) — alle drie gefixt
+## De V&K-scan meet op de server weer (03/04-08)
 
-Gevonden bij het afmaken van de backupfix. Drie losse oorzaken, alle drie gemeten op de runs van
-vannacht op prod:
+Vier lagen van dezelfde fout, alle vier gemeten op de echte runs en alle vier gefixt. Het patroon
+en de regels die eruit volgen: `patterns/bewaking-die-niets-meet.md`.
 
-1. **De rapportage las één run per dag.** Elke `--only=X` schrijft een eigen bestand; `qv:log`
-   (03:27) en `docs:handover` (04:00) pakten het nieuwste. De observatory-run van 04:37 vond een
-   **high** (safehavun grade C) die nergens stond, en de acht wekelijkse checks (04:07–05:47)
-   hadden **nooit** iets gerapporteerd. Beide rapporten zeiden `high 0`.
-   → **Gefixt:** `MergedRunAssembler` voegt 8 dagen samen, nieuwste run per check wint, en het
-   rapport zegt nu per check wanneer die draaide. `plans/qv-rapportage-venster-plan.md`.
-2. **`composer`/`npm`/`cargo` scanden op de server niets** — 40 errors `Project path not found:
-   D:/GitHub/…`; de scanner gebruikte Henks Windows-pad. Dít is waarom de 34 advisories op
-   Herdenkingsportaal 13 commits bleven liggen.
-   → **Gefixt** (03-08): de scan pakt het pad dat op déze machine bestaat. Valkuil:
-   `havun-projects.php` noemt het `server_path`, de scanlijst `remote_path` — alleen de eerste
-   kennen loste niets op. Ook geïnstalleerd (jouw go): **composer 2.10.2** naast het Ubuntu-pakket
-   2.2.6, dat `audit` niet kende (kwam pas in 2.4); hash geverifieerd tegen `installer.sig`.
-   **Eindstand op de server: `errors: 0`, 6 terecht overgeslagen, en 12 high + 51 medium die
-   niemand ooit gezien had.** `cargo` en `gh` ontbreken er nog — die checks melden dat nu eerlijk.
-3. **`serverHealth`** ging via SSH naar `root@` en viel op de server om — zelfde oorzaak.
-   → **Gefixt:** `runRemote()` kijkt of de host déze machine is en draait het commando dan gewoon.
-   Eén plek, dus `residu` volgt mee. Geverifieerd op de server met een kunstmatige drempel van 5%:
-   meldt `/ — 68% full`, `errors: 0`.
+| Was | Nu |
+|---|---|
+| `backup-coverage` + `serverHealth` gingen via SSH naar `root@` — vanaf die server zelf | Backupscript schrijft een manifest; `runRemote()` draait lokaal als de host deze machine is. `errors=1` → `errors=0`, geverifieerd met een kunstmatige drempel (`/ — 68% full`) |
+| `composer`/`npm`/`cargo` gebruikten `D:/GitHub/…` op Linux → 40 errors = nul projecten gemeten | Pad dat hier bestaat wint (let op: `server_path` **én** `remote_path`). Composer 2.10.2 erbij, hash geverifieerd — 2.2.6 kende `audit` niet |
+| `qv:log`/`docs:handover` lazen één run per dag; de 8 wekelijkse checks hadden **nooit** iets gerapporteerd | `MergedRunAssembler` voegt 8 dagen samen, nieuwste run per check, mét de tijd per check |
+| `actions:watch` had drie kwalen tegelijk: geen `gh`, Windows-pad, en de regex herkende de per-repo SSH-aliassen niet | Rechtstreeks naar de GitHub-API met `github_pat_ro`. Nul repo's of een onbereikbare repo = luide fout **plus** health-alert (cron-stdout gaat naar `/dev/null`) |
+
+**Opbrengst: 2 critical + 22 high die niemand ooit gezien had**, plus studieplanner-api rood sinds
+20 uur. Details in de tabel hieronder.
 
 **Correctie op de diagnose van 02-08:** de scheduler draait **als root** (alle `schedule:run` staan
 in roots crontab; de qv-scanbestanden zijn `root:root`), niet als `www-data`. De SSH-fout kwam dus
 doordat *de server geen sleutel naar zichzelf heeft*. Bijvangst: die root-cron maakt `storage/**`
-root-owned, waardoor `cache:clear` als `www-data` faalt — rechtgezet, maar het komt terug zolang de
-cron als root draait.
-
-**De backupcheck** schrijft nu als root een manifest (`/var/lib/havun/backup-manifest.json`, 644,
-geen wachtwoorden); de check leest dat. **Niets gemeten = critical** (en dan alléén die finding),
-**manifest ouder dan 26 uur = high**. Op de server: `errors=1` → `errors=0`.
-
-**`actions:watch` werkt nu ook op de server (04-08).** Hij had er drie kwalen tegelijk: `gh` staat
-er niet op (nu rechtstreeks naar de GitHub-API met `github_pat_ro` uit de Vault), hij las Henks
-Windows-pad voor de git-remote, en de regex herkende de per-repo SSH-aliassen niet
-(`git@github-judotoernooi:`) — die beveiligingsmaatregel maakte de bewaking blind. Nul repo's of een
-onbereikbare repo is nu een luide fout **plus** een health-alert, want cron-stdout gaat naar
-`/dev/null`. Uitkomst op de server: 4 gecontroleerd, **studieplanner-api rood sinds 20 uur**.
+root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chown` nodig.
 
 **Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump in
 `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database.
