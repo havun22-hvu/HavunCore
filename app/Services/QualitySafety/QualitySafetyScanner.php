@@ -159,11 +159,11 @@ class QualitySafetyScanner
      * bestand alleen gelezen.
      *
      * Waarom niet meer zelf meten: tot 02-08-2026 vroeg deze check de backupmap
-     * op via SSH naar `root@`. Draait de scan op de server (als `www-data`), dan
-     * is dat een SSH-verbinding naar zichzelf zonder sleutel — en die sleutel
-     * geven zou de webserver-user root maken. De cron rapporteerde daardoor elke
-     * nacht `errors=1, high=0`. Sinds 03-08 is er nog één definitie van wat er
-     * gemeten wordt, in bash, en leest deze kant hem lokaal of via SSH.
+     * op via SSH naar `root@`. Draait de scan op de server zelf — en dat doet
+     * hij, elke minuut vanuit roots crontab — dan is dat een verbinding naar
+     * zichzelf, zonder sleutel. De cron rapporteerde daardoor elke nacht
+     * `errors=1, high=0`. Sinds 03-08 is er nog één definitie van wat er gemeten
+     * wordt, in bash, en leest deze kant hem lokaal of via SSH.
      *
      * @return array{findings:array<int,array<string,mixed>>, error?:string, skipped?:string}
      */
@@ -178,7 +178,8 @@ class QualitySafetyScanner
         $pad = (string) config('havun-backup.verificatie.manifest', '/var/lib/havun/backup-manifest.json');
 
         // Op de server ligt het manifest gewoon op schijf; daarbuiten (Henks
-        // machine) halen we hetzelfde bestand op via SSH.
+        // machine) halen we hetzelfde bestand op via SSH. Een bestand dat je
+        // lokaal kunt lezen via een SSH-sessie naar jezelf opvragen was de fout.
         if (is_readable($pad)) {
             return $this->toetsBackupdekking((string) file_get_contents($pad), $verwacht);
         }

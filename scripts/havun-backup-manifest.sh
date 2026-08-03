@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 # Schrijft de uitkomst van de nachtelijke backuprun naar een manifest dat de
-# V&K-check zonder root-rechten kan lezen.
+# V&K-check kan lezen zonder de backupmap zelf te hoeven openen.
 #
-# Waarom dit bestaat: `qv:scan --only=backup-coverage` draait op de server als
-# `www-data` en vroeg de backupmap op via SSH naar `root@`. Die sleutel heeft
-# www-data niet -- en die geven zou de webserver-user root maken. Van 01-08 tot
-# 02-08-2026 rapporteerde de cron daardoor elke nacht `errors=1, high=0`:
-# bewaking die niets meet, en niets las dat eerste veld. Sinds 03-08-2026 legt
-# het backupscript (dat wél root is) zijn eigen resultaat hier neer.
+# Waarom dit bestaat: `qv:scan --only=backup-coverage` draait op de server en
+# vroeg de backupmap op via SSH naar `root@` -- de server dus, vanaf de server,
+# die geen sleutel naar zichzelf heeft (en die ook niet hoort te hebben). Van
+# 01-08 tot 02-08-2026 rapporteerde de cron daardoor elke nacht
+# `errors=1, high=0`: bewaking die niets meet, en niets las dat eerste veld.
+# Sinds 03-08-2026 legt het backupscript zijn eigen resultaat hier neer.
 #
 # Er staan geen wachtwoorden in: bestandsnamen, groottes, tijden en de
 # databasenaam per app. Daarom mag het wereldleesbaar zijn.

@@ -300,8 +300,8 @@ class BackupCoverageTest extends TestCase
 
     /**
      * De check ging van 01-08 tot 02-08-2026 elke nacht over de meetketen zelf
-     * onderuit: hij vroeg de backupmap via SSH op bij `root@`, maar op de
-     * server draait hij als `www-data` en die heeft die sleutel niet. Resultaat:
+     * onderuit: hij vroeg de backupmap via SSH op bij `root@`, maar hij draait
+     * op die server zelf en die heeft geen sleutel naar zichzelf. Resultaat:
      * `errors=1`, `high=0` -- en niets las dat eerste veld. Precies de
      * faalmodus die deze check moest afvangen, nu in de check zelf.
      *
@@ -359,7 +359,7 @@ class BackupCoverageTest extends TestCase
     /**
      * De scannerkant: staat er een manifest, dan is dát de meting en gaat er
      * geen SSH meer aan te pas. Dat is de enige route die op de server werkt --
-     * daar draait de scan als `www-data`, zonder root-sleutel.
+     * daar zou SSH een verbinding naar de eigen machine zijn.
      */
     public function test_scanner_meet_via_het_manifest_zonder_ssh(): void
     {

@@ -149,7 +149,15 @@ Henks beslissing.
 `DB_DATABASE` van elke app. Geen wachtwoorden, dus wereldleesbaar mag.
 
 De check leest dat manifest als het er is, en valt alleen daarbuiten (Henks machine) terug op SSH.
-Geen root-sleutel voor `www-data`, geen SSH naar zichzelf.
+Geen SSH-sessie naar de machine waar je al op staat.
+
+**Correctie op de diagnose van 02-08** (geverifieerd 03-08, tijdens de deploy): de scan draait
+*niet* als `www-data`. Alle `schedule:run`-crons staan in **roots** crontab — de qv-scan-bestanden
+in `storage/app/qv-scans/` zijn `root:root`. De echte oorzaak is dus niet een ontbrekende
+www-data-sleutel maar dat **de server geen SSH-key naar zichzelf heeft** (`/root/.ssh/` bevat
+alleen `deploy_havunadmin`). Dat de fix goed is verandert niet; de reden wel. Bijvangst van
+diezelfde meting: die root-cron maakt `storage/**` root-owned, waardoor `cache:clear` als
+`www-data` faalt — 03-08 rechtgezet met `chown -R www-data:www-data storage bootstrap/cache`.
 
 **Drie regels erbij, alle drie over de meting in plaats van over de backups:**
 
@@ -173,14 +181,15 @@ De check werkt **alleen lokaal**. Op de server, waar de cron hem draait, meet hi
 
 ```
 lokaal (Henks machine, root-SSH-key):   errors=0  high=0  medium=0
-server (cron, als www-data):            errors=1  ← "Backupmap niet op te vragen:
+server (cron, als root):                errors=1  <- "Backupmap niet op te vragen:
                                                      root@188.245.159.115: Permission denied (publickey)"
+na de fix (server, 03-08):              errors=0  high=0  info=2
 ```
 
 **Oorzaak:** `QualitySafetyScanner::runRemote()` gaat via SSH naar `root@<server>` — geschreven
 vanuit "Claude draait dit lokaal". Draait de scan op de server zelf, dan is dat een SSH-verbinding
-naar zichzelf, en `www-data` heeft geen root-key. Terecht ook: die key geven ís de
-privilege-escalatie die je nooit wilt (webserver-user wordt root).
+naar zichzelf, en daar is geen sleutel voor. Er hoort er ook geen te zijn: een bestand dat lokaal
+op schijf staat via het netwerk bij jezelf opvragen is de omweg, niet de oplossing.
 
 **Waarom dit erger is dan een gewone bug:** dit is exact de faalmodus die de check moest afvangen.
 Elke nacht draait er iets dat eruitziet als bewaking, `high=0` rapporteert, en niet gekeken heeft.
@@ -191,6 +200,9 @@ dagen lang niemand naar de bewaking zelf. De check meldt zijn eigen falen wel ne
 **Afgevallen alternatieven** (blijven staan zodat niemand ze opnieuw voorstelt): de cron als root
 draaien maakt `storage/**` root-owned → de bekende 500's; `www-data` een root-key geven is
 privilege-escalatie.
+
+**Afgevallen alternatief dat vaak terugkomt:** de cron als root draaien. Dat *doet* hij al (dat
+was de verkeerde aanname), en precies daarom staat `storage/**` periodiek op root-owned.
 
 **Nog open, buiten deze fix:** dezelfde SSH-route zit ook in `serverHealth` en `residueCheck`.
 Draaien die op de server, dan vallen ze om dezelfde reden om. Sinds 03-08 zie je dat wél terug

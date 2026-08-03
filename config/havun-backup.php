@@ -254,12 +254,12 @@ return [
         // elke app volgens zijn `.env` gebruikt. Wereldleesbaar, zonder
         // wachtwoorden.
         //
-        // Nodig omdat de check op de server als `www-data` draait: die kan de
-        // backupmap niet lezen en heeft geen root-sleutel (en die geven zou de
-        // webserver-user root maken). Van 01-08 tot 02-08-2026 rapporteerde de
-        // nachtelijke cron daardoor `errors=1, high=0` — bewaking die niets
-        // meet. Bestaat dit bestand niet, dan draait de scan ergens anders en
-        // valt hij terug op SSH.
+        // Nodig omdat de nachtelijke scan op de server zelf draait en de
+        // backupmap eerder via SSH naar `root@` opvroeg — de server dus, vanaf
+        // de server, die geen sleutel naar zichzelf heeft. Van 01-08 tot
+        // 02-08-2026 rapporteerde de cron daardoor `errors=1, high=0`: bewaking
+        // die niets meet. Bestaat dit bestand niet, dan draait de scan ergens
+        // anders en valt hij terug op SSH.
         'manifest' => env('BACKUP_MANIFEST_PATH', '/var/lib/havun/backup-manifest.json'),
 
         // Projectslug (uit havun-projects.php) => bestandsnamen onder <root>/<datum>/,

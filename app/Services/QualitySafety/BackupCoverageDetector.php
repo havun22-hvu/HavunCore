@@ -69,11 +69,11 @@ class BackupCoverageDetector
      * Er is niets gemeten — de enige finding die de detector dan afgeeft.
      *
      * Van 01-08 tot 02-08-2026 draaide deze check elke nacht op de server en
-     * mat hij niets: hij vroeg de backupmap via SSH op bij `root@`, terwijl de
-     * cron als `www-data` draait en die de sleutel niet heeft (terecht — die
-     * geven ís de privilege-escalatie). Uitkomst: `errors=1, high=0`, en niets
-     * las dat eerste veld. Een bewaking die stil omvalt ziet er identiek uit aan
-     * een bewaking die niets te melden heeft.
+     * mat hij niets: hij vroeg de backupmap via SSH op bij `root@` — de server
+     * dus, vanaf de server. Die heeft geen sleutel naar zichzelf (en hoort die
+     * ook niet te hebben). Uitkomst: `errors=1, high=0`, en niets las dat eerste
+     * veld. Een bewaking die stil omvalt ziet er identiek uit aan een bewaking
+     * die niets te melden heeft.
      *
      * @return array<string,mixed>
      */

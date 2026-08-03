@@ -46,6 +46,12 @@ vannacht op prod:
 3. **`serverHealth`** gaat via SSH naar `root@` en valt op de server om — zelfde oorzaak als de
    backupcheck. → **Open.**
 
+**Correctie op de diagnose van 02-08:** de scheduler draait **als root** (alle `schedule:run` staan
+in roots crontab; de qv-scan-bestanden zijn `root:root`), niet als `www-data`. De oorzaak van de
+SSH-fout is dus dat *de server geen sleutel naar zichzelf heeft*. Bijvangst: die root-cron maakt
+`storage/**` root-owned, waardoor `cache:clear` als `www-data` faalt — 03-08 rechtgezet, maar het
+komt terug zolang de cron als root draait.
+
 ## De backupcheck meet weer iets (03-08) — klaar, wacht op deploy
 
 Het backupscript schrijft als root een manifest (`/var/lib/havun/backup-manifest.json`, 644, geen
