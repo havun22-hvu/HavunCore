@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Sun, Aug 2, 2026 4:00 AM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Mon, Aug 3, 2026 4:00 AM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,24 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-08-03 | `95447d6` | docs: session handover 2026-08-03 |
+| 2026-08-02 | `9d06268` | docs(qv): the nightly backup check has been measuring nothing |
+| 2026-08-02 | `14a8d1f` | docs(handover): back under the line limit |
+| 2026-08-02 | `5ebbfdb` | docs(secrets): the monitoring PAT is replaced, and lasts a year now |
+| 2026-08-02 | `02dc72c` | feat(secrets): rotate a database password without it ever reaching a transcript |
+| 2026-08-02 | `93616f6` | docs(handover): the leaked havunadmin database password is dead |
+| 2026-08-02 | `a33d89f` | chore(docs): sync the auto-generated snapshots from production |
+| 2026-08-02 | `f06a4dd` | docs(handover): what is waiting to deploy, and one rescue branch |
+| 2026-08-02 | `5247c0d` | docs: session handover 2026-08-01 |
+| 2026-08-02 | `0036619` | docs: one source for the inviolable rules, six of them |
+| 2026-08-01 | `5b3f5c7` | fix(docs-audit): thirty of the thirty-nine findings were the auditors own bugs |
+| 2026-08-01 | `2e48f87` | docs(secrets): rotate the monitoring PAT without leaking it into shell history |
+| 2026-08-01 | `81db54f` | docs: verify the HavunAdmin backup, and record a password I leaked |
+| 2026-08-01 | `14615b7` | docs: a register for the databases, so two similar names cannot hide again |
+| 2026-08-01 | `c2939d7` | feat(qv): ask the app which database it uses, not the list |
+| 2026-08-01 | `79b02f1` | docs(handover): back under the line by removing what is done |
+| 2026-08-01 | `c55264e` | chore: remove Vusista 1 -- it is not needed anymore |
+| 2026-08-01 | `9db69f1` | docs: close out the deploys, the backup fixes and the vite false alarm |
 | 2026-08-01 | `613f374` | fix(backup): back up what was missing, stop backing up what is gone |
 | 2026-08-01 | `00a3336` | feat(qv): check that a backup was actually made, not that it was planned |
 | 2026-08-01 | `1e40106` | chore(deps): close six guzzle advisories |
@@ -43,17 +61,16 @@
 | 2026-07-28 | `78cefc9` | chore(kb): refresh the audit snapshot (272 files, 1 critical) |
 | 2026-07-28 | `ffcfe2a` | docs(kb): the SSL failure is Avast on the laptop, not the host |
 | 2026-07-28 | `bd5a35f` | docs(kb): add magic link pattern for raw Node.js projects |
-| 2026-07-27 | `3f23849` | docs(kb): add the zero-is-not-nothing falsy pattern |
 
 ## V&K status (laatste qv:scan)
 
 **Totals:** critical 0 | high 0 | medium 0 | low 0
 
-_Snapshot timestamp: 2026-08-02T03:57:03+02:00_
+_Snapshot timestamp: 2026-08-03T03:57:02+02:00_
 
 ## KB audit (laatste wekelijkse run)
 
-**Totals:** critical 1 | high 28 | medium 0 | low 9
+**Totals:** critical 3 | high 27 | medium 0 | low 9
 
 _Zie `docs/kb/reference/kb-audit-latest.md` voor detail._
 
