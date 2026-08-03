@@ -69,7 +69,10 @@ check_url "Herdenkingsportaal" "https://herdenkingsportaal.nl"     "project" "He
 check_url "JudoToernooi"       "https://judotournament.org"        "project" "JudoToernooi"
 check_url "HavunAdmin"         "https://havunadmin.havun.nl"       "project" "HavunAdmin"
 check_url "SafeHavun"          "https://safehavun.havun.nl"        "project" "SafeHavun"
-check_url "Infosyst"           "https://infosyst.havun.nl"         "project" "Infosyst"
+# Infosyst is 18-07-2026 van de server gehaald (geen vhost meer). De check bleef
+# staan en meldde sindsdien elke ronde "onbereikbaar (HTTP 000)" -- een melding
+# die altijd afgaat en niets betekent, waardoor je de hele lijst leert negeren.
+# Komt de site terug, dan komt deze regel terug.
 
 # Other supervisor processes (queue workers, heartbeat) — reverb has its own check.
 # Alarms on FATAL/BACKOFF (always a real fault); server-scope so critical infra
