@@ -32,6 +32,7 @@ class BackupCoverageDetector
      * @param  array<string,array{leeftijd_uren:float,bytes:int}> $gevonden  bestandsnaam => meting
      * @param  array<string,mixed>                $drempels   config('havun-backup.monitoring')
      * @param  array<string,string>               $appDatabases  databasenaam => .env-pad
+     * @param  array{bron:string,leeftijd_uren:float|null} $meting  hoe `$gevonden` tot stand kwam
      * @return array<int,array<string,mixed>>
      */
     public function detect(
@@ -40,18 +41,83 @@ class BackupCoverageDetector
         array $uitgezonderd,
         array $gevonden,
         array $drempels,
-        array $appDatabases = [],
+        array $appDatabases,
+        array $meting,
     ): array {
         $maxUren = (float) ($drempels['max_backup_age_hours'] ?? 25);
         $minBytes = (int) ($drempels['min_backup_size_bytes'] ?? 1024);
+        $maxMetingUren = (float) ($drempels['max_meting_age_hours'] ?? 26);
+
+        $overDeMeting = $this->overDeMeting($meting, $maxMetingUren);
+
+        // Is er niets gemeten, dan zegt élke uitspraak hieronder niets. Doorgaan
+        // zou een lijst opleveren die niet van een echte meting te onderscheiden
+        // is -- exact de fout die deze check moest afvangen.
+        if ($this->metingOntbreekt($meting)) {
+            return $overDeMeting;
+        }
 
         return array_merge(
+            $overDeMeting,
             $this->perProject($verwacht, $gevonden, $maxUren, $minBytes),
             $this->zonderVerwachting($canoniek, $verwacht, $uitgezonderd),
             $this->uitzonderingen($canoniek, $uitgezonderd),
             $this->overtolligeBackups($verwacht, $gevonden),
             $this->appDatabasesGedekt($appDatabases, $verwacht),
         );
+    }
+
+    /**
+     * Oordeelt over de **meting zelf**, niet over de backups.
+     *
+     * Van 01-08 tot 02-08-2026 draaide deze check elke nacht op de server en
+     * mat hij niets: hij vroeg de backupmap via SSH op bij `root@`, terwijl de
+     * cron als `www-data` draait en die de sleutel niet heeft (terecht — die
+     * geven ís de privilege-escalatie). Uitkomst: `errors=1, high=0`, en niets
+     * las dat eerste veld. Een bewaking die stil omvalt ziet er identiek uit aan
+     * een bewaking die niets te melden heeft.
+     *
+     * Sindsdien schrijft het backupscript (als root) een manifest naar
+     * `/var/lib/havun/backup-manifest.json`; de check leest dat op de server
+     * lokaal en valt daarbuiten terug op SSH. Het manifest is zelf te dateren,
+     * dus een stilstaande meetketen meldt zich nu.
+     *
+     * @param  array{bron:string,leeftijd_uren:float|null} $meting
+     * @return array<int,array<string,mixed>>
+     */
+    private function overDeMeting(array $meting, float $maxMetingUren): array
+    {
+        if ($this->metingOntbreekt($meting)) {
+            return [$this->finding(
+                'critical',
+                '_meting',
+                'De backupdekking is niet gemeten: er kwam geen manifest en geen bestandslijst binnen. Alles hieronder zou verzonnen zijn, dus er staat niets onder. Dit is dezelfde stille faalmodus die de check moest afvangen.',
+            )];
+        }
+
+        $leeftijd = (float) $meting['leeftijd_uren'];
+
+        if ($leeftijd > $maxMetingUren) {
+            return [$this->finding(
+                'high',
+                '_meting',
+                sprintf(
+                    'De meting is %.1f uur oud (grens %.0f) — het backupmanifest wordt na elke run herschreven, dus de meetketen staat stil. Wat hieronder staat gaat over een eerdere nacht.',
+                    $leeftijd,
+                    $maxMetingUren,
+                ),
+            )];
+        }
+
+        return [];
+    }
+
+    /**
+     * @param  array{bron:string,leeftijd_uren:float|null} $meting
+     */
+    private function metingOntbreekt(array $meting): bool
+    {
+        return ($meting['bron'] ?? 'geen') === 'geen' || ($meting['leeftijd_uren'] ?? null) === null;
     }
 
     /**

@@ -140,9 +140,34 @@ Henks beslissing.
 - [x] Gevonden drift opgelost — 3 high en 1 sleutelkruising weg
 - [x] Backupdekking meten aan de uitkomst — `qv:scan --only=backup-coverage`, dagelijks 05:30
       (ná de backup-cron van 03:00), 12 tests
-- [ ] **De 05:30-cron meet niets** (gevonden 02-08) — zie hieronder
+- [x] **De 05:30-cron meet niets** (gevonden 02-08, gefixt 03-08) — manifest-route, zie hieronder
 
-## ⛔ De nachtelijke backupcheck is blind (02-08-2026)
+## De fix: het backupscript schrijft zijn eigen uitkomst op (03-08-2026)
+
+`/usr/local/bin/havun-backup-manifest.sh` draait als root aan het eind van de backuprun en legt
+`/var/lib/havun/backup-manifest.json` neer (644): per bestand naam/bytes/mtime, plus de
+`DB_DATABASE` van elke app. Geen wachtwoorden, dus wereldleesbaar mag.
+
+De check leest dat manifest als het er is, en valt alleen daarbuiten (Henks machine) terug op SSH.
+Geen root-sleutel voor `www-data`, geen SSH naar zichzelf.
+
+**Drie regels erbij, alle drie over de meting in plaats van over de backups:**
+
+| Severity | Regel |
+|---|---|
+| 🔴 critical | er is niets gemeten — geen manifest én geen bestandslijst. De detector geeft dan *alleen* deze finding terug: de rest zou verzonnen zijn |
+| 🟠 high | het manifest is ouder dan 26 uur (`monitoring.max_meting_age_hours`) — de meetketen staat stil, ongeacht hoe gezond de inhoud eruitziet |
+| — | een SSH-fout is geen stille `error` meer maar diezelfde critical-finding |
+
+**Tweede regel, doorgevoerd:** `docs:handover` toont nu `errors N` in de V&K-regel plus een
+kopje *"Checks die niets gemeten hebben"*. Dat was de plek waar het wegviel — `qv-scan-latest.md`
+toonde errors al wél.
+
+**Aanname:** een manifest dat vers is, beschrijft de run van vannacht.
+**Omkeerpunt:** schrijft het script het manifest ook als de dump zelf faalde, dan meet dit de
+verkeerde stap en moet de exitstatus van de backuprun erin.
+
+## ⛔ De nachtelijke backupcheck was blind (02-08-2026, opgelost 03-08)
 
 De check werkt **alleen lokaal**. Op de server, waar de cron hem draait, meet hij niets:
 
@@ -163,17 +188,13 @@ Vier maanden lang keek iedereen naar een gezonde backup van de verkeerde databas
 dagen lang niemand naar de bewaking zelf. De check meldt zijn eigen falen wel netjes als
 `errors: 1` — maar niets leest dat veld, en `qv:log` toont alleen high/medium.
 
-**Voorgestelde fix (raakt server-config → Henks go):** het backupscript (draait als root) schrijft
-na afloop een manifest naar `/var/lib/havun/backup-manifest.json`, world-readable, met per bestand
-naam/grootte/tijd plus de `DB_DATABASE` per app. De check leest dat bestand **lokaal** als hij op
-de server draait, en valt alleen buiten de server terug op SSH. Geen root-rechten voor `www-data`,
-geen SSH naar zichzelf, en het manifest is zelf te controleren op ouderdom (staler dan 26 uur =
-finding). Alternatieven die afvallen: de cron als root draaien (maakt `storage/**` root-owned →
-de bekende 500's), of `www-data` een root-key geven (privilege-escalatie).
+**Afgevallen alternatieven** (blijven staan zodat niemand ze opnieuw voorstelt): de cron als root
+draaien maakt `storage/**` root-owned → de bekende 500's; `www-data` een root-key geven is
+privilege-escalatie.
 
-**Tweede regel die hieruit volgt:** een check die `errors > 0` teruggeeft, mag nooit als groen
-langskomen. `qv:log`/de scheduler moeten daarop alarmeren, anders herhaalt dit zich bij de volgende
-check die stil omvalt.
+**Nog open, buiten deze fix:** dezelfde SSH-route zit ook in `serverHealth` en `residueCheck`.
+Draaien die op de server, dan vallen ze om dezelfde reden om. Sinds 03-08 zie je dat wél terug
+(`errors` staat in de handover), maar de oorzaak is niet weg.
 
 ## Wat de backupcheck vond op zijn eerste run (01-08)
 

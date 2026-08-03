@@ -108,20 +108,22 @@ class DocsHandoverCommand extends Command
      * qv:log). Avoids the format-drift trap of regex-parsing the rendered
      * markdown — if ScanReportRenderer changes its layout, this still works.
      *
-     * @return array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int}
+     * @return array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int,errors:list<array<string,mixed>>}
      */
     protected function latestQvSummary(LatestRunFinder $finder): array
     {
+        $leeg = ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0, 'errors' => []];
+
         $disk = (string) config('quality-safety.storage.disk', 'local');
         $latest = $finder->findPath($disk);
         if ($latest === null) {
-            return ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0];
+            return $leeg;
         }
 
         $raw = Storage::disk($disk)->get($latest);
         $data = is_string($raw) ? json_decode($raw, true) : null;
         if (! is_array($data)) {
-            return ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0];
+            return $leeg;
         }
 
         $highCrit = array_values(array_filter(
@@ -136,6 +138,10 @@ class DocsHandoverCommand extends Command
                 : null,
             'findings' => array_slice($highCrit, 0, self::MAX_FINDINGS),
             'findings_total' => count($highCrit),
+            'errors' => array_values(array_filter(
+                (array) ($data['errors'] ?? []),
+                'is_array',
+            )),
         ];
     }
 
@@ -174,7 +180,11 @@ class DocsHandoverCommand extends Command
             $lines[] = '_Nog geen `qv:scan` snapshot beschikbaar._';
         } else {
             $totals = $qv['totals'];
-            $lines[] = "**Totals:** critical {$totals['critical']} | high {$totals['high']} | medium {$totals['medium']} | low {$totals['low']}";
+            // `errors` staat er bewust bij: een check die omvalt levert geen
+            // finding op, dus zonder dit getal las een scan die niets mat
+            // hetzelfde als een scan zonder bevindingen. Precies zo bleef de
+            // nachtelijke backupcheck van 01-08 tot 02-08-2026 stil kapot.
+            $lines[] = "**Totals:** critical {$totals['critical']} | high {$totals['high']} | medium {$totals['medium']} | low {$totals['low']} | errors " . ($totals['errors'] ?? 0);
             if ($qv['generated_at']) {
                 $lines[] = '';
                 $lines[] = "_Snapshot timestamp: {$qv['generated_at']}_";
@@ -193,6 +203,17 @@ class DocsHandoverCommand extends Command
                 $hidden = $qv['findings_total'] - count($qv['findings']);
                 if ($hidden > 0) {
                     $lines[] = "- _… +{$hidden} meer (zie `docs/kb/reference/qv-scan-latest.md`)_";
+                }
+            }
+            if ($qv['errors'] !== []) {
+                $lines[] = '';
+                $lines[] = '**Checks die niets gemeten hebben:**';
+                $lines[] = '';
+                foreach (array_slice($qv['errors'], 0, self::MAX_FINDINGS) as $e) {
+                    $proj = (string) ($e['project'] ?? '?');
+                    $check = (string) ($e['check'] ?? '?');
+                    $msg = (string) ($e['message'] ?? '');
+                    $lines[] = "- **[ERROR]** `{$proj}/{$check}` — {$msg}";
                 }
             }
         }

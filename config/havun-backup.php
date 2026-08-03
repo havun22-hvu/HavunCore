@@ -249,6 +249,19 @@ return [
     'verificatie' => [
         'root' => env('BACKUP_VERIFY_ROOT', '/var/backups/havun'),
 
+        // Het backupscript (root) schrijft hier na afloop de uitkomst van zijn
+        // eigen run: welke bestanden het maakte, hoe groot, en welke database
+        // elke app volgens zijn `.env` gebruikt. Wereldleesbaar, zonder
+        // wachtwoorden.
+        //
+        // Nodig omdat de check op de server als `www-data` draait: die kan de
+        // backupmap niet lezen en heeft geen root-sleutel (en die geven zou de
+        // webserver-user root maken). Van 01-08 tot 02-08-2026 rapporteerde de
+        // nachtelijke cron daardoor `errors=1, high=0` — bewaking die niets
+        // meet. Bestaat dit bestand niet, dan draait de scan ergens anders en
+        // valt hij terug op SSH.
+        'manifest' => env('BACKUP_MANIFEST_PATH', '/var/lib/havun/backup-manifest.json'),
+
         // Projectslug (uit havun-projects.php) => bestandsnamen onder <root>/<datum>/,
         // productie én staging. Drie projecten hebben een draaiende
         // staging-omgeving (geverifieerd 01-08-2026: /var/www/*/staging plus de
@@ -300,6 +313,12 @@ return [
         'health_check_schedule' => '0 * * * *', // Hourly
         'max_backup_age_hours' => 25,
         'min_backup_size_bytes' => 1024, // 1 KB minimum
+
+        // Hoe oud het manifest mag zijn voordat de *meting* zelf een bevinding
+        // is. Het wordt na elke backuprun herschreven (03:00), dus meer dan een
+        // etmaal betekent dat de meetketen stilstaat — ongeacht hoe gezond de
+        // bestanden erin eruitzien.
+        'max_meting_age_hours' => 26,
     ],
 
     /*

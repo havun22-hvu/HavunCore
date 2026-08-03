@@ -3,6 +3,7 @@
 namespace Tests\Feature\QualitySafety;
 
 use App\Services\QualitySafety\BackupCoverageDetector;
+use App\Services\QualitySafety\QualitySafetyScanner;
 use Tests\TestCase;
 
 /**
@@ -354,6 +355,65 @@ class BackupCoverageTest extends TestCase
         $this->assertSame([], $findings);
     }
 
+    /**
+     * De scannerkant: staat er een manifest, dan is dát de meting en gaat er
+     * geen SSH meer aan te pas. Dat is de enige route die op de server werkt --
+     * daar draait de scan als `www-data`, zonder root-sleutel.
+     */
+    public function test_scanner_meet_via_het_manifest_zonder_ssh(): void
+    {
+        $pad = tempnam(sys_get_temp_dir(), 'manifest-') . '.json';
+        file_put_contents($pad, json_encode([
+            'gemaakt_op' => time(),
+            'root' => '/var/backups/havun/2026-08-03',
+            'bestanden' => [
+                ['naam' => 'havuncore.sql.gz', 'bytes' => 50_000, 'mtime' => time() - 7200],
+            ],
+            'app_databases' => ['havuncore' => '/var/www/havuncore/production/.env'],
+        ]));
+
+        config([
+            'havun-backup.verificatie.manifest' => $pad,
+            'havun-backup.verificatie.verwacht' => ['havuncore' => ['havuncore.sql.gz']],
+            'havun-backup.verificatie.uitgezonderd' => [],
+            'havun-projects' => [],
+        ]);
+
+        $run = (new QualitySafetyScanner)->scan([], ['backup-coverage']);
+
+        unlink($pad);
+
+        $this->assertSame([], $run['errors'] ?? [], 'geen SSH-fout: het manifest is de meting');
+        $this->assertSame(0, $run['totals']['critical'] ?? 0);
+        $this->assertSame(0, $run['totals']['high'] ?? 0);
+    }
+
+    /**
+     * Zonder manifest én zonder werkende SSH mag de scan niet als schoon
+     * langskomen. Tot 02-08-2026 deed hij dat wel: `errors=1, high=0`.
+     */
+    public function test_scanner_zonder_manifest_en_zonder_ssh_meldt_critical(): void
+    {
+        config([
+            'havun-backup.verificatie.manifest' => '/pad/dat/niet/bestaat/manifest.json',
+            'havun-backup.verificatie.verwacht' => ['havuncore' => ['havuncore.sql.gz']],
+            'havun-backup.verificatie.uitgezonderd' => [],
+            'havun-projects' => [],
+            // Een host die niet bestaat: de SSH-terugval faalt gegarandeerd,
+            // zonder een echte server aan te raken.
+            'quality-safety.residu.host' => '127.0.0.1',
+            'quality-safety.residu.user' => 'havun-bestaat-niet',
+        ]);
+
+        $run = (new QualitySafetyScanner)->scan([], ['backup-coverage']);
+
+        $this->assertSame(1, $run['totals']['critical'] ?? 0);
+        $this->assertStringContainsString(
+            'niet gemeten',
+            (string) ($run['findings'][0]['message'] ?? ''),
+        );
+    }
+
     public function test_de_echte_verwachting_dekt_elk_draaiend_project(): void
     {
         // Regressiebewaking op de config: elk project met een server_path hoort
@@ -364,8 +424,12 @@ class BackupCoverageTest extends TestCase
             (array) config('havun-projects'),
             (array) config('havun-backup.verificatie.verwacht'),
             (array) config('havun-backup.verificatie.uitgezonderd'),
-            [],                       // geen meting: alleen de config toetsen
+            [],                       // geen bestandslijst: alleen de config toetsen
             self::DREMPELS,
+            [],
+            // Wél een geslaagde meting meegeven: zonder dat stopt de detector
+            // bij de meetketen en komt hij aan de config-arm niet meer toe.
+            ['bron' => 'manifest', 'leeftijd_uren' => 1.0],
         );
 
         $zonderVerwachting = array_filter(

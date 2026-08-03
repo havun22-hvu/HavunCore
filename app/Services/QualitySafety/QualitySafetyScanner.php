@@ -164,6 +164,22 @@ class QualitySafetyScanner
             return ['findings' => [], 'skipped' => 'geen verwachting geconfigureerd (havun-backup.verificatie)'];
         }
 
+        // Eerst het manifest dat het backupscript zelf achterlaat. Draait deze
+        // scan op de server (als `www-data`), dan is dat de énige route: SSH
+        // naar `root@` heeft daar geen sleutel, en die geven zou de webserver-
+        // user root maken. Staat er geen manifest, dan draaien we ergens anders
+        // en is SSH juist wél de goede route.
+        $viaManifest = $this->backupManifest();
+
+        if ($viaManifest !== null) {
+            return $this->toetsBackupdekking(
+                $viaManifest['bestanden'],
+                $viaManifest['app_databases'],
+                ['bron' => 'manifest', 'leeftijd_uren' => $viaManifest['leeftijd_uren']],
+                $verwacht,
+            );
+        }
+
         $root = (string) config('havun-backup.verificatie.root', '/var/backups/havun');
         $host = (string) config('quality-safety.residu.host', '188.245.159.115');
         $user = (string) config('quality-safety.residu.user', 'root');
@@ -200,7 +216,13 @@ class QualitySafetyScanner
         $result = $this->runRemote($host, $user, $cmd, $timeout);
 
         if (! $result['ok']) {
-            return ['findings' => [], 'error' => 'Backupmap niet op te vragen: ' . ($result['error'] ?? 'onbekend')];
+            // Géén stille `error` meer: die kwam vanaf 01-08-2026 elke nacht
+            // langs als `errors=1, high=0` en niets las dat eerste veld. Een
+            // mislukte meting is nu een bevinding die het rapport haalt.
+            return array_merge(
+                $this->toetsBackupdekking([], [], ['bron' => 'geen', 'leeftijd_uren' => null], $verwacht),
+                ['error' => 'Backupmap niet op te vragen: ' . ($result['error'] ?? 'onbekend')],
+            );
         }
 
         $output = trim($result['output']);
@@ -215,15 +237,80 @@ class QualitySafetyScanner
             ]]];
         }
 
+        return $this->toetsBackupdekking(
+            $this->parseBackupBestanden($output),
+            $this->parseAppDatabases($output),
+            ['bron' => 'ssh', 'leeftijd_uren' => 0.0],
+            $verwacht,
+        );
+    }
+
+    /**
+     * @param  array<string,array{leeftijd_uren:float,bytes:int}> $bestanden
+     * @param  array<string,string> $appDatabases
+     * @param  array{bron:string,leeftijd_uren:float|null} $meting
+     * @param  array<string,array<int|string,string|int>> $verwacht
+     * @return array{findings:array<int,array<string,mixed>>}
+     */
+    private function toetsBackupdekking(array $bestanden, array $appDatabases, array $meting, array $verwacht): array
+    {
         return [
             'findings' => (new BackupCoverageDetector)->detect(
                 (array) config('havun-projects', []),
                 $verwacht,
                 (array) config('havun-backup.verificatie.uitgezonderd', []),
-                $this->parseBackupBestanden($output),
+                $bestanden,
                 (array) config('havun-backup.monitoring', []),
-                $this->parseAppDatabases($output),
+                $appDatabases,
+                $meting,
             ),
+        ];
+    }
+
+    /**
+     * Leest het manifest dat het backupscript als root achterlaat.
+     *
+     * Het script kent de uitkomst van de run al — welke bestanden het schreef,
+     * hoe groot, en welke database elke app volgens zijn `.env` gebruikt. Door
+     * dat op te schrijven hoeft de check die map niet meer zelf te kunnen lezen.
+     * Wereldleesbaar, en er staat geen wachtwoord in: alleen databasenamen.
+     *
+     * @return array{bestanden:array<string,array{leeftijd_uren:float,bytes:int}>, app_databases:array<string,string>, leeftijd_uren:float}|null
+     */
+    private function backupManifest(): ?array
+    {
+        $pad = (string) config('havun-backup.verificatie.manifest', '/var/lib/havun/backup-manifest.json');
+
+        if ($pad === '' || ! is_readable($pad)) {
+            return null;
+        }
+
+        $data = json_decode((string) file_get_contents($pad), true);
+
+        if (! is_array($data) || ! isset($data['gemaakt_op'])) {
+            return null;
+        }
+
+        $bestanden = [];
+        $nu = (int) $data['gemaakt_op'];
+
+        foreach ((array) ($data['bestanden'] ?? []) as $bestand) {
+            if (! is_array($bestand) || empty($bestand['naam'])) {
+                continue;
+            }
+
+            $bestanden[(string) $bestand['naam']] = [
+                'bytes' => (int) ($bestand['bytes'] ?? 0),
+                'leeftijd_uren' => round(max(0, $nu - (int) ($bestand['mtime'] ?? $nu)) / 3600, 2),
+            ];
+        }
+
+        return [
+            'bestanden' => $bestanden,
+            'app_databases' => array_map('strval', (array) ($data['app_databases'] ?? [])),
+            // Het manifest wordt na elke run herschreven; is het oud, dan staat
+            // de meetketen stil en zegt de inhoud niets over vannacht.
+            'leeftijd_uren' => round(max(0, time() - $nu) / 3600, 2),
         ];
     }
 
