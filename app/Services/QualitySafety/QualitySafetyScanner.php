@@ -151,6 +151,52 @@ class QualitySafetyScanner
     }
 
     /**
+     * Kan deze check hier überhaupt meten? Drie uitkomsten, en het verschil
+     * tussen de laatste twee is het hele punt.
+     *
+     * - pad bestaat → `null`, de check draait gewoon
+     * - geen checkout hier én geen serverpad in de config → **overgeslagen**:
+     *   een mobiele app, een desktop-app of een geparkeerd project hoort hier
+     *   niet te staan, en dat is geen storing
+     * - wél een serverpad geconfigureerd maar de map is er niet → **error**:
+     *   iemand verwacht hier een checkout en die is weg
+     *
+     * Waarom niet alles een error: zolang de nachtelijke scan `errors: 5` meldt
+     * voor projecten die er terecht niet zijn, leer je dat getal negeren — en
+     * dan zegt het niets meer op de nacht dat er wél iets omvalt. Precies zo kon
+     * de backupcheck drie dagen ongemerkt blind staan. Overgeslagen is óók niet
+     * hetzelfde als schoon: het komt in de lijst "niet gedraaid" terecht.
+     *
+     * @param  array<string,mixed> $project
+     * @return array{findings:array<int,array<string,mixed>>, error?:string, skipped?:string}|null
+     */
+    private function padProbleem(array $project): ?array
+    {
+        $pad = $project['path'] ?? null;
+
+        if (is_string($pad) && $pad !== '' && is_dir($pad)) {
+            return null;
+        }
+
+        foreach (['server_path', 'remote_path'] as $sleutel) {
+            if (! empty($project[$sleutel])) {
+                return [
+                    'findings' => [],
+                    'error' => sprintf(
+                        'Projectmap niet gevonden, ook niet op het geconfigureerde serverpad (%s)',
+                        $project[$sleutel],
+                    ),
+                ];
+            }
+        }
+
+        return [
+            'findings' => [],
+            'skipped' => 'geen checkout op deze machine, en er is geen serverpad geconfigureerd',
+        ];
+    }
+
+    /**
      * Kiest het pad dat op déze machine bestaat.
      *
      * Er zijn er twee: `path` is Henks werkkopie (`D:/GitHub/...`), daarnaast
@@ -546,13 +592,9 @@ BASH;
     private function composerAudit(array $project): array
     {
         $path = $project['path'] ?? null;
-        if (! $path) {
-            return ['findings' => []]; // server-only entries (no path) silently skip
-        }
-        if (! is_dir($path)) {
-            // Beide paden weg: er valt hier niets te meten, en dat hoort te
-            // blijven opvallen in plaats van als "schoon" langs te komen.
-            return ['findings' => [], 'error' => "Projectmap niet gevonden, ook niet op de server: {$path}"];
+
+        if (($probleem = $this->padProbleem($project)) !== null) {
+            return $probleem;
         }
         if (! file_exists(rtrim($path, '/\\') . '/composer.json')) {
             return ['findings' => []];
@@ -598,13 +640,9 @@ BASH;
     private function npmAudit(array $project): array
     {
         $path = $project['path'] ?? null;
-        if (! $path) {
-            return ['findings' => []]; // server-only entries (no path) silently skip
-        }
-        if (! is_dir($path)) {
-            // Beide paden weg: er valt hier niets te meten, en dat hoort te
-            // blijven opvallen in plaats van als "schoon" langs te komen.
-            return ['findings' => [], 'error' => "Projectmap niet gevonden, ook niet op de server: {$path}"];
+
+        if (($probleem = $this->padProbleem($project)) !== null) {
+            return $probleem;
         }
         if (! file_exists(rtrim($path, '/\\') . '/package.json')) {
             return ['findings' => []];
@@ -656,13 +694,9 @@ BASH;
     private function cargoAudit(array $project): array
     {
         $path = $project['path'] ?? null;
-        if (! $path) {
-            return ['findings' => []]; // server-only entries (no path) silently skip
-        }
-        if (! is_dir($path)) {
-            // Beide paden weg: er valt hier niets te meten, en dat hoort te
-            // blijven opvallen in plaats van als "schoon" langs te komen.
-            return ['findings' => [], 'error' => "Projectmap niet gevonden, ook niet op de server: {$path}"];
+
+        if (($probleem = $this->padProbleem($project)) !== null) {
+            return $probleem;
         }
 
         $lockfiles = (new EcosystemDetector)->detect($path)['rust'] ?? [];

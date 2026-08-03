@@ -80,6 +80,30 @@ class ProjectPathResolutionTest extends TestCase
         $this->assertSame([], $run['errors']);
     }
 
+    /**
+     * Een project zonder checkout op déze machine én zonder serverpad hoort
+     * hier niet te staan — een mobiele app, een desktop-app, een geparkeerd
+     * project. Dat is "niet van toepassing", geen storing.
+     *
+     * Het onderscheid is niet cosmetisch: zolang de nachtelijke scan elke nacht
+     * `errors: 5` meldt voor projecten die er terecht niet zijn, leer je dat
+     * getal negeren — en dan is het niets meer waard op de nacht dat er wél
+     * iets stukgaat. Dat er niet gemeten is blijft zichtbaar, maar dan in de
+     * lijst "niet gedraaid".
+     */
+    public function test_project_dat_hier_niet_hoort_te_staan_is_overgeslagen(): void
+    {
+        $projects = [
+            'studieplanner-mobile' => ['path' => 'D:/GitHub/EenPadDatHierNietBestaat'],
+        ];
+
+        $run = (new QualitySafetyScanner)->scan($projects, ['composer']);
+
+        $this->assertSame([], $run['errors']);
+        $this->assertCount(1, $run['skipped']);
+        $this->assertStringContainsString('geen checkout', $run['skipped'][0]['reason']);
+    }
+
     public function test_bestaand_werkpad_wint_van_het_serverpad(): void
     {
         // Op Henks machine is de werkkopie de bron: die heeft dev-dependencies

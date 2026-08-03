@@ -139,11 +139,23 @@ class QualitySafetyScannerTest extends TestCase
         $this->assertEmpty($run['findings']);
     }
 
+    /**
+     * Een verwacht serverpad dat er niet is, is een echt gat: iemand heeft
+     * opgeschreven dat hier een checkout hoort te staan.
+     *
+     * Zonder zo'n serverpad is het géén error maar overgeslagen — zie
+     * ProjectPathResolutionTest. Dat onderscheid houdt het getal `errors`
+     * betekenisvol; elke nacht vijf errors voor projecten die er terecht niet
+     * zijn, leert je het te negeren.
+     */
     public function test_missing_project_path_registers_error(): void
     {
         $scanner = new QualitySafetyScanner;
         $run = $scanner->scan([
-            'ghost' => $this->project(['path' => '/nonexistent/path-' . uniqid()]),
+            'ghost' => $this->project([
+                'path' => '/nonexistent/path-' . uniqid(),
+                'remote_path' => '/var/www/ghost/production',
+            ]),
         ], ['composer']);
 
         $this->assertSame(1, $run['totals']['errors']);
