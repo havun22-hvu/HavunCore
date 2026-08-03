@@ -10,10 +10,10 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel, 1389 tests groen, KB-audit 0 high. **Server:** disk 68%,
-prod draait overal, 0 dirty checkouts. **HavunCore prod staat op `9d06268`** — alles wat klaarstond
-is 02-08 gedeployd (geen migraties). HavunAdmin heeft nog 8 commits / 4 codebestanden klaar uit een
-andere sessie.
+**Branch:** `feat/backup-manifest` · **Status:** stabiel, 1402 tests groen, KB-audit 0 high.
+**Server:** disk 68%, prod draait overal, 0 dirty checkouts. **HavunCore prod staat op `9d06268`**
+— de backup-manifestfix wacht op deploy (geen migraties). HavunAdmin heeft 16 commits /
+7 codebestanden klaar uit een andere sessie.
 
 **02-08: de drie openstaande secrets zijn dicht** — GitHub-PAT vervangen (Vault, verloopt
 01-08-2027) en de MySQL-wachtwoorden van `havunadmin` (gelekt via een transcript) en `havuncore`
@@ -21,32 +21,41 @@ andere sessie.
 niet via een HTTP-status. Back-ups in `/root/backups/`. Herbruikbaar:
 `scripts/roteer-db-wachtwoord.sh`, methode C in `runbooks/secrets-veilig-ontvangen.md`.
 
-## Backups: twee gaten gedicht (01-08)
+**Backups: twee gaten gedicht (01-08).** Herdenkingsportaal had 4,5 maand geen bruikbare
+databasebackup (verkeerde database gedumpt), HavunAdmins facturen zaten in géén backup. Beide goed,
+beide restores getest, 31/31 dagen in juli. Bewaakt door `qv:scan --only=registries` (03:02) en
+`--only=backup-coverage` (05:30). Volledig: `plans/registry-drift-check-plan.md` +
+`reference/databases-op-de-server.md`.
 
-Herdenkingsportaal had 4,5 maand geen bruikbare databasebackup (verkeerde database gedumpt), en
-HavunAdmins facturen zaten in géén backup (pad bestond niet). Beide sinds 28-07/01-08 goed, beide
-restores getest (52/52 en 39/39 tabellen), 31/31 dagen in juli. Twee checks bewaken het nu —
-`qv:scan --only=registries` 03:02 en `--only=backup-coverage` 05:30. Volledig:
-`plans/registry-drift-check-plan.md` + `reference/databases-op-de-server.md`.
+## ⛔ De V&K-scan meet op de server bijna niets (03-08) — twee van drie gefixt
 
-## 🔨 Halverwege: de backupcheck meet niets op de server (02-08, "go" gegeven)
+Gevonden bij het afmaken van de backupfix. Drie losse oorzaken, alle drie gemeten op de runs van
+vannacht op prod:
 
-**Branch `feat/backup-manifest` — twee tests staan bewust rood.** Volgende stap: de detector een
-`meting`-argument geven, dan de scanner, dan het script.
+1. **De rapportage las één run per dag.** Elke `--only=X` schrijft een eigen bestand; `qv:log`
+   (03:27) en `docs:handover` (04:00) pakten het nieuwste. De observatory-run van 04:37 vond een
+   **high** (safehavun grade C) die nergens stond, en de acht wekelijkse checks (04:07–05:47)
+   hadden **nooit** iets gerapporteerd. Beide rapporten zeiden `high 0`.
+   → **Gefixt:** `MergedRunAssembler` voegt 8 dagen samen, nieuwste run per check wint, en het
+   rapport zegt nu per check wanneer die draaide. `plans/qv-rapportage-venster-plan.md`.
+2. **`composer`/`npm`/`cargo` scannen op de server niets** — 40 errors `Project path not found:
+   D:/GitHub/…`. De scanner gebruikt `path` uit `havun-projects.php`, en dat is Henks Windows-pad.
+   Dít is waarom de 34 advisories op Herdenkingsportaal 13 commits bleven liggen.
+   → **Open, jouw keuze:** waar horen die checks te draaien (server met `server_path`, lokaal, of
+   per project in Actions).
+3. **`serverHealth`** gaat via SSH naar `root@` en valt op de server om — zelfde oorzaak als de
+   backupcheck. → **Open.**
 
-De check werkt alleen lokaal. Op de server draait hij als `www-data` en gaat via SSH naar `root@` —
-dus rapporteert de cron elke nacht `errors=1, high=0`, en niets leest dat eerste veld. Sinds 01-08
-blind. Dezelfde faalmodus als het gat dat hij moest bewaken, nu in de bewaking zelf.
+## De backupcheck meet weer iets (03-08) — klaar, wacht op deploy
 
-Afgesproken fix (Henks go 02-08): een klein rootscript schrijft na de backup een manifest naar
-`/var/lib/havun/backup-manifest.json` (world-readable); de check leest dat lokaal en valt alleen
-buiten de server terug op SSH. Manifest ouder dan een etmaal = finding. **Niet doen:** cron als root
-(maakt `storage/**` root-owned → 500's) of `www-data` een root-key geven (privilege-escalatie).
-Volledig, inclusief de tweede regel die hieruit volgt (`errors > 0` mag nooit als groen langskomen):
-`plans/registry-drift-check-plan.md`.
+Het backupscript schrijft als root een manifest (`/var/lib/havun/backup-manifest.json`, 644, geen
+wachtwoorden) — dat script staat er al en draait. De check leest dat en gebruikt SSH alleen nog
+buiten de server. **Niets gemeten = critical** (en dan alléén die finding), **manifest ouder dan
+26 uur = high**, en de handover toont `errors N`. Alleen de HavunCore-deploy staat nog open.
+Volledig: `plans/registry-drift-check-plan.md`.
 
-Zelfde patroon, apart punt: **`actions:watch` heeft op de server nooit gewerkt** — `gh` staat er
-niet op, dus de crons van 07:00/19:00 controleren niets. Het commando zegt dat eerlijk in het log.
+Apart punt, zelfde patroon: **`actions:watch` heeft op de server nooit gewerkt** — `gh` staat er
+niet op, dus de crons van 07:00/19:00 controleren niets. Het log zegt dat eerlijk.
 
 **Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump in
 `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database.

@@ -87,6 +87,33 @@ class DocsHandoverCommandTest extends TestCase
         $this->assertStringNotContainsString(' f11', $body);
     }
 
+    /**
+     * Een check die omvalt telt als `errors`, niet als finding. Zolang de
+     * handover alleen critical/high/medium/low toonde, las een scan waarin
+     * niets gemeten wérd exact hetzelfde als een scan zonder bevindingen.
+     * Zo bleef de nachtelijke backupcheck van 01-08 tot 02-08-2026 stil kapot:
+     * `errors=1, high=0`, en overal stond "0 high".
+     */
+    public function test_scanner_errors_komen_niet_als_groen_langs(): void
+    {
+        $disk = (string) config('quality-safety.storage.disk', 'local');
+        Storage::fake($disk);
+        Storage::disk($disk)->put('qv-scans/' . now()->toDateString() . '/run-errors.json', json_encode([
+            'started_at' => '2026-08-03T05:30:00+02:00',
+            'totals' => ['critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'informational' => 0, 'errors' => 1],
+            'findings' => [],
+            'errors' => [
+                ['project' => '_global', 'check' => 'backup-coverage', 'message' => 'Backupmap niet op te vragen: Permission denied (publickey)'],
+            ],
+        ]));
+
+        $this->runCommand();
+        $body = File::get($this->tmpOutput);
+
+        $this->assertStringContainsString('errors 1', $body);
+        $this->assertStringContainsString('backup-coverage', $body);
+    }
+
     private function runCommand(): int
     {
         return $this->artisan('docs:handover', [

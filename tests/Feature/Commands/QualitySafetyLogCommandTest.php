@@ -16,6 +16,11 @@ class QualitySafetyLogCommandTest extends TestCase
         parent::setUp();
         Storage::fake('local');
 
+        // De runs hieronder staan op vaste datums in april 2026, en `qv:log`
+        // kijkt sinds 03-08-2026 naar een venster van acht dagen terug. Zonder
+        // de klok vast te zetten vallen ze daar vanzelf buiten.
+        $this->travelTo('2026-04-21 12:00:00');
+
         $uniq = uniqid();
         $this->tempOutput = 'tmp-tests/qv-log-' . $uniq . '.md';
         $this->tempAppendLog = 'tmp-tests/qv-findings-log-' . $uniq . '.md';
@@ -34,6 +39,7 @@ class QualitySafetyLogCommandTest extends TestCase
         if (is_dir($safeRoot)) {
             @rmdir($safeRoot);
         }
+        $this->travelBack();
         parent::tearDown();
     }
 
@@ -72,13 +78,21 @@ class QualitySafetyLogCommandTest extends TestCase
         $this->assertStringContainsString('Critical bug', $content);
     }
 
-    public function test_invalid_json_run_returns_failure(): void
+    /**
+     * Eén kapot run-bestand mag de andere negen niet blokkeren — maar ook niet
+     * stil verdwijnen. Het telt als error en komt zo in het rapport.
+     */
+    public function test_invalid_json_run_is_reported_not_swallowed(): void
     {
         Storage::disk('local')->put('qv-scans/2026-04-19/run-broken.json', 'not json');
+        Storage::disk('local')->put('qv-scans/2026-04-19/run-goed.json', json_encode($this->sampleRun()));
 
-        $this->artisan('qv:log', ['--output' => $this->tempOutput])
-            ->expectsOutputToContain('not valid JSON')
-            ->assertExitCode(1);
+        $this->artisan('qv:log', ['--output' => $this->tempOutput])->assertExitCode(0);
+
+        $content = file_get_contents(base_path($this->tempOutput));
+
+        $this->assertStringContainsString('geen geldige JSON', $content);
+        $this->assertStringContainsString('run-broken.json', $content);
     }
 
     public function test_high_finding_is_appended_to_security_log(): void

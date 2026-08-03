@@ -2,11 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Services\QualitySafety\LatestRunFinder;
+use App\Services\QualitySafety\MergedRunAssembler;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Process;
 
 class DocsHandoverCommand extends Command
@@ -23,14 +22,14 @@ class DocsHandoverCommand extends Command
 
     protected $description = 'Genereer een publieke handover.md uit recente git-commits + V&K state.';
 
-    public function handle(LatestRunFinder $latestRunFinder): int
+    public function handle(MergedRunAssembler $assembler): int
     {
         $days = (int) $this->option('days');
         $rawOutput = (string) $this->option('output');
         $output = $this->isAbsolutePath($rawOutput) ? $rawOutput : base_path($rawOutput);
 
         $commits = $this->recentCommits($days);
-        $qvSummary = $this->latestQvSummary($latestRunFinder);
+        $qvSummary = $this->latestQvSummary($assembler);
         $generatedAt = CarbonImmutable::now()->toDayDateTimeString();
 
         $body = $this->renderHandover($commits, $qvSummary, $days, $generatedAt);
@@ -104,30 +103,35 @@ class DocsHandoverCommand extends Command
     }
 
     /**
-     * Reads the latest qv:scan run-JSON directly (same source-of-truth as
-     * qv:log). Avoids the format-drift trap of regex-parsing the rendered
-     * markdown — if ScanReportRenderer changes its layout, this still works.
+     * Leest de qv:scan-runs rechtstreeks uit de opslag (zelfde bron als
+     * `qv:log`), niet uit de gerenderde markdown — die verandert van layout.
      *
-     * @return array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int}
+     * Alle runs uit het venster worden samengevoegd. Eén run lezen betekende
+     * dat alleen de laatste scan vóór 04:00 gerapporteerd werd; zie
+     * MergedRunAssembler voor het incident.
+     *
+     * @return array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int,errors:list<array<string,mixed>>,errors_total:int}
      */
-    protected function latestQvSummary(LatestRunFinder $finder): array
+    protected function latestQvSummary(MergedRunAssembler $assembler): array
     {
-        $disk = (string) config('quality-safety.storage.disk', 'local');
-        $latest = $finder->findPath($disk);
-        if ($latest === null) {
-            return ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0];
-        }
+        $leeg = ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0, 'errors' => [], 'errors_total' => 0];
 
-        $raw = Storage::disk($disk)->get($latest);
-        $data = is_string($raw) ? json_decode($raw, true) : null;
-        if (! is_array($data)) {
-            return ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0];
+        $data = $assembler->assemble();
+
+        if ($data === null) {
+            return $leeg;
         }
 
         $highCrit = array_values(array_filter(
             $data['findings'] ?? [],
             fn ($f) => is_array($f) && in_array($f['severity'] ?? null, ['high', 'critical'], true)
         ));
+
+        // Een check die omvalt levert géén finding op, alleen een error. Zonder
+        // deze lijst leest een scan die niets mat hetzelfde als een scan zonder
+        // bevindingen — zo bleef de nachtelijke backupcheck van 01-08 tot
+        // 02-08-2026 stil kapot.
+        $errors = array_values(array_filter((array) ($data['errors'] ?? []), 'is_array'));
 
         return [
             'generated_at' => $data['started_at'] ?? null,
@@ -136,12 +140,47 @@ class DocsHandoverCommand extends Command
                 : null,
             'findings' => array_slice($highCrit, 0, self::MAX_FINDINGS),
             'findings_total' => count($highCrit),
+            'errors' => array_slice($errors, 0, self::MAX_FINDINGS),
+            'errors_total' => count($errors),
         ];
     }
 
     /**
+     * Eén lijstje regels onder een kop — gebruikt voor zowel findings als
+     * checks die niets gemeten hebben. `$vasteSeverity` vult het label als de
+     * items zelf er geen hebben; `$totaal` levert de "+N meer"-staart.
+     *
+     * @param  list<array<string,mixed>>  $items
+     * @return list<string>
+     */
+    private function bulletsMetKop(string $kop, array $items, ?string $vasteSeverity, int $totaal): array
+    {
+        if ($items === []) {
+            return [];
+        }
+
+        $lines = ['', $kop, ''];
+
+        foreach ($items as $item) {
+            $label = $vasteSeverity ?? strtoupper((string) ($item['severity'] ?? '?'));
+            $proj = (string) ($item['project'] ?? '?');
+            $check = (string) ($item['check'] ?? '?');
+            $msg = (string) ($item['message'] ?? $item['title'] ?? '');
+            $lines[] = "- **[{$label}]** `{$proj}/{$check}` — {$msg}";
+        }
+
+        $verborgen = $totaal - count($items);
+
+        if ($verborgen > 0) {
+            $lines[] = "- _… +{$verborgen} meer (zie `docs/kb/reference/qv-scan-latest.md`)_";
+        }
+
+        return $lines;
+    }
+
+    /**
      * @param  list<array{hash:string,subject:string,date:string}>  $commits
-     * @param  array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int}  $qv
+     * @param  array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int,errors:list<array<string,mixed>>}  $qv
      */
     protected function renderHandover(array $commits, array $qv, int $days, string $generatedAt): string
     {
@@ -173,28 +212,17 @@ class DocsHandoverCommand extends Command
         if ($qv['totals'] === null) {
             $lines[] = '_Nog geen `qv:scan` snapshot beschikbaar._';
         } else {
-            $totals = $qv['totals'];
-            $lines[] = "**Totals:** critical {$totals['critical']} | high {$totals['high']} | medium {$totals['medium']} | low {$totals['low']}";
+            $totals = $qv['totals'] + ['critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'errors' => 0];
+            $lines[] = "**Totals:** critical {$totals['critical']} | high {$totals['high']} | medium {$totals['medium']} | low {$totals['low']} | errors {$totals['errors']}";
             if ($qv['generated_at']) {
                 $lines[] = '';
                 $lines[] = "_Snapshot timestamp: {$qv['generated_at']}_";
             }
-            if ($qv['findings'] !== []) {
-                $lines[] = '';
-                $lines[] = '**HIGH/CRITICAL findings:**';
-                $lines[] = '';
-                foreach ($qv['findings'] as $f) {
-                    $sev = strtoupper((string) ($f['severity'] ?? '?'));
-                    $proj = (string) ($f['project'] ?? '?');
-                    $check = (string) ($f['check'] ?? '?');
-                    $msg = (string) ($f['message'] ?? $f['title'] ?? '');
-                    $lines[] = "- **[{$sev}]** `{$proj}/{$check}` — {$msg}";
-                }
-                $hidden = $qv['findings_total'] - count($qv['findings']);
-                if ($hidden > 0) {
-                    $lines[] = "- _… +{$hidden} meer (zie `docs/kb/reference/qv-scan-latest.md`)_";
-                }
-            }
+            $lines = array_merge(
+                $lines,
+                $this->bulletsMetKop('**HIGH/CRITICAL findings:**', $qv['findings'], null, $qv['findings_total']),
+                $this->bulletsMetKop('**Checks die niets gemeten hebben:**', $qv['errors'], 'ERROR', $qv['errors_total']),
+            );
         }
         $lines[] = '';
 

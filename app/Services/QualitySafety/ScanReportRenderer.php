@@ -29,6 +29,7 @@ class ScanReportRenderer
             $this->header($run),
             $this->totalsSection($totals),
             $this->findingsSection($critHigh),
+            $this->checkRunsSection((array) ($run['check_runs'] ?? [])),
         ];
 
         if (! empty($errors)) {
@@ -133,6 +134,34 @@ class ScanReportRenderer
                 ['Project', 'Check', 'Severity', 'Package / Host', 'Advisory / Title'],
                 $rows
             ),
+            ['']
+        );
+    }
+
+    /**
+     * Wanneer is elke check voor het laatst gedraaid?
+     *
+     * Dit rapport voegt runs uit meerdere dagen samen (de wekelijkse checks
+     * draaien nu eenmaal niet elke nacht). Zonder deze tabel leest een uitslag
+     * van zes dagen oud hetzelfde als een van vanochtend.
+     *
+     * @param  array<string,string>  $checkRuns
+     * @return array<int,string>
+     */
+    private function checkRunsSection(array $checkRuns): array
+    {
+        if ($checkRuns === []) {
+            return [];
+        }
+
+        $rows = [];
+        foreach ($checkRuns as $check => $moment) {
+            $rows[] = [(string) $check, $moment === '' ? 'onbekend' : $moment];
+        }
+
+        return array_merge(
+            ['## Wanneer elke check draaide', ''],
+            $this->renderTable(['Check', 'Laatste run'], $rows),
             ['']
         );
     }
