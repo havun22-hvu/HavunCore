@@ -2,12 +2,11 @@
 
 namespace App\Console\Commands;
 
-use App\Services\QualitySafety\LatestRunFinder;
+use App\Services\QualitySafety\MergedRunAssembler;
 use App\Services\QualitySafety\ScanReportRenderer;
 use App\Services\QualitySafety\SecurityFindingsLogAppender;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 
 class QualitySafetyLogCommand extends Command
 {
@@ -20,29 +19,29 @@ class QualitySafetyLogCommand extends Command
 
     public function handle(
         ScanReportRenderer $renderer,
-        LatestRunFinder $finder,
+        MergedRunAssembler $assembler,
         SecurityFindingsLogAppender $appender,
     ): int {
         $disk = (string) config('quality-safety.storage.disk', 'local');
         $root = rtrim((string) config('quality-safety.storage.root', 'qv-scans'), '/');
 
-        $latest = $finder->findPath($disk, $root);
+        // Alle runs uit het venster, niet alleen de laatste: elke
+        // `qv:scan --only=X` schrijft een eigen bestand, en dit commando draait
+        // om 03:27 — vóór de meeste checks. Zie MergedRunAssembler.
+        $run = $assembler->assemble($disk, $root);
 
-        if ($latest === null) {
+        if ($run === null) {
             $this->warn("No qv:scan runs found in storage/app/{$root}");
 
             return 1;
         }
 
-        $run = json_decode(Storage::disk($disk)->get($latest), true);
-
-        if (! is_array($run)) {
-            $this->error("Latest run file is not valid JSON: {$latest}");
-
-            return 1;
-        }
-
-        $run['_source_file'] = $latest;
+        $run['_source_file'] = sprintf(
+            '%d runs uit de laatste %d dagen (%s)',
+            count($run['check_runs'] ?? []),
+            MergedRunAssembler::VENSTER_DAGEN,
+            implode(', ', $run['checks'] ?? []),
+        );
         $markdown = $renderer->render($run);
 
         $output = $this->option('output') ?: 'docs/kb/reference/qv-scan-latest.md';

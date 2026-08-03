@@ -7,7 +7,7 @@ use App\Models\ErrorLog;
 use App\Models\MetricsAggregated;
 use App\Models\RequestMetric;
 use App\Models\SlowQuery;
-use App\Services\QualitySafety\LatestRunFinder;
+use App\Services\QualitySafety\MergedRunAssembler;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Cache;
@@ -104,17 +104,12 @@ class ObservabilityService
     public function getQualityFindings(): ?array
     {
         return Cache::remember('observability:quality_findings', 60, function () {
-            $diskName = (string) config('quality-safety.storage.disk', 'local');
-            $disk = Storage::disk($diskName);
+            // Alle runs uit het venster samen: elke `qv:scan --only=X` schrijft
+            // een eigen bestand, dus één run lezen liet het dashboard alleen de
+            // laatste check van de ochtend zien. Zie MergedRunAssembler.
+            $data = app(MergedRunAssembler::class)->assemble();
 
-            $latestPath = app(LatestRunFinder::class)->findPath($diskName);
-            if ($latestPath === null) {
-                return null;
-            }
-
-            $raw = $disk->get($latestPath);
-            $data = is_string($raw) ? json_decode($raw, true) : null;
-            if (! is_array($data)) {
+            if ($data === null) {
                 return null;
             }
 
@@ -131,7 +126,7 @@ class ObservabilityService
                 ->all();
 
             return [
-                'last_scan_at' => CarbonImmutable::createFromTimestamp($disk->lastModified($latestPath))->toIso8601String(),
+                'last_scan_at' => $data['started_at'] ?? null,
                 'totals' => [
                     Severity::Critical->value => (int) ($data['totals'][Severity::Critical->value] ?? 0),
                     Severity::High->value => (int) ($data['totals'][Severity::High->value] ?? 0),

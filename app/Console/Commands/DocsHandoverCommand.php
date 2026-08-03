@@ -2,11 +2,10 @@
 
 namespace App\Console\Commands;
 
-use App\Services\QualitySafety\LatestRunFinder;
+use App\Services\QualitySafety\MergedRunAssembler;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
-use Illuminate\Support\Facades\Storage;
 use Symfony\Component\Process\Process;
 
 class DocsHandoverCommand extends Command
@@ -23,14 +22,14 @@ class DocsHandoverCommand extends Command
 
     protected $description = 'Genereer een publieke handover.md uit recente git-commits + V&K state.';
 
-    public function handle(LatestRunFinder $latestRunFinder): int
+    public function handle(MergedRunAssembler $assembler): int
     {
         $days = (int) $this->option('days');
         $rawOutput = (string) $this->option('output');
         $output = $this->isAbsolutePath($rawOutput) ? $rawOutput : base_path($rawOutput);
 
         $commits = $this->recentCommits($days);
-        $qvSummary = $this->latestQvSummary($latestRunFinder);
+        $qvSummary = $this->latestQvSummary($assembler);
         $generatedAt = CarbonImmutable::now()->toDayDateTimeString();
 
         $body = $this->renderHandover($commits, $qvSummary, $days, $generatedAt);
@@ -104,25 +103,22 @@ class DocsHandoverCommand extends Command
     }
 
     /**
-     * Reads the latest qv:scan run-JSON directly (same source-of-truth as
-     * qv:log). Avoids the format-drift trap of regex-parsing the rendered
-     * markdown — if ScanReportRenderer changes its layout, this still works.
+     * Leest de qv:scan-runs rechtstreeks uit de opslag (zelfde bron als
+     * `qv:log`), niet uit de gerenderde markdown — die verandert van layout.
+     *
+     * Alle runs uit het venster worden samengevoegd. Eén run lezen betekende
+     * dat alleen de laatste scan vóór 04:00 gerapporteerd werd; zie
+     * MergedRunAssembler voor het incident.
      *
      * @return array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int,errors:list<array<string,mixed>>,errors_total:int}
      */
-    protected function latestQvSummary(LatestRunFinder $finder): array
+    protected function latestQvSummary(MergedRunAssembler $assembler): array
     {
         $leeg = ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0, 'errors' => [], 'errors_total' => 0];
 
-        $disk = (string) config('quality-safety.storage.disk', 'local');
-        $latest = $finder->findPath($disk);
-        if ($latest === null) {
-            return $leeg;
-        }
+        $data = $assembler->assemble();
 
-        $raw = Storage::disk($disk)->get($latest);
-        $data = is_string($raw) ? json_decode($raw, true) : null;
-        if (! is_array($data)) {
+        if ($data === null) {
             return $leeg;
         }
 
