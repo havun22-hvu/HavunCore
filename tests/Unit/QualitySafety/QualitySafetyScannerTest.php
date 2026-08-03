@@ -147,7 +147,7 @@ class QualitySafetyScannerTest extends TestCase
         ], ['composer']);
 
         $this->assertSame(1, $run['totals']['errors']);
-        $this->assertStringContainsString('Project path not found', $run['errors'][0]['message']);
+        $this->assertStringContainsString('Projectmap niet gevonden', $run['errors'][0]['message']);
     }
 
     public function test_composer_audit_without_composer_json_is_skipped(): void

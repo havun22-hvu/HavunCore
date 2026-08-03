@@ -36,6 +36,8 @@ class QualitySafetyScanner
         $detector = new EcosystemDetector;
 
         foreach ($projects as $slug => $project) {
+            $project = $this->metBruikbaarPad($project);
+
             // Vastleggen hoe dít project gebouwd is, zodat het rapport kan
             // laten zien wát er gemeten is. Een nul zonder die context is niet
             // te onderscheiden van een nul omdat niemand keek.
@@ -146,6 +148,42 @@ class QualitySafetyScanner
             'backup-coverage' => $this->backupCoverage(),
             default => ['findings' => [], 'error' => "Unknown global check: {$check}"],
         };
+    }
+
+    /**
+     * Kiest het pad dat op déze machine bestaat.
+     *
+     * `havun-projects.php` noemt er twee: `path` is Henks werkkopie
+     * (`D:/GitHub/...`), `server_path` de checkout op de server. Alle
+     * code-checks gebruikten `path` — en dus mat de nachtelijke scan op de
+     * server niets: gemeten op 03-08-2026 leverden composer, npm en cargo daar
+     * samen 40 keer `Project path not found: D:/GitHub/...` op, wat neerkomt op
+     * nul gecontroleerde projecten. Dat is waarom 34 composer-advisories op
+     * Herdenkingsportaal dertien commits bleven liggen tot Henk ze zelf zag.
+     *
+     * De werkkopie wint als hij bestaat: die heeft dev-dependencies en loopt
+     * voor op de server. Bestaat geen van beide, dan blijft `path` staan zodat
+     * de check zelf een error geeft — een project zonder meetbare checkout mag
+     * niet als schoon langskomen.
+     *
+     * @param  array<string,mixed> $project
+     * @return array<string,mixed>
+     */
+    private function metBruikbaarPad(array $project): array
+    {
+        $pad = $project['path'] ?? null;
+
+        if (is_string($pad) && is_dir($pad)) {
+            return $project;
+        }
+
+        $serverPad = $project['server_path'] ?? null;
+
+        if (is_string($serverPad) && is_dir($serverPad)) {
+            $project['path'] = $serverPad;
+        }
+
+        return $project;
     }
 
     /**
@@ -503,7 +541,9 @@ BASH;
             return ['findings' => []]; // server-only entries (no path) silently skip
         }
         if (! is_dir($path)) {
-            return ['findings' => [], 'error' => "Project path not found: {$path}"];
+            // Beide paden weg: er valt hier niets te meten, en dat hoort te
+            // blijven opvallen in plaats van als "schoon" langs te komen.
+            return ['findings' => [], 'error' => "Projectmap niet gevonden, ook niet op de server: {$path}"];
         }
         if (! file_exists(rtrim($path, '/\\') . '/composer.json')) {
             return ['findings' => []];
@@ -553,7 +593,9 @@ BASH;
             return ['findings' => []]; // server-only entries (no path) silently skip
         }
         if (! is_dir($path)) {
-            return ['findings' => [], 'error' => "Project path not found: {$path}"];
+            // Beide paden weg: er valt hier niets te meten, en dat hoort te
+            // blijven opvallen in plaats van als "schoon" langs te komen.
+            return ['findings' => [], 'error' => "Projectmap niet gevonden, ook niet op de server: {$path}"];
         }
         if (! file_exists(rtrim($path, '/\\') . '/package.json')) {
             return ['findings' => []];
@@ -609,7 +651,9 @@ BASH;
             return ['findings' => []]; // server-only entries (no path) silently skip
         }
         if (! is_dir($path)) {
-            return ['findings' => [], 'error' => "Project path not found: {$path}"];
+            // Beide paden weg: er valt hier niets te meten, en dat hoort te
+            // blijven opvallen in plaats van als "schoon" langs te komen.
+            return ['findings' => [], 'error' => "Projectmap niet gevonden, ook niet op de server: {$path}"];
         }
 
         $lockfiles = (new EcosystemDetector)->detect($path)['rust'] ?? [];
