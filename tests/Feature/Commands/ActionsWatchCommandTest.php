@@ -3,7 +3,9 @@
 namespace Tests\Feature\Commands;
 
 use App\Models\HealthAlert;
+use App\Models\VaultSecret;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Process;
 use Tests\TestCase;
 
@@ -33,31 +35,43 @@ class ActionsWatchCommandTest extends TestCase
     }
 
     /**
-     * The command passes its commands as ARRAYS, and Process::fake's pattern
-     * map only matches strings — a ['gh auth*' => ...] map silently matches
-     * nothing and every call falls through to a successful default. Hence a
-     * closure that flattens the command first. Same trap as in
-     * AutoCommitRegeneratedTest.
+     * Twee bronnen: de git-remote komt uit een subproces (Process), de
+     * Actions-status uit de GitHub-API (Http). Sinds 04-08-2026 is er geen
+     * `gh` meer bij betrokken — die stond niet op de server, waar de cron
+     * draait.
+     *
+     * Let op bij Process::fake: het commando is een ARRAY en de patroon-map
+     * matcht alleen strings, dus een `['git remote*' => ...]`-map matcht stil
+     * niets en alles valt door naar een geslaagde default. Vandaar de closure.
      *
      * @param  array<string,mixed>|null  $run  null = geen runs
      */
-    private function fakeGh(?array $run, bool $ghIngelogd = true, bool $remote = true): void
+    private function fakeGh(?array $run, bool $patAanwezig = true, bool $remote = true): void
     {
-        Process::fake(function ($process) use ($run, $ghIngelogd, $remote) {
+        if ($patAanwezig) {
+            VaultSecret::create([
+                'key' => 'github_pat_ro',
+                'value' => 'ghp_' . str_repeat('x', 36),
+                'category' => 'github',
+                'description' => 'test',
+                'is_sensitive' => true,
+            ]);
+        }
+
+        Process::fake(function ($process) use ($remote) {
             $cmd = implode(' ', (array) $process->command);
 
-            return match (true) {
-                str_starts_with($cmd, 'gh auth status') => Process::result('', '', $ghIngelogd ? 0 : 1),
-                str_starts_with($cmd, 'git remote get-url') => $remote
-                    ? Process::result("https://github.com/havun22-hvu/Proj.git\n")
-                    : Process::result('', 'no remote', 1),
-                str_contains($cmd, '--jq .default_branch') => Process::result("main\n"),
-                str_contains($cmd, '/actions/runs') => Process::result(
-                    json_encode(['workflow_runs' => $run === null ? [] : [$run]])
-                ),
-                default => Process::result(''),
-            };
+            return str_starts_with($cmd, 'git remote get-url') && $remote
+                ? Process::result("https://github.com/havun22-hvu/Proj.git\n")
+                : Process::result('', 'no remote', 1);
         });
+
+        Http::fake([
+            'api.github.com/repos/havun22-hvu/Proj' => Http::response(['default_branch' => 'main']),
+            'api.github.com/repos/havun22-hvu/Proj/actions/runs*' => Http::response([
+                'workflow_runs' => $run === null ? [] : [$run],
+            ]),
+        ]);
     }
 
     /**
@@ -126,17 +140,110 @@ class ActionsWatchCommandTest extends TestCase
         $this->assertSame('resolved', HealthAlert::where('key', 'actions-proj')->first()->status);
     }
 
-    public function test_a_missing_gh_fails_loudly_instead_of_looking_clean(): void
+    public function test_a_missing_credential_fails_loudly_instead_of_looking_clean(): void
     {
         // The whole point: not being able to measure is reported, never silently
         // passed off as "all green".
-        $this->fakeGh(null, ghIngelogd: false);
+        $this->fakeGh(null, patAanwezig: false);
 
         $this->artisan('actions:watch')
             ->expectsOutputToContain('NIET gecontroleerd')
             ->assertExitCode(1);
 
         $this->assertSame(0, HealthAlert::count());
+    }
+
+    /**
+     * Op de server staat `gh` niet geïnstalleerd, en installeren zou een extra
+     * binary zijn om iets te doen wat een HTTP-call ook kan. De crons van
+     * 07:00 en 19:00 hebben daardoor sinds hun bestaan niets gecontroleerd —
+     * vier rode builds, waarvan HavunAdmin al drie maanden, vond niemand.
+     *
+     * De read-only PAT staat al in de Vault (`github_pat_ro`); daarmee is `gh`
+     * overbodig.
+     */
+    public function test_werkt_zonder_gh_via_de_pat_uit_de_vault(): void
+    {
+        VaultSecret::create([
+            'key' => 'github_pat_ro',
+            'value' => 'ghp_' . str_repeat('x', 36),
+            'category' => 'github',
+            'description' => 'test',
+            'is_sensitive' => true,
+        ]);
+
+        // `gh` bestaat hier niet: elk procesaanroep behalve git faalt.
+        Process::fake(function ($process) {
+            $cmd = implode(' ', (array) $process->command);
+
+            return str_starts_with($cmd, 'git remote get-url')
+                ? Process::result("https://github.com/havun22-hvu/Proj.git
+")
+                : Process::result('', 'command not found: gh', 127);
+        });
+
+        Http::fake([
+            'api.github.com/repos/havun22-hvu/Proj' => Http::response(['default_branch' => 'main']),
+            'api.github.com/repos/havun22-hvu/Proj/actions/runs*' => Http::response([
+                'workflow_runs' => [$this->workflowRun('failure', now()->subDays(4)->toIso8601String())],
+            ]),
+        ]);
+
+        $this->artisan('actions:watch')->assertExitCode(0);
+
+        $alert = HealthAlert::where('key', 'actions-proj')->first();
+        $this->assertNotNull($alert, 'de rode build hoort een alert op te leveren, ook zonder gh');
+        $this->assertSame('critical', $alert->severity);
+    }
+
+    /**
+     * Zonder PAT valt er niets te meten — en dan meld je dat, in plaats van een
+     * lege ronde als "alles groen" te laten lezen.
+     */
+    public function test_zonder_pat_faalt_het_hardop(): void
+    {
+        Process::fake(fn () => Process::result('', 'command not found: gh', 127));
+
+        $this->artisan('actions:watch')
+            ->expectsOutputToContain('NIET gecontroleerd')
+            ->assertExitCode(1);
+
+        $this->assertSame(0, HealthAlert::count());
+    }
+
+    /**
+     * Op de server bestaat `D:/GitHub/...` niet, dus vond `repoVoor()` daar
+     * nooit een git-remote en controleerde het commando nul repo's — met
+     * exitcode 0, wat leest als "alles goed". De checkouts staan er wél, onder
+     * `/var/www/...`.
+     */
+    public function test_valt_terug_op_het_serverpad_voor_de_git_remote(): void
+    {
+        config(['havun-projects' => ['proj' => [
+            'path' => 'D:/GitHub/BestaatHierNiet',
+            'server_path' => $this->tmp,
+        ]]]);
+
+        $this->fakeGh($this->workflowRun('failure', now()->subDays(4)->toIso8601String()));
+
+        $this->artisan('actions:watch')->assertExitCode(0);
+
+        $this->assertNotNull(HealthAlert::where('key', 'actions-proj')->first());
+    }
+
+    /**
+     * Nul repo's gecontroleerd is geen schone ronde: dan is er niet gekeken.
+     * Precies zo bleef vier maanden onopgemerkt dat de cron niets deed.
+     */
+    public function test_nul_gecontroleerde_repos_is_een_luide_fout(): void
+    {
+        config(['havun-projects' => ['proj' => ['path' => 'D:/GitHub/BestaatHierNiet']]]);
+
+        $this->fakeGh(null);
+
+        $this->artisan('actions:watch')
+            ->expectsOutputToContain('geen enkele repo')
+            ->assertExitCode(1);
     }
 
     public function test_dry_run_reports_without_writing_an_alert(): void
@@ -148,11 +255,19 @@ class ActionsWatchCommandTest extends TestCase
         $this->assertSame(0, HealthAlert::count(), 'A dry run must not touch the alert table');
     }
 
+    /**
+     * Eén project zonder GitHub-remote levert geen alert op. Is het meteen het
+     * énige project, dan is er ook niets gecontroleerd — en dát meldt het
+     * commando sinds 04-08 hardop, want op de server was "nul repo's" jarenlang
+     * de stille werkelijkheid.
+     */
     public function test_a_project_without_a_github_remote_is_skipped(): void
     {
         $this->fakeGh(null, remote: false);
 
-        $this->artisan('actions:watch')->assertExitCode(0);
+        $this->artisan('actions:watch')
+            ->expectsOutputToContain('geen enkele repo')
+            ->assertExitCode(1);
 
         $this->assertSame(0, HealthAlert::count());
     }
