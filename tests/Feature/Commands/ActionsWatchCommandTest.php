@@ -272,6 +272,38 @@ class ActionsWatchCommandTest extends TestCase
         $this->assertSame(0, HealthAlert::count());
     }
 
+    /**
+     * De prod-checkouts gebruiken per repo een eigen SSH-host-alias
+     * (`git@github-judotoernooi:havun22-hvu/Judotoernooi.git`) zodat elke
+     * deploy-key maar één project opent. De regex matchte alleen letterlijk
+     * `github.com`, dus op de server viel zes van de zeven checkouts weg —
+     * de beveiligingsmaatregel maakte de bewaking blind.
+     */
+    public function test_herkent_een_ssh_host_alias_als_github_repo(): void
+    {
+        VaultSecret::create([
+            'key' => 'github_pat_ro',
+            'value' => 'ghp_' . str_repeat('x', 36),
+            'category' => 'github',
+            'description' => 'test',
+            'is_sensitive' => true,
+        ]);
+
+        Process::fake(fn () => Process::result("git@github-proj:havun22-hvu/Proj.git
+"));
+
+        Http::fake([
+            'api.github.com/repos/havun22-hvu/Proj' => Http::response(['default_branch' => 'main']),
+            'api.github.com/repos/havun22-hvu/Proj/actions/runs*' => Http::response([
+                'workflow_runs' => [$this->workflowRun('failure', now()->subDays(4)->toIso8601String())],
+            ]),
+        ]);
+
+        $this->artisan('actions:watch')->assertExitCode(0);
+
+        $this->assertNotNull(HealthAlert::where('key', 'actions-proj')->first());
+    }
+
     public function test_a_repo_without_any_runs_produces_no_alert(): void
     {
         // Vusista2 today: a repo with no workflows yet. Nothing to report, and

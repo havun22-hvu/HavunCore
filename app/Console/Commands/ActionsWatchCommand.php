@@ -183,7 +183,13 @@ class ActionsWatchCommand extends Command
         }
 
         $url = trim($result->output());
-        if (! preg_match('#github\.com[:/]([^/]+/[^/\s]+?)(?:\.git)?$#', $url, $m)) {
+
+        // Ook `git@github-<project>:owner/repo.git`. De prod-checkouts gebruiken
+        // per repo een eigen SSH-host-alias zodat elke deploy-key maar één
+        // project opent (één lek = één project). Een regex die alleen letterlijk
+        // `github.com` accepteerde liet zes van de zeven checkouts op de server
+        // wegvallen — de beveiligingsmaatregel maakte de bewaking blind.
+        if (! preg_match('#github[\w.-]*[:/]([^/]+/[^/\s]+?)(?:\.git)?$#', $url, $m)) {
             return null;
         }
 
