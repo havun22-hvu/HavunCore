@@ -204,9 +204,11 @@ privilege-escalatie.
 **Afgevallen alternatief dat vaak terugkomt:** de cron als root draaien. Dat *doet* hij al (dat
 was de verkeerde aanname), en precies daarom staat `storage/**` periodiek op root-owned.
 
-**Nog open, buiten deze fix:** dezelfde SSH-route zit ook in `serverHealth` en `residueCheck`.
-Draaien die op de server, dan vallen ze om dezelfde reden om. Sinds 03-08 zie je dat wél terug
-(`errors` staat in de handover), maar de oorzaak is niet weg.
+**Ook opgelost, generiek (03-08):** `runRemote()` kijkt eerst of `$host` deze machine ís — IP van
+de host tegen de adressen van de eigen interfaces — en draait het commando dan gewoon lokaal.
+Daarmee werken `serverHealth` en `residueCheck` op de server zonder sleutel naar zichzelf, en hoeft
+een volgende check daar niets van te weten. Het backupmanifest blijft nuttig: dat lost óók op dat
+de scan de backupmap niet hoeft te kunnen lezen.
 
 ## Wat de backupcheck vond op zijn eerste run (01-08)
 

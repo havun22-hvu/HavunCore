@@ -21,6 +21,14 @@ class QualitySafetyScanner
     public const GLOBAL_CHECKS = ['registries', 'backup-coverage'];
 
     /**
+     * De adressen van deze machine — één keer bepaald per scan, want elke
+     * remote check vraagt ernaar.
+     *
+     * @var list<string>|null
+     */
+    private ?array $eigenAdressen = null;
+
+    /**
      * @param  array<string,array<string,mixed>>  $projects
      * @param  array<int,string>                  $checks
      * @return array<string,mixed>
@@ -389,13 +397,69 @@ class QualitySafetyScanner
      *
      * @return array{ok:bool, output:string, exit_code:int, error:?string}
      */
+    /**
+     * Wijst `$host` naar de machine waar deze scan op draait?
+     *
+     * Loopback altijd; verder wordt het IP van de host vergeleken met de
+     * adressen van de eigen netwerkinterfaces. `net_get_interfaces()` bestaat
+     * niet op Windows — daar valt de vergelijking terug op de hostnaam, wat
+     * klopt: op Henks machine is de server nooit "hier".
+     */
+    private function isDezeMachine(string $host): bool
+    {
+        $doel = filter_var($host, FILTER_VALIDATE_IP) ? $host : gethostbyname($host);
+
+        return in_array($doel, $this->eigenAdressen(), true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function eigenAdressen(): array
+    {
+        if ($this->eigenAdressen !== null) {
+            return $this->eigenAdressen;
+        }
+
+        $adressen = ['127.0.0.1', '::1'];
+
+        $eigenNaam = gethostname();
+
+        if (is_string($eigenNaam) && $eigenNaam !== '') {
+            $adressen[] = gethostbyname($eigenNaam);
+        }
+
+        if (function_exists('net_get_interfaces') && ($interfaces = @net_get_interfaces()) !== false) {
+            foreach ($interfaces as $interface) {
+                foreach (array_merge($interface['unicast'] ?? [], []) as $unicast) {
+                    foreach (['address'] as $veld) {
+                        if (! empty($unicast[$veld])) {
+                            $adressen[] = (string) $unicast[$veld];
+                        }
+                    }
+                }
+            }
+        }
+
+        return $this->eigenAdressen = array_values(array_unique(array_filter($adressen)));
+    }
+
     private function runRemote(string $host, string $user, string $remoteCmd, int $timeout): array
     {
-        $bin = config('quality-safety.bin.ssh', 'ssh');
-        $sshOpts = (array) config('quality-safety.server.ssh_options', []);
+        // Is `$host` deze machine, dan draaien we het commando gewoon. Een
+        // SSH-sessie naar jezelf opzetten vraagt om een sleutel die er niet is
+        // en ook niet hoort te zijn: op 03-08-2026 bleek `serverHealth` daardoor
+        // elke nacht `Permission denied (publickey)` te melden en dus nooit iets
+        // te meten — op de server waar hij nu juist over gaat.
+        if ($this->isDezeMachine($host)) {
+            $result = Process::timeout($timeout)->run($remoteCmd);
+        } else {
+            $bin = config('quality-safety.bin.ssh', 'ssh');
+            $sshOpts = (array) config('quality-safety.server.ssh_options', []);
 
-        $cmd = array_merge([$bin], $sshOpts, ["{$user}@{$host}", $remoteCmd]);
-        $result = Process::timeout($timeout)->run($cmd);
+            $cmd = array_merge([$bin], $sshOpts, ["{$user}@{$host}", $remoteCmd]);
+            $result = Process::timeout($timeout)->run($cmd);
+        }
 
         if (! $result->successful()) {
             $stderr = trim($result->errorOutput()) ?: trim($result->output());
