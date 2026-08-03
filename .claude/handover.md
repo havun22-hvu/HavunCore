@@ -15,17 +15,11 @@ last_updated: 2026-08-03
 — de backup-manifestfix wacht op deploy (geen migraties). HavunAdmin heeft 16 commits /
 7 codebestanden klaar uit een andere sessie.
 
-**02-08: de drie openstaande secrets zijn dicht** — GitHub-PAT vervangen (Vault, verloopt
-01-08-2027) en de MySQL-wachtwoorden van `havunadmin` (gelekt via een transcript) en `havuncore`
-(stond plain als `HavunCore2025`) geroteerd naar 48 tekens. Alle drie geverifieerd via de app zelf,
-niet via een HTTP-status. Back-ups in `/root/backups/`. Herbruikbaar:
-`scripts/roteer-db-wachtwoord.sh`, methode C in `runbooks/secrets-veilig-ontvangen.md`.
-
-**Backups: twee gaten gedicht (01-08).** Herdenkingsportaal had 4,5 maand geen bruikbare
-databasebackup (verkeerde database gedumpt), HavunAdmins facturen zaten in géén backup. Beide goed,
-beide restores getest, 31/31 dagen in juli. Bewaakt door `qv:scan --only=registries` (03:02) en
-`--only=backup-coverage` (05:30). Volledig: `plans/registry-drift-check-plan.md` +
-`reference/databases-op-de-server.md`.
+**Afgerond 01/02-08:** drie secrets geroteerd (GitHub-PAT + MySQL van `havunadmin` en `havuncore`,
+alle drie via de app geverifieerd, backups in `/root/backups/`), en twee backupgaten gedicht
+(Herdenkingsportaal dumpte 4,5 maand de verkeerde database; HavunAdmins facturen zaten nergens in).
+Beide restores getest. Volledig: `runbooks/secrets-veilig-ontvangen.md`,
+`plans/registry-drift-check-plan.md`, `reference/databases-op-de-server.md`.
 
 ## ⛔ De V&K-scan meet op de server bijna niets (03-08) — twee van drie gefixt
 
@@ -93,47 +87,39 @@ niet op, dus de crons van 07:00/19:00 controleren niets. Het log zegt dat eerlij
 
 ## Open — te doen
 
-- **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Hele keten staat. Rest = één
-  browser-test. `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009`
-  (lege stub). Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt.
+- **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Rest = één browser-test.
+  `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
+  Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt.
 - **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** Wéér last? Check
   `getRegistration()` op een `waiting`. `plans/webapp-sw-update-fix.md`. Vitest daar geblokkeerd
-  door Avast HTTPS-interceptie, niet de registry. Zie [[env-ssl-interception]].
+  door Avast, niet de registry — [[env-ssl-interception]].
 - **Drie CLAUDE.md's boven de 120-regelnorm** — Studieplanner-api 135, JudoScoreBoard 136,
   havuncore-webapp 125.
 - **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde versie staat op
   `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
-- **`origin/rescue/havuncore-prod-autocommits-2026-07-25`** staat er nog met 10 commits die nergens
-  anders bestaan — allemaal `chore(auto): refresh handover, qv-scan-latest` van 15 t/m 25 juli.
-  Inhoudelijk achterhaald door nieuwere snapshots, maar niet gemergd: beoordelen en dan weg, niet
-  blind droppen.
+- **`origin/rescue/havuncore-prod-autocommits-2026-07-25`** — 10 commits die nergens anders bestaan
+  (`chore(auto)`-snapshots van 15–25 juli), inhoudelijk achterhaald. Beoordelen en dan weg.
 
-## Veen-ledenadministratie — GEPARKEERD (Henk, 31-07)
-
-**Voorlopig niets mee doen**, ook de kleine betaalde klussen niet. Onze serveromgeving is 31-07
-opgeruimd (backup `/root/backups/veen-cleanup-2026-07-31`); de lokale checkout blijft en wordt
-gescand. **⛔ De oude app van Cees op `37.34.60.216` (TransIP) is niet van ons en is niet
-aangeraakt** — daar draait de live administratie. Volledig, inclusief de openstaande high
-(`session.php` zonder secure-cookie-default, bewust niet gefixt):
-`projects/veen-ledenadministratie.md`.
+**Veen-ledenadministratie — GEPARKEERD (31-07).** Niets mee doen, ook de kleine betaalde klussen
+niet. Onze serveromgeving is opgeruimd; de lokale checkout blijft en wordt gescand. **⛔ De oude app
+van Cees op `37.34.60.216` (TransIP) is niet van ons en is niet aangeraakt.** Volledig, inclusief de
+openstaande high: `projects/veen-ledenadministratie.md`.
 
 ## Vaste context voor dit project
 
-- **Rol:** centrale kennisbank + orchestrator. Scope-regel: **alleen HavunCore aanwerken; ander
-  project = eigen sessie** (uitzondering: Henk geeft expliciet toestemming). Zie
-  [[feedback-scope-waarschuwen]].
+- **Rol:** centrale kennisbank + orchestrator. **Alleen HavunCore aanwerken; ander project = eigen
+  sessie** (tenzij Henk expliciet toestemt). Zie [[feedback-scope-waarschuwen]].
 - **Geparkeerd, géén uitrol meer:** HavunClub, Demo, Havunity, Infosyst, IDSee, Agorano, Veen
   (31-07), HavunVet (01-08). Munus is weg; HavunVet en Vusista 1 zijn gearchiveerd. Hun databases
   blijven staan met reden: `reference/databases-op-de-server.md`.
 - **De 6 Onschendbare Regels** staan canoniek in `runbooks/claude-werkwijze.md` §0 — verwijs
-  ernaar, kopieer ze niet. Ze stonden in zeven docs los, waarvan vier er nog vijf noemden.
+  ernaar, kopieer ze niet.
 - KB zoeken: `php artisan docs:search "<onderwerp>"` — vereist Ollama op :11434.
 - **Eerste prod-deploy per app = Henk klikt bewust.** Nooit auto-migrate op prod.
-- **Prod kán pushen als root, `www-data` niet** — die krijgt *dubious ownership*
-  (`safe.directory`), waardoor `AutoCommitRegeneratedCommand` zijn veiligheidsklep niet kon
-  gebruiken. **Nog te doen:** `safe.directory` goedzetten voor `www-data` (server-config → overleg).
+- **De scheduler draait als root** (roots crontab, elke minuut per app) — daardoor worden
+  `storage/**` en de qv-scanbestanden root-owned en faalt `cache:clear` als `www-data`. Na elke
+  deploy: `chown -R www-data:www-data storage bootstrap/cache`. Idem `safe.directory` voor
+  `www-data` (nog te doen, server-config → overleg).
 - havuncore-webapp deployt anders: lokaal build → rsync + pm2 (`havuncore-webapp/DEPLOY.md`).
-- Server-quirks: `composer install` als root maakt `storage/**` en `vendor/` root-owned → 500s
-  (`chown -R www-data:www-data`). Een Vite-build is pas gedeployd als de **asset-hash** op de site
-  verandert — zie `runbooks/vite-build-bij-deploy.md`, inclusief de check of er überhaupt iets te
-  bouwen valt.
+- Een Vite-build is pas gedeployd als de **asset-hash** op de site verandert —
+  `runbooks/vite-build-bij-deploy.md`, inclusief de check of er iets te bouwen valt.
