@@ -10,10 +10,9 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** `feat/backup-manifest` · **Status:** stabiel, 1402 tests groen, KB-audit 0 high.
-**Server:** disk 68%, prod draait overal, 0 dirty checkouts. **HavunCore prod staat op `9d06268`**
-— de backup-manifestfix wacht op deploy (geen migraties). HavunAdmin heeft 16 commits /
-7 codebestanden klaar uit een andere sessie.
+**Branch:** master · **Status:** stabiel, 1403 tests groen, KB-audit 0 high. **Server:** disk 68%,
+prod draait overal, 0 dirty checkouts. **Alles van 03-08 staat live** (geen migraties). HavunAdmin
+heeft 16 commits / 7 codebestanden klaar uit een andere sessie.
 
 **Afgerond 01/02-08:** drie secrets geroteerd (GitHub-PAT + MySQL van `havunadmin` en `havuncore`,
 alle drie via de app geverifieerd, backups in `/root/backups/`), en twee backupgaten gedicht
@@ -35,13 +34,12 @@ vannacht op prod:
 2. **`composer`/`npm`/`cargo` scanden op de server niets** — 40 errors `Project path not found:
    D:/GitHub/…`; de scanner gebruikte Henks Windows-pad. Dít is waarom de 34 advisories op
    Herdenkingsportaal 13 commits bleven liggen.
-   → **Gefixt** (03-08, jouw keuze: server-pad): de scan pakt het pad dat op déze machine bestaat.
-   Let op de valkuil: `havun-projects.php` noemt het `server_path`, de scanlijst `remote_path` —
-   alleen de eerste kennen loste niets op. **npm meet nu 4 high op de server.**
-   → **Nog open:** `composer` op de server is **2.2.6** (Ubuntu-pakket, feb 2022) en kent
-   `audit` niet — dat kwam in 2.4. Dus 6 PHP-projecten leveren nog steeds een error. Fix = composer
-   naar 2.8 via de officiële installer → **dependency op de server, jouw go**. `cargo` en `gh`
-   ontbreken er ook.
+   → **Gefixt** (03-08): de scan pakt het pad dat op déze machine bestaat. Valkuil:
+   `havun-projects.php` noemt het `server_path`, de scanlijst `remote_path` — alleen de eerste
+   kennen loste niets op. Ook geïnstalleerd (jouw go): **composer 2.10.2** naast het Ubuntu-pakket
+   2.2.6, dat `audit` niet kende (kwam pas in 2.4); hash geverifieerd tegen `installer.sig`.
+   **Eindstand op de server: `errors: 0`, 6 terecht overgeslagen, en 12 high + 51 medium die
+   niemand ooit gezien had.** `cargo` en `gh` ontbreken er nog — die checks melden dat nu eerlijk.
 3. **`serverHealth`** gaat via SSH naar `root@` en valt op de server om — zelfde oorzaak als de
    backupcheck. → **Open.**
 
@@ -71,7 +69,7 @@ niet op, dus de crons van 07:00/19:00 controleren niets. Het log zegt dat eerlij
 |-----|---------|
 | **Gelekt login-wachtwoord (`…ZxO#`) — rotatie loopt (19-07)** | Google meldde leak; waarde was over 10 havun.nl-sites hergebruikt. **Gedaan:** wachtwoord-login van `henkvu@` dood op HavunCore/SafeHavun/Studieplanner (rij-backups `/root/backups/pwreset-2026-07-19`). **Jij nog doen:** (1) `scripts/rotate-leaked-login.sh` draaien in Git Bash → nieuw wachtwoord voor HavunAdmin (prod+staging) + JudoToernooi `.env`; (2) `infosyst`+`staging.havunclub` uit Google verwijderen. **Apart (eigen sessie):** VPD/vpdupdate; HavunAdmin magic-link bouwen; password-kolommen nullable op de 3 magic-link-apps |
 | **Vier rode builds (31-07)** | HavunAdmin 3 maanden rood · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie 1 dag · Studieplanner-api sinds 30-07. Gevonden door `actions:watch` **lokaal** — op de server is `gh` niet geïnstalleerd, dus die cron (07:00/19:00) heeft nooit iets gecontroleerd. Uitzoeken hoort in de projectsessie zelf |
-| **Security: dependencies — 2 critical + 10 high, nooit eerder gerapporteerd** | Zichtbaar geworden door de padfix van 03-08. **Studieplanner-mobile: 2 critical** (`shell-quote`, `tar`) **+ 6 high** (brace-expansion, fast-uri, js-yaml, postcss, undici, ws). **havun.nl: 3 high** (next, postcss, sharp). **VPDUpdate: 1 high** (`xlsx` prototype pollution — geen fix beschikbaar, vervangen door exceljs). Elk in de eigen projectsessie; `npm audit fix` → overleg. Los daarvan nog open: HavunAdmin 19 composer-advisories (2 high), JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) |
+| **Security: dependencies — 2 critical + 22 high, nooit eerder gerapporteerd** | Zichtbaar door de scanfixes van 03-08. **npm:** Studieplanner-mobile 2 critical (`shell-quote`, `tar`) + 6 high · havun.nl 3 high (next, postcss, sharp) · VPDUpdate 1 high (`xlsx`, geen fix — vervangen door exceljs). **composer:** Studieplanner-api 6 high + 24 medium · JudoToernooi 3 high + 10 medium · SafeHavun 3 high + 17 medium (laravel/framework, symfony, web-token/jwt). HavunAdmin, Herdenkingsportaal en HavunCore zijn schoon. **Elk in de eigen projectsessie** — `composer update`/`npm audit fix` op productie-apps → overleg. Los daarvan: JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault |
 | **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat nergens actief meer. **Laat 'm in Stripe verlopen.** Optioneel: webhook-secret roteren + `credentials.md` opschonen |
