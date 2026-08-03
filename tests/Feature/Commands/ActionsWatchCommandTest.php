@@ -304,6 +304,33 @@ class ActionsWatchCommandTest extends TestCase
         $this->assertNotNull(HealthAlert::where('key', 'actions-proj')->first());
     }
 
+    /**
+     * De read-only PAT is ooit gemaakt voor de mobiele monitoring en heeft geen
+     * toegang tot alle repo's; GitHub antwoordt dan met 404, niet 403. Gemeten
+     * 04-08-2026 op de server: HavunAdmin, Herdenkingsportaal, VPDUpdate en
+     * havuncore-webapp gaven alle vier 404 — en verdwenen zonder een woord uit
+     * de telling. Een repo die je niet kunt bevragen is geen repo zonder
+     * problemen.
+     */
+    public function test_een_onbereikbare_repo_verdwijnt_niet_stil(): void
+    {
+        VaultSecret::create([
+            'key' => 'github_pat_ro',
+            'value' => 'ghp_' . str_repeat('x', 36),
+            'category' => 'github',
+            'description' => 'test',
+            'is_sensitive' => true,
+        ]);
+
+        Process::fake(fn () => Process::result("https://github.com/havun22-hvu/Proj.git
+"));
+        Http::fake(['api.github.com/*' => Http::response(['message' => 'Not Found'], 404)]);
+
+        $this->artisan('actions:watch')
+            ->expectsOutputToContain('Niet op te vragen')
+            ->assertExitCode(1);
+    }
+
     public function test_a_repo_without_any_runs_produces_no_alert(): void
     {
         // Vusista2 today: a repo with no workflows yet. Nothing to report, and

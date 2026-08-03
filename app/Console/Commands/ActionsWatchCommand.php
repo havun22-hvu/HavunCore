@@ -55,6 +55,7 @@ class ActionsWatchCommand extends Command
         $rood = 0;
         $gecontroleerd = 0;
         $reposGevonden = 0;
+        $onbereikbaar = [];
 
         foreach ($projects as $slug => $project) {
             $repo = $this->repoVoor($this->checkoutPad($project));
@@ -64,9 +65,19 @@ class ActionsWatchCommand extends Command
 
             $reposGevonden++;
 
-            $run = $this->laatsteRunOpHoofdbranch($repo);
+            $branch = $this->defaultBranch($repo);
+
+            if ($branch === null) {
+                // Geen antwoord van de API: geen toegang, repo hernoemd, of
+                // netwerk. Wat het ook is, er is niet gekeken.
+                $onbereikbaar[] = "{$slug} ({$repo})";
+
+                continue;
+            }
+
+            $run = $this->laatsteRunOpHoofdbranch($repo, $branch);
             if ($run === null) {
-                continue; // geen workflows, of API gaf niets bruikbaars
+                continue; // repo zonder workflows: niets te melden
             }
 
             $gecontroleerd++;
@@ -92,6 +103,16 @@ class ActionsWatchCommand extends Command
         }
 
         $this->info("Gecontroleerd: {$gecontroleerd} repo('s) | rood op de hoofdbranch: {$rood}");
+
+        // Een repo die de API niet wil geven, is niet gecontroleerd. Stil
+        // overslaan zou hetzelfde beeld geven als "groen" — gemeten 04-08-2026
+        // gaf de read-only PAT 404 op vier van de acht repo's en verdwenen die
+        // alle vier zonder een woord.
+        if ($onbereikbaar !== []) {
+            $this->error('Niet op te vragen bij GitHub (geen toegang of hernoemd): ' . implode(', ', $onbereikbaar));
+
+            return self::FAILURE;
+        }
 
         // Geen énkele checkout gevonden is geen schone ronde maar een blinde.
         // Op de server was dat maandenlang de werkelijkheid — `D:/GitHub/...`
@@ -199,15 +220,10 @@ class ActionsWatchCommand extends Command
     /**
      * @return array<string,mixed>|null
      */
-    private function laatsteRunOpHoofdbranch(string $repo): ?array
+    private function laatsteRunOpHoofdbranch(string $repo, string $branch): ?array
     {
         // Expliciet om de default branch vragen, zodat feature-branches buiten
         // beeld blijven: een rode run daarop is werk in uitvoering.
-        $branch = $this->defaultBranch($repo);
-        if ($branch === null) {
-            return null;
-        }
-
         $antwoord = $this->github("repos/{$repo}/actions/runs", [
             'branch' => $branch,
             'per_page' => 1,
