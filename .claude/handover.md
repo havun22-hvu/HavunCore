@@ -49,12 +49,12 @@ SSH-fout is dus dat *de server geen sleutel naar zichzelf heeft*. Bijvangst: die
 `storage/**` root-owned, waardoor `cache:clear` als `www-data` faalt — 03-08 rechtgezet, maar het
 komt terug zolang de cron als root draait.
 
-## De backupcheck meet weer iets (03-08) — klaar, wacht op deploy
+## De backupcheck meet weer iets (03-08) — live
 
 Het backupscript schrijft als root een manifest (`/var/lib/havun/backup-manifest.json`, 644, geen
-wachtwoorden) — dat script staat er al en draait. De check leest dat en gebruikt SSH alleen nog
-buiten de server. **Niets gemeten = critical** (en dan alléén die finding), **manifest ouder dan
-26 uur = high**, en de handover toont `errors N`. Alleen de HavunCore-deploy staat nog open.
+wachtwoorden); de check leest dat en gebruikt SSH alleen nog buiten de server. **Niets gemeten =
+critical** (en dan alléén die finding), **manifest ouder dan 26 uur = high**, en de handover toont
+`errors N`. Op de server geverifieerd: `errors=1` → `errors=0`.
 Volledig: `plans/registry-drift-check-plan.md`.
 
 Apart punt, zelfde patroon: **`actions:watch` heeft op de server nooit gewerkt** — `gh` staat er
