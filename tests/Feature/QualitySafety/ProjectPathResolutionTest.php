@@ -57,6 +57,29 @@ class ProjectPathResolutionTest extends TestCase
         $this->assertStringContainsString('niet gevonden', $run['errors'][0]['message']);
     }
 
+    /**
+     * De twee registers noemen het serverpad anders: `havun-projects.php`
+     * gebruikt `server_path`, de scanlijst in `quality-safety.php` gebruikt
+     * `remote_path` — en de scanner leest die laatste. Alleen op `server_path`
+     * terugvallen loste dus niets op; op 03-08 bleef de scan op de server
+     * gewoon veertien keer "niet gevonden" melden.
+     */
+    public function test_kent_ook_de_sleutel_uit_de_scanlijst(): void
+    {
+        $projects = [
+            'havuncore' => [
+                'path' => 'D:/GitHub/EenPadDatHierNietBestaat',
+                'remote_path' => base_path(),
+            ],
+        ];
+
+        Process::fake(['*' => Process::result(output: json_encode(['advisories' => []]), exitCode: 0)]);
+
+        $run = (new QualitySafetyScanner)->scan($projects, ['composer']);
+
+        $this->assertSame([], $run['errors']);
+    }
+
     public function test_bestaand_werkpad_wint_van_het_serverpad(): void
     {
         // Op Henks machine is de werkkopie de bron: die heeft dev-dependencies

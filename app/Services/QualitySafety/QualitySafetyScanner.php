@@ -153,13 +153,18 @@ class QualitySafetyScanner
     /**
      * Kiest het pad dat op déze machine bestaat.
      *
-     * `havun-projects.php` noemt er twee: `path` is Henks werkkopie
-     * (`D:/GitHub/...`), `server_path` de checkout op de server. Alle
-     * code-checks gebruikten `path` — en dus mat de nachtelijke scan op de
-     * server niets: gemeten op 03-08-2026 leverden composer, npm en cargo daar
-     * samen 40 keer `Project path not found: D:/GitHub/...` op, wat neerkomt op
-     * nul gecontroleerde projecten. Dat is waarom 34 composer-advisories op
+     * Er zijn er twee: `path` is Henks werkkopie (`D:/GitHub/...`), daarnaast
+     * staat de checkout op de server. Alle code-checks gebruikten `path` — en
+     * dus mat de nachtelijke scan op de server niets: gemeten op 03-08-2026
+     * leverden composer, npm en cargo daar samen 40 keer
+     * `Project path not found: D:/GitHub/...` op, wat neerkomt op nul
+     * gecontroleerde projecten. Dat is waarom 34 composer-advisories op
      * Herdenkingsportaal dertien commits bleven liggen tot Henk ze zelf zag.
+     *
+     * Het serverpad heet in de twee registers **niet hetzelfde**:
+     * `havun-projects.php` zegt `server_path`, de scanlijst in
+     * `quality-safety.php` zegt `remote_path` — en de scanner leest die laatste.
+     * Beide staan hieronder; alleen de eerste kennen loste niets op.
      *
      * De werkkopie wint als hij bestaat: die heeft dev-dependencies en loopt
      * voor op de server. Bestaat geen van beide, dan blijft `path` staan zodat
@@ -177,10 +182,14 @@ class QualitySafetyScanner
             return $project;
         }
 
-        $serverPad = $project['server_path'] ?? null;
+        foreach (['server_path', 'remote_path'] as $sleutel) {
+            $kandidaat = $project[$sleutel] ?? null;
 
-        if (is_string($serverPad) && is_dir($serverPad)) {
-            $project['path'] = $serverPad;
+            if (is_string($kandidaat) && is_dir($kandidaat)) {
+                $project['path'] = $kandidaat;
+
+                return $project;
+            }
         }
 
         return $project;
