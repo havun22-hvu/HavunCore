@@ -149,10 +149,21 @@ class QualitySafetyScanner
     }
 
     /**
-     * Vraagt de nieuwste backupmap op en toetst hem aan de verwachting.
+     * Toetst of er vannacht daadwerkelijk geback-upt is wat elk project nodig
+     * heeft.
      *
-     * Leest alleen — `find` en `stat`, nooit een wijziging. Zie
-     * BackupCoverageDetector voor de regels en het incident erachter.
+     * De meting zelf gebeurt op de server, in `havun-backup-manifest.sh`: dat
+     * script draait als root aan het eind van de backuprun en schrijft wát het
+     * opleverde naar `/var/lib/havun/backup-manifest.json` — bestandsnamen,
+     * groottes, tijden, en de `DB_DATABASE` van elke app. Hier wordt dat
+     * bestand alleen gelezen.
+     *
+     * Waarom niet meer zelf meten: tot 02-08-2026 vroeg deze check de backupmap
+     * op via SSH naar `root@`. Draait de scan op de server (als `www-data`), dan
+     * is dat een SSH-verbinding naar zichzelf zonder sleutel — en die sleutel
+     * geven zou de webserver-user root maken. De cron rapporteerde daardoor elke
+     * nacht `errors=1, high=0`. Sinds 03-08 is er nog één definitie van wat er
+     * gemeten wordt, in bash, en leest deze kant hem lokaal of via SSH.
      *
      * @return array{findings:array<int,array<string,mixed>>, error?:string, skipped?:string}
      */
@@ -164,135 +175,75 @@ class QualitySafetyScanner
             return ['findings' => [], 'skipped' => 'geen verwachting geconfigureerd (havun-backup.verificatie)'];
         }
 
-        // Eerst het manifest dat het backupscript zelf achterlaat. Draait deze
-        // scan op de server (als `www-data`), dan is dat de énige route: SSH
-        // naar `root@` heeft daar geen sleutel, en die geven zou de webserver-
-        // user root maken. Staat er geen manifest, dan draaien we ergens anders
-        // en is SSH juist wél de goede route.
-        $viaManifest = $this->backupManifest();
+        $pad = (string) config('havun-backup.verificatie.manifest', '/var/lib/havun/backup-manifest.json');
 
-        if ($viaManifest !== null) {
-            return $this->toetsBackupdekking(
-                $viaManifest['bestanden'],
-                $viaManifest['app_databases'],
-                ['bron' => 'manifest', 'leeftijd_uren' => $viaManifest['leeftijd_uren']],
-                $verwacht,
-            );
+        // Op de server ligt het manifest gewoon op schijf; daarbuiten (Henks
+        // machine) halen we hetzelfde bestand op via SSH.
+        if (is_readable($pad)) {
+            return $this->toetsBackupdekking((string) file_get_contents($pad), $verwacht);
         }
 
-        $root = (string) config('havun-backup.verificatie.root', '/var/backups/havun');
-        $host = (string) config('quality-safety.residu.host', '188.245.159.115');
-        $user = (string) config('quality-safety.residu.user', 'root');
-        // Andere remote-checks gebruiken 10-30s; een find over de backupmap mag
-        // wat langer duren dan een disk-check.
-        $timeout = 45;
-
-        // Drie dingen in één sessie: de servertijd, de inhoud van de nieuwste
-        // backupmap, en welke database elke app zégt te gebruiken.
-        //
-        // Dat laatste is er sinds 01-08-2026 bij, en het is de belangrijkste
-        // regel van de hele check. Van 15 maart tot 27 juli dumpte het
-        // backupscript `herdenkingsportaal_production` (dood restant, 47 rijen)
-        // terwijl de app op `herdenkingsportaal_prod` draait (50.520 rijen).
-        // Elke nacht een keurig bestand, vier maanden lang, van de verkeerde
-        // database. Alleen de app weet welke database de echte is — dus vraag
-        // het de app, en niet de lijst.
-        //
-        // Alleen de DB_DATABASE-regel wordt gelezen; wachtwoorden blijven waar
-        // ze staan. Het rekenwerk gebeurt in PHP: hoe minder shell, hoe minder
-        // er stuk kan aan quoting.
-        $cmd = sprintf(
-            'd=$(ls -1d %s/[0-9]*-[0-9]*-[0-9]* 2>/dev/null | sort | tail -1); '
-            . '[ -z "$d" ] && echo GEENMAP && exit 0; '
-            . 'echo "NU|$(date +%%s)"; '
-            . 'find "$d" -type f -printf "F|%%f|%%s|%%T@\n" 2>/dev/null; '
-            . 'for e in /var/www/*/production/.env /var/www/*/repo-prod/laravel/.env; do '
-            . '[ -f "$e" ] || continue; '
-            . 'n=$(grep -m1 "^DB_DATABASE=" "$e" 2>/dev/null | cut -d= -f2 | tr -d "\\"\\047 \\r"); '
-            . '[ -n "$n" ] && echo "DB|$n|$e"; done',
-            escapeshellarg($root),
+        $result = $this->runRemote(
+            (string) config('quality-safety.residu.host', '188.245.159.115'),
+            (string) config('quality-safety.residu.user', 'root'),
+            'cat ' . escapeshellarg($pad),
+            20,
         );
-
-        $result = $this->runRemote($host, $user, $cmd, $timeout);
 
         if (! $result['ok']) {
-            // Géén stille `error` meer: die kwam vanaf 01-08-2026 elke nacht
+            // Geen stille `error` meer: die kwam vanaf 01-08-2026 elke nacht
             // langs als `errors=1, high=0` en niets las dat eerste veld. Een
-            // mislukte meting is nu een bevinding die het rapport haalt.
-            return array_merge(
-                $this->toetsBackupdekking([], [], ['bron' => 'geen', 'leeftijd_uren' => null], $verwacht),
-                ['error' => 'Backupmap niet op te vragen: ' . ($result['error'] ?? 'onbekend')],
-            );
+            // mislukte meting is nu ook een bevinding.
+            return $this->toetsBackupdekking('', $verwacht)
+                + ['error' => 'Backupmanifest niet op te halen: ' . ($result['error'] ?? 'onbekend')];
         }
 
-        $output = trim($result['output']);
-
-        if ($output === '' || str_contains($output, 'GEENMAP')) {
-            return ['findings' => [[
-                'severity' => 'critical',
-                'title' => 'Backupdekking: geen enkele backupmap',
-                'config' => 'havun-backup.php',
-                'slug' => '_backup',
-                'message' => "Onder {$root} staat geen datummap — er is helemaal niets geback-upt.",
-            ]]];
-        }
-
-        return $this->toetsBackupdekking(
-            $this->parseBackupBestanden($output),
-            $this->parseAppDatabases($output),
-            ['bron' => 'ssh', 'leeftijd_uren' => 0.0],
-            $verwacht,
-        );
+        return $this->toetsBackupdekking($result['output'], $verwacht);
     }
 
     /**
-     * @param  array<string,array{leeftijd_uren:float,bytes:int}> $bestanden
-     * @param  array<string,string> $appDatabases
-     * @param  array{bron:string,leeftijd_uren:float|null} $meting
+     * @param  string $manifestJson  lege string = er is niets gemeten
      * @param  array<string,array<int|string,string|int>> $verwacht
      * @return array{findings:array<int,array<string,mixed>>}
      */
-    private function toetsBackupdekking(array $bestanden, array $appDatabases, array $meting, array $verwacht): array
+    private function toetsBackupdekking(string $manifestJson, array $verwacht): array
     {
+        $manifest = $this->leesManifest($manifestJson);
+
         return [
             'findings' => (new BackupCoverageDetector)->detect(
                 (array) config('havun-projects', []),
                 $verwacht,
                 (array) config('havun-backup.verificatie.uitgezonderd', []),
-                $bestanden,
+                $manifest['bestanden'],
                 (array) config('havun-backup.monitoring', []),
-                $appDatabases,
-                $meting,
+                $manifest['app_databases'],
+                $manifest['leeftijd_uren'],
             ),
         ];
     }
 
     /**
-     * Leest het manifest dat het backupscript als root achterlaat.
+     * Zet het manifest om naar wat de detector verwacht.
      *
-     * Het script kent de uitkomst van de run al — welke bestanden het schreef,
-     * hoe groot, en welke database elke app volgens zijn `.env` gebruikt. Door
-     * dat op te schrijven hoeft de check die map niet meer zelf te kunnen lezen.
-     * Wereldleesbaar, en er staat geen wachtwoord in: alleen databasenamen.
+     * Leeftijden worden gerekend tegen `gemaakt_op` — de klok van de server op
+     * het moment van meten. Tegen de klok van deze machine rekenen zou een
+     * tijdzoneverschil als "verouderde backup" laten lezen.
      *
-     * @return array{bestanden:array<string,array{leeftijd_uren:float,bytes:int}>, app_databases:array<string,string>, leeftijd_uren:float}|null
+     * @return array{bestanden:array<string,array{leeftijd_uren:float,bytes:int}>, app_databases:array<string,string>, leeftijd_uren:float|null}
      */
-    private function backupManifest(): ?array
+    private function leesManifest(string $json): array
     {
-        $pad = (string) config('havun-backup.verificatie.manifest', '/var/lib/havun/backup-manifest.json');
+        $data = json_decode($json, true);
 
-        if ($pad === '' || ! is_readable($pad)) {
-            return null;
-        }
-
-        $data = json_decode((string) file_get_contents($pad), true);
-
+        // Geen bruikbaar manifest = niet gemeten. `leeftijd_uren: null` zegt dat
+        // tegen de detector, die dan niets anders meer beweert.
         if (! is_array($data) || ! isset($data['gemaakt_op'])) {
-            return null;
+            return ['bestanden' => [], 'app_databases' => [], 'leeftijd_uren' => null];
         }
 
+        $gemetenOp = (int) $data['gemaakt_op'];
         $bestanden = [];
-        $nu = (int) $data['gemaakt_op'];
 
         foreach ((array) ($data['bestanden'] ?? []) as $bestand) {
             if (! is_array($bestand) || empty($bestand['naam'])) {
@@ -301,76 +252,22 @@ class QualitySafetyScanner
 
             $bestanden[(string) $bestand['naam']] = [
                 'bytes' => (int) ($bestand['bytes'] ?? 0),
-                'leeftijd_uren' => round(max(0, $nu - (int) ($bestand['mtime'] ?? $nu)) / 3600, 2),
+                'leeftijd_uren' => $this->urenSinds((int) ($bestand['mtime'] ?? $gemetenOp), $gemetenOp),
             ];
         }
 
         return [
             'bestanden' => $bestanden,
             'app_databases' => array_map('strval', (array) ($data['app_databases'] ?? [])),
-            // Het manifest wordt na elke run herschreven; is het oud, dan staat
-            // de meetketen stil en zegt de inhoud niets over vannacht.
-            'leeftijd_uren' => round(max(0, time() - $nu) / 3600, 2),
+            // Het manifest wordt na elke backuprun herschreven; is het oud, dan
+            // staat de meetketen stil en zegt de inhoud niets over vannacht.
+            'leeftijd_uren' => $this->urenSinds($gemetenOp, time()),
         ];
     }
 
-    /**
-     * Welke database elke app volgens zijn eigen `.env` gebruikt.
-     *
-     * @return array<string,string>  databasenaam => pad van de .env
-     */
-    private function parseAppDatabases(string $output): array
+    private function urenSinds(int $moment, int $peil): float
     {
-        $databases = [];
-
-        foreach (explode("\n", $output) as $regel) {
-            $delen = explode('|', trim($regel));
-
-            if (($delen[0] ?? '') === 'DB' && ! empty($delen[1])) {
-                $databases[$delen[1]] = $delen[2] ?? '';
-            }
-        }
-
-        return $databases;
-    }
-
-    /**
-     * De servertijd komt mee als `NU|<epoch>`: leeftijd rekenen tegen de klok
-     * van deze machine zou een verschil in tijdzone of drift als "verouderde
-     * backup" laten lezen.
-     *
-     * @return array<string,array{leeftijd_uren:float,bytes:int}>
-     */
-    private function parseBackupBestanden(string $output): array
-    {
-        $regels = explode("\n", $output);
-        $nu = 0;
-
-        foreach ($regels as $regel) {
-            if (str_starts_with(trim($regel), 'NU|')) {
-                $nu = (int) substr(trim($regel), 3);
-                break;
-            }
-        }
-
-        $bestanden = [];
-
-        foreach ($regels as $regel) {
-            $delen = explode('|', trim($regel));
-
-            if (($delen[0] ?? '') !== 'F' || count($delen) < 4) {
-                continue;
-            }
-
-            $mtime = (int) $delen[3];
-
-            $bestanden[$delen[1]] = [
-                'bytes' => (int) $delen[2],
-                'leeftijd_uren' => $nu > 0 ? round(max(0, $nu - $mtime) / 3600, 2) : 0.0,
-            ];
-        }
-
-        return $bestanden;
+        return round(max(0, $peil - $moment) / 3600, 2);
     }
 
     /**

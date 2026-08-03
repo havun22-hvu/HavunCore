@@ -10,10 +10,10 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel, 1389 tests groen, KB-audit 0 high. **Server:** disk 68%,
-prod draait overal, 0 dirty checkouts. **HavunCore prod staat op `9d06268`** — alles wat klaarstond
-is 02-08 gedeployd (geen migraties). HavunAdmin heeft nog 8 commits / 4 codebestanden klaar uit een
-andere sessie.
+**Branch:** `feat/backup-manifest` · **Status:** stabiel, 1395 tests groen, KB-audit 0 high.
+**Server:** disk 68%, prod draait overal, 0 dirty checkouts. **HavunCore prod staat op `9d06268`**
+— de backup-manifestfix wacht op deploy (geen migraties). HavunAdmin heeft 16 commits /
+7 codebestanden klaar uit een andere sessie.
 
 **02-08: de drie openstaande secrets zijn dicht** — GitHub-PAT vervangen (Vault, verloopt
 01-08-2027) en de MySQL-wachtwoorden van `havunadmin` (gelekt via een transcript) en `havuncore`
@@ -29,24 +29,21 @@ restores getest (52/52 en 39/39 tabellen), 31/31 dagen in juli. Twee checks bewa
 `qv:scan --only=registries` 03:02 en `--only=backup-coverage` 05:30. Volledig:
 `plans/registry-drift-check-plan.md` + `reference/databases-op-de-server.md`.
 
-## 🔨 Halverwege: de backupcheck meet niets op de server (02-08, "go" gegeven)
+## De backupcheck meet weer iets (03-08) — klaar, wacht op deploy
 
-**Branch `feat/backup-manifest` — twee tests staan bewust rood.** Volgende stap: de detector een
-`meting`-argument geven, dan de scanner, dan het script.
+Branch `feat/backup-manifest`, 1395 tests groen. Het backupscript schrijft als root een manifest
+(`/var/lib/havun/backup-manifest.json`, 644, geen wachtwoorden); de check leest dat en gebruikt SSH
+alleen nog buiten de server. **Niets gemeten = critical** (en dan alléén die finding — de rest zou
+verzonnen zijn), **manifest ouder dan 26 uur = high**, en `docs:handover` toont voortaan `errors N`
+plus de checks die niets maten. Dát was de plek waar `errors=1, high=0` wegviel.
 
-De check werkt alleen lokaal. Op de server draait hij als `www-data` en gaat via SSH naar `root@` —
-dus rapporteert de cron elke nacht `errors=1, high=0`, en niets leest dat eerste veld. Sinds 01-08
-blind. Dezelfde faalmodus als het gat dat hij moest bewaken, nu in de bewaking zelf.
-
-Afgesproken fix (Henks go 02-08): een klein rootscript schrijft na de backup een manifest naar
-`/var/lib/havun/backup-manifest.json` (world-readable); de check leest dat lokaal en valt alleen
-buiten de server terug op SSH. Manifest ouder dan een etmaal = finding. **Niet doen:** cron als root
-(maakt `storage/**` root-owned → 500's) of `www-data` een root-key geven (privilege-escalatie).
-Volledig, inclusief de tweede regel die hieruit volgt (`errors > 0` mag nooit als groen langskomen):
-`plans/registry-drift-check-plan.md`.
+**Jij nog:** HavunCore-prod deployen, dan installeer ik het script en haak het aan in
+`/usr/local/bin/havun-backup.sh`. Volledig: `plans/registry-drift-check-plan.md`.
 
 Zelfde patroon, apart punt: **`actions:watch` heeft op de server nooit gewerkt** — `gh` staat er
 niet op, dus de crons van 07:00/19:00 controleren niets. Het commando zegt dat eerlijk in het log.
+`serverHealth` en `residueCheck` gaan óók via SSH naar `root@` en vallen dus om op de server;
+sinds 03-08 zie je dat wél terug, maar de oorzaak is niet weg.
 
 **Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump in
 `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database.

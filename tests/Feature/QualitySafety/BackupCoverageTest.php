@@ -4,6 +4,7 @@ namespace Tests\Feature\QualitySafety;
 
 use App\Services\QualitySafety\BackupCoverageDetector;
 use App\Services\QualitySafety\QualitySafetyScanner;
+use Illuminate\Support\Facades\Process;
 use Tests\TestCase;
 
 /**
@@ -20,7 +21,7 @@ class BackupCoverageTest extends TestCase
 {
     private const DREMPELS = ['max_backup_age_hours' => 25, 'min_backup_size_bytes' => 1024];
 
-    private function detect(array $canoniek, array $verwacht, array $uitgezonderd, array $gevonden, array $appDatabases = [], ?array $meting = null): array
+    private function detect(array $canoniek, array $verwacht, array $uitgezonderd, array $gevonden, array $appDatabases = [], ?float $meting = 0.0): array
     {
         return (new BackupCoverageDetector)->detect(
             $canoniek,
@@ -29,7 +30,7 @@ class BackupCoverageTest extends TestCase
             $gevonden,
             self::DREMPELS,
             $appDatabases,
-            $meting ?? ['bron' => 'ssh', 'leeftijd_uren' => 0.0],
+            $meting,
         );
     }
 
@@ -314,7 +315,7 @@ class BackupCoverageTest extends TestCase
             ['havuncore' => ['havuncore.sql.gz']],
             [],
             ['havuncore.sql.gz' => $this->bestand()],
-            meting: ['bron' => 'geen', 'leeftijd_uren' => null],
+            meting: null,
         );
 
         $critical = $this->berichtenMet($findings, 'critical');
@@ -333,7 +334,7 @@ class BackupCoverageTest extends TestCase
             ['havuncore' => ['havuncore.sql.gz']],
             [],
             ['havuncore.sql.gz' => $this->bestand()],
-            meting: ['bron' => 'manifest', 'leeftijd_uren' => 40.0],
+            meting: 40.0,
         );
 
         $high = $this->berichtenMet($findings, 'high');
@@ -349,7 +350,7 @@ class BackupCoverageTest extends TestCase
             ['havuncore' => ['havuncore.sql.gz']],
             [],
             ['havuncore.sql.gz' => $this->bestand()],
-            meting: ['bron' => 'manifest', 'leeftijd_uren' => 2.0],
+            meting: 2.0,
         );
 
         $this->assertSame([], $findings);
@@ -394,15 +395,15 @@ class BackupCoverageTest extends TestCase
      */
     public function test_scanner_zonder_manifest_en_zonder_ssh_meldt_critical(): void
     {
+        Process::fake([
+            '*' => Process::result(output: '', errorOutput: 'Permission denied (publickey)', exitCode: 255),
+        ]);
+
         config([
             'havun-backup.verificatie.manifest' => '/pad/dat/niet/bestaat/manifest.json',
             'havun-backup.verificatie.verwacht' => ['havuncore' => ['havuncore.sql.gz']],
             'havun-backup.verificatie.uitgezonderd' => [],
             'havun-projects' => [],
-            // Een host die niet bestaat: de SSH-terugval faalt gegarandeerd,
-            // zonder een echte server aan te raken.
-            'quality-safety.residu.host' => '127.0.0.1',
-            'quality-safety.residu.user' => 'havun-bestaat-niet',
         ]);
 
         $run = (new QualitySafetyScanner)->scan([], ['backup-coverage']);
@@ -429,7 +430,7 @@ class BackupCoverageTest extends TestCase
             [],
             // Wél een geslaagde meting meegeven: zonder dat stopt de detector
             // bij de meetketen en komt hij aan de config-arm niet meer toe.
-            ['bron' => 'manifest', 'leeftijd_uren' => 1.0],
+            1.0,
         );
 
         $zonderVerwachting = array_filter(

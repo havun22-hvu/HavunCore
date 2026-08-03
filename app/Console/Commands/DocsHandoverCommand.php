@@ -108,11 +108,11 @@ class DocsHandoverCommand extends Command
      * qv:log). Avoids the format-drift trap of regex-parsing the rendered
      * markdown — if ScanReportRenderer changes its layout, this still works.
      *
-     * @return array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int,errors:list<array<string,mixed>>}
+     * @return array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int,errors:list<array<string,mixed>>,errors_total:int}
      */
     protected function latestQvSummary(LatestRunFinder $finder): array
     {
-        $leeg = ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0, 'errors' => []];
+        $leeg = ['generated_at' => null, 'totals' => null, 'findings' => [], 'findings_total' => 0, 'errors' => [], 'errors_total' => 0];
 
         $disk = (string) config('quality-safety.storage.disk', 'local');
         $latest = $finder->findPath($disk);
@@ -131,6 +131,12 @@ class DocsHandoverCommand extends Command
             fn ($f) => is_array($f) && in_array($f['severity'] ?? null, ['high', 'critical'], true)
         ));
 
+        // Een check die omvalt levert géén finding op, alleen een error. Zonder
+        // deze lijst leest een scan die niets mat hetzelfde als een scan zonder
+        // bevindingen — zo bleef de nachtelijke backupcheck van 01-08 tot
+        // 02-08-2026 stil kapot.
+        $errors = array_values(array_filter((array) ($data['errors'] ?? []), 'is_array'));
+
         return [
             'generated_at' => $data['started_at'] ?? null,
             'totals' => isset($data['totals']) && is_array($data['totals'])
@@ -138,16 +144,47 @@ class DocsHandoverCommand extends Command
                 : null,
             'findings' => array_slice($highCrit, 0, self::MAX_FINDINGS),
             'findings_total' => count($highCrit),
-            'errors' => array_values(array_filter(
-                (array) ($data['errors'] ?? []),
-                'is_array',
-            )),
+            'errors' => array_slice($errors, 0, self::MAX_FINDINGS),
+            'errors_total' => count($errors),
         ];
     }
 
     /**
+     * Eén lijstje regels onder een kop — gebruikt voor zowel findings als
+     * checks die niets gemeten hebben. `$vasteSeverity` vult het label als de
+     * items zelf er geen hebben; `$totaal` levert de "+N meer"-staart.
+     *
+     * @param  list<array<string,mixed>>  $items
+     * @return list<string>
+     */
+    private function bulletsMetKop(string $kop, array $items, ?string $vasteSeverity, int $totaal): array
+    {
+        if ($items === []) {
+            return [];
+        }
+
+        $lines = ['', $kop, ''];
+
+        foreach ($items as $item) {
+            $label = $vasteSeverity ?? strtoupper((string) ($item['severity'] ?? '?'));
+            $proj = (string) ($item['project'] ?? '?');
+            $check = (string) ($item['check'] ?? '?');
+            $msg = (string) ($item['message'] ?? $item['title'] ?? '');
+            $lines[] = "- **[{$label}]** `{$proj}/{$check}` — {$msg}";
+        }
+
+        $verborgen = $totaal - count($items);
+
+        if ($verborgen > 0) {
+            $lines[] = "- _… +{$verborgen} meer (zie `docs/kb/reference/qv-scan-latest.md`)_";
+        }
+
+        return $lines;
+    }
+
+    /**
      * @param  list<array{hash:string,subject:string,date:string}>  $commits
-     * @param  array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int}  $qv
+     * @param  array{generated_at:?string,totals:?array<string,int>,findings:list<array<string,mixed>>,findings_total:int,errors:list<array<string,mixed>>}  $qv
      */
     protected function renderHandover(array $commits, array $qv, int $days, string $generatedAt): string
     {
@@ -179,43 +216,17 @@ class DocsHandoverCommand extends Command
         if ($qv['totals'] === null) {
             $lines[] = '_Nog geen `qv:scan` snapshot beschikbaar._';
         } else {
-            $totals = $qv['totals'];
-            // `errors` staat er bewust bij: een check die omvalt levert geen
-            // finding op, dus zonder dit getal las een scan die niets mat
-            // hetzelfde als een scan zonder bevindingen. Precies zo bleef de
-            // nachtelijke backupcheck van 01-08 tot 02-08-2026 stil kapot.
-            $lines[] = "**Totals:** critical {$totals['critical']} | high {$totals['high']} | medium {$totals['medium']} | low {$totals['low']} | errors " . ($totals['errors'] ?? 0);
+            $totals = $qv['totals'] + ['critical' => 0, 'high' => 0, 'medium' => 0, 'low' => 0, 'errors' => 0];
+            $lines[] = "**Totals:** critical {$totals['critical']} | high {$totals['high']} | medium {$totals['medium']} | low {$totals['low']} | errors {$totals['errors']}";
             if ($qv['generated_at']) {
                 $lines[] = '';
                 $lines[] = "_Snapshot timestamp: {$qv['generated_at']}_";
             }
-            if ($qv['findings'] !== []) {
-                $lines[] = '';
-                $lines[] = '**HIGH/CRITICAL findings:**';
-                $lines[] = '';
-                foreach ($qv['findings'] as $f) {
-                    $sev = strtoupper((string) ($f['severity'] ?? '?'));
-                    $proj = (string) ($f['project'] ?? '?');
-                    $check = (string) ($f['check'] ?? '?');
-                    $msg = (string) ($f['message'] ?? $f['title'] ?? '');
-                    $lines[] = "- **[{$sev}]** `{$proj}/{$check}` — {$msg}";
-                }
-                $hidden = $qv['findings_total'] - count($qv['findings']);
-                if ($hidden > 0) {
-                    $lines[] = "- _… +{$hidden} meer (zie `docs/kb/reference/qv-scan-latest.md`)_";
-                }
-            }
-            if ($qv['errors'] !== []) {
-                $lines[] = '';
-                $lines[] = '**Checks die niets gemeten hebben:**';
-                $lines[] = '';
-                foreach (array_slice($qv['errors'], 0, self::MAX_FINDINGS) as $e) {
-                    $proj = (string) ($e['project'] ?? '?');
-                    $check = (string) ($e['check'] ?? '?');
-                    $msg = (string) ($e['message'] ?? '');
-                    $lines[] = "- **[ERROR]** `{$proj}/{$check}` — {$msg}";
-                }
-            }
+            $lines = array_merge(
+                $lines,
+                $this->bulletsMetKop('**HIGH/CRITICAL findings:**', $qv['findings'], null, $qv['findings_total']),
+                $this->bulletsMetKop('**Checks die niets gemeten hebben:**', $qv['errors'], 'ERROR', $qv['errors_total']),
+            );
         }
         $lines[] = '';
 
