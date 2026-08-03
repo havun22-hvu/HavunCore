@@ -20,7 +20,7 @@ alle drie via de app geverifieerd, backups in `/root/backups/`), en twee backupg
 Beide restores getest. Volledig: `runbooks/secrets-veilig-ontvangen.md`,
 `plans/registry-drift-check-plan.md`, `reference/databases-op-de-server.md`.
 
-## ⛔ De V&K-scan meet op de server bijna niets (03-08) — twee van drie gefixt
+## De V&K-scan meet op de server weer (03-08) — alle drie gefixt
 
 Gevonden bij het afmaken van de backupfix. Drie losse oorzaken, alle drie gemeten op de runs van
 vannacht op prod:
@@ -40,25 +40,23 @@ vannacht op prod:
    2.2.6, dat `audit` niet kende (kwam pas in 2.4); hash geverifieerd tegen `installer.sig`.
    **Eindstand op de server: `errors: 0`, 6 terecht overgeslagen, en 12 high + 51 medium die
    niemand ooit gezien had.** `cargo` en `gh` ontbreken er nog — die checks melden dat nu eerlijk.
-3. **`serverHealth`** gaat via SSH naar `root@` en valt op de server om — zelfde oorzaak als de
-   backupcheck. → **Open.**
+3. **`serverHealth`** ging via SSH naar `root@` en viel op de server om — zelfde oorzaak.
+   → **Gefixt:** `runRemote()` kijkt of de host déze machine is en draait het commando dan gewoon.
+   Eén plek, dus `residu` volgt mee. Geverifieerd op de server met een kunstmatige drempel van 5%:
+   meldt `/ — 68% full`, `errors: 0`.
 
 **Correctie op de diagnose van 02-08:** de scheduler draait **als root** (alle `schedule:run` staan
-in roots crontab; de qv-scan-bestanden zijn `root:root`), niet als `www-data`. De oorzaak van de
-SSH-fout is dus dat *de server geen sleutel naar zichzelf heeft*. Bijvangst: die root-cron maakt
-`storage/**` root-owned, waardoor `cache:clear` als `www-data` faalt — 03-08 rechtgezet, maar het
-komt terug zolang de cron als root draait.
+in roots crontab; de qv-scanbestanden zijn `root:root`), niet als `www-data`. De SSH-fout kwam dus
+doordat *de server geen sleutel naar zichzelf heeft*. Bijvangst: die root-cron maakt `storage/**`
+root-owned, waardoor `cache:clear` als `www-data` faalt — rechtgezet, maar het komt terug zolang de
+cron als root draait.
 
-## De backupcheck meet weer iets (03-08) — live
+**De backupcheck** schrijft nu als root een manifest (`/var/lib/havun/backup-manifest.json`, 644,
+geen wachtwoorden); de check leest dat. **Niets gemeten = critical** (en dan alléén die finding),
+**manifest ouder dan 26 uur = high**. Op de server: `errors=1` → `errors=0`.
 
-Het backupscript schrijft als root een manifest (`/var/lib/havun/backup-manifest.json`, 644, geen
-wachtwoorden); de check leest dat en gebruikt SSH alleen nog buiten de server. **Niets gemeten =
-critical** (en dan alléén die finding), **manifest ouder dan 26 uur = high**, en de handover toont
-`errors N`. Op de server geverifieerd: `errors=1` → `errors=0`.
-Volledig: `plans/registry-drift-check-plan.md`.
-
-Apart punt, zelfde patroon: **`actions:watch` heeft op de server nooit gewerkt** — `gh` staat er
-niet op, dus de crons van 07:00/19:00 controleren niets. Het log zegt dat eerlijk.
+**Nog open, zelfde patroon:** `actions:watch` heeft op de server nooit gewerkt — `gh` staat er niet
+op, dus de crons van 07:00/19:00 controleren niets.
 
 **Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump in
 `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database.
@@ -85,6 +83,10 @@ niet op, dus de crons van 07:00/19:00 controleren niets. Het log zegt dat eerlij
 
 ## Open — te doen
 
+- **Flaky test (03-08):** `AIProxyServiceTest > chat logs execution time in milliseconds not
+  seconds` viel één keer om in een volle run, twee runs daarna groen. Oorzaak niet vastgesteld —
+  de test leunt op een `usleep(50_000)` en een ondergrens van 40 ms. Niet negeren: als hij vaker
+  omvalt, de tijdmeting injecteerbaar maken in plaats van de marge oprekken.
 - **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
   Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt.
