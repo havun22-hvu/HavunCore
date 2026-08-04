@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Mon, Aug 3, 2026 4:00 AM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Tue, Aug 4, 2026 4:00 AM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,28 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-08-04 | `831080c` | docs: session close 04-08 -- monitoring that measures, and the pattern behind it |
+| 2026-08-04 | `bca2060` | chore(monitoring): stop watching a site that was taken down on purpose |
+| 2026-08-04 | `b7ab20f` | feat(actions): blind monitoring reaches a person, not /dev/null |
+| 2026-08-04 | `219131c` | fix(actions): a repository the API will not hand over is not a clean one |
+| 2026-08-04 | `ec130f3` | fix(actions): the per-repo SSH aliases made the watcher blind |
+| 2026-08-04 | `5f0de59` | fix(actions): watch the builds without gh, and say so when it watched nothing |
+| 2026-08-03 | `aaf27f0` | docs(handover): serverHealth measures again, and one flaky test |
+| 2026-08-03 | `6e9247b` | fix(qv): a command for this machine does not go over SSH |
+| 2026-08-03 | `b09bdcc` | docs(handover): the backup fix is live, not waiting |
+| 2026-08-03 | `9ac4253` | docs(handover): the scan measures on the server now, and what it found |
+| 2026-08-03 | `dc9335f` | fix(qv): a project that does not belong here is skipped, not an error |
+| 2026-08-03 | `38a0204` | docs(handover): back under the line limit |
+| 2026-08-03 | `3148ff9` | docs(handover): what the scan found once it could see |
+| 2026-08-03 | `624cf12` | fix(qv): the two registries spell the server path differently |
+| 2026-08-03 | `64349a9` | fix(qv): the code checks look where the code actually is |
+| 2026-08-03 | `38e58c0` | docs(qv): the scan runs as root, not as www-data |
+| 2026-08-03 | `f18e72e` | chore(qv): drop LatestRunFinder, and record what the scan does not measure |
+| 2026-08-03 | `e7cd10c` | fix(qv): the report reads every check, not whichever ran last |
+| 2026-08-03 | `74bf040` | refactor(qv): one definition of what a backup measurement is |
+| 2026-08-03 | `c187221` | fix(qv): the backup check measures again where it actually runs |
+| 2026-08-03 | `49dd4fb` | test(qv): the backup check must judge its own measurement |
+| 2026-08-03 | `8f94cab` | chore(auto): refresh handover, qv-scan-latest (2026-08-03T06:00:09+02:00) |
 | 2026-08-03 | `95447d6` | docs: session handover 2026-08-03 |
 | 2026-08-02 | `9d06268` | docs(qv): the nightly backup check has been measuring nothing |
 | 2026-08-02 | `14a8d1f` | docs(handover): back under the line limit |
@@ -64,9 +86,23 @@
 
 ## V&K status (laatste qv:scan)
 
-**Totals:** critical 0 | high 0 | medium 0 | low 0
+**Totals:** critical 0 | high 23 | medium 57 | low 7 | errors 0
 
-_Snapshot timestamp: 2026-08-03T03:57:02+02:00_
+_Snapshot timestamp: 2026-08-04T03:57:03+02:00_
+
+**HIGH/CRITICAL findings:**
+
+- **[HIGH]** `havunadmin/composer` — guzzlehttp/guzzle >=8.0.0,<8.0.1|<7.15.2 — Guzzle: Noncanonical host can bypass host-based checks
+- **[HIGH]** `herdenkingsportaal/composer` — guzzlehttp/guzzle >=8.0.0,<8.0.1|<7.15.2 — Guzzle: Noncanonical host can bypass host-based checks
+- **[HIGH]** `studieplanner-api/composer` — guzzlehttp/guzzle >=8.0.0,<8.0.1|<7.15.2 — Guzzle: Noncanonical host can bypass host-based checks
+- **[HIGH]** `studieplanner-api/composer` — laravel/framework <12.60.0|>=13.0.0,<=13.9.0 — Laravel Framework: CRLF injection in default email rule 
+- **[HIGH]** `studieplanner-api/composer` — phpunit/phpunit >=0,<8.5.52|>=9.0.0,<9.6.33|>=10.0.0,<10.5.62|>=11.0.0,<11.5.50|>=12.0.0,<12.5.8 — Unsafe Deserialization in PHPT Code Coverage Handling
+- **[HIGH]** `studieplanner-api/composer` — symfony/http-kernel >=7.4.0,<7.4.12|>=8.0.0,<8.0.12 — CVE-2026-45075: HEAD Request Bypasses methods: ['GET'] Filter in #[IsGranted] / #[IsSignatureValid] / #[IsCsrfTokenValid]
+- **[HIGH]** `studieplanner-api/composer` — symfony/mime >=2.0.0,<3.0.0|>=3.0.0,<4.0.0|>=4.0.0,<5.0.0|>=5.0.0,<5.1.0|>=5.1.0,<5.2.0|>=5.2.0,<5.3.0|>=5.3.0,<5.4.0|>=5.4.0,<5.4.52|>=6.0.0,<6.1.0|>=6.1.0,<6.2.0|>=6.2.0,<6.3.0|>=6.3.0,<6.4.0|>=6.4.0,<6.4.40|>=7.0.0,<7.1.0|>=7.1.0,<7.2.0|>=7.2.0,<7.3.0|>=7.3.0,<7.4.0|>=7.4.0,<7.4.12|>=8.0.0,<8.0.12 — CVE-2026-45067: Email Header / SMTP Command Injection via CRLF in Symfony\Component\Mime\Address
+- **[HIGH]** `studieplanner-api/composer` — web-token/jwt-library <3.4.10|>=4.0.0,<4.0.7|>=4.1.0,<4.1.7 — RSA1_5 (RSAES-PKCS1-v1_5) decryption lacks implicit rejection, exposing a Bleichenbacher/Marvin padding oracle
+- **[HIGH]** `studieplanner-api/composer` — web-token/jwt-library <3.4.10|>=4.0.0,<4.0.7|>=4.1.0,<4.1.7 — Chacha20Poly1305 key-encryption algorithm discards the Poly1305 authentication tag, performing no authentication on decryption
+- **[HIGH]** `judotoernooi/composer` — guzzlehttp/guzzle >=8.0.0,<8.0.1|<7.15.2 — Guzzle: Noncanonical host can bypass host-based checks
+- _… +13 meer (zie `docs/kb/reference/qv-scan-latest.md`)_
 
 ## KB audit (laatste wekelijkse run)
 
