@@ -27,9 +27,19 @@ git push
 ssh root@SERVER_IP (zie context.md)
 cd /var/www/havuncore/production
 git pull origin master
-php artisan config:clear
-php artisan cache:clear
+chown -R www-data:www-data storage bootstrap/cache   # scheduler draait als root
+sudo -u www-data php artisan config:clear
+sudo -u www-data php artisan cache:clear
+sudo -u www-data php artisan route:clear && sudo -u www-data php artisan route:cache
 ```
+
+> **`route:clear` is geen overbodige regel.** Op 06-08-2026 landde een securityfix die middleware op
+> een routegroep zette, en de wijziging deed **niets**: `bootstrap/cache/routes-v7.php` stamde van
+> 2 augustus, dus de app draaide de oude routedefinities. `config:clear` en `cache:clear` raken die
+> cache niet. Van buitenaf gaf de "beveiligde" route gewoon 201 terug.
+>
+> Daarom: **verifieer een routewijziging altijd van buiten de server**, niet met `route:list` (die
+> leest de bronbestanden, niet de cache) en niet op de aanname dat de pull genoeg was.
 
 ## HavunAdmin
 

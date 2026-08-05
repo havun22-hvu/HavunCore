@@ -19,23 +19,13 @@ Volledig: `runbooks/secrets-veilig-ontvangen.md`, `reference/databases-op-de-ser
 
 ## De V&K-scan meet op de server weer (03/04-08)
 
-Vier lagen van dezelfde fout, alle vier gemeten op de echte runs en alle vier gefixt. Het patroon
-en de regels die eruit volgen: `patterns/bewaking-die-niets-meet.md`.
+Vier lagen van dezelfde fout, alle vier gemeten op de echte runs en gefixt: de scan ging via SSH
+naar zichzelf, gebruikte Windows-paden op Linux, las één run per dag (de 8 wekelijkse checks hadden
+**nooit** iets gerapporteerd), en `actions:watch` zag geen enkele repo. **Opbrengst: 2 critical +
+22 high die niemand ooit gezien had.** Patroon en regels: `patterns/bewaking-die-niets-meet.md`.
 
-| Was | Nu |
-|---|---|
-| `backup-coverage` + `serverHealth` gingen via SSH naar `root@` — vanaf die server zelf | Backupscript schrijft een manifest; `runRemote()` draait lokaal als de host deze machine is. `errors=1` → `errors=0`, geverifieerd met een kunstmatige drempel (`/ — 68% full`) |
-| `composer`/`npm`/`cargo` gebruikten `D:/GitHub/…` op Linux → 40 errors = nul projecten gemeten | Pad dat hier bestaat wint (let op: `server_path` **én** `remote_path`). Composer 2.10.2 erbij, hash geverifieerd — 2.2.6 kende `audit` niet |
-| `qv:log`/`docs:handover` lazen één run per dag; de 8 wekelijkse checks hadden **nooit** iets gerapporteerd | `MergedRunAssembler` voegt 8 dagen samen, nieuwste run per check, mét de tijd per check |
-| `actions:watch` had drie kwalen tegelijk: geen `gh`, Windows-pad, en de regex herkende de per-repo SSH-aliassen niet | Rechtstreeks naar de GitHub-API met `github_pat_ro`. Nul repo's of een onbereikbare repo = luide fout **plus** health-alert (cron-stdout gaat naar `/dev/null`) |
-
-**Opbrengst: 2 critical + 22 high die niemand ooit gezien had**, plus studieplanner-api rood sinds
-20 uur. Details in de tabel hieronder.
-
-**Correctie op de diagnose van 02-08:** de scheduler draait **als root** (alle `schedule:run` staan
-in roots crontab; de qv-scanbestanden zijn `root:root`), niet als `www-data`. De SSH-fout kwam dus
-doordat *de server geen sleutel naar zichzelf heeft*. Bijvangst: die root-cron maakt `storage/**`
-root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chown` nodig.
+De scheduler draait **als root**, niet als `www-data` — daardoor worden `storage/**` root-owned en
+faalt `cache:clear`; na elke deploy `chown`. (Correctie op de diagnose van 02-08.)
 
 **Jouw beslissing:** `herdenkingsportaal_production` bestaat nog en is de valstrik zelf. Dump in
 `/root/backups/hp-dode-db-2026-08-01`; droppen is een prod-database.
@@ -48,9 +38,8 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 | **GitHub-PAT ziet 4 van de 8 repo's niet** | `github_pat_ro` (Vault) geeft 404 op HavunAdmin, Herdenkingsportaal, VPDUpdate en havuncore-webapp — hij is gemaakt voor de mobiele monitoring. **Jij:** in GitHub de fine-grained PAT uitbreiden naar alle `havun22-hvu`-repo's (alleen `metadata:read` + `actions:read` nodig), daarna `php artisan vault:setup-mobile-monitoring --from-env`. Tot die tijd meldt `actions:watch` het elke ronde |
 | **Vier rode builds** | HavunAdmin 3 maanden · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie · Studieplanner-api (04-08 nog steeds rood). Uitzoeken hoort in de projectsessie zelf |
 | **Security: dependencies — 2 critical + 22 high, nooit eerder gerapporteerd** | Zichtbaar door de scanfixes van 03-08. **npm:** Studieplanner-mobile 2 critical (`shell-quote`, `tar`) + 6 high · havun.nl 3 high (next, postcss, sharp) · VPDUpdate 1 high (`xlsx`, geen fix — vervangen door exceljs). **composer:** Studieplanner-api 6 high + 24 medium · JudoToernooi 3 high + 10 medium · SafeHavun 3 high + 17 medium (laravel/framework, symfony, web-token/jwt). HavunAdmin, Herdenkingsportaal en HavunCore zijn schoon. **Elk in de eigen projectsessie** — `composer update`/`npm audit fix` op productie-apps → overleg. Los daarvan: JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) |
-| **🔴 Taakwachtrij staat open op internet** | `POST /api/claude/tasks` heeft geen auth, geen token, geen rate limit — bewezen met een probe vanaf buiten (aangemaakt + weer verwijderd, 0 resterend). Nu onschadelijk omdat de pollers stuk zijn; zodra er één draait is het remote code execution. **Fix vóór alles wat de wachtrij activeert.** `reference/security-findings.md` |
 | **Drie task-poller-services in een crashloop — 137.630 restarts** | `claude-task-poller@{havuncore,havunadmin,herdenkingsportaal}` herstarten sinds 3 mei elke seconde: `/usr/local/bin/claude-task-poller.sh` staat niet meer op de server. **Systemd = jouw go**; advies is uitzetten (`systemctl disable --now`), niet repareren — zie het plan |
-| **AutoFix → Claude CLI op jouw PC** | Plan ligt er: `plans/autofix-naar-claude-cli-plan.md`. Drie beslispunten wachten op jou (mag de agent autonoom draaien · units uitzetten · welk project eerst). Bouwen begint pas na jouw keuze |
+| **AutoFix → Claude CLI op jouw PC** | Plan ligt er: `plans/autofix-naar-claude-cli-plan.md`. Stap 1 (auth) is af; drie beslispunten wachten op jou (mag de agent autonoom draaien · units uitzetten · welk project eerst). Bouwen begint pas na jouw keuze |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault |
 | **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat nergens actief meer. **Laat 'm in Stripe verlopen.** Optioneel: webhook-secret roteren + `credentials.md` opschonen |
@@ -63,6 +52,17 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 | **Studieplanner-api: coverage is deels padding (24-07)** | 91,9% / 322 tests. `PremiumController` 67,7%, `UserDevice` 0%. **Ernstigst:** `MagisterApiTest`/`SOMtodayApiTest` leggen met `assertStatus(500)` vast dat een onbereikbare externe API een 500 van ónze API geeft — hoort 502/503. Eigen sessie, volgorde in `Studieplanner-api/docs/testschuld.md`. Los daarvan: `rescue/prod-stashes-2026-07-15` afmaken of weg |
 | **LastMatch** | Avast HTTPS-scanning uit = enige APK-build-blocker |
 | **JudoScoreBoard** | Google-review AAB 116 (9 juni ingediend) — status alleen in Play Console |
+
+## De taakwachtrij stond open op internet — dicht sinds 06-08
+
+`/api/claude/tasks` had geen enkele auth, op een groep die de eigen doc "remote code execution"
+noemt. Bewezen met een `curl` van buiten. Nu: Bearer-token (gehasht in de config, token in de Vault
+onder `havuncore_tasks_token`) + rate limiting op élke route, ook de leesroutes. Van buitenaf
+geverifieerd: 401 zonder token, 200 met.
+
+**De eerste deploy deed niets.** De routecache stamde van 2 augustus, dus de app draaide de oude
+routes — `config:clear` raakt die niet. `route:clear` staat nu in `runbooks/deploy.md`. Alleen een
+test van buitenaf ving dit; `route:list` leest de bronbestanden en zag er goed uit.
 
 ## De AI-proxy lag 19 uur plat en niemand kreeg een melding (05-08)
 

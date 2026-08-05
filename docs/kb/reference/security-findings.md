@@ -11,7 +11,7 @@ last_check: 2026-05-02
 > **Bron voor entries:** `composer audit`, `npm audit`, Mozilla Observatory, SSL Labs, OWASP ZAP, pentest, GHSA notifications, ad-hoc server-sweeps.
 > **Werkwijze:** zie `runbooks/security-findings-logging.md`.
 
-## 2026-08-05 — Taakwachtrij publiek beschrijfbaar (HavunCore) — OPEN
+## 2026-08-05 — Taakwachtrij publiek beschrijfbaar (HavunCore) — ✅ GEDICHT 06-08
 
 **Bron:** ad-hoc verificatie tijdens het uitwerken van `plans/autofix-naar-claude-cli-plan.md`.
 
@@ -30,11 +30,23 @@ sinds 3 mei, script ontbreekt op de server). Er is dus niemand die de taken uitv
 geen beveiliging** — de taken in de wachtrij bevatten shell-instructies (`cd /var/www/… && git pull`),
 dus een werkende poller maakt dit remote code execution.
 
-**Fix:** Bearer-token op de hele `claude/tasks`-groep (`EnsureAdminToken` bestaat al) + rate limiting.
-Blokkeert `plans/autofix-naar-claude-cli-plan.md` stap 1.
+**Fix (06-08, commit `081ffa7`):** eigen middleware `EnsureTaskQueueToken` op de hele groep, plus
+`throttle:api-write`. Het token staat **gehasht** in de config (SHA-256), dus de server kent de
+waarde niet; het token zelf zit in de Vault (`havuncore_tasks_token`). Een ontbrekende hash sluit de
+wachtrij in plaats van hem te openen — met een test die dat vastlegt. Niet `EnsureAdminToken`: die
+authenticeert een mens via de device-trust-stack, een poller is een machine met één gedeeld geheim.
 
-**Les:** een endpoint dat niets doet omdat de uitvoerder stuk is, leest als veilig. De vraag is niet
-of het nu misbruikt wordt, maar wat er gebeurt zodra de rest weer werkt.
+**Validatie:** 17 route/verb-combinaties eerst rood gezien; 1438 tests groen. **Van buiten de server
+geverifieerd:** alle routes 401 zonder token, 401 met een verzonnen token, 200 met het echte token.
+Probe-taken opgeruimd (0 resterend, 0 pending).
+
+**Twee lessen:**
+1. Een endpoint dat niets doet omdat de uitvoerder stuk is, leest als veilig. De vraag is niet of het
+   nu misbruikt wordt, maar wat er gebeurt zodra de rest weer werkt.
+2. **De eerste deploy van deze fix veranderde niets.** `bootstrap/cache/routes-v7.php` stamde van
+   2 augustus, dus de app draaide de oude routes; `config:clear` en `cache:clear` raken die cache
+   niet. Zonder een test van buitenaf was de fix als "klaar" gemeld terwijl POST nog 201 gaf.
+   `route:clear` staat nu in `runbooks/deploy.md`.
 
 ## 2026-05-02 — Backup MVP feature-complete (Herdenkingsportaal)
 
