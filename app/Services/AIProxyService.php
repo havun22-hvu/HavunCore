@@ -101,7 +101,7 @@ class AIProxyService
         $this->clearModelAlert();
         $this->circuitBreaker->recordSuccess();
         $data = $response->json();
-        $text = $data['content'][0]['text'] ?? '';
+        $text = $this->firstTextBlock($data['content'] ?? []);
         $usage = $data['usage'] ?? [];
 
         $executionMs = $measurement->elapsedMs();
@@ -117,6 +117,28 @@ class AIProxyService
                 'execution_time_ms' => $executionMs,
             ],
         ];
+    }
+
+    /**
+     * The answer is not always the first block. A thinking model puts its
+     * thinking blocks ahead of the text, so reading content[0]['text'] returns
+     * nothing — measured on production 2026-08-05, right after the switch to
+     * Opus 5: 583 tokens generated, empty string returned, no error anywhere.
+     *
+     * A reply with no text block at all (a refusal, a thinking-only turn) is a
+     * real outcome, not a failure: empty string, and the caller decides.
+     *
+     * @param array<int, array<string, mixed>> $content
+     */
+    protected function firstTextBlock(array $content): string
+    {
+        foreach ($content as $block) {
+            if (($block['type'] ?? null) === 'text') {
+                return (string) ($block['text'] ?? '');
+            }
+        }
+
+        return '';
     }
 
     /**

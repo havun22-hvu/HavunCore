@@ -99,7 +99,7 @@ class AIProxyServiceTest extends TestCase
 
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'Hello from Claude']],
+                'content' => [['type' => 'text', 'text' => 'Hello from Claude']],
                 'usage' => ['input_tokens' => 10, 'output_tokens' => 20],
             ], 200),
         ]);
@@ -124,7 +124,7 @@ class AIProxyServiceTest extends TestCase
 
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'Response']],
+                'content' => [['type' => 'text', 'text' => 'Response']],
                 'usage' => ['input_tokens' => 5, 'output_tokens' => 5],
             ], 200),
         ]);
@@ -160,7 +160,7 @@ class AIProxyServiceTest extends TestCase
 
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'Hello']],
+                'content' => [['type' => 'text', 'text' => 'Hello']],
                 'usage' => ['input_tokens' => 15, 'output_tokens' => 25],
             ], 200),
         ]);
@@ -181,7 +181,7 @@ class AIProxyServiceTest extends TestCase
 
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'OK']],
+                'content' => [['type' => 'text', 'text' => 'OK']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);

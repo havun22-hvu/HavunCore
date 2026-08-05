@@ -39,7 +39,7 @@ class AIProxyServiceCoverageTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'OK']],
+                'content' => [['type' => 'text', 'text' => 'OK']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -56,7 +56,7 @@ class AIProxyServiceCoverageTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'OK']],
+                'content' => [['type' => 'text', 'text' => 'OK']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -73,7 +73,7 @@ class AIProxyServiceCoverageTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'OK']],
+                'content' => [['type' => 'text', 'text' => 'OK']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -90,7 +90,7 @@ class AIProxyServiceCoverageTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'OK']],
+                'content' => [['type' => 'text', 'text' => 'OK']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -107,7 +107,7 @@ class AIProxyServiceCoverageTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'OK']],
+                'content' => [['type' => 'text', 'text' => 'OK']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -129,7 +129,7 @@ class AIProxyServiceCoverageTest extends TestCase
         // Use a config that causes DB write to fail
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'OK']],
+                'content' => [['type' => 'text', 'text' => 'OK']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);

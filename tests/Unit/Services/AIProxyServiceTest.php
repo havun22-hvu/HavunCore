@@ -47,7 +47,7 @@ class AIProxyServiceTest extends TestCase
                 $this->stopwatch->advance(0.02);
 
                 return Http::response([
-                    'content' => [['text' => 'Hi there']],
+                    'content' => [['type' => 'text', 'text' => 'Hi there']],
                     'usage' => ['input_tokens' => 12, 'output_tokens' => 4],
                 ], 200);
             },
@@ -72,7 +72,7 @@ class AIProxyServiceTest extends TestCase
         // places + ArrayItemRemoval on the tenant/error keys.
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'no-usage']],
+                'content' => [['type' => 'text', 'text' => 'no-usage']],
                 // 'usage' intentionally omitted
             ], 200),
         ]);
@@ -167,7 +167,7 @@ class AIProxyServiceTest extends TestCase
 
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'back']],
+                'content' => [['type' => 'text', 'text' => 'back']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -177,11 +177,47 @@ class AIProxyServiceTest extends TestCase
         $this->assertSame('resolved', HealthAlert::where('key', 'ai-proxy-model')->first()->status);
     }
 
+    public function test_chat_reads_the_text_block_even_when_thinking_comes_first(): void
+    {
+        // A thinking model puts thinking blocks ahead of the answer, so
+        // content[0] is not the text block. Measured on production 2026-08-05:
+        // 583 output tokens generated and an empty string returned.
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [
+                    ['type' => 'thinking', 'thinking' => '', 'signature' => 'abc'],
+                    ['type' => 'text', 'text' => 'The actual answer.'],
+                ],
+                'usage' => ['input_tokens' => 5, 'output_tokens' => 200],
+            ], 200),
+        ]);
+
+        $result = (new AIProxyService($this->stopwatch))->chat('havuncore', 'think first');
+
+        $this->assertSame('The actual answer.', $result['response']);
+    }
+
+    public function test_chat_returns_empty_string_when_the_reply_carries_no_text(): void
+    {
+        // A refusal or a thinking-only turn has no text block at all. Empty
+        // string, not a crash and not a stray thinking field.
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['type' => 'thinking', 'thinking' => 'internal', 'signature' => 'x']],
+                'usage' => ['input_tokens' => 5, 'output_tokens' => 50],
+            ], 200),
+        ]);
+
+        $result = (new AIProxyService($this->stopwatch))->chat('havuncore', 'no answer');
+
+        $this->assertSame('', $result['response']);
+    }
+
     public function test_chat_logs_usage_to_ai_usage_log(): void
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'ok']],
+                'content' => [['type' => 'text', 'text' => 'ok']],
                 'usage' => ['input_tokens' => 5, 'output_tokens' => 3],
             ], 200),
         ]);
@@ -280,7 +316,7 @@ class AIProxyServiceTest extends TestCase
                 $this->stopwatch->advance(2.0);
 
                 return Http::response([
-                    'content' => [['text' => 'ok']],
+                    'content' => [['type' => 'text', 'text' => 'ok']],
                     'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
                 ], 200);
             },
@@ -301,7 +337,7 @@ class AIProxyServiceTest extends TestCase
         // Assert each key explicitly against a unique non-default value.
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'payload-check']],
+                'content' => [['type' => 'text', 'text' => 'payload-check']],
                 'usage' => ['input_tokens' => 17, 'output_tokens' => 23],
             ], 200),
         ]);
@@ -513,7 +549,7 @@ class AIProxyServiceTest extends TestCase
         // Kills MethodCallRemoval on `recordSuccess()` (line 83).
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'ok']],
+                'content' => [['type' => 'text', 'text' => 'ok']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -554,7 +590,7 @@ class AIProxyServiceTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'ok']],
+                'content' => [['type' => 'text', 'text' => 'ok']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -575,7 +611,7 @@ class AIProxyServiceTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'ok']],
+                'content' => [['type' => 'text', 'text' => 'ok']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -602,7 +638,7 @@ class AIProxyServiceTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'ok']],
+                'content' => [['type' => 'text', 'text' => 'ok']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -616,7 +652,7 @@ class AIProxyServiceTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'ok']],
+                'content' => [['type' => 'text', 'text' => 'ok']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
@@ -635,7 +671,7 @@ class AIProxyServiceTest extends TestCase
     {
         Http::fake([
             'api.anthropic.com/*' => Http::response([
-                'content' => [['text' => 'ok']],
+                'content' => [['type' => 'text', 'text' => 'ok']],
                 'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
             ], 200),
         ]);
