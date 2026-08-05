@@ -48,7 +48,9 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 | **GitHub-PAT ziet 4 van de 8 repo's niet** | `github_pat_ro` (Vault) geeft 404 op HavunAdmin, Herdenkingsportaal, VPDUpdate en havuncore-webapp — hij is gemaakt voor de mobiele monitoring. **Jij:** in GitHub de fine-grained PAT uitbreiden naar alle `havun22-hvu`-repo's (alleen `metadata:read` + `actions:read` nodig), daarna `php artisan vault:setup-mobile-monitoring --from-env`. Tot die tijd meldt `actions:watch` het elke ronde |
 | **Vier rode builds** | HavunAdmin 3 maanden · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie · Studieplanner-api (04-08 nog steeds rood). Uitzoeken hoort in de projectsessie zelf |
 | **Security: dependencies — 2 critical + 22 high, nooit eerder gerapporteerd** | Zichtbaar door de scanfixes van 03-08. **npm:** Studieplanner-mobile 2 critical (`shell-quote`, `tar`) + 6 high · havun.nl 3 high (next, postcss, sharp) · VPDUpdate 1 high (`xlsx`, geen fix — vervangen door exceljs). **composer:** Studieplanner-api 6 high + 24 medium · JudoToernooi 3 high + 10 medium · SafeHavun 3 high + 17 medium (laravel/framework, symfony, web-token/jwt). HavunAdmin, Herdenkingsportaal en HavunCore zijn schoon. **Elk in de eigen projectsessie** — `composer update`/`npm audit fix` op productie-apps → overleg. Los daarvan: JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) |
-| **Drie task-poller-services in een crashloop — 137.630 restarts** | `claude-task-poller@{havuncore,havunadmin,herdenkingsportaal}` herstarten sinds 3 mei elke seconde: `/usr/local/bin/claude-task-poller.sh` bestaat niet meer op de server (staat wel in `scripts/`). De ClaudeTask-queue werkt dus niet. **Systemd = jouw go**; fix is het script terugzetten of de units uitzetten |
+| **🔴 Taakwachtrij staat open op internet** | `POST /api/claude/tasks` heeft geen auth, geen token, geen rate limit — bewezen met een probe vanaf buiten (aangemaakt + weer verwijderd, 0 resterend). Nu onschadelijk omdat de pollers stuk zijn; zodra er één draait is het remote code execution. **Fix vóór alles wat de wachtrij activeert.** `reference/security-findings.md` |
+| **Drie task-poller-services in een crashloop — 137.630 restarts** | `claude-task-poller@{havuncore,havunadmin,herdenkingsportaal}` herstarten sinds 3 mei elke seconde: `/usr/local/bin/claude-task-poller.sh` staat niet meer op de server. **Systemd = jouw go**; advies is uitzetten (`systemctl disable --now`), niet repareren — zie het plan |
+| **AutoFix → Claude CLI op jouw PC** | Plan ligt er: `plans/autofix-naar-claude-cli-plan.md`. Drie beslispunten wachten op jou (mag de agent autonoom draaien · units uitzetten · welk project eerst). Bouwen begint pas na jouw keuze |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault |
 | **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat nergens actief meer. **Laat 'm in Stripe verlopen.** Optioneel: webhook-secret roteren + `credentials.md` opschonen |
@@ -64,9 +66,8 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 
 ## De AI-proxy lag 19 uur plat en niemand kreeg een melding (05-08)
 
-`claude-3-haiku-20240307` is per **19-04-2026** door Anthropic uitgefaseerd. Vannacht 00:30 begon
-elke call 404 te geven — 46 calls, 100% mislukt, AutoFix stil voor Herdenkingsportaal en
-JudoToernooi. Gevonden bij het lezen van de productielogs na een deploy, niet door een alert.
+`claude-3-haiku-20240307` is per **19-04-2026** uitgefaseerd; vanaf 00:30 gaf elke call 404 — 46
+calls, 100% mislukt, AutoFix stil. Gevonden in de productielogs, niet door een alert.
 
 **Opgelost:** prod draait op `claude-opus-5` (backup van `.env` in `/root/backups/`), config-default
 mee, echte API-call geverifieerd. De tweede default in `AIProxyService` is weg — één plek om te

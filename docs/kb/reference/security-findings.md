@@ -11,6 +11,31 @@ last_check: 2026-05-02
 > **Bron voor entries:** `composer audit`, `npm audit`, Mozilla Observatory, SSL Labs, OWASP ZAP, pentest, GHSA notifications, ad-hoc server-sweeps.
 > **Werkwijze:** zie `runbooks/security-findings-logging.md`.
 
+## 2026-08-05 — Taakwachtrij publiek beschrijfbaar (HavunCore) — OPEN
+
+**Bron:** ad-hoc verificatie tijdens het uitwerken van `plans/autofix-naar-claude-cli-plan.md`.
+
+| Endpoint | Ernst | Bevinding | Status |
+|---|---|---|---|
+| `POST /api/claude/tasks` | **Critical** | Geen middleware, geen token, geen rate limit; staat in de nginx-allowlist | ❌ open |
+| `GET /api/claude/tasks`, `/pending/{project}` | High | Idem — taakinhoud (paden, projectstructuur) is publiek leesbaar | ❌ open |
+| `DELETE /api/claude/tasks/{id}` | High | Idem — willekeurige taken verwijderbaar | ❌ open |
+
+**Bewijs:** `curl -X POST` vanaf een machine buiten het netwerk kreeg
+`{"success":true,"message":"Task created successfully"}`. Probe-taak `id=14` aangemaakt en direct
+verwijderd; geverifieerd 0 resterend, 0 pending.
+
+**Waarom het vandaag geen incident is:** de drie `claude-task-poller@*`-units draaien niet (crashloop
+sinds 3 mei, script ontbreekt op de server). Er is dus niemand die de taken uitvoert. **Dat is toeval,
+geen beveiliging** — de taken in de wachtrij bevatten shell-instructies (`cd /var/www/… && git pull`),
+dus een werkende poller maakt dit remote code execution.
+
+**Fix:** Bearer-token op de hele `claude/tasks`-groep (`EnsureAdminToken` bestaat al) + rate limiting.
+Blokkeert `plans/autofix-naar-claude-cli-plan.md` stap 1.
+
+**Les:** een endpoint dat niets doet omdat de uitvoerder stuk is, leest als veilig. De vraag is niet
+of het nu misbruikt wordt, maar wat er gebeurt zodra de rest weer werkt.
+
 ## 2026-05-02 — Backup MVP feature-complete (Herdenkingsportaal)
 
 **Bron**: Follow-up op `2026-04-26 — havun:backup:run MVP` waar offsite SFTP push,
