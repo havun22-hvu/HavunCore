@@ -34,6 +34,15 @@ class AIProxyService
     }
 
     /**
+     * The ceiling covers thinking and answer together, and the configured model
+     * thinks by default — 1024 left so little room for the answer that it broke
+     * off mid-sentence. This is a ceiling, not a spend: you pay for what is
+     * generated. Staying near 16000 also keeps non-streaming calls under the
+     * HTTP timeout.
+     */
+    public const MAX_TOKENS = 16000;
+
+    /**
      * Send a chat message to Claude
      */
     public function chat(
@@ -41,7 +50,7 @@ class AIProxyService
         string $message,
         array $context = [],
         ?string $systemPrompt = null,
-        int $maxTokens = 1024
+        int $maxTokens = self::MAX_TOKENS
     ): array {
         $measurement = $this->stopwatch->start();
 

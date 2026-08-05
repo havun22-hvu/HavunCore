@@ -583,11 +583,13 @@ class AIProxyServiceTest extends TestCase
         // Caller intentionally omits $maxTokens to exercise the default.
         (new AIProxyService($this->stopwatch))->chat('havuncore', 'default-token-check');
 
-        // Kills DecrementInteger/IncrementInteger on the 1024 default +
-        // ArrayItemRemoval on model/max_tokens/system/messages payload keys.
+        // The number is asserted literally, not via the constant: this test
+        // exists to catch the ceiling silently drifting away from what
+        // reference/ai-proxy.md promises callers. Reading the constant would
+        // make it agree with any change by construction.
         Http::assertSent(function (\Illuminate\Http\Client\Request $request) {
             $data = $request->data();
-            return ($data['max_tokens'] ?? null) === 1024
+            return ($data['max_tokens'] ?? null) === 16000
                 && ($data['model'] ?? null) === 'claude-3-haiku-test'
                 && is_array($data['messages'] ?? null)
                 && $data['messages'][0]['role'] === 'user'

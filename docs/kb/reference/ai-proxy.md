@@ -30,7 +30,7 @@ Stuur een bericht naar Claude.
   "message": "Wat is de huidige politieke situatie?",
   "context": ["Extra context regel 1", "Extra context regel 2"],
   "system_prompt": "Optionele custom system prompt",
-  "max_tokens": 1024
+  "max_tokens": 16000
 }
 ```
 
@@ -42,7 +42,12 @@ Stuur een bericht naar Claude.
 | message | string | Ja | Gebruikersvraag (max 10.000 tekens) |
 | context | array | Nee | Extra context als array van strings |
 | system_prompt | string | Nee | Override default system prompt |
-| max_tokens | int | Nee | Max response tokens (100-4096, default 1024) |
+| max_tokens | int | Nee | Max response tokens (100-16000, default 16000) |
+
+> **`max_tokens` dekt denken én antwoord.** Het ingestelde model (Opus 5) denkt standaard, en het
+> plafond geldt over beide samen — te krap en het antwoord breekt midden in een zin af. Het is een
+> plafond, geen verbruik: je betaalt alleen wat er daadwerkelijk gegenereerd wordt, dus ruim
+> instellen kost niets. Onder de ~16000 blijven voorkomt HTTP-timeouts bij niet-streamende calls.
 
 **Response:**
 ```json
@@ -102,7 +107,7 @@ Health check voor de AI service.
   "success": true,
   "status": "ok",
   "api_configured": true,
-  "model": "claude-haiku-4-5"
+  "model": "claude-opus-5"
 }
 ```
 
@@ -172,7 +177,7 @@ console.log(data.response);
 In `.env`:
 ```
 CLAUDE_API_KEY=sk-ant-...
-CLAUDE_MODEL=claude-haiku-4-5
+CLAUDE_MODEL=claude-opus-5
 CLAUDE_RATE_LIMIT=60
 ```
 
@@ -186,7 +191,7 @@ In `config/services.php`:
 ```php
 'claude' => [
     'api_key' => env('CLAUDE_API_KEY'),
-    'model' => env('CLAUDE_MODEL', 'claude-haiku-4-5'),
+    'model' => env('CLAUDE_MODEL', 'claude-opus-5'),
     'rate_limit' => env('CLAUDE_RATE_LIMIT', 60),
 ],
 ```

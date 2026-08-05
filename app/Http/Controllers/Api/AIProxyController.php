@@ -35,7 +35,7 @@ class AIProxyController extends Controller
      * - message: string (required) - User message
      * - context: array (optional) - Additional context to include in prompt
      * - system_prompt: string (optional) - Override default system prompt
-     * - max_tokens: int (optional) - Max response tokens (default 1024)
+     * - max_tokens: int (optional) - Ceiling over thinking + answer (default 16000)
      *
      * Response:
      * - success: bool
@@ -49,7 +49,7 @@ class AIProxyController extends Controller
             'message' => 'required|string|min:1|max:10000',
             'context' => 'nullable|array',
             'system_prompt' => 'nullable|string|max:15000',
-            'max_tokens' => 'nullable|integer|min:100|max:4096',
+            'max_tokens' => 'nullable|integer|min:100|max:' . AIProxyService::MAX_TOKENS,
         ]);
 
         if ($validator->fails()) {
@@ -75,7 +75,7 @@ class AIProxyController extends Controller
                 message: $request->input('message'),
                 context: $request->input('context', []),
                 systemPrompt: $request->input('system_prompt'),
-                maxTokens: $request->input('max_tokens', 1024)
+                maxTokens: $request->input('max_tokens', AIProxyService::MAX_TOKENS)
             );
 
             return response()->json([

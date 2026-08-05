@@ -48,7 +48,7 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 | **GitHub-PAT ziet 4 van de 8 repo's niet** | `github_pat_ro` (Vault) geeft 404 op HavunAdmin, Herdenkingsportaal, VPDUpdate en havuncore-webapp — hij is gemaakt voor de mobiele monitoring. **Jij:** in GitHub de fine-grained PAT uitbreiden naar alle `havun22-hvu`-repo's (alleen `metadata:read` + `actions:read` nodig), daarna `php artisan vault:setup-mobile-monitoring --from-env`. Tot die tijd meldt `actions:watch` het elke ronde |
 | **Vier rode builds** | HavunAdmin 3 maanden · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie · Studieplanner-api (04-08 nog steeds rood). Uitzoeken hoort in de projectsessie zelf |
 | **Security: dependencies — 2 critical + 22 high, nooit eerder gerapporteerd** | Zichtbaar door de scanfixes van 03-08. **npm:** Studieplanner-mobile 2 critical (`shell-quote`, `tar`) + 6 high · havun.nl 3 high (next, postcss, sharp) · VPDUpdate 1 high (`xlsx`, geen fix — vervangen door exceljs). **composer:** Studieplanner-api 6 high + 24 medium · JudoToernooi 3 high + 10 medium · SafeHavun 3 high + 17 medium (laravel/framework, symfony, web-token/jwt). HavunAdmin, Herdenkingsportaal en HavunCore zijn schoon. **Elk in de eigen projectsessie** — `composer update`/`npm audit fix` op productie-apps → overleg. Los daarvan: JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) |
-| **AutoFix draait nu op Haiku 4.5** | Jouw keuze 05-08. Haiku is de goedkoopste klasse maar zwak op code-analyse, en AutoFix doet precies dat: productie-errors lezen en een fix voorstellen. Levert het slechtere voorstellen op → `CLAUDE_MODEL=claude-opus-5` in prod-`.env`. Alternatief zonder de chat duurder te maken: model splitsen per gebruik (extra config-key + kleine wijziging in `AIProxyService`) |
+| **Drie task-poller-services in een crashloop — 137.630 restarts** | `claude-task-poller@{havuncore,havunadmin,herdenkingsportaal}` herstarten sinds 3 mei elke seconde: `/usr/local/bin/claude-task-poller.sh` bestaat niet meer op de server (staat wel in `scripts/`). De ClaudeTask-queue werkt dus niet. **Systemd = jouw go**; fix is het script terugzetten of de units uitzetten |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault |
 | **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat nergens actief meer. **Laat 'm in Stripe verlopen.** Optioneel: webhook-secret roteren + `credentials.md` opschonen |
@@ -68,9 +68,11 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 elke call 404 te geven — 46 calls, 100% mislukt, AutoFix stil voor Herdenkingsportaal en
 JudoToernooi. Gevonden bij het lezen van de productielogs na een deploy, niet door een alert.
 
-**Opgelost:** `.env` op prod → `CLAUDE_MODEL=claude-haiku-4-5` (backup in `/root/backups/`),
-config-default mee, echte API-call geverifieerd. De tweede default in `AIProxyService` is weg —
-één plek om te wijzigen. Jouw keuze was Haiku 4.5; mijn kanttekening staat hieronder.
+**Opgelost:** prod draait op `claude-opus-5` (backup van `.env` in `/root/backups/`), config-default
+mee, echte API-call geverifieerd. De tweede default in `AIProxyService` is weg — één plek om te
+wijzigen. **`max_tokens` moest mee omhoog naar 16000** (`AIProxyService::MAX_TOKENS`): Opus 5 denkt
+standaard en het plafond dekt denken én antwoord samen, dus 1024 brak antwoorden af. Het is een
+plafond, geen verbruik.
 
 **Ook gedicht:** een 404 van de messages-endpoint vuurt nu een `critical` health-alert
 (`ai-proxy-model`, noemt het model bij naam); een geslaagde call sluit 'm weer. Alleen 404 — een

@@ -46,7 +46,7 @@ class AutoFixService
                 tenant: 'havuncore',
                 message: $prompt,
                 systemPrompt: $this->getSystemPrompt(),
-                maxTokens: 2048
+                maxTokens: AIProxyService::MAX_TOKENS
             );
 
             $fixProposal = $result['response'] ?? '';
