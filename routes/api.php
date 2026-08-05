@@ -50,7 +50,11 @@ Route::get('/version', function () {
 });
 
 // Claude Task Queue API
-Route::prefix('claude/tasks')->group(function () {
+// Every route here is gated: the queue hands instructions to an agent that runs
+// commands on another machine. Reads included — a task body carries server paths
+// and project layout. Open to the internet until 2026-08-06; see
+// reference/security-findings.md.
+Route::prefix('claude/tasks')->middleware(['taskqueue.token', 'throttle:api-write'])->group(function () {
     Route::get('/', [ClaudeTaskController::class, 'index'])->name('api.claude.tasks.index');
     Route::post('/', [ClaudeTaskController::class, 'store'])->name('api.claude.tasks.store');
     Route::get('/pending/{project}', [ClaudeTaskController::class, 'pending'])->name('api.claude.tasks.pending');

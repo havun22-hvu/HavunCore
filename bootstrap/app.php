@@ -19,6 +19,7 @@ return Application::configure(basePath: dirname(__DIR__))
 
         $middleware->alias([
             'admin.token' => \App\Http\Middleware\EnsureAdminToken::class,
+            'taskqueue.token' => \App\Http\Middleware\EnsureTaskQueueToken::class,
         ]);
 
         // App + nginx draaien op dezelfde host (188.245.159.115) → vertrouw alleen

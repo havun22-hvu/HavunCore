@@ -4,11 +4,19 @@ namespace Tests\Feature;
 
 use App\Models\ClaudeTask;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\Support\AuthenticatesTaskQueue;
 use Tests\TestCase;
 
 class ClaudeTaskControllerTest extends TestCase
 {
+    use AuthenticatesTaskQueue;
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->authenticateTaskQueue();
+    }
 
     // -- Index --
 

@@ -15,12 +15,34 @@ last_check: 2026-04-22
 https://havuncore.havun.nl/api/claude/tasks
 ```
 
+## Authenticatie — verplicht op elke route
+
+**Deze API voert code uit op andere machines.** Elk verzoek heeft een Bearer-token nodig; zonder
+token of met een verkeerd token volgt `401`, ongeacht de route. Ook lezen is dicht: de taakinhoud
+verraadt projectstructuur en serverpaden.
+
+```bash
+curl -H "Authorization: Bearer $HAVUNCORE_TASKS_TOKEN" \
+  https://havuncore.havun.nl/api/claude/tasks/pending/havuncore
+```
+
+Het token staat **gehasht** in de config (`CLAUDE_TASKS_TOKEN_HASH`, SHA-256) — de server kent de
+oorspronkelijke waarde dus niet. Die staat in de Vault en in `.claude/credentials.md`.
+
+Rate limit: 60 verzoeken per minuut per IP.
+
+> **Waarom dit er pas sinds 06-08-2026 is.** Tot die datum had de hele groep geen enkele
+> authenticatie: een `curl` vanaf internet kon een taak plaatsen die een poller zou uitvoeren.
+> Gemeten en bevestigd 05-08. Dat het geen incident werd, kwam doordat de pollers toevallig stuk
+> waren. Zie `reference/security-findings.md` en `plans/autofix-naar-claude-cli-plan.md`.
+
 ## Endpoints
 
 ### Create Task
 
 ```bash
 POST /api/claude/tasks
+Authorization: Bearer <token>
 Content-Type: application/json
 
 {

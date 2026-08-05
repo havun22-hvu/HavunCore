@@ -12,6 +12,13 @@ return [
     |
     */
 
+    // The task queue runs commands on other machines, so it is gated by a shared
+    // bearer token. Stored as a SHA-256 hash: the server never holds the token
+    // itself. Unset means the queue stays closed, not open.
+    'claude_tasks' => [
+        'token_hash' => env('CLAUDE_TASKS_TOKEN_HASH'),
+    ],
+
     'claude' => [
         'api_key' => env('CLAUDE_API_KEY'),
         // Model IDs expire. claude-3-haiku-20240307 was retired on 2026-04-19 and every
