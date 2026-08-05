@@ -14,7 +14,10 @@ return [
 
     'claude' => [
         'api_key' => env('CLAUDE_API_KEY'),
-        'model' => env('CLAUDE_MODEL', 'claude-3-haiku-20240307'),
+        // Model IDs expire. claude-3-haiku-20240307 was retired on 2026-04-19 and every
+        // call 404'd from 2026-08-05 onwards. Check the vendor's deprecation schedule
+        // before this one goes the same way. See patterns/model-id-verloopt.md.
+        'model' => env('CLAUDE_MODEL', 'claude-haiku-4-5'),
         'rate_limit' => env('CLAUDE_RATE_LIMIT', 60),
     ],
 

@@ -102,7 +102,7 @@ Health check voor de AI service.
   "success": true,
   "status": "ok",
   "api_configured": true,
-  "model": "claude-3-haiku-20240307"
+  "model": "claude-haiku-4-5"
 }
 ```
 
@@ -172,15 +172,21 @@ console.log(data.response);
 In `.env`:
 ```
 CLAUDE_API_KEY=sk-ant-...
-CLAUDE_MODEL=claude-3-haiku-20240307
+CLAUDE_MODEL=claude-haiku-4-5
 CLAUDE_RATE_LIMIT=60
 ```
+
+> **Een model-ID verloopt.** `claude-3-haiku-20240307` werd op 19-04-2026 uitgefaseerd; sinds
+> 05-08-2026 00:30 gaf élke AI-proxy-call een 404 (`not_found_error`) en lag AutoFix stil voor
+> Herdenkingsportaal en JudoToernooi. Er is geen test die dit vangt — de suite faket de HTTP-laag,
+> dus alleen productie merkt het. Wat het wél vangt: de logregel `AI Proxy: Claude API error` met
+> status 404. Zie `patterns/model-id-verloopt.md`.
 
 In `config/services.php`:
 ```php
 'claude' => [
     'api_key' => env('CLAUDE_API_KEY'),
-    'model' => env('CLAUDE_MODEL', 'claude-3-haiku-20240307'),
+    'model' => env('CLAUDE_MODEL', 'claude-haiku-4-5'),
     'rate_limit' => env('CLAUDE_RATE_LIMIT', 60),
 ],
 ```

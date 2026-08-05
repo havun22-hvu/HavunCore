@@ -10,9 +10,8 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel, 1413 tests groen, KB-audit 0 high. **Server:** disk 68%,
-prod draait overal, 0 dirty checkouts, 0 stashes. **Alles staat live** — HavunCore én HavunAdmin
-(04-08 gedeployd, geen migraties, rollbackpunt `8cf75a3`).
+**Branch:** master · **Status:** stabiel, 1415 tests groen, KB-audit 0 high. **Server:** disk 68%,
+prod draait overal, 0 dirty checkouts, 0 stashes. **Alles staat live** (05-08, geen migraties).
 
 **Afgerond 01/02-08:** drie secrets geroteerd (GitHub-PAT + MySQL van `havunadmin` en `havuncore`,
 alle drie via de app geverifieerd, backups in `/root/backups/`), en twee backupgaten gedicht
@@ -51,6 +50,7 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 | **GitHub-PAT ziet 4 van de 8 repo's niet** | `github_pat_ro` (Vault) geeft 404 op HavunAdmin, Herdenkingsportaal, VPDUpdate en havuncore-webapp — hij is gemaakt voor de mobiele monitoring. **Jij:** in GitHub de fine-grained PAT uitbreiden naar alle `havun22-hvu`-repo's (alleen `metadata:read` + `actions:read` nodig), daarna `php artisan vault:setup-mobile-monitoring --from-env`. Tot die tijd meldt `actions:watch` het elke ronde |
 | **Vier rode builds** | HavunAdmin 3 maanden · HavunClub 3 maanden (geparkeerd) · VeenLedenadministratie · Studieplanner-api (04-08 nog steeds rood). Uitzoeken hoort in de projectsessie zelf |
 | **Security: dependencies — 2 critical + 22 high, nooit eerder gerapporteerd** | Zichtbaar door de scanfixes van 03-08. **npm:** Studieplanner-mobile 2 critical (`shell-quote`, `tar`) + 6 high · havun.nl 3 high (next, postcss, sharp) · VPDUpdate 1 high (`xlsx`, geen fix — vervangen door exceljs). **composer:** Studieplanner-api 6 high + 24 medium · JudoToernooi 3 high + 10 medium · SafeHavun 3 high + 17 medium (laravel/framework, symfony, web-token/jwt). HavunAdmin, Herdenkingsportaal en HavunCore zijn schoon. **Elk in de eigen projectsessie** — `composer update`/`npm audit fix` op productie-apps → overleg. Los daarvan: JudoScoreBoard 6 GitHub-advisories (1 critical + 2 high) |
+| **AutoFix draait nu op Haiku 4.5** | Jouw keuze 05-08. Haiku is de goedkoopste klasse maar zwak op code-analyse, en AutoFix doet precies dat: productie-errors lezen en een fix voorstellen. Levert het slechtere voorstellen op → `CLAUDE_MODEL=claude-opus-5` in prod-`.env`. Alternatief zonder de chat duurder te maken: model splitsen per gebruik (extra config-key + kleine wijziging in `AIProxyService`) |
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
 | **Hardcoded Hetzner-wachtwoord op server** | `/usr/local/bin/havun-backup.sh` (`HETZNER_PASS=` plain text). Hoort in de Vault |
 | **Stripe-sleutel geroteerd (JudoToernooi) 19-07** | Oude `sk_live_…4l13` staat nergens actief meer. **Laat 'm in Stripe verlopen.** Optioneel: webhook-secret roteren + `credentials.md` opschonen |
@@ -63,6 +63,19 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 | **Studieplanner-api: coverage is deels padding (24-07)** | 91,9% / 322 tests. `PremiumController` 67,7%, `UserDevice` 0%. **Ernstigst:** `MagisterApiTest`/`SOMtodayApiTest` leggen met `assertStatus(500)` vast dat een onbereikbare externe API een 500 van ónze API geeft — hoort 502/503. Eigen sessie, volgorde in `Studieplanner-api/docs/testschuld.md`. Los daarvan: `rescue/prod-stashes-2026-07-15` afmaken of weg |
 | **LastMatch** | Avast HTTPS-scanning uit = enige APK-build-blocker |
 | **JudoScoreBoard** | Google-review AAB 116 (9 juni ingediend) — status alleen in Play Console |
+
+## De AI-proxy lag 19 uur plat en niemand kreeg een melding (05-08)
+
+`claude-3-haiku-20240307` is per **19-04-2026** door Anthropic uitgefaseerd. Vannacht 00:30 begon
+elke call 404 te geven — 46 calls, 100% mislukt, AutoFix stil voor Herdenkingsportaal en
+JudoToernooi. Gevonden bij het lezen van de productielogs na een deploy, niet door een alert.
+
+**Opgelost:** `.env` op prod → `CLAUDE_MODEL=claude-haiku-4-5` (backup in `/root/backups/`),
+config-default mee, echte API-call geverifieerd. De tweede default in `AIProxyService` is weg —
+één plek om te wijzigen. Jouw keuze was Haiku 4.5; mijn kanttekening staat hieronder.
+
+**Nog open:** een 404 van de AI-API bereikt niemand. De health-alerts bestaan al
+(`health:alert`) — er hangt alleen niets aan deze fout. Regel: `patterns/model-id-verloopt.md`.
 
 ## Open — te doen
 
