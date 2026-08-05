@@ -3,7 +3,7 @@ title: qv:scan latest report (auto-generated)
 type: reference
 scope: alle-projecten
 generated_from: 16 runs uit de laatste 8 dagen (backup-coverage, cargo, composer, debug-mode, deps-coverage, forms, npm, observatory, ratelimit, registries, residu, secrets, server, session-cookies, ssl, test-erosion)
-generated_at: 2026-08-04T03:24:03+02:00
+generated_at: 2026-08-05T03:24:03+02:00
 ---
 
 # qv:scan — laatste run (auto-generated)
@@ -11,7 +11,7 @@ generated_at: 2026-08-04T03:24:03+02:00
 > Dit bestand wordt overschreven door `php artisan qv:log` na elke scan.
 > Voor **post-mortem, prose en fix-statussen** zie `security-findings.md` (handmatig).
 
-**Started:** 2026-08-04T03:24:03+02:00  
+**Started:** 2026-08-05T03:24:03+02:00  
 **Projects:** havun, havunadmin, havunclub, havuncore, havuncore-webapp, herdenkingsportaal, infosyst, judotoernooi, safehavun, server-prod, studieplanner, studieplanner-api, studieplanner-mobile, veen-ledenadministratie, vpdupdate, vusista2  
 **Checks:** backup-coverage, cargo, composer, debug-mode, deps-coverage, forms, npm, observatory, ratelimit, registries, residu, secrets, server, session-cookies, ssl, test-erosion
 
@@ -58,19 +58,19 @@ generated_at: 2026-08-04T03:24:03+02:00
 
 | Check | Laatste run |
 |---|---|
-| backup-coverage | 2026-08-03T19:22:52+02:00 |
-| cargo | 2026-08-04T03:22:02+02:00 |
-| composer | 2026-08-04T03:07:03+02:00 |
-| debug-mode | 2026-08-03T03:57:02+02:00 |
-| deps-coverage | 2026-08-04T03:24:03+02:00 |
-| forms | 2026-07-28T04:57:02+02:00 |
-| npm | 2026-08-04T03:17:02+02:00 |
+| backup-coverage | 2026-08-04T05:30:04+02:00 |
+| cargo | 2026-08-05T03:22:02+02:00 |
+| composer | 2026-08-05T03:07:03+02:00 |
+| debug-mode | 2026-08-04T03:57:03+02:00 |
+| deps-coverage | 2026-08-05T03:24:03+02:00 |
+| forms | 2026-08-04T04:57:03+02:00 |
+| npm | 2026-08-05T03:17:03+02:00 |
 | observatory | 2026-08-03T04:37:03+02:00 |
 | ratelimit | 2026-07-29T05:07:03+02:00 |
-| registries | 2026-08-04T03:02:03+02:00 |
+| registries | 2026-08-05T03:02:02+02:00 |
 | residu | 2026-08-02T05:47:03+02:00 |
 | secrets | 2026-07-30T05:17:03+02:00 |
-| server | 2026-08-03T23:58:17+02:00 |
+| server | 2026-08-04T03:47:03+02:00 |
 | session-cookies | 2026-07-31T05:27:03+02:00 |
 | ssl | 2026-08-03T04:07:03+02:00 |
 | test-erosion | 2026-08-01T05:37:02+02:00 |

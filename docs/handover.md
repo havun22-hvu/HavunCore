@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Tue, Aug 4, 2026 4:00 AM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Aug 5, 2026 4:00 AM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,7 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-08-04 | `e27575b` | chore(auto): refresh handover, qv-scan-latest, security-findings-log (2026-08-04T06:00:09+02:00) |
 | 2026-08-04 | `831080c` | docs: session close 04-08 -- monitoring that measures, and the pattern behind it |
 | 2026-08-04 | `bca2060` | chore(monitoring): stop watching a site that was taken down on purpose |
 | 2026-08-04 | `b7ab20f` | feat(actions): blind monitoring reaches a person, not /dev/null |
@@ -79,16 +80,12 @@
 | 2026-07-30 | `4812cc6` | docs(kb): the stack becomes a decision instead of an inheritance |
 | 2026-07-30 | `43fe4c2` | chore(docs): sync the auto-generated snapshots from production |
 | 2026-07-30 | `5df7bbd` | docs(kb): add pattern for holding an evidence position on inherited software |
-| 2026-07-29 | `407a75f` | docs(kb): add VPDUpdate to the mobile-login checklist, plus two findings |
-| 2026-07-28 | `78cefc9` | chore(kb): refresh the audit snapshot (272 files, 1 critical) |
-| 2026-07-28 | `ffcfe2a` | docs(kb): the SSL failure is Avast on the laptop, not the host |
-| 2026-07-28 | `bd5a35f` | docs(kb): add magic link pattern for raw Node.js projects |
 
 ## V&K status (laatste qv:scan)
 
 **Totals:** critical 0 | high 23 | medium 57 | low 7 | errors 0
 
-_Snapshot timestamp: 2026-08-04T03:57:03+02:00_
+_Snapshot timestamp: 2026-08-05T03:57:03+02:00_
 
 **HIGH/CRITICAL findings:**
 
