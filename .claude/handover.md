@@ -74,8 +74,10 @@ JudoToernooi. Gevonden bij het lezen van de productielogs na een deploy, niet do
 config-default mee, echte API-call geverifieerd. De tweede default in `AIProxyService` is weg —
 één plek om te wijzigen. Jouw keuze was Haiku 4.5; mijn kanttekening staat hieronder.
 
-**Nog open:** een 404 van de AI-API bereikt niemand. De health-alerts bestaan al
-(`health:alert`) — er hangt alleen niets aan deze fout. Regel: `patterns/model-id-verloopt.md`.
+**Ook gedicht:** een 404 van de messages-endpoint vuurt nu een `critical` health-alert
+(`ai-proxy-model`, noemt het model bij naam); een geslaagde call sluit 'm weer. Alleen 404 — een
+429 of 500 is de API die het even niet trekt, een verdwenen model blijft stuk. Beide tests eerst
+rood gezien. Regel: `patterns/model-id-verloopt.md`.
 
 ## Open — te doen
 

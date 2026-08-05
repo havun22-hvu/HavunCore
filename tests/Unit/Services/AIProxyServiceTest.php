@@ -3,6 +3,7 @@
 namespace Tests\Unit\Services;
 
 use App\Models\AIUsageLog;
+use App\Models\HealthAlert;
 use App\Services\AIProxyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
@@ -124,6 +125,56 @@ class AIProxyServiceTest extends TestCase
             $failuresBefore,
             (int) Cache::get('circuit_breaker:claude_api:failures', 0),
         );
+    }
+
+    public function test_a_missing_model_raises_a_health_alert_instead_of_only_a_log_line(): void
+    {
+        // On 2026-08-05 the configured model had been retired months earlier.
+        // Every call 404'd for 19 hours; the log had it, nobody was told.
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'type' => 'error',
+                'error' => ['type' => 'not_found_error', 'message' => 'model: claude-3-haiku-20240307'],
+            ], 404),
+        ]);
+
+        try {
+            (new AIProxyService($this->stopwatch))->chat('havuncore', 'anyone there?');
+        } catch (\Exception) {
+            // The throw is the existing contract; the alert is what's being tested.
+        }
+
+        $alert = HealthAlert::where('key', 'ai-proxy-model')->first();
+        $this->assertNotNull($alert, 'A 404 from the model endpoint must reach a person.');
+        $this->assertSame('open', $alert->status);
+        $this->assertSame('critical', $alert->severity);
+        // The alert has to name the model, or whoever reads it cannot act on it.
+        $this->assertStringContainsString('claude-3-haiku-test', $alert->body);
+    }
+
+    public function test_a_working_call_closes_a_previously_raised_model_alert(): void
+    {
+        // An alert that stays open after the fix is the same lie in reverse.
+        HealthAlert::create([
+            'key' => 'ai-proxy-model',
+            'scope' => 'server',
+            'severity' => 'critical',
+            'title' => 'AI-model niet beschikbaar',
+            'status' => 'open',
+            'first_seen_at' => now()->subHour(),
+            'last_seen_at' => now()->subHour(),
+        ]);
+
+        Http::fake([
+            'api.anthropic.com/*' => Http::response([
+                'content' => [['text' => 'back']],
+                'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
+            ], 200),
+        ]);
+
+        (new AIProxyService($this->stopwatch))->chat('havuncore', 'still there?');
+
+        $this->assertSame('resolved', HealthAlert::where('key', 'ai-proxy-model')->first()->status);
     }
 
     public function test_chat_logs_usage_to_ai_usage_log(): void

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\AIUsageLog;
 use App\Support\Timing\Stopwatch;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -82,9 +83,13 @@ class AIProxyService
                 'status' => $response->status(),
                 'body' => $response->body(),
             ]);
+            if ($response->status() === 404) {
+                $this->raiseModelAlert();
+            }
             throw new \Exception('Claude API error: ' . $response->status());
         }
 
+        $this->clearModelAlert();
         $this->circuitBreaker->recordSuccess();
         $data = $response->json();
         $text = $data['content'][0]['text'] ?? '';
@@ -103,6 +108,43 @@ class AIProxyService
                 'execution_time_ms' => $executionMs,
             ],
         ];
+    }
+
+    /**
+     * A 404 from the messages endpoint means the configured model is not there —
+     * almost always because the ID was retired. The log alone is not enough: on
+     * 2026-08-05 that exact failure ran for 19 hours before a person read it.
+     *
+     * Only 404 raises this. A 429 or a 500 is the API having a moment; a model
+     * that does not exist stays broken until someone changes the config.
+     */
+    protected function raiseModelAlert(): void
+    {
+        $this->alert([
+            'key' => 'ai-proxy-model',
+            '--severity' => 'critical',
+            '--title' => 'AI-model niet beschikbaar',
+            '--body' => "De Claude API kent het ingestelde model niet: {$this->model}. "
+                . 'Waarschijnlijk uitgefaseerd — zet een geldig model in CLAUDE_MODEL. '
+                . 'Zie docs/kb/patterns/model-id-verloopt.md.',
+        ]);
+    }
+
+    protected function clearModelAlert(): void
+    {
+        $this->alert(['key' => 'ai-proxy-model', '--status' => 'up']);
+    }
+
+    /**
+     * Alerting must never be the reason a working call fails.
+     */
+    private function alert(array $arguments): void
+    {
+        try {
+            Artisan::call('health:alert', $arguments);
+        } catch (\Throwable $e) {
+            Log::warning('AI Proxy: health alert failed', ['error' => $e->getMessage()]);
+        }
     }
 
     /**
