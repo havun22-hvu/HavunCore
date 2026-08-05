@@ -8,6 +8,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Tests\Support\Timing\FakeStopwatch;
 use Tests\TestCase;
 
 /**
@@ -22,20 +23,28 @@ class AIProxyServiceTest extends TestCase
 {
     use RefreshDatabase;
 
+    /**
+     * Drives the service's duration measurement. Tests that care about timing
+     * advance it explicitly; the rest leave it where it starts.
+     */
+    private FakeStopwatch $stopwatch;
+
     protected function setUp(): void
     {
         parent::setUp();
         Cache::flush();
         config()->set('services.claude.api_key', 'sk-ant-fake-test-key');
         config()->set('services.claude.model', 'claude-3-haiku-test');
+        $this->stopwatch = new FakeStopwatch();
     }
 
     public function test_chat_returns_response_text_and_usage_on_success(): void
     {
         Http::fake([
             'api.anthropic.com/*' => function () {
-                usleep(20_000); // 20ms — proves executionTime > 0 and
-                                // keeps the `microtime - $startTime` subtraction observable.
+                // Time passes while the call is in flight.
+                $this->stopwatch->advance(0.02);
+
                 return Http::response([
                     'content' => [['text' => 'Hi there']],
                     'usage' => ['input_tokens' => 12, 'output_tokens' => 4],
@@ -43,19 +52,15 @@ class AIProxyServiceTest extends TestCase
             },
         ]);
 
-        $result = (new AIProxyService())->chat('havuncore', 'Hello');
+        $result = (new AIProxyService($this->stopwatch))->chat('havuncore', 'Hello');
 
         $this->assertSame('Hi there', $result['response']);
         $this->assertSame(12, $result['usage']['input_tokens']);
         $this->assertSame(4, $result['usage']['output_tokens']);
-        $this->assertIsInt($result['usage']['execution_time_ms']);
-        // usleep(20ms) guarantees a strictly positive, ms-scale result —
-        // kills Minus (microtime + startTime -> large number that rounds
-        // to something the > 0 check accepts but also kills the
-        // `-1 / +1 / 999 / 1001` mutations on 1024 * $t and the round()
-        // family (floor/ceil would round to 0 on a <1ms sleep).
-        $this->assertGreaterThanOrEqual(15, $result['usage']['execution_time_ms']);
-        $this->assertLessThan(5000, $result['usage']['execution_time_ms']);
+        // The clock has to start before the call, not after: only then does
+        // the 20 ms that passed during it end up in the result. (What that
+        // number is made of, is MeasurementTest's job.)
+        $this->assertSame(20, $result['usage']['execution_time_ms']);
     }
 
     public function test_chat_returns_zero_defaults_when_claude_omits_usage_block(): void
@@ -71,7 +76,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        $result = (new AIProxyService())->chat('zero-defaults', 'hi');
+        $result = (new AIProxyService($this->stopwatch))->chat('zero-defaults', 'hi');
 
         $this->assertSame(0, $result['usage']['input_tokens']);
         $this->assertSame(0, $result['usage']['output_tokens']);
@@ -84,30 +89,6 @@ class AIProxyServiceTest extends TestCase
             'output_tokens' => 0,
             'total_tokens' => 0,
         ]);
-    }
-
-    public function test_chat_execution_time_uses_1000x_ms_scale_not_999_or_1001(): void
-    {
-        // usleep(50ms) + strict band kills IncrementInteger (1000->1001 => ~50.05ms)
-        // AND DecrementInteger (1000->999 => ~49.95ms) by requiring the
-        // rounded value to sit in a tight ±5ms window around 50.
-        Http::fake([
-            'api.anthropic.com/*' => function () {
-                usleep(50_000);
-                return Http::response([
-                    'content' => [['text' => 'timed']],
-                    'usage' => ['input_tokens' => 0, 'output_tokens' => 0],
-                ], 200);
-            },
-        ]);
-
-        $result = (new AIProxyService())->chat('havuncore', 'time me');
-
-        // Without the *1000 we'd see 0. With *999/1001 we'd see ~49.95
-        // or ~50.05. A 5-unit band excludes the drop to 0 and is wide
-        // enough to tolerate CI jitter on the usleep() itself.
-        $this->assertGreaterThanOrEqual(40, $result['usage']['execution_time_ms']);
-        $this->assertLessThan(500, $result['usage']['execution_time_ms']);
     }
 
     public function test_chat_throws_on_api_error_and_records_circuit_failure(): void
@@ -130,7 +111,7 @@ class AIProxyServiceTest extends TestCase
 
         $failuresBefore = (int) Cache::get('circuit_breaker:claude_api:failures', 0);
 
-        $service = new AIProxyService();
+        $service = new AIProxyService($this->stopwatch);
         try {
             $service->chat('havuncore', 'fail me');
             $this->fail('Expected a \\Exception to propagate from chat()');
@@ -154,7 +135,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService())->chat('infosyst', 'Test logging');
+        (new AIProxyService($this->stopwatch))->chat('infosyst', 'Test logging');
 
         $this->assertDatabaseHas('ai_usage_logs', [
             'tenant' => 'infosyst',
@@ -167,7 +148,7 @@ class AIProxyServiceTest extends TestCase
     public function test_check_rate_limit_blocks_after_configured_threshold(): void
     {
         config()->set('services.claude.rate_limit', 3);
-        $service = new AIProxyService();
+        $service = new AIProxyService($this->stopwatch);
 
         $this->assertTrue($service->checkRateLimit('havuncore'));
         $this->assertTrue($service->checkRateLimit('havuncore'));
@@ -179,7 +160,7 @@ class AIProxyServiceTest extends TestCase
     public function test_check_rate_limit_isolates_per_tenant(): void
     {
         config()->set('services.claude.rate_limit', 1);
-        $service = new AIProxyService();
+        $service = new AIProxyService($this->stopwatch);
 
         $this->assertTrue($service->checkRateLimit('infosyst'));
         $this->assertFalse($service->checkRateLimit('infosyst'));
@@ -205,7 +186,7 @@ class AIProxyServiceTest extends TestCase
             'execution_time_ms' => 500, 'model' => 'haiku',
         ]);
 
-        $stats = (new AIProxyService())->getUsageStats('havuncore', 'day');
+        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('havuncore', 'day');
 
         $this->assertSame(2, $stats['total_requests']);
         $this->assertSame(180, $stats['total_input_tokens']);
@@ -216,7 +197,7 @@ class AIProxyServiceTest extends TestCase
 
     public function test_health_check_reports_configured_when_api_key_present(): void
     {
-        $health = (new AIProxyService())->healthCheck();
+        $health = (new AIProxyService($this->stopwatch))->healthCheck();
 
         $this->assertTrue($health['healthy']);
         $this->assertTrue($health['api_configured']);
@@ -227,7 +208,7 @@ class AIProxyServiceTest extends TestCase
     {
         config()->set('services.claude.api_key', '');
 
-        $health = (new AIProxyService())->healthCheck();
+        $health = (new AIProxyService($this->stopwatch))->healthCheck();
 
         $this->assertFalse($health['healthy']);
         $this->assertFalse($health['api_configured']);
@@ -239,14 +220,14 @@ class AIProxyServiceTest extends TestCase
 
     public function test_chat_logs_execution_time_in_milliseconds_not_seconds(): void
     {
-        // Force a response that takes a measurable amount of time so the
-        // `round($executionTime * 1000)` multiplication is observably > 0.
-        // This kills mutations that drop the *1000 (would yield 0 on our
-        // sub-second fake) and RoundingFamily mutations (floor/ceil on a
-        // tiny value all collapse to 0).
+        // The logged value has its own `round($executionTime * 1000)` in
+        // logUsage(), separate from the one in the return array — so it needs
+        // its own assertion. Two seconds of stopwatch time is 2000 ms; had the
+        // *1000 been dropped it would be 2.
         Http::fake([
             'api.anthropic.com/*' => function () {
-                usleep(50_000); // 50ms
+                $this->stopwatch->advance(2.0);
+
                 return Http::response([
                     'content' => [['text' => 'ok']],
                     'usage' => ['input_tokens' => 1, 'output_tokens' => 1],
@@ -254,13 +235,11 @@ class AIProxyServiceTest extends TestCase
             },
         ]);
 
-        (new AIProxyService())->chat('havuncore', 'time-me');
+        (new AIProxyService($this->stopwatch))->chat('havuncore', 'time-me');
 
         $log = AIUsageLog::latest('id')->first();
         $this->assertNotNull($log);
-        // 50ms sleep must surface as >= ~40ms after rounding (CI jitter
-        // slack). Anything near 0 means the *1000 mutation escaped.
-        $this->assertGreaterThanOrEqual(40, $log->execution_time_ms);
+        $this->assertSame(2000, $log->execution_time_ms);
         $this->assertIsInt($log->execution_time_ms);
     }
 
@@ -276,7 +255,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService())->chat('havunadmin', 'Check payload keys');
+        (new AIProxyService($this->stopwatch))->chat('havunadmin', 'Check payload keys');
 
         $log = AIUsageLog::latest('id')->first();
         $this->assertNotNull($log);
@@ -324,7 +303,7 @@ class AIProxyServiceTest extends TestCase
             'updated_at' => now()->subHours($logAgeHours),
         ]);
 
-        $stats = (new AIProxyService())->getUsageStats('havuncore', $period);
+        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('havuncore', $period);
 
         $this->assertSame($expectVisible ? 1 : 0, $stats['total_requests']);
     }
@@ -334,7 +313,7 @@ class AIProxyServiceTest extends TestCase
         // Hard-assert exact === 0 on each numeric field. Kills CastInt
         // and IncrementInteger / DecrementInteger mutations on the
         // return-array's integer defaults.
-        $stats = (new AIProxyService())->getUsageStats('empty-tenant');
+        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('empty-tenant');
 
         $this->assertSame(0, $stats['total_requests']);
         $this->assertSame(0, $stats['total_input_tokens']);
@@ -352,7 +331,7 @@ class AIProxyServiceTest extends TestCase
         // `private` — which silently breaks any real subclass that
         // customises the system prompt. An anonymous subclass that
         // overrides the method proves the visibility contract.
-        $service = new class extends AIProxyService {
+        $service = new class($this->stopwatch) extends AIProxyService {
             public function exposePrompt(string $tenant): string
             {
                 return $this->getDefaultSystemPrompt($tenant);
@@ -369,14 +348,14 @@ class AIProxyServiceTest extends TestCase
     public function test_log_usage_is_reachable_by_a_subclass(): void
     {
         // Kills `protected logUsage()` -> `private` mutation on line 126.
-        $service = new class extends AIProxyService {
-            public function callLogUsage(string $tenant, array $usage, float $t): void
+        $service = new class($this->stopwatch) extends AIProxyService {
+            public function callLogUsage(string $tenant, array $usage, int $ms): void
             {
-                $this->logUsage($tenant, $usage, $t);
+                $this->logUsage($tenant, $usage, $ms);
             }
         };
 
-        $service->callLogUsage('subclass-tenant', ['input_tokens' => 3, 'output_tokens' => 2], 0.050);
+        $service->callLogUsage('subclass-tenant', ['input_tokens' => 3, 'output_tokens' => 2], 50);
 
         $this->assertDatabaseHas('ai_usage_logs', [
             'tenant' => 'subclass-tenant',
@@ -409,7 +388,7 @@ class AIProxyServiceTest extends TestCase
             ],
         ]);
 
-        $stats = (new AIProxyService())->getUsageStats('default-window', 'something-bogus');
+        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('default-window', 'something-bogus');
 
         // Only the 2h-old row is within the day-window default.
         $this->assertSame(1, $stats['total_requests']);
@@ -434,7 +413,7 @@ class AIProxyServiceTest extends TestCase
             ],
         ]);
 
-        $stats = (new AIProxyService())->getUsageStats('exact-sums', 'day');
+        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('exact-sums', 'day');
 
         $this->assertSame(2, $stats['total_requests']);
         $this->assertSame(20, $stats['total_input_tokens']);
@@ -464,7 +443,7 @@ class AIProxyServiceTest extends TestCase
 
         // Subclass to reach the protected method and feed it bad input
         // that makes AIUsageLog::create() throw on SQLite.
-        $service = new class extends AIProxyService {
+        $service = new class($this->stopwatch) extends AIProxyService {
             public function forceFailedLog(): void
             {
                 // Pre-create a row the constraint will reject on insert:
@@ -493,7 +472,7 @@ class AIProxyServiceTest extends TestCase
         $failuresBefore = (int) Cache::get('circuit_breaker:claude_api:failures', 0);
         $this->assertGreaterThan(0, $failuresBefore);
 
-        (new AIProxyService())->chat('havuncore', 'ok');
+        (new AIProxyService($this->stopwatch))->chat('havuncore', 'ok');
 
         // Successful call must reset the breaker failure counter.
         $this->assertSame(0, (int) Cache::get('circuit_breaker:claude_api:failures', 0));
@@ -506,7 +485,7 @@ class AIProxyServiceTest extends TestCase
         // DecrementInteger/IncrementInteger on the 60 default.
         config()->set('services.claude.rate_limit', null);
         Cache::flush();
-        $service = new AIProxyService();
+        $service = new AIProxyService($this->stopwatch);
 
         // 60 calls must all succeed, the 61st must be blocked.
         for ($i = 0; $i < 60; $i++) {
@@ -529,7 +508,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService())->chat('havuncore', 'header-check');
+        (new AIProxyService($this->stopwatch))->chat('havuncore', 'header-check');
 
         // Each header below kills a distinct ArrayItemRemoval / string
         // mutation in the Http::withHeaders array.
@@ -551,7 +530,7 @@ class AIProxyServiceTest extends TestCase
         ]);
 
         // Caller intentionally omits $maxTokens to exercise the default.
-        (new AIProxyService())->chat('havuncore', 'default-token-check');
+        (new AIProxyService($this->stopwatch))->chat('havuncore', 'default-token-check');
 
         // Kills DecrementInteger/IncrementInteger on the 1024 default +
         // ArrayItemRemoval on model/max_tokens/system/messages payload keys.
@@ -575,7 +554,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService())->chat('havuncore', 'custom-tokens', maxTokens: 2048);
+        (new AIProxyService($this->stopwatch))->chat('havuncore', 'custom-tokens', maxTokens: 2048);
 
         Http::assertSent(fn (\Illuminate\Http\Client\Request $req) => ($req->data()['max_tokens'] ?? null) === 2048);
     }
@@ -589,7 +568,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService())->chat('havuncore', 'Ask', ['fact A', 'fact B']);
+        (new AIProxyService($this->stopwatch))->chat('havuncore', 'Ask', ['fact A', 'fact B']);
 
         Http::assertSent(function (\Illuminate\Http\Client\Request $request) {
             $content = $request->data()['messages'][0]['content'] ?? '';
@@ -608,7 +587,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService())->chat('havuncore', 'hi', [], systemPrompt: 'Custom override prompt');
+        (new AIProxyService($this->stopwatch))->chat('havuncore', 'hi', [], systemPrompt: 'Custom override prompt');
 
         Http::assertSent(fn (\Illuminate\Http\Client\Request $req) => ($req->data()['system'] ?? null) === 'Custom override prompt');
     }

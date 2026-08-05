@@ -10,7 +10,7 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel, 1411 tests groen, KB-audit 0 high. **Server:** disk 68%,
+**Branch:** master · **Status:** stabiel, 1413 tests groen, KB-audit 0 high. **Server:** disk 68%,
 prod draait overal, 0 dirty checkouts, 0 stashes. **Alles staat live** — HavunCore én HavunAdmin
 (04-08 gedeployd, geen migraties, rollbackpunt `8cf75a3`).
 
@@ -66,10 +66,10 @@ root-owned, waardoor `cache:clear` als `www-data` faalt — na elke deploy `chow
 
 ## Open — te doen
 
-- **Flaky test (03-08):** `AIProxyServiceTest > chat logs execution time in milliseconds not
-  seconds` viel één keer om in een volle run, twee runs daarna groen. Oorzaak niet vastgesteld —
-  de test leunt op een `usleep(50_000)` en een ondergrens van 40 ms. Niet negeren: als hij vaker
-  omvalt, de tijdmeting injecteerbaar maken in plaats van de marge oprekken.
+- **Vier andere duurmetingen staan nog op `microtime(true)`** — `RequestMetricsMiddleware`,
+  `Chaos\ChaosExperiment` (2×), `CriticalPaths\TestRunner`. Migreren naar `App\Support\Timing\
+  Stopwatch` in een eigen commit; geen haast, geen van hen is flaky. `plans/tijdmeting-
+  injecteerbaar-plan.md`.
 - **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
   Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt.

@@ -40,6 +40,21 @@ groen" terwijl stap 2 nooit is gebeurd, is een claim zonder dekking. Zelfde prin
 [`claims-verifieren.md`](../standards/claims-verifieren.md): niet-geverifieerd melden mag, een
 onbewezen conclusie presenteren niet.
 
+## Een marge is geen meting (05-08-2026)
+
+Dezelfde regel geldt voor wat een test *beweert* te dekken. Drie timing-tests in HavunCore
+droegen comments als *"kills IncrementInteger (1000 -> 1001)"* — maar ze asserteerden een band
+van 40–500 ms rond een `usleep(50_000)`. Zowel `*999` (49,95) als `*1001` (50,05) landt binnen
+die band. De mutanten leefden al maanden, de comment zei van niet. Gemeten: met `*999` in de code
+bleven **56 van de 56** tests groen.
+
+- **Een marge die groot genoeg is voor jitter, is ook groot genoeg voor de fout die je zocht.**
+  Wie een ondergrens nodig heeft, meet iets dat hij niet in de hand heeft.
+- **Krijg de meting in de hand in plaats van de marge op te rekken.** Injecteer de klok, de
+  random, de tijd. Dan mag de assertie `assertSame` zijn, en dan pas is de mutant dood.
+- **Een claim in een test-comment is een claim** — [`claims-verifieren.md`](../standards/claims-verifieren.md)
+  geldt er onverkort voor. Bewijs = de mutatie aanbrengen en de test zien vallen.
+
 ## Waarom dit een eigen regel is (24-07-2026)
 
 Een openstaand punt in de HavunCore-handover meldde dat de update-banner van de webapp de

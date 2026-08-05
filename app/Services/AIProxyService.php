@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AIUsageLog;
+use App\Support\Timing\Stopwatch;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -19,12 +20,14 @@ class AIProxyService
     protected string $model;
     protected string $apiUrl = 'https://api.anthropic.com/v1/messages';
     protected CircuitBreaker $circuitBreaker;
+    protected Stopwatch $stopwatch;
 
-    public function __construct()
+    public function __construct(Stopwatch $stopwatch)
     {
         $this->apiKey = config('services.claude.api_key', '');
         $this->model = config('services.claude.model', 'claude-3-haiku-20240307');
         $this->circuitBreaker = new CircuitBreaker('claude_api');
+        $this->stopwatch = $stopwatch;
     }
 
     /**
@@ -37,7 +40,7 @@ class AIProxyService
         ?string $systemPrompt = null,
         int $maxTokens = 1024
     ): array {
-        $startTime = microtime(true);
+        $measurement = $this->stopwatch->start();
 
         // Circuit breaker check
         if (! $this->circuitBreaker->isAvailable()) {
@@ -85,17 +88,17 @@ class AIProxyService
         $text = $data['content'][0]['text'] ?? '';
         $usage = $data['usage'] ?? [];
 
-        $executionTime = microtime(true) - $startTime;
+        $executionMs = $measurement->elapsedMs();
 
         // Log usage
-        $this->logUsage($tenant, $usage, $executionTime);
+        $this->logUsage($tenant, $usage, $executionMs);
 
         return [
             'response' => $text,
             'usage' => [
                 'input_tokens' => $usage['input_tokens'] ?? 0,
                 'output_tokens' => $usage['output_tokens'] ?? 0,
-                'execution_time_ms' => (int) round($executionTime * 1000),
+                'execution_time_ms' => $executionMs,
             ],
         ];
     }
@@ -123,7 +126,7 @@ class AIProxyService
     /**
      * Log usage to database
      */
-    protected function logUsage(string $tenant, array $usage, float $executionTime): void
+    protected function logUsage(string $tenant, array $usage, int $executionMs): void
     {
         try {
             AIUsageLog::create([
@@ -131,7 +134,7 @@ class AIProxyService
                 'input_tokens' => $usage['input_tokens'] ?? 0,
                 'output_tokens' => $usage['output_tokens'] ?? 0,
                 'total_tokens' => ($usage['input_tokens'] ?? 0) + ($usage['output_tokens'] ?? 0),
-                'execution_time_ms' => (int) round($executionTime * 1000),
+                'execution_time_ms' => $executionMs,
                 'model' => $this->model,
             ]);
         } catch (\Exception $e) {

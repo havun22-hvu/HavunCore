@@ -7,6 +7,7 @@ use App\Services\AIProxyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Tests\Support\Timing\FakeStopwatch;
 use Tests\TestCase;
 
 class AIProxyServiceTest extends TestCase
@@ -14,10 +15,13 @@ class AIProxyServiceTest extends TestCase
     use RefreshDatabase;
 
     private AIProxyService $service;
+    private FakeStopwatch $stopwatch;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->stopwatch = new FakeStopwatch();
 
         // Ensure config has non-null defaults for the service constructor
         config([
@@ -25,7 +29,7 @@ class AIProxyServiceTest extends TestCase
             'services.claude.model' => 'claude-3-haiku-20240307',
         ]);
 
-        $this->service = new AIProxyService();
+        $this->service = new AIProxyService($this->stopwatch);
     }
 
     // -- Health Check --
@@ -33,7 +37,7 @@ class AIProxyServiceTest extends TestCase
     public function test_health_check_reports_unhealthy_without_api_key(): void
     {
         config(['services.claude.api_key' => '']);
-        $emptyKeyService = new AIProxyService();
+        $emptyKeyService = new AIProxyService($this->stopwatch);
 
         $result = $emptyKeyService->healthCheck();
 
@@ -91,7 +95,7 @@ class AIProxyServiceTest extends TestCase
     public function test_chat_sends_correct_request_to_anthropic(): void
     {
         config(['services.claude.api_key' => 'test-key']);
-        $service = new AIProxyService();
+        $service = new AIProxyService($this->stopwatch);
 
         Http::fake([
             'api.anthropic.com/*' => Http::response([

@@ -7,6 +7,7 @@ use App\Services\AIProxyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Tests\Support\Timing\FakeStopwatch;
 use Tests\TestCase;
 
 class AIProxyServiceCoverageTest extends TestCase
@@ -14,17 +15,20 @@ class AIProxyServiceCoverageTest extends TestCase
     use RefreshDatabase;
 
     private AIProxyService $service;
+    private FakeStopwatch $stopwatch;
 
     protected function setUp(): void
     {
         parent::setUp();
+
+        $this->stopwatch = new FakeStopwatch();
 
         config([
             'services.claude.api_key' => 'test-key',
             'services.claude.model' => 'claude-3-haiku-20240307',
         ]);
 
-        $this->service = new AIProxyService();
+        $this->service = new AIProxyService($this->stopwatch);
     }
 
     // ===================================================================
