@@ -10,14 +10,12 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel, 1415 tests groen, KB-audit 0 high. **Server:** disk 68%,
-prod draait overal, 0 dirty checkouts, 0 stashes. **Alles staat live** (05-08, geen migraties).
+**Branch:** master · **Status:** stabiel, 1417 tests groen, KB-audit 0 high. **Server:** disk 68%,
+prod draait overal, 0 dirty checkouts, 0 stashes. **Eén commit wacht op deploy** (monitoring, geen
+migraties); de rest staat live.
 
-**Afgerond 01/02-08:** drie secrets geroteerd (GitHub-PAT + MySQL van `havunadmin` en `havuncore`,
-alle drie via de app geverifieerd, backups in `/root/backups/`), en twee backupgaten gedicht
-(Herdenkingsportaal dumpte 4,5 maand de verkeerde database; HavunAdmins facturen zaten nergens in).
-Beide restores getest. Volledig: `runbooks/secrets-veilig-ontvangen.md`,
-`plans/registry-drift-check-plan.md`, `reference/databases-op-de-server.md`.
+**Afgerond 01/02-08:** drie secrets geroteerd en twee backupgaten gedicht, restores getest.
+Volledig: `runbooks/secrets-veilig-ontvangen.md`, `reference/databases-op-de-server.md`.
 
 ## De V&K-scan meet op de server weer (03/04-08)
 
