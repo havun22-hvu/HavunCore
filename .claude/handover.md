@@ -52,46 +52,39 @@ faalt `cache:clear`; na elke deploy `chown`. (Correctie op de diagnose van 02-08
 | **LastMatch** | Avast HTTPS-scanning uit = enige APK-build-blocker |
 | **JudoScoreBoard** | Google-review AAB 116 (9 juni ingediend) — status alleen in Play Console |
 
-## De taakwachtrij stond open op internet — dicht sinds 06-08
+## Twee stille storingen, beide 05/06-08 gevonden en gedicht
 
-`/api/claude/tasks` had geen enkele auth, op een groep die de eigen doc "remote code execution"
-noemt. Bewezen met een `curl` van buiten. Nu: Bearer-token (gehasht in de config, token in de Vault
-onder `havuncore_tasks_token`) + rate limiting op élke route, ook de leesroutes. Van buitenaf
-geverifieerd: 401 zonder token, 200 met.
+**De taakwachtrij stond open op internet.** `/api/claude/tasks` had geen auth, op een groep die de
+eigen doc "remote code execution" noemt. Nu Bearer-token (gehasht in config, waarde in de Vault) +
+rate limiting op élke route. Van buitenaf geverifieerd. **De eerste deploy deed niets** — de
+routecache stamde van 2 augustus; `route:clear` staat nu in `runbooks/deploy.md`.
 
-**De eerste deploy deed niets.** De routecache stamde van 2 augustus, dus de app draaide de oude
-routes — `config:clear` raakt die niet. `route:clear` staat nu in `runbooks/deploy.md`. Alleen een
-test van buitenaf ving dit; `route:list` leest de bronbestanden en zag er goed uit.
+**De AI-proxy lag 19 uur plat.** `claude-3-haiku-20240307` was in april uitgefaseerd; 46 calls, alle
+404, AutoFix stil. Prod draait nu op `claude-opus-5`, met `max_tokens` op 16000 omdat Opus 5 standaard
+denkt en dat plafond denken én antwoord dekt. Een 404 vuurt voortaan een `critical` health-alert.
+Regel: `patterns/model-id-verloopt.md`.
 
-## De AI-proxy lag 19 uur plat en niemand kreeg een melding (05-08)
+Beide waren zichtbaar in de logs en bereikten niemand. Dat is hetzelfde patroon als de V&K-scan:
+`patterns/bewaking-die-niets-meet.md`.
 
-`claude-3-haiku-20240307` is per **19-04-2026** uitgefaseerd; vanaf 00:30 gaf elke call 404 — 46
-calls, 100% mislukt, AutoFix stil. Gevonden in de productielogs, niet door een alert.
+## Open — te doen (mijn kant)
 
-**Opgelost:** prod draait op `claude-opus-5` (backup van `.env` in `/root/backups/`), config-default
-mee, echte API-call geverifieerd. De tweede default in `AIProxyService` is weg — één plek om te
-wijzigen. **`max_tokens` moest mee omhoog naar 16000** (`AIProxyService::MAX_TOKENS`): Opus 5 denkt
-standaard en het plafond dekt denken én antwoord samen, dus 1024 brak antwoorden af. Het is een
-plafond, geen verbruik.
+**Niets.** Alles wat zonder jouw beslissing kon, is af en staat live.
 
-**Ook gedicht:** een 404 van de messages-endpoint vuurt nu een `critical` health-alert
-(`ai-proxy-model`, noemt het model bij naam); een geslaagde call sluit 'm weer. Alleen 404 — een
-429 of 500 is de API die het even niet trekt, een verdwenen model blijft stuk. Beide tests eerst
-rood gezien. Regel: `patterns/model-id-verloopt.md`.
+## Wacht op één handeling van jou
 
-## Open — te doen
-
-- **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Rest = één browser-test.
+- **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Rest is één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
-  **Sinds 05-08 urgenter:** de AI-proxy vuurt nu zelf een `critical` alert bij een verdwenen
-  model — precies het soort melding die je wilt zien zonder in te loggen. (`laravel-worker` +
-  `toernooi-heartbeat` wórden inmiddels wel bewaakt — 06-08 uitgebreid naar alle niet-draaiende
-  statussen, en nul processen is nu een alarm in plaats van groen.)
-- **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** Wéér last? Check
+  **Sinds 05-08 urgenter:** de AI-proxy vuurt nu zelf een `critical` alert bij een verdwenen model —
+  precies het soort melding dat je wilt zien zonder in te loggen.
+
+## Andere projecten — niet vanuit deze sessie
+
+- **havuncore-webapp update-banner** — niet reproduceerbaar sinds 24-07. Wéér last? Check
   `getRegistration()` op een `waiting`. `plans/webapp-sw-update-fix.md`. Vitest daar geblokkeerd
   door Avast, niet de registry — [[env-ssl-interception]].
 - **Drie CLAUDE.md's boven de 120-regelnorm** — Studieplanner-api 135, JudoScoreBoard 136,
-  havuncore-webapp 125.
+  havuncore-webapp 125. Elk in de eigen sessie.
 - **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde versie staat op
   `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
 
