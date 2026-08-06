@@ -49,6 +49,33 @@ model. Dat onderscheid is belangrijk — noem het geen beveiliging als het een v
 | Geen migraties, geen nieuwe dependencies | **Zacht**: staat in de instructie. Een lockfile-wijziging valt wel op in de PR-diff |
 | Scope niet oprekken | **Zacht**: de reviewer (Henk) ziet het in de PR |
 
+## De poller starten
+
+Draait op Henks PC, in Git Bash. De PC haalt op; er hoeft niets open te staan in de router.
+
+```bash
+# Token eenmalig uit de Vault halen (staat niet in dit doc, en hoort er ook niet in):
+#   ssh root@188.245.159.115
+#   cd /var/www/havuncore/production && sudo -u www-data php artisan tinker
+#   >>> App\Models\VaultSecret::where('key','havuncore_tasks_token')->first()->getDecryptedValue()
+
+export HAVUNCORE_TASKS_TOKEN='<token>'
+cd /d/GitHub/HavunCore
+
+./scripts/local-task-poller.sh --self-test   # controleert de guards, voert niets uit
+./scripts/local-task-poller.sh --once        # één ronde
+./scripts/local-task-poller.sh               # blijven pollen (elke 60s)
+```
+
+**Begin met `--self-test`.** Die controleert of de guards echt werken en of Claude CLI en het token
+aanwezig zijn. Meldt hij dat een guard stuk is: niet gebruiken.
+
+Instelbaar via omgevingsvariabelen: `PROJECTS` (standaard `judotoernooi herdenkingsportaal`),
+`POLL_INTERVAL` (60s), `GITHUB_ROOT` (`/d/GitHub`).
+
+Het script heeft `php` nodig (staat er al voor dit project) en bewust **niet** `jq` — die ontbreekt
+op deze machine en zou een extra installatie zijn.
+
 ## Als het misgaat
 
 1. **Branch weggooien** — `git branch -D <branch>`; er is niets naar `master` gegaan.

@@ -84,9 +84,16 @@ komen de echte fouten vandaan. Uitbreiden is later een regel config.
 |---|---|---|
 | 1 | Bearer-token + rate limiting op `/api/claude/tasks` | ✅ 06-08, `081ffa7` — van buitenaf geverifieerd |
 | 2 | Kapotte units uitzetten | ✅ 06-08 |
-| 3 | AutoFix maakt een `ClaudeTask` aan bij een mislukte analyse | ⏳ |
-| 4 | Lokale poller voor Windows + Claude CLI | ⏳ |
-| 5 | Grenzen vastleggen die de agent niet mag overschrijden | ⏳ |
+| 3 | AutoFix maakt een `ClaudeTask` aan bij een mislukte analyse | ✅ 06-08 — gededupliceerd op fout-signature |
+| 4 | Lokale poller voor Windows + Claude CLI | ✅ 06-08 — `scripts/local-task-poller.sh` |
+| 5 | Grenzen vastleggen die de agent niet mag overschrijden | ✅ 06-08 — `runbooks/agent-grenzen.md` |
+
+**Startinstructie en guards:** `runbooks/agent-grenzen.md`. Begin met `--self-test`.
+
+**De oude serverpoller (`scripts/claude-task-poller.sh`) is níét de basis geworden.** Hij pushte
+rechtstreeks naar `master`, stuurde geen token mee, en viel bij een ontbrekende Claude CLI terug op
+het uitvoeren van de instructie als shell-commando. Alle drie in strijd met de grenzen. Hij staat er
+nog voor de historie; de units die hem draaiden staan uit.
 
 ## Aanname en omkeerpunt
 
