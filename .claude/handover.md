@@ -93,8 +93,6 @@ rood gezien. Regel: `patterns/model-id-verloopt.md`.
   havuncore-webapp 125.
 - **JudoScoreBoard `context.md` op master nog 1039 regels** — opgeschoonde versie staat op
   `chore/expo-sdk-56-upgrade`; lost zichzelf op bij merge.
-- **`origin/rescue/havuncore-prod-autocommits-2026-07-25`** — 10 commits die nergens anders bestaan
-  (`chore(auto)`-snapshots van 15–25 juli), inhoudelijk achterhaald. Beoordelen en dan weg.
 
 **Veen-ledenadministratie — GEPARKEERD (31-07).** Niets mee doen, ook de kleine betaalde klussen
 niet. Onze serveromgeving is opgeruimd; de lokale checkout blijft en wordt gescand. **⛔ De oude app
