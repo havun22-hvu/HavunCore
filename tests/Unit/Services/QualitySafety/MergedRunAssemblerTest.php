@@ -72,8 +72,16 @@ class MergedRunAssemblerTest extends TestCase
 
         $samen = (new MergedRunAssembler)->assemble();
 
-        $this->assertSame(2, $samen['totals']['errors']);
-        $this->assertCount(2, $samen['errors']);
+        // De fouten uit de runs zelf, los van de meldingen over checks die
+        // helemaal niet gedraaid hebben — die tellen ook mee in `errors`, maar
+        // zeggen iets anders.
+        $uitDeRuns = array_values(array_filter(
+            $samen['errors'],
+            fn (array $e): bool => ($e['type'] ?? null) !== MergedRunAssembler::ERROR_CHECK_ONTBREEKT,
+        ));
+
+        $this->assertCount(2, $uitDeRuns);
+        $this->assertGreaterThanOrEqual(2, $samen['totals']['errors']);
     }
 
     public function test_per_check_wint_de_nieuwste_run(): void
@@ -120,14 +128,33 @@ class MergedRunAssemblerTest extends TestCase
             [['severity' => 'high', 'project' => 'havun', 'check' => 'ssl', 'message' => 'cert verloopt']],
         ));
 
-        $this->assertNull((new MergedRunAssembler)->assemble());
+        $uitslag = (new MergedRunAssembler)->assemble();
+
+        // De oude finding telt niet mee...
+        $this->assertSame([], $uitslag['findings']);
+        // ...maar de check hoort nu wél op te vallen als weggevallen. Stilte
+        // over een check die dertig dagen niets deed is het probleem, niet de
+        // oplossing.
+        $ontbreekt = array_column(array_filter(
+            $uitslag['errors'],
+            fn (array $e): bool => ($e['type'] ?? null) === MergedRunAssembler::ERROR_CHECK_ONTBREEKT,
+        ), 'check');
+        $this->assertContains('ssl', $ontbreekt);
     }
 
-    public function test_zonder_runs_null(): void
+    public function test_zonder_runs_een_uitslag_vol_errors_en_geen_null(): void
     {
+        // Gaf tot 06-08-2026 `null`, en elke aanroeper maakte daar een leeg
+        // rapport van. Een scheduler die helemaal stilstaat las daardoor als
+        // "niets aan de hand" — de ernstigste uitkomst was de stilste.
         Storage::fake('local');
 
-        $this->assertNull((new MergedRunAssembler)->assemble());
+        $uitslag = (new MergedRunAssembler)->assemble();
+
+        $this->assertNotNull($uitslag);
+        $this->assertNotEmpty($uitslag['errors']);
+        $this->assertSame([], $uitslag['findings']);
+        $this->assertNull($uitslag['started_at']);
     }
 
     public function test_meldt_hoe_oud_de_uitslag_per_check_is(): void

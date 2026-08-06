@@ -30,10 +30,14 @@ class QualitySafetyLogCommand extends Command
         // om 03:27 — vóór de meeste checks. Zie MergedRunAssembler.
         $run = $assembler->assemble($disk, $root);
 
-        if ($run === null) {
-            $this->warn("No qv:scan runs found in storage/app/{$root}");
+        // Geen enkele check gedraaid: het rapport wordt wél geschreven — het
+        // bevat dan de melding dat elke verwachte check ontbreekt, en dat is
+        // juist de uitslag die iemand moet zien. De waarschuwing en exitcode
+        // blijven, want een stil rapport is hoe dit eerder onopgemerkt bleef.
+        $geenEnkeleRun = ($run['check_runs'] ?? []) === [];
 
-            return 1;
+        if ($geenEnkeleRun) {
+            $this->warn("No qv:scan runs found in storage/app/{$root}");
         }
 
         $run['_source_file'] = sprintf(
@@ -68,6 +72,6 @@ class QualitySafetyLogCommand extends Command
             }
         }
 
-        return 0;
+        return $geenEnkeleRun ? 1 : 0;
     }
 }

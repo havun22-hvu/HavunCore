@@ -32,6 +32,9 @@ class MergedRunAssembler
 
     private const SEVERITIES = ['critical', 'high', 'medium', 'low', 'informational'];
 
+    /** Markeert een fout die zegt "deze check heeft niet gedraaid". */
+    public const ERROR_CHECK_ONTBREEKT = 'check-ontbreekt';
+
     /**
      * @return array{started_at:?string,checks:list<string>,projects:list<string>,findings:list<array<string,mixed>>,errors:list<array<string,mixed>>,totals:array<string,int>,check_runs:array<string,string>}|null
      */
@@ -43,7 +46,10 @@ class MergedRunAssembler
         $runs = $this->runsInVenster($disk, $root);
 
         if ($runs === []) {
-            return null;
+            // Nul runs is de ernstigste uitkomst, niet de stilste. Tot 06-08-2026
+            // gaf dit `null`, en elke aanroeper maakte daar een leeg rapport van
+            // — een scheduler die helemaal stilstaat las als "niets aan de hand".
+            return $this->legeUitslag();
         }
 
         // Oud naar nieuw, zodat een latere run van dezelfde check de vorige
@@ -72,6 +78,10 @@ class MergedRunAssembler
         $findings = array_merge(...array_values(array_map(fn (array $d): array => $d['findings'], $perCheck)));
         $errors = array_merge(...array_values(array_map(fn (array $d): array => $d['errors'], $perCheck)));
 
+        // Een check die niet meer draait verdwijnt uit dit rapport, en één regel
+        // minder valt niemand op. Daarom staat afwezigheid er nu als fout in.
+        $errors = array_merge($errors, $this->ontbrekendeChecks($checkRuns));
+
         return [
             // De nieuwste run bepaalt de kop; per check staat de eigen tijd in
             // check_runs, zodat een uitslag van zes dagen oud als zodanig leesbaar is.
@@ -84,6 +94,49 @@ class MergedRunAssembler
             // nieuwere is vervangen mogen niet meetellen.
             'totals' => $this->totals($findings, $errors),
             'check_runs' => $checkRuns,
+        ];
+    }
+
+    /**
+     * Checks die binnen het venster niet (of te lang niet) gedraaid hebben.
+     *
+     * @param  array<string,string>  $checkRuns
+     * @return list<array<string,mixed>>
+     */
+    private function ontbrekendeChecks(array $checkRuns): array
+    {
+        $gemist = [];
+
+        foreach ((new VerwachteChecks())->ontbrekend($checkRuns) as $rij) {
+            $gemist[] = [
+                // Eigen soort: een check die niet draaide is iets anders dan een
+                // check die draaide en een fout gaf. De eerste zegt dat er niets
+                // gemeten is, de tweede dat het meten misging.
+                'type' => self::ERROR_CHECK_ONTBREEKT,
+                'check' => $rij['check'],
+                'project' => null,
+                'message' => "check `{$rij['check']}` {$rij['reden']} — er wordt op dit punt niets gemeten",
+            ];
+        }
+
+        return $gemist;
+    }
+
+    /**
+     * @return array<string,mixed>
+     */
+    private function legeUitslag(): array
+    {
+        $errors = $this->ontbrekendeChecks([]);
+
+        return [
+            'started_at' => null,
+            'checks' => [],
+            'projects' => [],
+            'findings' => [],
+            'errors' => $errors,
+            'totals' => $this->totals([], $errors),
+            'check_runs' => [],
         ];
     }
 

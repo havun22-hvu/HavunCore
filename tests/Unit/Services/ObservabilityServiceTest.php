@@ -179,11 +179,18 @@ class ObservabilityServiceTest extends TestCase
         $this->assertSame(1, $this->service->getDashboard()['slow_queries']['last_24h']);
     }
 
-    public function test_quality_findings_returns_null_when_no_scans(): void
+    public function test_quality_findings_reports_errors_when_no_scans_have_run(): void
     {
+        // Geen scans is geen leeg dashboard: elke verwachte check ontbreekt dan,
+        // en dat hoort als fout te tellen in plaats van als nul findings.
         Storage::fake('local');
 
-        $this->assertNull($this->service->getQualityFindings());
+        $uitslag = $this->service->getQualityFindings();
+
+        $this->assertNotNull($uitslag);
+        $this->assertGreaterThan(0, $uitslag['totals']['errors']);
+        $this->assertSame([], $uitslag['findings']);
+        $this->assertNull($uitslag['last_scan_at']);
     }
 
     public function test_quality_findings_reads_latest_scan_and_filters_high_critical(): void
