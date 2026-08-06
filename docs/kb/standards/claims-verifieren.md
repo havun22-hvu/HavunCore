@@ -2,7 +2,7 @@
 title: Een claim verifieer je hélemaal, of je laat 'm staan
 type: standard
 scope: alle-projecten
-last_check: 2026-07-16
+last_check: 2026-08-06
 ---
 
 # Claims verifiëren — BINDEND voor alle Havun-projecten
@@ -41,6 +41,27 @@ Op één avond ging het drie keer mis, twee keer bij mij:
 
 Alle drie hadden dezelfde vorm: **een plausibele conclusie uit een onvolledige meting.**
 
+## De vierde manier: de notitie is ouder dan de werkelijkheid (06-08-2026)
+
+Niet "de kopie geloven" maar **het archief geloven**. Een bestand dat gisteren klopte, klopt vandaag
+niet meer — en het ziet er precies hetzelfde uit. Vier keer op één dag:
+
+| Bron | Zei | Werkelijkheid |
+|---|---|---|
+| `kb-audit-latest.md` (02-08) | 3 critical, 27 high | Verse run: **0 en 0** — al opgelost |
+| De gedeployde code | Securityfix staat live | Routecache van 2 aug; de app draaide de oude routes. **Van buiten getest: nog open** |
+| De handover | `laravel-worker` + heartbeat onbewaakt | Die check bestond al sinds juni |
+| Drie plan-MD's | `status: in uitvoering` | Werk was af, deels twee dagen eerder |
+
+**De vraag die alle vier had gevangen:** *lees ik een meting of een verslag van een meting?* Een
+rapportbestand, een handover-regel en een `status:`-veld zijn alle drie een verslag. Ze vertellen wat
+iemand ooit heeft vastgesteld, niet wat er nu waar is.
+
+**Dus:** draai het commando (`docs:audit`, niet het rapport lezen), test van buitenaf (niet
+`route:list` op de server), kijk op de machine (niet in de notitie erover). Kost seconden; de
+tegenovergestelde fout kostte vandaag vier keer werk aan iets dat al af was — en één keer een
+securityfix die als "klaar" gemeld had kunnen worden terwijl het gat nog open stond.
+
 ## Wat je concreet doet
 
 1. **Meet tot het einde.** Een run is klaar als hij dat zelf zegt. Stilte ≠ klaar. Duurt het te
@@ -53,6 +74,8 @@ Alle drie hadden dezelfde vorm: **een plausibele conclusie uit een onvolledige m
    16-07, 5,7 min)" is meer waard dan het getal alleen — de volgende hoeft het niet over te doen.
 5. **Prik door je eigen opdracht heen.** Krijg je "ruim X op" en blijkt X levend? Melden en
    stoppen, niet uitvoeren.
+6. **Een openstaand punt is een claim, geen feit.** Pak je iets op uit een handover of een plan,
+   meet dan éérst of het er nog is. De helft van wat er vandaag "open" stond, was het niet.
 
 ## Wat dit NIET is
 

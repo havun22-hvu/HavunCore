@@ -40,7 +40,7 @@ faalt `cache:clear`; na elke deploy `chown`. (Correctie op de diagnose van 02-08
 | **Blijvend-ingelogd-plan** | Geschreven, wacht op "ga maar" — `plans/blijvend-ingelogd-plan.md` |
 | **Vusista 1** | DNS `vusista.havun.nl` bij mijn.host + deploy-key `server-read` uit de (gearchiveerde) repo. De lege map `D:\GitHub\Vusista` verdwijnt zodra je dat VS Code-venster sluit |
 | **GitGuardian #33883984** | Op *Resolved* zetten |
-| **Server OS-update** | Volgende kwartaalcheck oktober 2026. Runbook: `runbooks/server-os-updates.md` |
+| **Server OS-update + herstart** | De server meldt bij inloggen `*** System restart required ***` (draait op een vervangen kernel) en biedt Ubuntu **24.04.4 LTS** aan. De herstart is klein werk, de distributie-upgrade niet — die staat als kwartaalcheck voor oktober 2026. Runbook: `runbooks/server-os-updates.md` |
 
 **Andere projecten:** wat daar openstaat — dependency-advisories, rode builds, per-project
 punten — staat in [`reference/openstaand-per-project.md`](../docs/kb/reference/openstaand-per-project.md).
