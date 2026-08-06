@@ -62,7 +62,16 @@ User: u510616
 ],
 ```
 
-## Commands
+## Commands — ontwerp, niet gebouwd
+
+> ⛔ **Geen van deze commando's bestaat.** Ze staan hier als beoogde vorm, niet als handleiding.
+> `php artisan list` kent er geen enkele. **Wat er wél draait, is het shellscript**
+> `/usr/local/bin/havun-backup.sh` uit roots crontab om 03:00 — zie
+> [Wat er nu echt draait](#wat-er-nu-echt-draait) hieronder.
+>
+> Dat stond tot 06-08-2026 alleen in een waarschuwing bovenaan, twee schermen boven dit blok. De
+> KB-auditor had het moeten melden en deed dat niet: een substring-bug verschoonde elk
+> `havun:*`-commando. Zie `patterns/bewaking-die-niets-meet.md`.
 
 ```bash
 # Backup uitvoeren
@@ -80,6 +89,16 @@ php artisan havun:backup:restore --project=havunadmin --date=2025-11-21
 # Cleanup
 php artisan havun:backup:cleanup --all --dry-run
 ```
+
+## Wat er nu echt draait
+
+| | |
+|---|---|
+| Script | `/usr/local/bin/havun-backup.sh` (700, root) |
+| Planning | roots crontab, dagelijks 03:00 |
+| Doel | Hetzner Storage Box `u510616.your-storagebox.de`, via sftp |
+| Wachtwoord | `/etc/havun-backup.env` (600, root-only) — **niet** in het script; zie `reference/security-findings.md` |
+| Controle | `qv:scan` → `backup-coverage`, leest het manifest dat het script wegschrijft |
 
 ## Compliance
 

@@ -129,6 +129,13 @@ class ZombieChecker
      * Zo ja, dan documenteert die regel het commando van dát project. De
      * projectnamen komen uit `havun-projects.php`, zodat dit meegroeit met de
      * portfolio in plaats van een lijst te worden die verjaart.
+     *
+     * **Het commando telt niet als projectnaam.** Er staat een project `havun`
+     * in het register, en met een kale substring-vergelijking verschoont
+     * `havun:backup:restore` daarmee zichzelf: de naam zit ín het commando.
+     * Gemeten 06-08-2026: vier verdwenen `havun:backup:*`-commando's stonden
+     * zo onopgemerkt in `backup-system.md`. Daarom knippen we het commando uit
+     * de regel vóór we naar projectnamen zoeken, en eisen we een woordgrens.
      */
     private function hoortBijAnderProject(string $content, string $signature): bool
     {
@@ -144,8 +151,11 @@ class ZombieChecker
                 continue;
             }
 
+            $zonderCommando = str_replace("artisan {$signature}", '', $regel);
+
             foreach ($anderen as $project) {
-                if (stripos($regel, (string) $project) !== false) {
+                $naam = preg_quote((string) $project, '/');
+                if (preg_match('/(?<![a-z0-9-])' . $naam . '(?![a-z0-9-])/i', $zonderCommando) === 1) {
                     return true;
                 }
             }

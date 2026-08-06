@@ -72,4 +72,83 @@ class DocsAuditorTest extends TestCase
         $this->assertGreaterThan(0, $result['totals']['critical']);
         $this->assertGreaterThan(0, $result['totals']['high']);
     }
+
+    public function test_a_command_is_not_excused_by_a_project_name_hiding_inside_it(): void
+    {
+        // `havun` is a registered project, and the "does this belong to another
+        // project?" check did a bare substring match on the line. So every
+        // havun:* command excused itself, and four dead havun:backup:* commands
+        // sat in backup-system.md unreported.
+        File::put($this->tmp . '/docs/backup.md', <<<'MD'
+---
+title: Backup
+type: runbook
+scope: havuncore
+---
+
+# Backup
+
+Herstellen doe je met `php artisan havun:backup:restore`.
+MD);
+
+        $result = (new DocsAuditor())->audit([$this->tmp . '/docs'], base_path());
+
+        $zombies = array_filter(
+            $result['findings'],
+            fn ($f) => ($f['detector'] ?? '') === 'zombie',
+        );
+        $this->assertNotEmpty($zombies, 'A dead havun:* command must still be reported.');
+    }
+
+    public function test_a_command_really_belonging_to_another_project_is_still_excused(): void
+    {
+        // The exemption itself is sound: a doc may name another project's
+        // command. That must keep working after tightening the match.
+        File::put($this->tmp . '/docs/headers.md', <<<'MD'
+---
+title: Headers
+type: reference
+scope: havuncore
+---
+
+# Headers
+
+Draai `php artisan gtag:refresh` (zie Herdenkingsportaal) na een wijziging.
+MD);
+
+        $result = (new DocsAuditor())->audit([$this->tmp . '/docs'], base_path());
+
+        $zombies = array_filter(
+            $result['findings'],
+            fn ($f) => ($f['detector'] ?? '') === 'zombie',
+        );
+        $this->assertSame([], $zombies, "Another project's command is correct documentation.");
+    }
+
+    public function test_a_normal_doc_still_gets_its_zombie_references_flagged(): void
+    {
+        // The exemption is for decisions/, not a way to switch the check off.
+        File::put($this->tmp . '/docs/runbook.md', <<<'MD'
+---
+title: Runbook
+type: runbook
+scope: havuncore
+---
+
+# Runbook
+
+Draai `php artisan qv:scan-residu` om te starten.
+MD);
+
+        // Tegen de echte codebase, niet tegen de lege tijdelijke map: alleen dan
+        // kan de checker daadwerkelijk zoeken, en dat is hoe hij in productie
+        // draait. `havun:orchestrate` is in mei verwijderd.
+        $result = (new DocsAuditor())->audit([$this->tmp . '/docs'], base_path());
+
+        $zombies = array_filter(
+            $result['findings'],
+            fn ($f) => ($f['detector'] ?? '') === 'zombie',
+        );
+        $this->assertNotEmpty($zombies, 'A runbook pointing at a dead command is still rot.');
+    }
 }
