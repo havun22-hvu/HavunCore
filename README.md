@@ -242,7 +242,7 @@ HavunCore/
 **Essential Guides:**
 - 🤖 [CLAUDE.md](CLAUDE.md) - Claude Code session guide
 - 📖 [INDEX.md](INDEX.md) - Complete documentation index
-- 💾 [Backup System](docs/backup/) - Backup documentation
+- 💾 [Backup System](docs/kb/reference/backup-system.md) - Opzet en wat er echt draait, plus het [runbook](docs/kb/runbooks/backup.md) voor de dagelijkse handelingen
 - 🔌 [API Reference](docs/kb/reference/) - API docs (Task Queue, Vault)
 
 ---

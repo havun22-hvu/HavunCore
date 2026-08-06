@@ -48,12 +48,23 @@ samenvoeging, zodat ze niet opnieuw uiteen kunnen lopen.
 **Omkeerpunt:** komt er een check met een interval langer dan een week, dan is een vast venster te
 smal en moet het venster per check uit zijn eigen frequentie volgen.
 
-## Nog niet in deze fix
+## Nog open
 
 - **Een check die te lang niet gedraaid heeft, meldt zich niet.** Valt hij helemaal weg uit het
   venster, dan verdwijnt hij stil uit het rapport — dezelfde faalmodus als
   `plans/registry-drift-check-plan.md` beschrijft, nu op de scheduler. Volgende stap: de verwachte
   frequentie per check vastleggen en afwezigheid als finding melden.
-- **De code-checks meten op de server niets** (`composer`, `npm`, `cargo`): ze gebruiken `path` uit
-  `havun-projects.php`, en dat is Henks Windows-pad. Aparte beslissing — waar horen die te draaien.
-- **`serverHealth`** gaat via SSH naar `root@` en valt op de server om, net als de backupcheck deed.
+
+  Dit is het laatste onbewaakte gat van deze soort. Vergelijk `check_supervisor` (06-08): daar was
+  "nul processen" ook groen tot het een `critical` werd. Zie `patterns/bewaking-die-niets-meet.md`.
+
+## Opgelost op 03/04-08 (stond hier als "nog niet in deze fix")
+
+- ~~**De code-checks meten op de server niets**~~ — `composer`/`npm`/`cargo` gebruikten Henks
+  Windows-pad op Linux. Nu wint het pad dat op de draaiende machine bestaat (`server_path` **én**
+  `remote_path`). Van 40 errors naar 0.
+- ~~**`serverHealth` gaat via SSH naar `root@`**~~ — `runRemote()` draait lokaal als de host deze
+  machine is. Geverifieerd met een kunstmatige drempel.
+
+Laatste scan: `critical 0 | errors 0`. De 23 high zijn echte dependency-advisories in andere
+projecten, geen meetfouten — die staan in de handover.

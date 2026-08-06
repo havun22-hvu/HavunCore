@@ -3,7 +3,7 @@ title: Plan — V&K kiest zijn checks op de stack van het project
 type: reference
 scope: havuncore
 last_check: 2026-07-31
-status: in uitvoering
+status: af — gebouwd en gemeten 31-07 (11 tests in EcosystemDetectionTest)
 ---
 
 # V&K kiest zijn checks op de stack, en zwijgt nooit over wat het niet meet

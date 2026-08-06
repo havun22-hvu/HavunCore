@@ -2,7 +2,7 @@
 title: AutoFix-errors laten oppakken door Claude CLI op Henks PC
 type: plan
 scope: havuncore
-status: in uitvoering
+status: gebouwd — wacht op de eerste echte proefrit
 last_updated: 2026-08-06
 ---
 

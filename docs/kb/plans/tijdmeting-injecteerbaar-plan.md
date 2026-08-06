@@ -2,8 +2,8 @@
 title: Tijdmeting injecteerbaar maken (AIProxyService)
 type: plan
 scope: havuncore
-status: in uitvoering
-last_updated: 2026-08-05
+status: af — alle duurmetingen op één idioom (06-08)
+last_updated: 2026-08-06
 ---
 
 # Tijdmeting injecteerbaar maken
