@@ -10,9 +10,9 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel, 1417 tests groen, KB-audit 0 high. **Server:** disk 68%,
-prod draait overal, 0 dirty checkouts, 0 stashes. **Eén commit wacht op deploy** (monitoring, geen
-migraties); de rest staat live.
+**Branch:** master · **Status:** stabiel, 1449 tests groen, KB-audit 0 critical / 0 high (verse run
+06-08; het rapportbestand was van 02-08 en dus achterhaald). **Server:** disk 68%, prod draait
+overal, 0 dirty checkouts, 0 stashes. **Alles staat live** (06-08, geen migraties).
 
 **Afgerond 01/02-08:** drie secrets geroteerd en twee backupgaten gedicht, restores getest.
 Volledig: `runbooks/secrets-veilig-ontvangen.md`, `reference/databases-op-de-server.md`.
@@ -83,9 +83,10 @@ rood gezien. Regel: `patterns/model-id-verloopt.md`.
 
 - **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
-  Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt. **Sinds 05-08 urgenter:** de
-  AI-proxy vuurt nu zelf een `critical` alert bij een verdwenen model — precies het soort melding
-  dat je wilt zien zonder in te loggen.
+  **Sinds 05-08 urgenter:** de AI-proxy vuurt nu zelf een `critical` alert bij een verdwenen
+  model — precies het soort melding die je wilt zien zonder in te loggen. (`laravel-worker` +
+  `toernooi-heartbeat` wórden inmiddels wel bewaakt — 06-08 uitgebreid naar alle niet-draaiende
+  statussen, en nul processen is nu een alarm in plaats van groen.)
 - **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** Wéér last? Check
   `getRegistration()` op een `waiting`. `plans/webapp-sw-update-fix.md`. Vitest daar geblokkeerd
   door Avast, niet de registry — [[env-ssl-interception]].

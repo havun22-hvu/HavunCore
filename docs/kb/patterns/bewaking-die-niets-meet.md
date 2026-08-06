@@ -46,6 +46,23 @@ dan **404, niet 403**, dus die repo's verdwenen zonder een woord.
 Dit soort interactie zie je niet in een test en niet in code review. **Je ziet het door de check te
 draaien op de machine waar hij hoort te draaien, en de uitkomst te vergelijken met wat je verwacht.**
 
+## Een filter dat te smal staat (06-08-2026)
+
+`check_supervisor` in `havun-health-check.sh` alarmeerde op `FATAL|BACKOFF`. Van de acht statussen
+die supervisor kent gingen **`STOPPED`, `EXITED` en `UNKNOWN` er stil doorheen** — een worker die
+gestopt is of geëindigd zonder herstart, meldde niets. En gaf `supervisorctl` niets terug (supervisor
+plat, of het laatste proces uit de config), dan was `bad` leeg en schreef de check
+*"supervisor-workers draaien"*. **Nul gecontroleerd las als groen**, hetzelfde als bij `actions:watch`.
+
+Nu: alles wat niet `RUNNING`, `STARTING` of `STOPPING` is telt als fout, en nul processen is een
+`critical` in plaats van een groen vinkje. Alle acht statussen plus de lege uitvoer zijn droog
+doorgerekend vóór de plaatsing — een bewakingsfout is stil, dus die zie je niet vanzelf.
+
+**Randgeval bij het uitrollen:** het bestand ging via Windows over en kreeg CRLF mee, waarmee het
+script op de server onbruikbaar werd (`/bin/bash^M: bad interpreter`). Herstel vanuit de backup,
+daarna `sed -i 's/\r$//'` op de server vóór de installatie. **Een bewakingsscript dat niet meer
+start, meldt ook niets.**
+
 ## Hoe je het vindt
 
 - Draai elke check handmatig op de doelmachine en tel wat hij *gemeten* heeft, niet wat hij vond.
