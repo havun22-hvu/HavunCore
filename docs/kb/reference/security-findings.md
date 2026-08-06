@@ -11,7 +11,7 @@ last_check: 2026-05-02
 > **Bron voor entries:** `composer audit`, `npm audit`, Mozilla Observatory, SSL Labs, OWASP ZAP, pentest, GHSA notifications, ad-hoc server-sweeps.
 > **Werkwijze:** zie `runbooks/security-findings-logging.md`.
 
-## 2026-08-06 — Hetzner-backupwachtwoord wereldleesbaar (server) — ✅ GEDICHT, rotatie open
+## 2026-08-06 — Hetzner-backupwachtwoord wereldleesbaar (server) — ✅ AFGEROND
 
 **Bron:** openstaand handover-punt opgepakt; ernst bleek groter dan genoteerd.
 
@@ -19,7 +19,7 @@ last_check: 2026-05-02
 |---|---|---|
 | `HETZNER_PASS` in platte tekst in `/usr/local/bin/havun-backup.sh`, **mode 755** | **High** | ✅ verplaatst naar `/etc/havun-backup.env` (600), script naar 700 |
 | Tweede kopie in `/usr/local/bin/havun-backup.sh.bak-20260727-201623`, óók 755 | **High** | ✅ waarde gestript, mode 600 |
-| 13 kopieën in `/root/backups/**` | Laag | Afgeschermd: `/root` is 700. Waarde gestript uit de twee scriptbackups |
+| 13 kopieën in `/root/backups/**` | Laag | Afgeschermd: `/root` is 700; waarde inmiddels overal gestript |
 
 **Wat het echt betekende:** niet "een wachtwoord in een script", maar **`www-data` kon het lezen** —
 en die gebruiker draait de webapplicatie. Een lek in de app gaf daarmee toegang tot de offsite
@@ -35,11 +35,23 @@ zoekactie had een leeg patroon en matchte dus alles. Opnieuw gedaan met `grep -F
 **Verificatie:** verbinding met de Storage Box getest ná de wijziging (`sftp ls backups` →
 `backups/2026`). Een backupscript dat je "verbetert" maar breekt, is erger dan het probleem.
 
-> ⚠️ **Rotatie nog open — het wachtwoord is in een transcript beland.** Bij de eerste poging schreef
-> ik de waarde ongequoteerd naar het env-bestand; het wachtwoord bevat een `#`, waardoor de shell
-> een deel ervan als commando uitvoerde en in de foutmelding echode. Behandelen als gecompromitteerd:
-> **roteren in de Hetzner Robot** (Henks account), daarna `/etc/havun-backup.env` bijwerken.
-> Les: een secret dat je verplaatst, quote je — `printf '%s'` zonder quotes is geen veilige opslag.
+**Rotatie afgerond 06-08, 21:5x.** Het wachtwoord was in een transcript beland: bij het verplaatsen
+schreef ik de waarde ongequoteerd weg, en het `#` erin liet de shell een deel ervan uitvoeren en
+echoën. Nieuw wachtwoord gezet via Hetzner Console → Storage Box → *Reset password*, daarna
+`scripts/roteer-hetzner-wachtwoord.sh` (verborgen invoer, test vóór vervangen, rollback bij falen).
+
+**Geverifieerd na afloop:** het oude wachtwoord wordt door Hetzner geweigerd, het nieuwe werkt
+(`sftp ls backups` → `backups/2026`), en de nieuwe waarde staat nergens buiten
+`/etc/havun-backup.env`. De oude waarde is uit 17 backupbestanden gestript.
+
+> **Kanttekening bij het opruimen:** het strip-patroon matchte álle `HETZNER_*`-regels, dus in 13
+> `.env`-backups gingen ook `HETZNER_STORAGE_HOST` en `_USERNAME` mee. Geen geheimen, en hersteld —
+> maar het is precies het soort schade waar je een backup niet voor opent. Bij het schoonvegen van
+> een secret: match op de sleutel die je bedoelt, niet op het voorvoegsel.
+
+**Lessen:** een secret dat je verplaatst, quote je met `printf %q`; een controle op een secret mag
+nooit meer kunnen tonen dan een lengte of een exitcode. Beide staan nu in
+`runbooks/secrets-veilig-ontvangen.md` als methode D.
 
 ## 2026-08-05 — Taakwachtrij publiek beschrijfbaar (HavunCore) — ✅ GEDICHT 06-08
 
