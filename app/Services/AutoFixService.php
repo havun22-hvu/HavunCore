@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\AutofixProposal;
+use App\Models\ClaudeTask;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -85,8 +86,97 @@ class AutoFixService
                 'error' => $e->getMessage(),
             ]);
 
+            $this->escalateToQueue($project, $exceptionClass, $message, $file, $line, $e);
+
             return null;
         }
+    }
+
+    /**
+     * Hand the error to the task queue so Claude CLI can pick it up.
+     *
+     * Only when AutoFix could not produce a proposal itself — a successful
+     * analysis already has an owner. Deliberately best-effort: a queue that is
+     * unreachable must never turn a failed analysis into a second failure.
+     */
+    protected function escalateToQueue(
+        string $project,
+        string $exceptionClass,
+        string $message,
+        ?string $file,
+        ?int $line,
+        \Throwable $cause,
+    ): void {
+        if (! in_array($project, (array) config('autofix.escalate_projects', []), true)) {
+            return;
+        }
+
+        try {
+            // One open task per distinct error. On 2026-08-05 the same broken
+            // model failed 46 calls in a row; without this the queue would have
+            // filled with 46 copies of one problem.
+            $alreadyQueued = ClaudeTask::where('project', $project)
+                ->whereIn('status', ['pending', 'running'])
+                ->where('metadata->signature', $this->errorSignature($exceptionClass, $file, $line))
+                ->exists();
+
+            if ($alreadyQueued) {
+                return;
+            }
+
+            ClaudeTask::create([
+                'project' => $project,
+                'task' => $this->escalationInstruction($exceptionClass, $message, $file, $line, $cause),
+                'status' => 'pending',
+                'priority' => 'normal',
+                'created_by' => 'autofix',
+                'metadata' => [
+                    'signature' => $this->errorSignature($exceptionClass, $file, $line),
+                    'exception_class' => $exceptionClass,
+                    'file' => $file,
+                    'line' => $line,
+                    'analysis_error' => $cause->getMessage(),
+                ],
+            ]);
+
+            Log::info("AutoFix: escalated to the task queue for {$project}", [
+                'exception' => $exceptionClass,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning("AutoFix: escalation failed for {$project}", ['error' => $e->getMessage()]);
+        }
+    }
+
+    protected function errorSignature(string $exceptionClass, ?string $file, ?int $line): string
+    {
+        return hash('sha256', implode('|', [$exceptionClass, $file ?? '', $line ?? '']));
+    }
+
+    /**
+     * The instruction a person (or an agent) reads. It has to stand on its own:
+     * whoever opens this task has not seen the log line that produced it.
+     */
+    protected function escalationInstruction(
+        string $exceptionClass,
+        string $message,
+        ?string $file,
+        ?int $line,
+        \Throwable $cause,
+    ): string {
+        $location = $file ? $file . ($line ? ":{$line}" : '') : 'onbekend';
+
+        return implode("\n", [
+            "AutoFix kwam er zelf niet uit. Onderzoek deze fout en stel een fix voor.",
+            '',
+            "Exception: {$exceptionClass}",
+            "Bericht:   {$message}",
+            "Locatie:   {$location}",
+            '',
+            "Waarom AutoFix afhaakte: {$cause->getMessage()}",
+            '',
+            'Werk op een branch en lever een PR op. Niet naar master pushen, geen migraties draaien,',
+            'de .env niet aanraken. Zie runbooks/agent-grenzen.md.',
+        ]);
     }
 
     /**

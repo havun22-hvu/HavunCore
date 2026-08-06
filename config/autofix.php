@@ -49,4 +49,20 @@ return [
      * HavunCore expose't /autofix/{token} read-only voor de eigenaar.
      */
     'review_url_pattern' => env('AUTOFIX_REVIEW_URL', 'https://havuncore.havun.nl/autofix/{token}'),
+
+    /*
+     * Projecten waarvoor een MISLUKTE analyse een taak in de Claude-wachtrij
+     * achterlaat, zodat Claude CLI hem op kan pakken. Komt de analyse er zelf
+     * uit, dan gebeurt dit niet — dan is er een proposal.
+     *
+     * Leeg = niemand. Een lege lijst mag nooit "iedereen" betekenen: dit zet
+     * werk klaar voor een agent die code aanraakt.
+     *
+     * Besluit 06-08-2026: alleen de twee projecten waar AutoFix draait.
+     * Plan: plans/autofix-naar-claude-cli-plan.md
+     */
+    'escalate_projects' => array_filter(explode(',', (string) env(
+        'AUTOFIX_ESCALATE_PROJECTS',
+        'judotoernooi,herdenkingsportaal'
+    ))),
 ];

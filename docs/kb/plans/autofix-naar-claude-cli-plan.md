@@ -2,7 +2,7 @@
 title: AutoFix-errors laten oppakken door Claude CLI op Henks PC
 type: plan
 scope: havuncore
-status: wacht op besluit
+status: in uitvoering
 last_updated: 2026-08-06
 ---
 
@@ -66,34 +66,27 @@ De bestaande `claude-task-poller.sh` is bijna wat we nodig hebben, maar hij gaat
 Linux-serverpaden (`/var/www/...`). De lokale variant kent `D:\GitHub\<project>` en draait als
 gewone taak op Windows, niet als systemd-unit.
 
-## Beslispunten — jouw keuze, hier vastgelegd
+## Besluiten (Henk, 06-08-2026)
 
-**1. Mag Claude CLI autonoom op een taak draaien?**
-Aanbeveling: ja, binnen de grenzen die AutoFix al hanteert — werk op een branch, nooit direct naar
-productie, en een PR als eindresultaat. De taak beschrijft de fout; de agent stelt een fix voor die
-jij beoordeelt. Wat hij níét mag: pushen naar `master`, migraties draaien, `.env` aanraken.
+**1. Mag Claude CLI autonoom op een taak draaien? → ja**, binnen de grenzen die AutoFix al hanteert:
+werk op een branch, een PR als eindresultaat, en jij beoordeelt. Níét toegestaan: pushen naar
+`master`, migraties draaien, `.env` aanraken.
 
-**2. De drie kapotte units: uitzetten of repareren?**
-Aanbeveling: **eerst uitzetten** (`systemctl disable --now`), los van dit plan. Ze doen niets, ze
-herstarten 137k keer, en repareren heeft pas zin als bekend is of de poller op de server óf op jouw
-PC hoort. Systemd raak ik niet aan zonder jouw expliciete go.
+**2. De drie kapotte units → uitgezet** (`systemctl disable --now`, 06-08). Stonden op 141.025
+herstarts. Niet gerepareerd: de poller hoort op Henks PC, niet op de server.
 
-**3. Alleen HavunCore, of alle projecten?**
-Aanbeveling: begin met één project. AutoFix draait op JudoToernooi en Herdenkingsportaal; die twee
-leveren de echte errors, dus daar begint de waarde. Uitbreiden is later een regel config.
+**3. Welk project eerst? → JudoToernooi en Herdenkingsportaal**, want daar draait AutoFix en daar
+komen de echte fouten vandaan. Uitbreiden is later een regel config.
 
-## Stappen zodra de besluiten er zijn
+## Stappen
 
-| # | Wat | Raakt |
+| # | Wat | Status |
 |---|---|---|
-| 1 | Bearer-token + rate limiting op `/api/claude/tasks` | `routes/api.php`, nieuwe middleware, token in de Vault |
-| 2 | Kapotte units uitzetten | Server (systemd — jouw go) |
-| 3 | AutoFix maakt een `ClaudeTask` aan bij een mislukte analyse | `AutoFixService` |
-| 4 | Lokale poller voor Windows + Claude CLI | Nieuw script, buiten de webapp |
-| 5 | Grenzen vastleggen die de agent niet mag overschrijden | Runbook + de poller zelf |
-
-Stap 1 gaat niet mee in de trein: die staat op zichzelf en hoort sowieso gefixt, of dit plan nu
-doorgaat of niet.
+| 1 | Bearer-token + rate limiting op `/api/claude/tasks` | ✅ 06-08, `081ffa7` — van buitenaf geverifieerd |
+| 2 | Kapotte units uitzetten | ✅ 06-08 |
+| 3 | AutoFix maakt een `ClaudeTask` aan bij een mislukte analyse | ⏳ |
+| 4 | Lokale poller voor Windows + Claude CLI | ⏳ |
+| 5 | Grenzen vastleggen die de agent niet mag overschrijden | ⏳ |
 
 ## Aanname en omkeerpunt
 
