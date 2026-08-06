@@ -47,7 +47,7 @@ class AllExperimentsSmokeTest extends TestCase
         $this->assertTrue(is_subclass_of($class, ChaosExperiment::class),
             "{$class} must extend ChaosExperiment.");
 
-        $experiment = new $class();
+        $experiment = app($class);
         $result = $experiment->execute();
 
         $this->assertIsArray($result);

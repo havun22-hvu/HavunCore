@@ -2,6 +2,7 @@
 
 namespace Havun\Core\Services;
 
+use App\Support\Timing\Stopwatch;
 use Havun\Core\Models\BackupLog;
 use Havun\Core\Contracts\BackupStrategyInterface;
 use Havun\Core\Strategies\LaravelAppBackupStrategy;
@@ -13,7 +14,7 @@ class BackupOrchestrator
 {
     protected array $strategies = [];
 
-    public function __construct()
+    public function __construct(protected Stopwatch $stopwatch)
     {
         // Register backup strategies
         $this->strategies = [
@@ -74,7 +75,7 @@ class BackupOrchestrator
      */
     protected function backupSingleProject(string $project): array
     {
-        $startTime = microtime(true);
+        $measurement = $this->stopwatch->start();
 
         Log::info("========== Starting backup for: {$project} ==========");
 
@@ -113,7 +114,8 @@ class BackupOrchestrator
         @unlink($backupPath);
         @unlink($checksumFile);
 
-        $duration = round(microtime(true) - $startTime, 2);
+        // Seconden, twee decimalen — zoals dit altijd gelogd is.
+        $duration = round($measurement->elapsedSeconds(), 2);
 
         // 7. Log to database
         $backupLog = BackupLog::create([

@@ -3,6 +3,7 @@
 namespace App\Http\Middleware;
 
 use App\Models\RequestMetric;
+use App\Support\Timing\Stopwatch;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -16,7 +17,7 @@ class RequestMetricsMiddleware
 
     protected array $excludedPaths;
 
-    public function __construct()
+    public function __construct(private Stopwatch $stopwatch)
     {
         $this->enabled = config('observability.enabled', true);
         $this->samplingRate = (float) config('observability.sampling_rate', 1.0);
@@ -25,7 +26,7 @@ class RequestMetricsMiddleware
 
     public function handle(Request $request, Closure $next): Response
     {
-        $startTime = microtime(true);
+        $measurement = $this->stopwatch->start();
 
         $response = $next($request);
 
@@ -34,7 +35,7 @@ class RequestMetricsMiddleware
                 return $response;
             }
 
-            $responseTimeMs = (int) round((microtime(true) - $startTime) * 1000);
+            $responseTimeMs = $measurement->elapsedMs();
 
             RequestMetric::create([
                 'project' => config('observability.project', 'havuncore'),

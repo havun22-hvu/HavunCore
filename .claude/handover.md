@@ -81,10 +81,9 @@ rood gezien. Regel: `patterns/model-id-verloopt.md`.
 
 ## Open — te doen
 
-- **Vier andere duurmetingen staan nog op `microtime(true)`** — `RequestMetricsMiddleware`,
-  `Chaos\ChaosExperiment` (2×), `CriticalPaths\TestRunner`. Migreren naar `App\Support\Timing\
-  Stopwatch` in een eigen commit; geen haast, geen van hen is flaky. `plans/tijdmeting-
-  injecteerbaar-plan.md`.
+- **`AIProxyService` construeert zijn eigen `CircuitBreaker`** — daardoor graaien twee tests via
+  `Cache::get('circuit_breaker:…')` in de interne staat. Zelfde soort schuld als de tijdmeting die
+  06-08 is opgeruimd; injecteren lost het op. `plans/tijdmeting-injecteerbaar-plan.md`.
 - **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
   Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt.

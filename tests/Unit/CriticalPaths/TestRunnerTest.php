@@ -16,7 +16,7 @@ class TestRunnerTest extends TestCase
             ->andReturn(0);
         Artisan::shouldReceive('output')->once()->andReturn("OK (1 test)\n");
 
-        $result = (new TestRunner)->run('SomeTest');
+        $result = app(TestRunner::class)->run('SomeTest');
 
         $this->assertSame('SomeTest', $result['filter']);
         $this->assertSame(0, $result['exit_code']);
@@ -32,7 +32,7 @@ class TestRunnerTest extends TestCase
             ->andReturn(1);
         Artisan::shouldReceive('output')->once()->andReturn("Failed: boom\n");
 
-        $result = (new TestRunner)->run('BrokenTest');
+        $result = app(TestRunner::class)->run('BrokenTest');
 
         $this->assertSame(1, $result['exit_code']);
         $this->assertFalse($result['passed']);

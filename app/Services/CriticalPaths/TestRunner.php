@@ -2,6 +2,7 @@
 
 namespace App\Services\CriticalPaths;
 
+use App\Support\Timing\Stopwatch;
 use Illuminate\Support\Facades\Artisan;
 
 /**
@@ -11,6 +12,10 @@ use Illuminate\Support\Facades\Artisan;
  */
 class TestRunner
 {
+    public function __construct(private Stopwatch $stopwatch)
+    {
+    }
+
     /**
      * Filter is typically the class name derived from the test file path,
      * e.g. `tests/Feature/VaultControllerTest.php` → `VaultControllerTest`.
@@ -19,12 +24,12 @@ class TestRunner
      */
     public function run(string $filter): array
     {
-        $start = microtime(true);
+        $measurement = $this->stopwatch->start();
         $exitCode = Artisan::call('test', [
             '--filter' => $filter,
             '--no-coverage' => true,
         ]);
-        $durationMs = (int) round((microtime(true) - $start) * 1000);
+        $durationMs = $measurement->elapsedMs();
 
         return [
             'filter' => $filter,

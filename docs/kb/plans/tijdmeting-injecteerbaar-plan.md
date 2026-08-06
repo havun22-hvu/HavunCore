@@ -56,21 +56,30 @@ Met een gestuurde klok kan de duur zó groot zijn dat de rondingsmutanten niet m
 falen; de oude tests bleven bij dezelfde mutant groen. Dat verschil is het bewijs.
 Regel: `patterns/test-rood-gezien.md`.
 
-## Volgende commit — wel gepland, niet hier
+## Afgerond 06-08: alle duurmetingen op één idioom
 
-Vijf andere plekken meten duur met `microtime(true)`: `RequestMetricsMiddleware`,
-`Chaos\ChaosExperiment` (2×, waarvan `measure()` door ~15 experimentklassen wordt gebruikt),
-`CriticalPaths\TestRunner` en `src/Services/BackupOrchestrator`.
+De vijf resterende plekken zijn gemigreerd — `RequestMetricsMiddleware`, `Chaos\ChaosExperiment`
+(2×, waaronder `measure()` dat ~15 experimentklassen bedienen), `CriticalPaths\TestRunner` en
+`src/Services/BackupOrchestrator`. **`microtime(true)` komt in `app/` en `src/` niet meer voor als
+duurmeting.**
 
-**Niet "buiten scope omdat ze geen flaky test hebben"** — dat filter is verkeerd. De NTP-terugsprong
-hierboven geldt één-op-één voor `RequestMetricsMiddleware`, dat zijn duur in metrics wegschrijft;
-juist dáár valt niets om, want er is geen test die het zou merken. Ze wachten omdat het een eigen
-commit is, niet omdat het geen probleem is.
+Twee dingen die daarbij bleken:
 
-`ChaosExperiment::measure()` hoort daarbij *op* `Measurement` te gaan draaien, niet ernaast te
-blijven bestaan — anders staan er drie idiomen naast elkaar en kopieert de volgende de buurman.
+- **`measure()` rondde af op 2 decimalen.** Dat stilzwijgend naar hele milliseconden brengen zou
+  elk chaos-rapport veranderen, dus `Measurement` kreeg `elapsedMsPrecise()` erbij. De *default*
+  van die methode is getest, want `measure()` roept hem zonder argument aan — een mutant die de
+  default van 2 naar 3 zette overleefde eerst.
+- **De experimenten komen allemaal uit de container en geen enkele subklasse heeft een eigen
+  constructor**, dus injectie op de abstracte klasse bereikte alle vijftien zonder ze aan te raken.
+  Drie tests die `new $class()` deden gebruiken nu `app($class)` — die testen daarmee ook het pad
+  dat productie echt loopt.
 
-Los daarvan, zelfde soort schuld en zichtbaar geworden in deze change: `AIProxyService` construeert
-zijn `CircuitBreaker` nog steeds zelf (`new CircuitBreaker('claude_api')`, één regel boven de
-geïnjecteerde stopwatch). Daardoor moeten twee tests via `Cache::get('circuit_breaker:…')` in de
-interne staat graaien — dezelfde omweg als de `usleep()` die hier net verdween.
+Vijf mutanten opnieuw geverifieerd na de migratie (`*999`, `floor`, `ceil`, `- → +`, en de default
+van `elapsedMsPrecise`): alle vijf dood.
+
+## Nog open — zelfde soort schuld
+
+`AIProxyService` construeert zijn `CircuitBreaker` nog steeds zelf (`new CircuitBreaker('claude_api')`,
+één regel boven de geïnjecteerde stopwatch). Daardoor moeten twee tests via
+`Cache::get('circuit_breaker:…')` in de interne staat graaien — dezelfde omweg als de `usleep()`
+die hier verdween.

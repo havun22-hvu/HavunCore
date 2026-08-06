@@ -58,6 +58,26 @@ class MeasurementTest extends TestCase
         $this->assertSame($expectedMs, $measurement->elapsedMs());
     }
 
+    public function test_it_can_report_fractional_milliseconds(): void
+    {
+        // Chaos experiments report latency with two decimals. Rounding that to
+        // whole milliseconds first would throw the detail away, so they need
+        // their own accessor rather than a different scale factor.
+        $stopwatch = new FakeStopwatch();
+        $measurement = $stopwatch->start();
+
+        $stopwatch->advance(0.0123456);
+
+        $this->assertSame(12.35, $measurement->elapsedMsPrecise(2));
+        $this->assertSame(12.3, $measurement->elapsedMsPrecise(1));
+        // ChaosExperiment::measure() calls this without an argument, so the
+        // default is part of the contract: changing it silently changes the
+        // shape of every chaos report.
+        $this->assertSame(12.35, $measurement->elapsedMsPrecise());
+        // The whole-millisecond accessor is unaffected by the precise one.
+        $this->assertSame(12, $measurement->elapsedMs());
+    }
+
     public function test_the_system_stopwatch_only_moves_forward(): void
     {
         $measurement = (new SystemStopwatch())->start();

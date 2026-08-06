@@ -29,4 +29,13 @@ final class Measurement
     {
         return (int) round($this->elapsedSeconds() * 1000);
     }
+
+    /**
+     * Milliseconds with decimals, for callers that report finer latency than a
+     * whole millisecond — chaos experiments, for one.
+     */
+    public function elapsedMsPrecise(int $decimals = 2): float
+    {
+        return round($this->elapsedSeconds() * 1000, $decimals);
+    }
 }

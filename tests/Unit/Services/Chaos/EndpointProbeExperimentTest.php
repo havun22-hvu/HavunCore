@@ -16,7 +16,7 @@ class EndpointProbeExperimentTest extends TestCase
     {
         config()->set('chaos.endpoints', []);
 
-        $result = (new EndpointProbeExperiment())->execute();
+        $result = app(EndpointProbeExperiment::class)->execute();
 
         $this->assertSame('Endpoint Probe', $result['experiment']);
         $this->assertSame(
@@ -34,7 +34,7 @@ class EndpointProbeExperimentTest extends TestCase
         ]);
         Http::fake(['*' => Http::response('OK', 200)]);
 
-        $result = (new EndpointProbeExperiment())->execute();
+        $result = app(EndpointProbeExperiment::class)->execute();
 
         $this->assertSame('pass', $result['results']['status']);
         $this->assertSame('pass', $result['results']['checks']['havuncore']['status']);
@@ -47,7 +47,7 @@ class EndpointProbeExperimentTest extends TestCase
         ]);
         Http::fake(['*' => Http::response('Server Error', 500)]);
 
-        $result = (new EndpointProbeExperiment())->execute();
+        $result = app(EndpointProbeExperiment::class)->execute();
 
         $this->assertSame('warn', $result['results']['status']);
         $this->assertSame('warn', $result['results']['checks']['broken']['status']);
@@ -63,7 +63,7 @@ class EndpointProbeExperimentTest extends TestCase
             '*' => fn () => throw new \Exception('Connection refused'),
         ]);
 
-        $result = (new EndpointProbeExperiment())->execute();
+        $result = app(EndpointProbeExperiment::class)->execute();
 
         $this->assertSame('fail', $result['results']['status']);
         $this->assertSame('fail', $result['results']['checks']['down']['status']);
@@ -76,7 +76,7 @@ class EndpointProbeExperimentTest extends TestCase
         // execute() must catch it and put status=error in the results.
         config()->set('chaos.endpoints', 'not-an-array');
 
-        $result = (new EndpointProbeExperiment())->execute();
+        $result = app(EndpointProbeExperiment::class)->execute();
 
         $this->assertSame('error', $result['results']['status']);
         $this->assertArrayHasKey('error', $result['results']);

@@ -2,6 +2,8 @@
 
 namespace App\Services\Chaos;
 
+use App\Support\Timing\Stopwatch;
+
 /**
  * Base class for chaos experiments.
  *
@@ -11,7 +13,13 @@ abstract class ChaosExperiment
 {
     protected array $results = [];
 
-    protected float $startTime;
+    /**
+     * Every subclass is resolved through the container and none defines its own
+     * constructor, so injecting here reaches all of them without edits.
+     */
+    public function __construct(protected Stopwatch $stopwatch)
+    {
+    }
 
     abstract public function name(): string;
 
@@ -24,7 +32,7 @@ abstract class ChaosExperiment
      */
     public function execute(): array
     {
-        $this->startTime = microtime(true);
+        $measurement = $this->stopwatch->start();
 
         try {
             $this->results = $this->run();
@@ -38,7 +46,7 @@ abstract class ChaosExperiment
         return [
             'experiment' => $this->name(),
             'hypothesis' => $this->hypothesis(),
-            'duration_ms' => (int) round((microtime(true) - $this->startTime) * 1000),
+            'duration_ms' => $measurement->elapsedMs(),
             'results' => $this->results,
         ];
     }
@@ -48,7 +56,7 @@ abstract class ChaosExperiment
      */
     protected function measure(callable $fn): array
     {
-        $start = microtime(true);
+        $measurement = $this->stopwatch->start();
         $result = null;
         $error = null;
 
@@ -59,7 +67,9 @@ abstract class ChaosExperiment
         }
 
         return [
-            'time_ms' => round((microtime(true) - $start) * 1000, 2),
+            // Two decimals, as before: latency here is reported finer than a
+            // whole millisecond.
+            'time_ms' => $measurement->elapsedMsPrecise(),
             'result' => $result,
             'error' => $error,
         ];

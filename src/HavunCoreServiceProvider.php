@@ -63,7 +63,7 @@ class HavunCoreServiceProvider extends ServiceProvider
 
         // Register BackupOrchestrator
         $this->app->singleton(BackupOrchestrator::class, function ($app) {
-            return new BackupOrchestrator();
+            return new BackupOrchestrator($app->make(\App\Support\Timing\Stopwatch::class));
         });
     }
 
