@@ -2,8 +2,8 @@
 title: De V&K-rapportage leest één run per dag — plan
 type: plan
 scope: havuncore
-status: in uitvoering
-last_updated: 2026-08-03
+status: af — venster samengevoegd (03-08) en ontbrekende checks gemeld (06-08)
+last_updated: 2026-08-06
 ---
 
 # De rapportage leest één run per dag
@@ -48,15 +48,24 @@ samenvoeging, zodat ze niet opnieuw uiteen kunnen lopen.
 **Omkeerpunt:** komt er een check met een interval langer dan een week, dan is een vast venster te
 smal en moet het venster per check uit zijn eigen frequentie volgen.
 
-## Nog open
+## Afgerond 06-08 — een check die stopt, meldt zich
 
-- **Een check die te lang niet gedraaid heeft, meldt zich niet.** Valt hij helemaal weg uit het
-  venster, dan verdwijnt hij stil uit het rapport — dezelfde faalmodus als
-  `plans/registry-drift-check-plan.md` beschrijft, nu op de scheduler. Volgende stap: de verwachte
-  frequentie per check vastleggen en afwezigheid als finding melden.
+`VerwachteChecks` leest de scheduler (16 checks) en vergelijkt die met de runs in het venster.
+Ontbreekt er een, of draaide hij te lang geleden, dan staat dat als fout in het rapport met
+`type: check-ontbreekt` — onderscheidbaar van een check die wél draaide en faalde.
 
-  Dit is het laatste onbewaakte gat van deze soort. Vergelijk `check_supervisor` (06-08): daar was
-  "nul processen" ook groen tot het een `critical` werd. Zie `patterns/bewaking-die-niets-meet.md`.
+**Dagelijks krijgt 36 uur, wekelijks anderhalve week**: één overgeslagen run blijft stil, twee niet.
+De marge komt uit de cron-expressie, niet uit een aparte lijst — voeg je een check toe aan
+`routes/console.php`, dan wordt hij vanzelf verwacht. Een tweede lijst zou uiteenlopen, en dan
+bewaakt hij de verkeerde verzameling.
+
+**`assemble()` gaf `null` bij nul runs**, en elke aanroeper maakte daar een leeg rapport van — een
+scheduler die helemaal stilstond las als "niets aan de hand". Nu komt er een uitslag terug waarin
+alle zestien als ontbrekend staan. `qv:log` waarschuwt nog steeds en eindigt op 1, maar schrijft het
+rapport wél: dat is wat iemand leest.
+
+Op productie geforceerd geverifieerd: een weggelaten check meldt *"heeft nooit gedraaid"*, een
+check van tien dagen oud meldt *"240 uur; verwacht binnen 36"*, en een lege uitslag meldt er zestien.
 
 ## Opgelost op 03/04-08 (stond hier als "nog niet in deze fix")
 

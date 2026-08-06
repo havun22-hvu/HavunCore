@@ -2,7 +2,7 @@
 title: Bewaking die niets meet ziet eruit als bewaking zonder bevindingen
 type: pattern
 scope: alle-projecten
-last_updated: 2026-08-04
+last_updated: 2026-08-06
 ---
 
 # Bewaking die niets meet
@@ -62,6 +62,20 @@ doorgerekend vóór de plaatsing — een bewakingsfout is stil, dus die zie je n
 script op de server onbruikbaar werd (`/bin/bash^M: bad interpreter`). Herstel vanuit de backup,
 daarna `sed -i 's/\r$//'` op de server vóór de installatie. **Een bewakingsscript dat niet meer
 start, meldt ook niets.**
+
+## Het laatste gat van deze soort (06-08-2026)
+
+Een V&K-check die stopt met draaien verdween uit het rapport — één regel minder, en de totalen
+bleven nul. `VerwachteChecks` leest nu de scheduler en meldt wat er ontbreekt. **De scheduler is de
+bron, geen tweede lijst in config**: die zou uiteenlopen en dan de verkeerde verzameling bewaken.
+
+En `assemble()` gaf `null` als er helemaal geen runs waren, waar elke aanroeper een leeg rapport van
+maakte. **De ernstigste uitkomst was de stilste.** Nu meldt hij alle zestien.
+
+Daarmee is dit patroon vier keer op rij dezelfde vorm gebleken: `actions:watch` (nul repo's),
+`backup-coverage` (SSH naar zichzelf), `check_supervisor` (nul processen) en nu de scan zelf.
+**Vraag bij elke bewaking: wat gebeurt er als er niets te meten valt?** Als het antwoord "dan is het
+groen" is, meet je niets.
 
 ## Hoe je het vindt
 

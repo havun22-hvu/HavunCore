@@ -10,7 +10,7 @@ last_updated: 2026-08-03
 > **Één handover, bijwerken — nooit een sessieblok toevoegen.** Levende status, geen logboek.
 > Afgerond = weg (git bewaart het). Max ~120 regels. Regel: `docs/kb/standards/md-doc-grootte.md`.
 
-**Branch:** master · **Status:** stabiel, 1449 tests groen, KB-audit 0 critical / 0 high (verse run
+**Branch:** master · **Status:** stabiel, 1457 tests groen, KB-audit 0 critical / 0 high (verse run
 06-08; het rapportbestand was van 02-08 en dus achterhaald). **Server:** disk 68%, prod draait
 overal, 0 dirty checkouts, 0 stashes. **Alles staat live** (06-08, geen migraties).
 
