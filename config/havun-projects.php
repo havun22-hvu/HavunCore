@@ -94,12 +94,13 @@ return [
     // storage/app en .env — die zaten in geen enkele git). Niet opnieuw
     // aanmaken; Vusista2 is de herbouw en staat hieronder.
     //
-    // Vusista 2 — de herbouw (Rust + Iced). Desktop-app, dus geen server_path
-    // en geen local_url: er is geen HTTP-server. Geregistreerd vanaf de eerste
-    // commit, want een project dat de KB niet kent, wordt ook niet gescand —
-    // dat is precies wat Vusista 1 vier maanden onzichtbaar hield.
-    'vusista2' => [
-        'path'      => 'D:/GitHub/Vusista2',
+    // Fotusa (tot 07-08-2026 "Vusista 2") — de herbouw (Rust + Iced).
+    // Desktop-app, dus geen server_path en geen local_url: er is geen
+    // HTTP-server. Geregistreerd vanaf de eerste commit, want een project dat
+    // de KB niet kent, wordt ook niet gescand — dat is precies wat Vusista 1
+    // vier maanden onzichtbaar hield.
+    'fotusa' => [
+        'path'      => 'D:/GitHub/Fotusa',
         'server_path' => null,
         'local_url' => null,
         'endpoints' => [],

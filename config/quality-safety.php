@@ -81,13 +81,14 @@ return [
         // meer. De laatste scan gaf critical 1 · high 2 · medium 4; die zijn
         // bewust nooit opgelost en verdwijnen met het project mee.
         //
-        // Vusista 2 — the Rust/Iced rebuild. Registered on day one rather than
-        // after the fact. The scanner detects Cargo.lock files anywhere below
-        // the root (this repo has five, none in the root) and runs cargo audit
-        // on each: 34 findings where composer/npm reported a clean zero.
-        'vusista2' => [
-            'enabled' => env('QV_VUSISTA2_ENABLED', true),
-            'path' => env('VUSISTA2_LOCAL_PATH', 'D:/GitHub/Vusista2'),
+        // Fotusa (renamed from "Vusista 2" on 07-08-2026) — the Rust/Iced
+        // rebuild. Registered on day one rather than after the fact. The
+        // scanner detects Cargo.lock files anywhere below the root (this repo
+        // has five, none in the root) and runs cargo audit on each: 34
+        // findings where composer/npm reported a clean zero.
+        'fotusa' => [
+            'enabled' => env('QV_FOTUSA_ENABLED', true),
+            'path' => env('FOTUSA_LOCAL_PATH', 'D:/GitHub/Fotusa'),
         ],
 
         // Veen — PARKED 31-07-2026; onze serveromgeving is die dag opgeruimd
