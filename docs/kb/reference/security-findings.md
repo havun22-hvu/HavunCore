@@ -11,6 +11,36 @@ last_check: 2026-05-02
 > **Bron voor entries:** `composer audit`, `npm audit`, Mozilla Observatory, SSL Labs, OWASP ZAP, pentest, GHSA notifications, ad-hoc server-sweeps.
 > **Werkwijze:** zie `runbooks/security-findings-logging.md`.
 
+## 2026-08-06 — Hetzner-backupwachtwoord wereldleesbaar (server) — ✅ GEDICHT, rotatie open
+
+**Bron:** openstaand handover-punt opgepakt; ernst bleek groter dan genoteerd.
+
+| Bevinding | Ernst | Status |
+|---|---|---|
+| `HETZNER_PASS` in platte tekst in `/usr/local/bin/havun-backup.sh`, **mode 755** | **High** | ✅ verplaatst naar `/etc/havun-backup.env` (600), script naar 700 |
+| Tweede kopie in `/usr/local/bin/havun-backup.sh.bak-20260727-201623`, óók 755 | **High** | ✅ waarde gestript, mode 600 |
+| 13 kopieën in `/root/backups/**` | Laag | Afgeschermd: `/root` is 700. Waarde gestript uit de twee scriptbackups |
+
+**Wat het echt betekende:** niet "een wachtwoord in een script", maar **`www-data` kon het lezen** —
+en die gebruiker draait de webapplicatie. Een lek in de app gaf daarmee toegang tot de offsite
+backups. Geverifieerd na de fix: `sudo -u www-data cat` geeft `Permission denied` op alle
+vindplaatsen.
+
+**Wat het níet was:** geen hergebruik voor iets anders. Dezelfde credential staat onder twee namen
+(`HETZNER_PASS`, `HETZNER_STORAGE_PASSWORD`), en de **live `.env`-bestanden van HavunCore,
+HavunAdmin en Herdenkingsportaal zijn schoon** — alleen oude backups. Eerst leek het breder; die
+zoekactie had een leeg patroon en matchte dus alles. Opnieuw gedaan met `grep -F` op de exacte
+20-tekens waarde.
+
+**Verificatie:** verbinding met de Storage Box getest ná de wijziging (`sftp ls backups` →
+`backups/2026`). Een backupscript dat je "verbetert" maar breekt, is erger dan het probleem.
+
+> ⚠️ **Rotatie nog open — het wachtwoord is in een transcript beland.** Bij de eerste poging schreef
+> ik de waarde ongequoteerd naar het env-bestand; het wachtwoord bevat een `#`, waardoor de shell
+> een deel ervan als commando uitvoerde en in de foutmelding echode. Behandelen als gecompromitteerd:
+> **roteren in de Hetzner Robot** (Henks account), daarna `/etc/havun-backup.env` bijwerken.
+> Les: een secret dat je verplaatst, quote je — `printf '%s'` zonder quotes is geen veilige opslag.
+
 ## 2026-08-05 — Taakwachtrij publiek beschrijfbaar (HavunCore) — ✅ GEDICHT 06-08
 
 **Bron:** ad-hoc verificatie tijdens het uitwerken van `plans/autofix-naar-claude-cli-plan.md`.
