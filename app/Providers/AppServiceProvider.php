@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Services\AIProxyService;
+use App\Services\CircuitBreaker;
 use App\Support\Timing\Stopwatch;
 use App\Support\Timing\SystemStopwatch;
 use Illuminate\Cache\RateLimiting\Limit;
@@ -15,6 +17,14 @@ class AppServiceProvider extends ServiceProvider
     {
         // Stateless, so one instance is enough.
         $this->app->singleton(Stopwatch::class, SystemStopwatch::class);
+
+        // A circuit breaker is named after the service it guards, so it cannot be
+        // resolved from the type alone. Contextual binding says which one this
+        // service gets, which beats the service constructing its own — a breaker
+        // you cannot pass in is a breaker tests can only reach through the cache.
+        $this->app->when(AIProxyService::class)
+            ->needs(CircuitBreaker::class)
+            ->give(fn () => new CircuitBreaker('claude_api'));
     }
 
     public function boot(): void

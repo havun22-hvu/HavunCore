@@ -23,13 +23,13 @@ class AIProxyService
     protected CircuitBreaker $circuitBreaker;
     protected Stopwatch $stopwatch;
 
-    public function __construct(Stopwatch $stopwatch)
+    public function __construct(Stopwatch $stopwatch, CircuitBreaker $circuitBreaker)
     {
         $this->apiKey = config('services.claude.api_key', '');
         // No default here on purpose: config/services.php owns it, so there is one
         // place to change when the model ID expires — not two that can drift apart.
         $this->model = config('services.claude.model');
-        $this->circuitBreaker = new CircuitBreaker('claude_api');
+        $this->circuitBreaker = $circuitBreaker;
         $this->stopwatch = $stopwatch;
     }
 

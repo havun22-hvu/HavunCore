@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\AIUsageLog;
 use App\Services\AIProxyService;
+use App\Services\CircuitBreaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -28,7 +29,7 @@ class AIProxyServiceCoverageTest extends TestCase
             'services.claude.model' => 'claude-3-haiku-20240307',
         ]);
 
-        $this->service = new AIProxyService($this->stopwatch);
+        $this->service = new AIProxyService($this->stopwatch, new CircuitBreaker("claude_api"));
     }
 
     // ===================================================================

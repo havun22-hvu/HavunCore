@@ -4,6 +4,7 @@ namespace Tests\Unit;
 
 use App\Models\AIUsageLog;
 use App\Services\AIProxyService;
+use App\Services\CircuitBreaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -29,7 +30,7 @@ class AIProxyServiceTest extends TestCase
             'services.claude.model' => 'claude-3-haiku-20240307',
         ]);
 
-        $this->service = new AIProxyService($this->stopwatch);
+        $this->service = new AIProxyService($this->stopwatch, new CircuitBreaker("claude_api"));
     }
 
     // -- Health Check --
@@ -37,7 +38,7 @@ class AIProxyServiceTest extends TestCase
     public function test_health_check_reports_unhealthy_without_api_key(): void
     {
         config(['services.claude.api_key' => '']);
-        $emptyKeyService = new AIProxyService($this->stopwatch);
+        $emptyKeyService = new AIProxyService($this->stopwatch, new CircuitBreaker("claude_api"));
 
         $result = $emptyKeyService->healthCheck();
 
@@ -95,7 +96,7 @@ class AIProxyServiceTest extends TestCase
     public function test_chat_sends_correct_request_to_anthropic(): void
     {
         config(['services.claude.api_key' => 'test-key']);
-        $service = new AIProxyService($this->stopwatch);
+        $service = new AIProxyService($this->stopwatch, new CircuitBreaker("claude_api"));
 
         Http::fake([
             'api.anthropic.com/*' => Http::response([

@@ -81,12 +81,11 @@ rood gezien. Regel: `patterns/model-id-verloopt.md`.
 
 ## Open — te doen
 
-- **`AIProxyService` construeert zijn eigen `CircuitBreaker`** — daardoor graaien twee tests via
-  `Cache::get('circuit_breaker:…')` in de interne staat. Zelfde soort schuld als de tijdmeting die
-  06-08 is opgeruimd; injecteren lost het op. `plans/tijdmeting-injecteerbaar-plan.md`.
 - **Web-push voor `critical` health-alerts — gebouwd, nooit getest.** Rest = één browser-test.
   `plans/health-alerts-webpush-blueprint.md`. Leesval: valt terug op `localhost:8009` (lege stub).
-  Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt.
+  Los daarvan: `laravel-worker` + `toernooi-heartbeat` onbewaakt. **Sinds 05-08 urgenter:** de
+  AI-proxy vuurt nu zelf een `critical` alert bij een verdwenen model — precies het soort melding
+  dat je wilt zien zonder in te loggen.
 - **havuncore-webapp update-banner — niet reproduceerbaar (24-07).** Wéér last? Check
   `getRegistration()` op een `waiting`. `plans/webapp-sw-update-fix.md`. Vitest daar geblokkeerd
   door Avast, niet de registry — [[env-ssl-interception]].

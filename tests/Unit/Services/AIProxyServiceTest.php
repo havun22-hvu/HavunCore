@@ -5,6 +5,7 @@ namespace Tests\Unit\Services;
 use App\Models\AIUsageLog;
 use App\Models\HealthAlert;
 use App\Services\AIProxyService;
+use App\Services\CircuitBreaker;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
@@ -30,6 +31,9 @@ class AIProxyServiceTest extends TestCase
      */
     private FakeStopwatch $stopwatch;
 
+    /** Injected rather than reached for: the test can ask it what it thinks. */
+    private CircuitBreaker $breaker;
+
     protected function setUp(): void
     {
         parent::setUp();
@@ -37,6 +41,12 @@ class AIProxyServiceTest extends TestCase
         config()->set('services.claude.api_key', 'sk-ant-fake-test-key');
         config()->set('services.claude.model', 'claude-3-haiku-test');
         $this->stopwatch = new FakeStopwatch();
+        $this->breaker = new CircuitBreaker('claude_api');
+    }
+
+    private function service(): AIProxyService
+    {
+        return new AIProxyService($this->stopwatch, $this->breaker);
     }
 
     public function test_chat_returns_response_text_and_usage_on_success(): void
@@ -53,7 +63,7 @@ class AIProxyServiceTest extends TestCase
             },
         ]);
 
-        $result = (new AIProxyService($this->stopwatch))->chat('havuncore', 'Hello');
+        $result = $this->service()->chat('havuncore', 'Hello');
 
         $this->assertSame('Hi there', $result['response']);
         $this->assertSame(12, $result['usage']['input_tokens']);
@@ -77,7 +87,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        $result = (new AIProxyService($this->stopwatch))->chat('zero-defaults', 'hi');
+        $result = $this->service()->chat('zero-defaults', 'hi');
 
         $this->assertSame(0, $result['usage']['input_tokens']);
         $this->assertSame(0, $result['usage']['output_tokens']);
@@ -110,21 +120,18 @@ class AIProxyServiceTest extends TestCase
                     && str_contains($context['body'] ?? '', 'rate limit');
             });
 
-        $failuresBefore = (int) Cache::get('circuit_breaker:claude_api:failures', 0);
+        // The breaker is asked, not inspected afterwards.
+        $breaker = \Mockery::mock(CircuitBreaker::class);
+        $breaker->shouldReceive('isAvailable')->andReturnTrue();
+        $breaker->shouldReceive('recordFailure')->once();
+        $breaker->shouldNotReceive('recordSuccess');
 
-        $service = new AIProxyService($this->stopwatch);
         try {
-            $service->chat('havuncore', 'fail me');
+            (new AIProxyService($this->stopwatch, $breaker))->chat('havuncore', 'fail me');
             $this->fail('Expected a \\Exception to propagate from chat()');
         } catch (\Exception $e) {
             $this->assertStringContainsString('Claude API error: 429', $e->getMessage());
         }
-
-        // recordFailure() side-effect — kills MethodCallRemoval on line 74.
-        $this->assertGreaterThan(
-            $failuresBefore,
-            (int) Cache::get('circuit_breaker:claude_api:failures', 0),
-        );
     }
 
     public function test_a_missing_model_raises_a_health_alert_instead_of_only_a_log_line(): void
@@ -139,7 +146,7 @@ class AIProxyServiceTest extends TestCase
         ]);
 
         try {
-            (new AIProxyService($this->stopwatch))->chat('havuncore', 'anyone there?');
+            $this->service()->chat('havuncore', 'anyone there?');
         } catch (\Exception) {
             // The throw is the existing contract; the alert is what's being tested.
         }
@@ -172,7 +179,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService($this->stopwatch))->chat('havuncore', 'still there?');
+        $this->service()->chat('havuncore', 'still there?');
 
         $this->assertSame('resolved', HealthAlert::where('key', 'ai-proxy-model')->first()->status);
     }
@@ -192,7 +199,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        $result = (new AIProxyService($this->stopwatch))->chat('havuncore', 'think first');
+        $result = $this->service()->chat('havuncore', 'think first');
 
         $this->assertSame('The actual answer.', $result['response']);
     }
@@ -208,7 +215,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        $result = (new AIProxyService($this->stopwatch))->chat('havuncore', 'no answer');
+        $result = $this->service()->chat('havuncore', 'no answer');
 
         $this->assertSame('', $result['response']);
     }
@@ -222,7 +229,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService($this->stopwatch))->chat('infosyst', 'Test logging');
+        $this->service()->chat('infosyst', 'Test logging');
 
         $this->assertDatabaseHas('ai_usage_logs', [
             'tenant' => 'infosyst',
@@ -235,7 +242,7 @@ class AIProxyServiceTest extends TestCase
     public function test_check_rate_limit_blocks_after_configured_threshold(): void
     {
         config()->set('services.claude.rate_limit', 3);
-        $service = new AIProxyService($this->stopwatch);
+        $service = $this->service();
 
         $this->assertTrue($service->checkRateLimit('havuncore'));
         $this->assertTrue($service->checkRateLimit('havuncore'));
@@ -247,7 +254,7 @@ class AIProxyServiceTest extends TestCase
     public function test_check_rate_limit_isolates_per_tenant(): void
     {
         config()->set('services.claude.rate_limit', 1);
-        $service = new AIProxyService($this->stopwatch);
+        $service = $this->service();
 
         $this->assertTrue($service->checkRateLimit('infosyst'));
         $this->assertFalse($service->checkRateLimit('infosyst'));
@@ -273,7 +280,7 @@ class AIProxyServiceTest extends TestCase
             'execution_time_ms' => 500, 'model' => 'haiku',
         ]);
 
-        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('havuncore', 'day');
+        $stats = $this->service()->getUsageStats('havuncore', 'day');
 
         $this->assertSame(2, $stats['total_requests']);
         $this->assertSame(180, $stats['total_input_tokens']);
@@ -284,7 +291,7 @@ class AIProxyServiceTest extends TestCase
 
     public function test_health_check_reports_configured_when_api_key_present(): void
     {
-        $health = (new AIProxyService($this->stopwatch))->healthCheck();
+        $health = $this->service()->healthCheck();
 
         $this->assertTrue($health['healthy']);
         $this->assertTrue($health['api_configured']);
@@ -295,7 +302,7 @@ class AIProxyServiceTest extends TestCase
     {
         config()->set('services.claude.api_key', '');
 
-        $health = (new AIProxyService($this->stopwatch))->healthCheck();
+        $health = $this->service()->healthCheck();
 
         $this->assertFalse($health['healthy']);
         $this->assertFalse($health['api_configured']);
@@ -322,7 +329,7 @@ class AIProxyServiceTest extends TestCase
             },
         ]);
 
-        (new AIProxyService($this->stopwatch))->chat('havuncore', 'time-me');
+        $this->service()->chat('havuncore', 'time-me');
 
         $log = AIUsageLog::latest('id')->first();
         $this->assertNotNull($log);
@@ -342,7 +349,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService($this->stopwatch))->chat('havunadmin', 'Check payload keys');
+        $this->service()->chat('havunadmin', 'Check payload keys');
 
         $log = AIUsageLog::latest('id')->first();
         $this->assertNotNull($log);
@@ -390,7 +397,7 @@ class AIProxyServiceTest extends TestCase
             'updated_at' => now()->subHours($logAgeHours),
         ]);
 
-        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('havuncore', $period);
+        $stats = $this->service()->getUsageStats('havuncore', $period);
 
         $this->assertSame($expectVisible ? 1 : 0, $stats['total_requests']);
     }
@@ -400,7 +407,7 @@ class AIProxyServiceTest extends TestCase
         // Hard-assert exact === 0 on each numeric field. Kills CastInt
         // and IncrementInteger / DecrementInteger mutations on the
         // return-array's integer defaults.
-        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('empty-tenant');
+        $stats = $this->service()->getUsageStats('empty-tenant');
 
         $this->assertSame(0, $stats['total_requests']);
         $this->assertSame(0, $stats['total_input_tokens']);
@@ -418,7 +425,7 @@ class AIProxyServiceTest extends TestCase
         // `private` — which silently breaks any real subclass that
         // customises the system prompt. An anonymous subclass that
         // overrides the method proves the visibility contract.
-        $service = new class($this->stopwatch) extends AIProxyService {
+        $service = new class($this->stopwatch, $this->breaker) extends AIProxyService {
             public function exposePrompt(string $tenant): string
             {
                 return $this->getDefaultSystemPrompt($tenant);
@@ -435,7 +442,7 @@ class AIProxyServiceTest extends TestCase
     public function test_log_usage_is_reachable_by_a_subclass(): void
     {
         // Kills `protected logUsage()` -> `private` mutation on line 126.
-        $service = new class($this->stopwatch) extends AIProxyService {
+        $service = new class($this->stopwatch, $this->breaker) extends AIProxyService {
             public function callLogUsage(string $tenant, array $usage, int $ms): void
             {
                 $this->logUsage($tenant, $usage, $ms);
@@ -475,7 +482,7 @@ class AIProxyServiceTest extends TestCase
             ],
         ]);
 
-        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('default-window', 'something-bogus');
+        $stats = $this->service()->getUsageStats('default-window', 'something-bogus');
 
         // Only the 2h-old row is within the day-window default.
         $this->assertSame(1, $stats['total_requests']);
@@ -500,7 +507,7 @@ class AIProxyServiceTest extends TestCase
             ],
         ]);
 
-        $stats = (new AIProxyService($this->stopwatch))->getUsageStats('exact-sums', 'day');
+        $stats = $this->service()->getUsageStats('exact-sums', 'day');
 
         $this->assertSame(2, $stats['total_requests']);
         $this->assertSame(20, $stats['total_input_tokens']);
@@ -530,7 +537,7 @@ class AIProxyServiceTest extends TestCase
 
         // Subclass to reach the protected method and feed it bad input
         // that makes AIUsageLog::create() throw on SQLite.
-        $service = new class($this->stopwatch) extends AIProxyService {
+        $service = new class($this->stopwatch, $this->breaker) extends AIProxyService {
             public function forceFailedLog(): void
             {
                 // Pre-create a row the constraint will reject on insert:
@@ -546,7 +553,6 @@ class AIProxyServiceTest extends TestCase
 
     public function test_chat_success_records_circuit_breaker_success(): void
     {
-        // Kills MethodCallRemoval on `recordSuccess()` (line 83).
         Http::fake([
             'api.anthropic.com/*' => Http::response([
                 'content' => [['type' => 'text', 'text' => 'ok']],
@@ -554,15 +560,34 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        // Pre-load a failure so the breaker has observable state.
-        (new \App\Services\CircuitBreaker('claude_api'))->recordFailure();
-        $failuresBefore = (int) Cache::get('circuit_breaker:claude_api:failures', 0);
-        $this->assertGreaterThan(0, $failuresBefore);
+        // Asking the breaker directly, now that it is injected. Reading its
+        // cache keys was the only way before, and that pinned the test to a
+        // storage detail rather than to the behaviour.
+        $breaker = \Mockery::mock(CircuitBreaker::class);
+        $breaker->shouldReceive('isAvailable')->andReturnTrue();
+        $breaker->shouldReceive('recordSuccess')->once();
+        $breaker->shouldNotReceive('recordFailure');
 
-        (new AIProxyService($this->stopwatch))->chat('havuncore', 'ok');
+        (new AIProxyService($this->stopwatch, $breaker))->chat('havuncore', 'ok');
+    }
 
-        // Successful call must reset the breaker failure counter.
-        $this->assertSame(0, (int) Cache::get('circuit_breaker:claude_api:failures', 0));
+    public function test_chat_does_not_call_the_api_at_all_when_the_breaker_is_open(): void
+    {
+        Http::fake();
+
+        $breaker = \Mockery::mock(CircuitBreaker::class);
+        $breaker->shouldReceive('isAvailable')->andReturnFalse();
+
+        try {
+            (new AIProxyService($this->stopwatch, $breaker))->chat('havuncore', 'blocked');
+            $this->fail('An open breaker must stop the call.');
+        } catch (\Exception $e) {
+            $this->assertStringContainsString('circuit breaker is open', $e->getMessage());
+        }
+
+        // The point of a breaker is not making the request — asserting only on
+        // the exception would pass even if the call had gone out first.
+        Http::assertNothingSent();
     }
 
     public function test_check_rate_limit_default_limit_is_sixty(): void
@@ -572,7 +597,7 @@ class AIProxyServiceTest extends TestCase
         // DecrementInteger/IncrementInteger on the 60 default.
         config()->set('services.claude.rate_limit', null);
         Cache::flush();
-        $service = new AIProxyService($this->stopwatch);
+        $service = $this->service();
 
         // 60 calls must all succeed, the 61st must be blocked.
         for ($i = 0; $i < 60; $i++) {
@@ -595,7 +620,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService($this->stopwatch))->chat('havuncore', 'header-check');
+        $this->service()->chat('havuncore', 'header-check');
 
         // Each header below kills a distinct ArrayItemRemoval / string
         // mutation in the Http::withHeaders array.
@@ -617,7 +642,7 @@ class AIProxyServiceTest extends TestCase
         ]);
 
         // Caller intentionally omits $maxTokens to exercise the default.
-        (new AIProxyService($this->stopwatch))->chat('havuncore', 'default-token-check');
+        $this->service()->chat('havuncore', 'default-token-check');
 
         // The number is asserted literally, not via the constant: this test
         // exists to catch the ceiling silently drifting away from what
@@ -643,7 +668,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService($this->stopwatch))->chat('havuncore', 'custom-tokens', maxTokens: 2048);
+        $this->service()->chat('havuncore', 'custom-tokens', maxTokens: 2048);
 
         Http::assertSent(fn (\Illuminate\Http\Client\Request $req) => ($req->data()['max_tokens'] ?? null) === 2048);
     }
@@ -657,7 +682,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService($this->stopwatch))->chat('havuncore', 'Ask', ['fact A', 'fact B']);
+        $this->service()->chat('havuncore', 'Ask', ['fact A', 'fact B']);
 
         Http::assertSent(function (\Illuminate\Http\Client\Request $request) {
             $content = $request->data()['messages'][0]['content'] ?? '';
@@ -676,7 +701,7 @@ class AIProxyServiceTest extends TestCase
             ], 200),
         ]);
 
-        (new AIProxyService($this->stopwatch))->chat('havuncore', 'hi', [], systemPrompt: 'Custom override prompt');
+        $this->service()->chat('havuncore', 'hi', [], systemPrompt: 'Custom override prompt');
 
         Http::assertSent(fn (\Illuminate\Http\Client\Request $req) => ($req->data()['system'] ?? null) === 'Custom override prompt');
     }
