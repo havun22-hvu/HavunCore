@@ -1,6 +1,6 @@
 # Handover (auto-generated)
 
-> **Auto-gegenereerd door `php artisan docs:handover`** op Wed, Aug 5, 2026 4:00 AM.
+> **Auto-gegenereerd door `php artisan docs:handover`** op Thu, Aug 6, 2026 4:00 AM.
 > Bewerk dit bestand niet handmatig — wijzigingen worden overschreven.
 > Voor session-detail zie `.claude/handover.md`. Voor V&K-architectuur zie
 > `docs/kb/runbooks/kwaliteit-veiligheid-systeem.md`.
@@ -9,6 +9,16 @@
 
 | Datum | Hash | Bericht |
 |-------|------|---------|
+| 2026-08-06 | `78d453a` | docs: the security deploy that changed nothing, and the step that was missing |
+| 2026-08-06 | `081ffa7` | fix(security): close the task queue, which was open to the internet |
+| 2026-08-06 | `4b9b434` | docs: a plan for routing AutoFix errors to Claude CLI, and the hole it found |
+| 2026-08-05 | `80cd2f9` | fix(ai-proxy): the answer is not the first block when the model thinks |
+| 2026-08-05 | `c373d11` | feat(ai-proxy): move to Opus 5, and raise the ceiling it needs to answer |
+| 2026-08-05 | `adca6bf` | docs(handover): back under the line limit |
+| 2026-08-05 | `7cd605c` | feat(ai-proxy): a missing model now reaches a person, not just the log |
+| 2026-08-05 | `dbae375` | fix(ai-proxy): the model ID expired in April and took AutoFix with it |
+| 2026-08-05 | `354ac08` | fix(ai-proxy): the flaky timing test measured jitter, not the code |
+| 2026-08-05 | `e7dca1c` | chore(auto): refresh handover, qv-scan-latest, security-findings-log (2026-08-05T06:00:09+02:00) |
 | 2026-08-04 | `e27575b` | chore(auto): refresh handover, qv-scan-latest, security-findings-log (2026-08-04T06:00:09+02:00) |
 | 2026-08-04 | `831080c` | docs: session close 04-08 -- monitoring that measures, and the pattern behind it |
 | 2026-08-04 | `bca2060` | chore(monitoring): stop watching a site that was taken down on purpose |
@@ -79,13 +89,12 @@
 | 2026-07-30 | `85b4033` | docs(kb): choosing a stack becomes a binding step, and detours get counted |
 | 2026-07-30 | `4812cc6` | docs(kb): the stack becomes a decision instead of an inheritance |
 | 2026-07-30 | `43fe4c2` | chore(docs): sync the auto-generated snapshots from production |
-| 2026-07-30 | `5df7bbd` | docs(kb): add pattern for holding an evidence position on inherited software |
 
 ## V&K status (laatste qv:scan)
 
 **Totals:** critical 0 | high 23 | medium 57 | low 7 | errors 0
 
-_Snapshot timestamp: 2026-08-05T03:57:03+02:00_
+_Snapshot timestamp: 2026-08-06T03:57:02+02:00_
 
 **HIGH/CRITICAL findings:**
 
