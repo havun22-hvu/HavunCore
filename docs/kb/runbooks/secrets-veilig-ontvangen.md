@@ -69,12 +69,54 @@ sudo -u www-data php artisan tinker --execute="echo DB::connection()->getPdo() ?
 ```
 En herstart queue-workers die de oude waarde in het geheugen hebben (`systemctl`, `pm2`).
 
+## Methode D — een bestaand secret verplaatsen (script → env-bestand)
+
+Klinkt onschuldig: je leest een waarde en schrijft hem elders weg. **Op 06-08-2026 lekte precies
+zo een wachtwoord in een transcript.** Twee dingen gaan hier mis en beide zijn te voorkomen.
+
+**1. Quote de waarde bij het wegschrijven.** Een wachtwoord bevat leestekens. Zonder quotes is
+`HETZNER_PASS=PD2#jCl#…` voor de shell geen toekenning maar een commando, en de foutmelding die
+volgt bevat de waarde:
+
+```bash
+# FOUT — de waarde staat ongequoteerd in het bestand
+printf 'KEY=%s\n' "$WAARDE" > /etc/dienst.env
+
+# GOED — %q quote zó dat de shell exact dezelfde waarde terugleest
+printf 'KEY=%q\n' "$WAARDE" > /etc/dienst.env
+```
+
+**Gebruik `%q`, geen zelfgemaakte escape.** De eerste poging hier was een `sed` die single quotes
+ontsnapte; die brak zodra de waarde zowel `'` als `"` bevatte. Getest met `a#b'c"d$e f&g`: `%q`
+komt identiek terug, de sed-variant niet.
+
+**2. Verifieer op een manier die de waarde niet kán tonen.** Dit is de ernstigste: `. /etc/dienst.env`
+in een sessie waarvan de uitvoer wordt teruggelezen, echoot bij een fout de inhoud. Controleer in
+een subshell en geef alleen een oordeel terug:
+
+```bash
+# FOUT — een parse-fout echoot de waarde
+. /etc/dienst.env && echo "$KEY"
+
+# GOED — alleen lengte en een ja/nee
+( . /etc/dienst.env 2>/dev/null; [ -n "$KEY" ] && echo "geladen, lengte ${#KEY}" || echo "LEEG" )
+```
+
+**3. Ruim de oude vindplaats op**, inclusief backups van het bestand dat het secret bevatte, en
+**controleer de rechten** — het oorspronkelijke probleem was niet dat het secret in een script
+stond, maar dat dat script `755` was en `www-data` het dus kon lezen.
+
 ## Verifiëren zonder lekken
 
 Bevestig dat het werkt met **alleen niet-gevoelige signalen**:
 - prefix + **laatste 4 tekens** (`sk_live_…XXXX`) — die toont de provider zelf ook;
 - een **werkt/werkt-niet-status** tegen de echte API (bv. `HTTP 200` vs `401`);
-- nooit de volledige waarde.
+- de **lengte** van de waarde;
+- nooit de volledige waarde, en nooit een commando dat bij een fout de waarde in de melding zet.
+
+**Zoek je naar kopieën van een secret, controleer dan eerst je zoekpatroon.** Een leeg patroon
+matcht elk bestand: op 06-08 leek daardoor even dat één wachtwoord over drie projecten hergebruikt
+was. Bevestig de lengte vóór je zoekt, en gebruik `grep -F` op de exacte waarde.
 
 ## Nooit doen
 
@@ -82,3 +124,5 @@ Bevestig dat het werkt met **alleen niet-gevoelige signalen**:
 - `Read` op `credentials.md` of een `.env` — dat trekt de waarden het transcript in.
 - Secret als zichtbaar argument (`mysql -p'…'`, `sed 's#…#KEY=abc#'` in de chat-tool).
 - Secret in een git-commit of een niet-gitignored bestand.
+- Een secret **ongequoteerd** wegschrijven, of het verifiëren met een commando dat de waarde in
+  een foutmelding kan zetten (zie Methode D).
