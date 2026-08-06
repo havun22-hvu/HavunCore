@@ -2,7 +2,7 @@
 title: HavunCore Handover
 type: claude
 scope: havuncore
-last_updated: 2026-08-03
+last_updated: 2026-08-06
 ---
 
 # HavunCore — Handover
